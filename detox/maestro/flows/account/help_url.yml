@@ -25,12 +25,7 @@ appId: ${MAESTRO_APP_ID}
 - runFlow: ../../subflows/auth/login.yml
 
 # # Open the Account tab
-- tapOn:
-    id: "tab_bar.account.tab"
-- extendedWaitUntil:
-    visible:
-      id: "account.screen"
-    timeout: 10000
+- runFlow: ../../subflows/navigation/open_account.yml
 
 # # Open Settings and wait for Help.
 # Help can take up to 30s to appear while server config syncs on first login.

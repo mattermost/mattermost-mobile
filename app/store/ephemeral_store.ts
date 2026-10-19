@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {Events} from '@constants';
+import {CLASSIFICATION_BANNER_CACHE_TTL} from '@constants/classification';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {toMilliseconds} from '@utils/datetime';
 
@@ -42,6 +43,9 @@ class EphemeralStoreSingleton {
     private acknowledgingPost = new Set<string>();
     private unacknowledgingPost = new Set<string>();
     private currentThreadId = '';
+    private currentChannelOldestVisibleCreateAt: number | undefined = undefined;
+    private currentFileViewerPostId = '';
+    private currentPlaybookRunId = '';
     private notificationTapped = false;
     private enablingCRT = false;
 
@@ -56,6 +60,20 @@ class EphemeralStoreSingleton {
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
     private managedCategoryPropertyIds: {[serverUrl: string]: {groupId: string; fieldId: string} | undefined} = {};
+
+    // Track when the classification banner fields were last fetched per server, so
+    // the global banner can skip redundant fetches within the TTL. In-memory only
+    // (cleared on app restart) and cleared per server on logout.
+    private classificationBannerFetchedAt: {[serverUrl: string]: number | undefined} = {};
+
+    // Track classification option ids we've already forced a field refresh for, so an
+    // option that is genuinely gone server-side does not trigger an infinite re-fetch loop.
+    private classificationFieldSyncAttempted: {[serverUrl: string]: Set<string>} = {};
+
+    // Channels whose attribute values have been fetched from the server, so a
+    // repeated channel switch does not refetch. Values stay fresh afterwards via
+    // websocket events; the set is cleared when the connection drops.
+    private channelAttributeValuesSynced: {[serverUrl: string]: Set<string>} = {};
 
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
@@ -338,6 +356,26 @@ class EphemeralStoreSingleton {
         this.currentThreadId = id;
     };
 
+    getCurrentChannelOldestVisibleCreateAt = () => this.currentChannelOldestVisibleCreateAt;
+    setCurrentChannelOldestVisibleCreateAt = (value: number | undefined) => {
+        this.currentChannelOldestVisibleCreateAt = value;
+    };
+
+    // Protects the backing post from eviction while a file viewer is open.
+    getCurrentFileViewerPostId = () => this.currentFileViewerPostId;
+    setCurrentFileViewerPostId = (id: string) => {
+        this.currentFileViewerPostId = id;
+    };
+    clearCurrentFileViewerPostId = () => {
+        this.currentFileViewerPostId = '';
+    };
+
+    // Protects the viewed playbook run from rolling cache eviction.
+    getCurrentPlaybookRunId = () => this.currentPlaybookRunId;
+    setCurrentPlaybookRunId = (id: string) => {
+        this.currentPlaybookRunId = id;
+    };
+
     // Ephemeral control when (un)archiving a channel locally
     addSwitchingToChannel = (channelId: string) => {
         this.switchingToChannel.add(channelId);
@@ -448,6 +486,54 @@ class EphemeralStoreSingleton {
 
     clearManagedCategoryPropertyIds = (serverUrl: string) => {
         delete this.managedCategoryPropertyIds[serverUrl];
+    };
+
+    // Ephemeral cache for the classification banner fields fetch
+    shouldFetchClassificationBanner = (serverUrl: string) => {
+        const ts = this.classificationBannerFetchedAt[serverUrl];
+        if (ts === undefined) {
+            return true;
+        }
+        return Date.now() - ts >= CLASSIFICATION_BANNER_CACHE_TTL;
+    };
+
+    setClassificationBannerFetched = (serverUrl: string) => {
+        this.classificationBannerFetchedAt[serverUrl] = Date.now();
+    };
+
+    getClassificationFieldSyncAttempted = (serverUrl: string, optionId: string) => {
+        return this.classificationFieldSyncAttempted[serverUrl]?.has(optionId) ?? false;
+    };
+
+    setClassificationFieldSyncAttempted = (serverUrl: string, optionId: string) => {
+        if (!this.classificationFieldSyncAttempted[serverUrl]) {
+            this.classificationFieldSyncAttempted[serverUrl] = new Set();
+        }
+        this.classificationFieldSyncAttempted[serverUrl]?.add(optionId);
+    };
+
+    clearClassificationCache = (serverUrl: string) => {
+        delete this.classificationBannerFetchedAt[serverUrl];
+        delete this.classificationFieldSyncAttempted[serverUrl];
+    };
+
+    getChannelAttributeValuesSynced = (serverUrl: string, channelId: string) => {
+        return this.channelAttributeValuesSynced[serverUrl]?.has(channelId) ?? false;
+    };
+
+    setChannelAttributeValuesSynced = (serverUrl: string, channelId: string) => {
+        if (!this.channelAttributeValuesSynced[serverUrl]) {
+            this.channelAttributeValuesSynced[serverUrl] = new Set();
+        }
+        this.channelAttributeValuesSynced[serverUrl]?.add(channelId);
+    };
+
+    unsetChannelAttributeValuesSynced = (serverUrl: string, channelId: string) => {
+        this.channelAttributeValuesSynced[serverUrl]?.delete(channelId);
+    };
+
+    clearChannelAttributeValuesSynced = (serverUrl: string) => {
+        delete this.channelAttributeValuesSynced[serverUrl];
     };
 
     // Ephemeral control for rejected files

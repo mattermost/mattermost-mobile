@@ -6,6 +6,8 @@
 import https from 'node:https';
 import path from 'node:path';
 
+import {DEMO_PLUGIN_VERSION, ensureDemoPluginFixture} from '../shared/demo-plugin-fixture';
+
 import {
     AGENTS_PLUGIN_ID,
     AGENTS_PLUGIN_ASSET_NAME,
@@ -330,13 +332,17 @@ async function installPluginFromFile(
 
     let res: Awaited<ReturnType<typeof uploadMultipartFile<ApiErrorBody>>>;
     try {
+        // The upload endpoint reads `force` from the multipart form, not the query string
+        // (api4.uploadPlugin), so a query param is silently dropped and the server answers
+        // "A plugin with the same ID is already installed."
         res = await uploadMultipartFile<ApiErrorBody>(
             client,
             'POST',
-            `/api/v4/plugins${force ? '?force=true' : ''}`,
+            '/api/v4/plugins',
             filePath,
             'plugin',
             token,
+            force ? {force: 'true'} : {},
         );
     } catch (err) {
         return {
@@ -383,15 +389,27 @@ export async function installRequiredPlugin(
     }
 
     const {active = [], inactive = []} = pluginsRes.data;
-    const isActive = active.some((p: PluginListEntry) => p.id === pluginId);
+    const activeEntry = active.find((p: PluginListEntry) => p.id === pluginId);
+    const isActive = Boolean(activeEntry);
     const isInactive = inactive.some((p: PluginListEntry) => p.id === pluginId);
 
-    if (isActive) {
+    // Matterwick hands over servers with the demo plugin already running, so "active" alone
+    // would keep whatever version it installed and silently ignore the pinned fixture. Compare
+    // the version and replace when it differs; the upload below runs with force.
+    const wrongVersion = pluginId === DEMO_PLUGIN_ID &&
+        activeEntry?.version !== undefined &&
+        activeEntry.version !== DEMO_PLUGIN_VERSION;
+
+    if (isActive && !wrongVersion) {
         logInfo(`Plugin ${pluginId} is already installed and active.`);
         return;
     }
 
-    if (isInactive) {
+    if (wrongVersion) {
+        logInfo(`Plugin ${pluginId} is active at ${activeEntry?.version}, replacing with the pinned ${DEMO_PLUGIN_VERSION}.`);
+    }
+
+    if (isInactive && !wrongVersion) {
         logInfo(`Plugin ${pluginId} is installed but inactive, enabling...`);
 
         // A transient enable timeout (e.g. demo-plugin on a freshly-provisioned
@@ -410,7 +428,15 @@ export async function installRequiredPlugin(
     }
 
     if (fixtureFilename) {
-        // CI downloads the fixture; local runs fall back to the pinned URL when it is absent.
+        if (pluginId === DEMO_PLUGIN_ID) {
+            try {
+                await ensureDemoPluginFixture();
+            } catch (err) {
+                const detail = err instanceof Error ? err.message : String(err);
+                logWarn(`Could not place demo plugin fixture on the runner: ${detail}`);
+            }
+        }
+
         const fixturePath = path.resolve(__dirname, `../e2e/support/fixtures/${fixtureFilename}`);
         logInfo(`Installing ${pluginId} from fixture: ${fixturePath}`);
         const installResult = await installPluginFromFile(client, token, pluginId, fixturePath, {force: true});
@@ -419,6 +445,11 @@ export async function installRequiredPlugin(
             return;
         }
         logWarn(`Fixture install failed for ${pluginId}: ${installResult.message}`);
+
+        if (pluginId === DEMO_PLUGIN_ID) {
+            logWarn('Not falling back to install_from_url for the demo plugin (Cloudflare 524 while origin fetches GitHub).');
+            return;
+        }
     }
 
     if (pluginUrl) {

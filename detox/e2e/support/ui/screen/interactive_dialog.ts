@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class InteractiveDialogScreen {
     testID = {
         interactiveDialogScreen: 'interactive_dialog.screen',
-        dialogTitle: 'interactive_dialog.dialog_title',
+        interactiveDialogScrollView: 'interactive_dialog.scroll_view',
         submitButton: 'interactive_dialog.submit.button',
         closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
@@ -21,8 +21,6 @@ class InteractiveDialogScreen {
 
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
-    // Close button (X in header) - interactive dialogs render via the dialog_router route,
-    // whose testID is set in app/routes/(modals)/dialog_router.tsx
     appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
@@ -40,10 +38,18 @@ class InteractiveDialogScreen {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
         try {
-            const dialogScrollView = element(by.id(this.testID.interactiveDialogScreen));
-            await dialogScrollView.scroll(isPasswordOrTextarea ? 200 : 100, 'down');
+            const dialogScrollView = element(by.id(this.testID.interactiveDialogScrollView));
             if (isPasswordOrTextarea) {
+                try {
+                    await dialogScrollView.tap({x: 20, y: 20});
+                    await wait(500);
+                } catch {
+                    // No keyboard up, or the tap landed on a field — scrolling still helps.
+                }
+                await dialogScrollView.scrollTo('bottom');
                 await wait(500);
+            } else {
+                await dialogScrollView.scroll(100, 'down');
             }
         } catch (scrollError) {
             // Could not scroll dialog, continuing without scroll
@@ -57,8 +63,7 @@ class InteractiveDialogScreen {
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
         try {
-            const dialogHeader = element(by.id(this.testID.dialogTitle));
-            await dialogHeader.tap();
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch {
             try {
                 await this.interactiveDialogScreen.tap();
@@ -96,7 +101,10 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
-        await expect(this.submitButton).toExist();
+        try {
+            await element(by.id(this.testID.interactiveDialogScrollView)).scroll(200, 'down');
+        } catch { /* short dialogs may not scroll */ }
+        await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };
@@ -158,16 +166,62 @@ class InteractiveDialogScreen {
         await wait(500);
     };
 
+    getFileFieldChooseButton = (fieldName: string) => element(by.id(`${fieldName}.choose.button`));
+
+    tapFileFieldChooseButton = async (fieldName: string) => {
+        const chooseButton = this.getFileFieldChooseButton(fieldName);
+        await waitFor(chooseButton).toExist().withTimeout(timeouts.TWO_SEC);
+        await chooseButton.tap();
+    };
+
+    expectFileFieldUploadDisabledWarning = async (fieldName: string, shouldExist = true) => {
+        const warning = element(by.id(`${fieldName}.upload.disabled.warning`));
+        if (shouldExist) {
+            await waitFor(warning).toExist().withTimeout(timeouts.FIVE_SEC);
+            await expect(warning).toExist();
+        } else {
+            await expect(warning).not.toExist();
+        }
+    };
+
+    expectHydratedFilePreview = async (fieldName: string, fileId: string) => {
+        const fileRow = element(by.id(`${fieldName}.file.row.${fileId}`));
+        await waitFor(fileRow).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileRow).toExist();
+    };
+
+    expectFileFieldChooseButtonDisabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
+    };
+
+    expectFileFieldChooseButtonEnabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.THREE_SEC);
+        await element(by.id('file_attachment.photo_library')).swipe('down', 'fast', 0.5);
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
+    };
+
+    tapFileFieldRemoveButton = async (fieldName: string, fileId: string) => {
+        const removeBtn = element(by.id(`${fieldName}.file.remove.${fileId}`));
+        await waitFor(removeBtn).toExist().withTimeout(timeouts.TWO_SEC);
+        await removeBtn.tap();
+    };
+
     fillTextElementWithAppForm = async (elementName: string, value: string) => {
         const textInput = element(by.id(`AppFormElement.${elementName}.text.input`));
         await expect(textInput).toExist();
         await this.setDialogInputText(textInput, value);
         await wait(1000);
 
-        // Dismiss keyboard by tapping outside
+        // Dismiss the keyboard by tapping the scroll view's background. 'screen.title.text' is
+        // not rendered by this screen, so the previous target never dismissed anything.
         try {
-            const dialogTitle = element(by.id('screen.title.text'));
-            await dialogTitle.tap();
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch (error) {
             // Could not dismiss keyboard, continue
         }

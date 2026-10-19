@@ -58,6 +58,7 @@ const AgentChatHeader = ({title, subtitle, showSubtitleCompanion, onHistoryPress
     }, [showSubtitleCompanion, theme.sidebarText]);
 
     const rightButtons = useMemo<NavigationButtonProps[]>(() => [{
+        id: 'history',
         iconName: 'clock-outline',
         onPress: onHistoryPress,
         testID: 'agent_chat.history_button',

@@ -5,17 +5,21 @@ import {useMemo} from 'react';
 import {Pressable, Text} from 'react-native';
 
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
+import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import usePressableOpacityStyle from '@hooks/use_pressable_opacity';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 export type NavigationButtonProps = {
+    id?: string;
+    accessibilityLabel?: string;
     borderless?: boolean;
     color?: string;
     disabled?: boolean;
     iconName?: CompassIconName;
     iconSize?: number;
+    isLoading?: boolean;
     text?: string;
     count?: number | string;
     onPress: () => void;
@@ -30,17 +34,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     enabled: {color: theme.sidebarHeaderTextColor},
     disabled: {color: theme.sidebarHeaderTextColor, opacity: 0.32},
     icon: {padding: 5},
+    loading: {padding: 5, alignItems: 'center', justifyContent: 'center'},
     title: typography('Body', 200),
     count: typography('Body', 200),
 }));
 
 function NavigationButton({
+    id,
+    accessibilityLabel,
     borderless = true,
     color,
     count,
     disabled,
     iconName,
     iconSize = 20,
+    isLoading = false,
     onPress,
     rippleRadius = 20,
     testID,
@@ -50,13 +58,18 @@ function NavigationButton({
     const styles = getStyleSheet(theme);
 
     const colorStyle = useMemo(() => ({color: disabled ? changeOpacity(color ?? theme.sidebarHeaderTextColor, 0.32) : (color ?? theme.sidebarHeaderTextColor)}), [color, disabled, theme.sidebarHeaderTextColor]);
+
+    // Reserve the icon's footprint so the header doesn't shift when swapping to the spinner.
+    const loadingStyle = useMemo(() => [styles.loading, {width: iconSize + 10, height: iconSize + 10}], [styles.loading, iconSize]);
     const ripple = useMemo(() => ({borderless, radius: rippleRadius}), [borderless, rippleRadius]);
     const pressableStyle = usePressableOpacityStyle(styles.container);
 
     return (
         <Pressable
+            id={id}
+            accessibilityLabel={accessibilityLabel}
             onPress={onPress}
-            disabled={disabled}
+            disabled={disabled || isLoading}
             hitSlop={hitSlop}
             testID={testID}
             android_ripple={ripple}
@@ -64,7 +77,15 @@ function NavigationButton({
         >
 
             {Boolean(text) && <Text style={[styles.title, colorStyle]}>{text}</Text>}
-            {Boolean(iconName) &&
+            {isLoading &&
+                <Loading
+                    containerStyle={loadingStyle}
+                    color={colorStyle.color}
+                    size='small'
+                    testID={testID ? `${testID}.loading` : undefined}
+                />
+            }
+            {!isLoading && Boolean(iconName) &&
                 <CompassIcon
                     name={iconName!}
                     size={iconSize}

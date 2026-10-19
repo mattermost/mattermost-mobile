@@ -186,6 +186,9 @@ type AppField = {
     multiselect?: boolean;
     lookup?: AppCall;
 
+    // File props
+    allow_multiple?: boolean;
+
     // Text props
     subtype?: string;
     min_length?: number;
@@ -205,6 +208,9 @@ type AppField = {
 type DateTimeConfig = {
     time_interval?: number;
     location_timezone?: string;
+    manual_time_entry?: boolean;
+
+    /** @deprecated Renamed to `manual_time_entry`; v12.0 stopped emitting it, 11.x still does. */
     allow_manual_time_entry?: boolean;
 };
 

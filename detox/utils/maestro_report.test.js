@@ -9,7 +9,7 @@ const os = require('node:os');
 const path = require('node:path');
 const {afterEach, beforeEach, describe, it} = require('node:test');
 
-const {writeMaestroJestJsonForTsio} = require('./maestro_report');
+const {writeMaestroJestJsonForTsio, compareMaestroJunitFilenames} = require('./maestro_report');
 
 describe('writeMaestroJestJsonForTsio', () => {
     let tmpDir;
@@ -99,5 +99,22 @@ describe('writeMaestroJestJsonForTsio', () => {
         assert.equal(payload.success, true);
         assert.equal(payload.numPassedTests, 2);
         assert.equal(payload.numFailedTests, 0);
+    });
+});
+
+describe('compareMaestroJunitFilenames', () => {
+    it('should order batch files numerically and report files deterministically', () => {
+        const files = [
+            'maestro-report-T3261_2.xml',
+            'maestro-batch-10.xml',
+            'maestro-batch-2.xml',
+            'maestro-report-T67856_4.xml',
+        ];
+        assert.deepEqual([...files].sort(compareMaestroJunitFilenames), [
+            'maestro-batch-2.xml',
+            'maestro-batch-10.xml',
+            'maestro-report-T3261_2.xml',
+            'maestro-report-T67856_4.xml',
+        ]);
     });
 });

@@ -6,8 +6,8 @@
 // Platform split:
 //   Android — Browse Channels → archived filter → tap channel (baseline flow;
 //             search/permalink regressed MM-T1671_1 + MM-T1722_1).
-//   iOS     — search → permalink → jumpToRecentMessages (Browse Channels tap
-//             does not reliably navigate on iOS in CI).
+//   iOS     — search → permalink → jumpToRecentMessages, with Browse Channels
+//             as fallback when the archived draft never mounts.
 
 import {Post} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
@@ -21,7 +21,6 @@ import {
     safeEnableSynchronization,
     timeouts,
     wait,
-    waitForElementToBeVisible,
     waitForElementToExist,
 } from '@support/utils';
 import {waitFor} from 'detox';
@@ -77,20 +76,33 @@ async function waitForArchivedChannelItem(channelName: string) {
     return channelItem;
 }
 
+async function waitForArchivedChannelDestination() {
+    await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
+
+    // Existence, not 75% visibility: the archived footer sits in the home-indicator
+    // inset and local deleteAt can land after the channel screen itself.
+    await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+}
+
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
 
     const channelItem = await waitForArchivedChannelItem(channelName);
-    await channelItem.tap();
+    const channelItemDisplayName = BrowseChannelsScreen.getChannelItemDisplayName(channelName);
 
-    await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-    if (isAndroid()) {
-        await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
-    } else {
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    // Prefer the display-name text (hittable) over the row container; fall back to the row.
+    try {
+        await waitFor(channelItemDisplayName).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await channelItemDisplayName.tap();
+    } catch {
+        await waitFor(channelItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await channelItem.tap();
     }
+
+    // Explicit destination asserts — callers must not treat a tap alone as success.
+    await waitForArchivedChannelDestination();
 }
 
 // iOS-only: the Browse Channels tap does not reliably navigate on iOS, so go via a permalink.
@@ -136,12 +148,7 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string, 
 
     await device.disableSynchronization();
     try {
-        await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        if (isAndroid()) {
-            await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
-        } else {
-            await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
-        }
+        await waitForArchivedChannelDestination();
     } finally {
         await safeEnableSynchronization();
     }
@@ -158,12 +165,33 @@ export async function openArchivedChannel(
     if (isAndroid()) {
         try {
             await openArchivedChannelViaBrowseChannels(channelName);
-        } catch {
-            // Archived filter list can lag behind WebSocket events — fall back to search/permalink.
+        } catch (error) {
+            // Only fall back after the browse destination assert failed — do not mask it silently.
+            // eslint-disable-next-line no-console
+            console.warn(
+                `[openArchivedChannel] Browse path failed for "${channelName}"; falling back to search/permalink. ` +
+                `${error instanceof Error ? error.message : String(error)}`,
+            );
             await openArchivedChannelViaSearchPermalink(searchableMessage, postId);
         }
     } else {
-        await openArchivedChannelViaSearchPermalink(searchableMessage, postId);
+        try {
+            await openArchivedChannelViaSearchPermalink(searchableMessage, postId);
+        } catch (error) {
+            // Permalink can land on the channel before local deleteAt is set, so the
+            // archived draft never mounts. Recover via Browse Channels.
+            // eslint-disable-next-line no-console
+            console.warn(
+                `[openArchivedChannel] Search/permalink path failed for "${channelName}"; falling back to Browse Channels. ` +
+                `${error instanceof Error ? error.message : String(error)}`,
+            );
+            try {
+                await SearchMessagesScreen.close();
+            } catch {
+                // Already off search.
+            }
+            await openArchivedChannelViaBrowseChannels(channelName);
+        }
     }
 }
 

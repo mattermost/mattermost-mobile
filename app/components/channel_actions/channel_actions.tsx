@@ -4,7 +4,7 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import ChannelInfoStartButton from '@calls/components/channel_info_start';
+import ChannelInfoStartCallButton from '@calls/components/channel_info_start_call';
 import AddMembersBox from '@components/channel_actions/add_members_box';
 import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
@@ -12,7 +12,7 @@ import MutedBox from '@components/channel_actions/mute_box';
 import SetHeaderBox from '@components/channel_actions/set_header_box';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
-import {isTypeDMorGM} from '@utils/channel';
+import {isDMChannel, isTypeDMorGM} from '@utils/channel';
 
 type Props = {
     channelId: string;
@@ -55,7 +55,8 @@ const ChannelActions = ({
         }
     }, [inModal]);
 
-    const isDM = isTypeDMorGM(channelType);
+    const isDMOrGM = isTypeDMorGM(channelType);
+    const isDM = isDMChannel(channelType);
 
     return (
         <View style={styles.wrapper}>
@@ -71,7 +72,7 @@ const ChannelActions = ({
                 testID={testID}
             />
             <View style={styles.separator}/>
-            {isDM &&
+            {isDMOrGM &&
                 <SetHeaderBox
                     channelId={channelId}
                     inModal={inModal}
@@ -85,7 +86,7 @@ const ChannelActions = ({
                     testID={`${testID}.add_members.action`}
                 />
             }
-            {!isDM && !callsEnabled &&
+            {!isDMOrGM && !callsEnabled &&
                 <>
                     <View style={styles.separator}/>
                     <CopyChannelLinkBox
@@ -95,10 +96,10 @@ const ChannelActions = ({
                     />
                 </>
             }
-            {callsEnabled &&
+            {(!isDM && callsEnabled) &&
                 <>
                     <View style={styles.separator}/>
-                    <ChannelInfoStartButton
+                    <ChannelInfoStartCallButton
                         serverUrl={serverUrl}
                         channelId={channelId}
                         dismissChannelInfo={dismissChannelInfo}

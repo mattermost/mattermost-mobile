@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {calculateKeyboardUpdates, getEmojiSearchActiveHeight} from '@keyboard/state_machine/keyboard_utils';
+import {calculateKeyboardUpdates, isZeroHeight} from '@keyboard/state_machine/keyboard_utils';
 import {
     InputContainerStateType,
     StateMachineEventType,
@@ -10,53 +10,6 @@ import {
     type StateSnapshot,
     type StateEvent,
 } from '@keyboard/state_machine/types';
-
-/**
- * Transitions for non-edge-to-edge devices (Android API < 30).
- * No KEYBOARD_EVENT_* transitions — library is disabled and OS handles keyboard via adjustResize.
- */
-export const emojiPickerOpenTransitionsNonEdgeToEdge: StateTransition[] = [
-    {
-        from: InputContainerStateType.EMOJI_PICKER_OPEN,
-        event: StateMachineEventType.USER_FOCUS_EMOJI_SEARCH,
-        to: InputContainerStateType.EMOJI_SEARCH_ACTIVE,
-        action: (snapshot: StateSnapshot): ActionUpdates => {
-            'worklet';
-
-            const searchHeight = getEmojiSearchActiveHeight(snapshot.tabBarHeight, snapshot.safeAreaBottom);
-            return {
-                inputAccessoryHeight: {value: searchHeight, animated: true},
-                targetHeight: {value: searchHeight, animated: false},
-            };
-        },
-    },
-    {
-        from: InputContainerStateType.EMOJI_PICKER_OPEN,
-        event: StateMachineEventType.USER_FOCUS_INPUT,
-        to: InputContainerStateType.IDLE,
-        action: (): ActionUpdates => {
-            'worklet';
-
-            return {
-                inputAccessoryHeight: {value: 0, animated: true},
-                targetHeight: {value: 0, animated: false},
-            };
-        },
-    },
-    {
-        from: InputContainerStateType.EMOJI_PICKER_OPEN,
-        event: StateMachineEventType.USER_CLOSE_EMOJI,
-        to: InputContainerStateType.IDLE,
-        action: (): ActionUpdates => {
-            'worklet';
-
-            return {
-                inputAccessoryHeight: {value: 0, animated: true},
-                targetHeight: {value: 0, animated: false},
-            };
-        },
-    },
-];
 
 export const emojiPickerOpenTransitions: StateTransition[] = [
     {
@@ -89,7 +42,10 @@ export const emojiPickerOpenTransitions: StateTransition[] = [
                 return undefined;
             }
 
-            if ((event.rawHeight ?? 0) === 0) {
+            // Ignore heights that are not a software keyboard. With a hardware keyboard the
+            // OS still reports its input strip (~48px), and resizing the picker to that
+            // would collapse it from the full keyboard height down to the strip height.
+            if (isZeroHeight(snapshot, event)) {
                 return undefined;
             }
 

@@ -59,10 +59,9 @@ describe('Messaging - Save and Unsave Message', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
@@ -95,9 +94,8 @@ describe('Messaging - Save and Unsave Message', () => {
         const rootMessage = `Message ${getRandomId()}`;
         const replyMessage = `Reply ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(rootMessage);
 
-        const {post: rootPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: rootPost} = await ChannelScreen.postMessageAndVerify(rootMessage, testChannel.id, siteOneUrl);
         const {postListPostItem: rootItem} = ChannelScreen.getPostListPostItem(rootPost.id, rootMessage);
         await waitFor(rootItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await rootItem.tap();

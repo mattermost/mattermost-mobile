@@ -7,11 +7,13 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelActions from '@components/channel_actions';
 import ChannelBookmarks from '@components/channel_bookmarks';
+import ChannelInfoAttributes from '@components/channel_info_attributes';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
+import {isTypeDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelInfoAppBindings from './app_bindings';
@@ -77,6 +79,10 @@ const ChannelInfo = ({
         callsAvailable = false;
     }
 
+    // Assigning attributes to a conversation is later Smart Markings work, so a
+    // DM or GM has nothing to show here.
+    const isDMorGM = isTypeDMorGM(type);
+
     const onPressed = useCallback(() => {
         return navigateBack();
     }, []);
@@ -114,6 +120,7 @@ const ChannelInfo = ({
                         callsEnabled={callsAvailable}
                         testID='channel_info.channel_actions'
                     />
+                    {!isDMorGM && <ChannelInfoAttributes channelId={channelId}/>}
                     <Extra channelId={channelId}/>
                     <View style={styles.separator}/>
                     <Options

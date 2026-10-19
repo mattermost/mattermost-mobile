@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 20,
+            version: 22,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -324,6 +324,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
                         last_playbook_runs_fetch_at: {name: 'last_playbook_runs_fetch_at', type: 'number'},
                         autotranslation_disabled: {name: 'autotranslation_disabled', type: 'boolean', isOptional: true},
+                        urgent_mention_count: {name: 'urgent_mention_count', type: 'number'},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
@@ -337,6 +338,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'last_fetched_at', type: 'number', isIndexed: true},
                         {name: 'last_playbook_runs_fetch_at', type: 'number'},
                         {name: 'autotranslation_disabled', type: 'boolean', isOptional: true},
+                        {name: 'urgent_mention_count', type: 'number'},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {
@@ -587,6 +589,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         due_date: {name: 'due_date', type: 'number'},
                         completed_at: {name: 'completed_at', type: 'number'},
                         task_actions: {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        requirements: {name: 'requirements', type: 'string', isOptional: true}, // JSON string
                         condition_action: {name: 'condition_action', type: 'string'},
                         condition_reason: {name: 'condition_reason', type: 'string'},
                         sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
@@ -606,6 +609,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'due_date', type: 'number'},
                         {name: 'completed_at', type: 'number'},
                         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        {name: 'requirements', type: 'string', isOptional: true}, // JSON string
                         {name: 'condition_action', type: 'string'},
                         {name: 'condition_reason', type: 'string'},
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},

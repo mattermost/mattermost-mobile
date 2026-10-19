@@ -7,7 +7,7 @@ import {
     ThreadOptionsScreen,
 } from '@support/ui/screen';
 import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {by, expect, waitFor} from 'detox';
 
 class GlobalThreadsScreen {
     testID = {
@@ -68,10 +68,27 @@ class GlobalThreadsScreen {
     };
 
     open = async () => {
-        // # Open global threads screen
+        await ChannelListScreen.toBeVisible();
+        await waitForElementToExist(ChannelListScreen.threadsButton, timeouts.HALF_MIN);
         await ChannelListScreen.threadsButton.tap();
 
         return this.toBeVisible();
+    };
+
+    waitForThreadItem = async (threadId: string) => {
+        const item = this.getThreadItem(threadId);
+        await waitFor(this.flatThreadsList).toExist().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(item).toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            try {
+                await waitFor(item).toExist().whileElement(by.id(this.testID.flatThreadsList)).scroll(200, 'down');
+            } catch {
+                await waitFor(item).toExist().whileElement(by.id(this.testID.flatThreadsList)).scroll(200, 'up');
+            }
+        }
+        await waitFor(item).toExist().withTimeout(timeouts.HALF_MIN);
+        return item;
     };
 
     back = async () => {

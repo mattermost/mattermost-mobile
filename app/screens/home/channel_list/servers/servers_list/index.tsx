@@ -77,6 +77,7 @@ const ServerList = ({servers}: Props) => {
                         keyExtractor={keyExtractor}
                         contentContainerStyle={[styles.contentContainer, serverListStyle]}
                         renderScrollComponent={BottomSheetScrollableCreator}
+                        testID='server_list.flat_list'
                     />
                 </View>
             </TutorialProvider>

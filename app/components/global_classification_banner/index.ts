@@ -4,7 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {map} from 'rxjs/operators';
 
-import {observeClassificationBannerState} from '@queries/servers/properties';
+import {observeChannelAttributesEnabled, observeClassificationBannerState} from '@queries/servers/properties';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import GlobalClassificationBannerContainer, {GLOBAL_BANNER_PORTAL_HOST} from './global_classification_banner_container';
@@ -18,6 +18,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         levelName: state$.pipe(map((s) => s.levelName)),
         color: state$.pipe(map((s) => s.color)),
         classificationEnabled: observeConfigBooleanValue(database, 'FeatureFlagClassificationMarkings'),
+        channelAttributesEnabled: observeChannelAttributesEnabled(database),
     };
 });
 

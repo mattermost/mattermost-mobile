@@ -1,0 +1,46 @@
+# Sub-flow: open the Account tab after login.
+# Fresh login can leave Save Password / notification / scheduled-post overlays
+# on the account tab (same set AccountScreen.open dismisses). Retry the tab tap
+# so a swallowed first tap does not fail the account screen wait.
+appId: ${MAESTRO_APP_ID}
+---
+# # Dismiss the overlays a fresh login can leave over the account tab.
+# These three are matched by text on purpose. They are native dialogs, not app
+# views: "Not Now" is the iOS Save Password sheet, "Allow" is the OS
+# notification-permission prompt, and "Okay" comes from React Native's Alert.alert
+# (a UIAlertController), whose button API takes no testID. None of them appear in
+# the app's accessibility tree, so an id: selector cannot match them.
+- runFlow: dismiss_scheduled_post_tooltip.yml
+- tapOn:
+    text: "Not Now"
+    optional: true
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "tab_bar.account.tab"
+      - tapOn:
+          text: "Not Now"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "account.screen"
+          timeout: 15000
+
+# # Settle the layout before the caller taps a row. AccountUserInfo grows ~25px once the
+# ShowFullName config observable emits, moving every row below it. Maestro taps coordinates
+# from an earlier snapshot, so an unsettled screen lands the tap on Your Profile, not Settings.
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# # Leave the subflow on a screen the caller can act on. Callers tap this row straight after.
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 15000

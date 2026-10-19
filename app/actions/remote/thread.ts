@@ -18,6 +18,7 @@ import {logDebug, logError} from '@utils/log';
 import {showThreadFollowingSnackbar} from '@utils/snack_bar';
 import {getThreadsListEdges} from '@utils/thread';
 
+import {fetchChannelAttributeValues} from './classification';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -47,6 +48,17 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
 
     // Load thread before we open to the thread modal
     fetchPostThread(serverUrl, rootId, undefined, false, groupLabel);
+
+    // The thread screen renders the channel banner, and a thread can be opened
+    // without ever entering its channel — from a notification, or by restoring the
+    // last-viewed thread on launch. switchToChannelById does not run on those
+    // paths, so the values it would have fetched are requested here too. The fetch
+    // dedupes per channel, so the common case of opening a thread from its own
+    // channel costs nothing.
+    const threadPost = await getPostById(database, rootId);
+    if (threadPost?.channelId) {
+        fetchChannelAttributeValues(serverUrl, threadPost.channelId);
+    }
 
     // Mark thread as read
     const isCRTEnabled = await getIsCRTEnabled(database);

@@ -8,8 +8,10 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Events, Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useWindowDimensions} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {useGalleryControls} from '@hooks/gallery';
 import {navigateBack} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 import Footer from './footer';
 import Gallery, {type GalleryRef} from './gallery';
@@ -28,6 +30,17 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Ga
     const dim = useWindowDimensions();
     const {bottom: bottomInset} = useSafeAreaInsets();
     const [localIndex, setLocalIndex] = useState(initialIndex);
+
+    useDidMount(() => {
+        const previousPostId = EphemeralStore.getCurrentFileViewerPostId();
+        const postId = items[initialIndex]?.postId;
+        if (postId) {
+            EphemeralStore.setCurrentFileViewerPostId(postId);
+        } else {
+            EphemeralStore.clearCurrentFileViewerPostId();
+        }
+        return () => EphemeralStore.setCurrentFileViewerPostId(previousPostId);
+    });
 
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls(bottomInset);
     const galleryRef = useRef<GalleryRef>(null);
@@ -49,7 +62,13 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Ga
 
     const onIndexChange = useCallback((index: number) => {
         setLocalIndex(index);
-    }, []);
+        const postId = items[index]?.postId;
+        if (postId) {
+            EphemeralStore.setCurrentFileViewerPostId(postId);
+        } else {
+            EphemeralStore.clearCurrentFileViewerPostId();
+        }
+    }, [items]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, () => {

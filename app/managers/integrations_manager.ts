@@ -4,6 +4,8 @@
 import {fetchCommands} from '@actions/remote/command';
 import {Screens} from '@constants';
 import {MAX_OPEN_DIALOGS} from '@constants/integrations';
+import DatabaseManager from '@database/manager';
+import {getCurrentChannelId} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 
@@ -99,7 +101,7 @@ class ServerIntegrationsManager {
         this.openDialogTriggerIds.delete(triggerId);
     }
 
-    private tryShowDialog(config: InteractiveDialogConfig) {
+    private async tryShowDialog(config: InteractiveDialogConfig) {
         if (this.openDialogTriggerIds.size >= MAX_OPEN_DIALOGS) {
             logDebug('ServerIntegrationsManager.tryShowDialog', 'Max open dialogs reached, dropping dialog');
             return;
@@ -110,7 +112,16 @@ class ServerIntegrationsManager {
         // navigation permanently consumes one and, after MAX_OPEN_DIALOGS failures,
         // every later dialog on this server is dropped for the rest of the session.
         this.openDialogTriggerIds.add(config.trigger_id);
-        if (!navigateToScreen(Screens.DIALOG_ROUTER, {title: config.dialog.title, config})) {
+
+        let channelId = '';
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(this.serverUrl);
+            channelId = await getCurrentChannelId(database);
+        } catch (error) {
+            logDebug('ServerIntegrationsManager.tryShowDialog: could not read channelId', error);
+        }
+
+        if (!navigateToScreen(Screens.DIALOG_ROUTER, {title: config.dialog.title, config, channelId})) {
             this.openDialogTriggerIds.delete(config.trigger_id);
             logDebug('ServerIntegrationsManager.tryShowDialog', 'navigation failed, released dialog slot');
         }

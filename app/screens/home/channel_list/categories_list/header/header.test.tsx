@@ -5,13 +5,19 @@ import {fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
+import {showSnackBar} from '@utils/snack_bar';
 
 import Header from './header';
 
 jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 function getBaseProps(overrides: Partial<ComponentProps<typeof Header>> = {}): ComponentProps<typeof Header> {
@@ -24,6 +30,10 @@ function getBaseProps(overrides: Partial<ComponentProps<typeof Header>> = {}): C
         currentTeamId: 'team-id',
         displayName: 'Test!',
         hasMoreThanOneTeam: false,
+        ephemeralModeEnabled: false,
+        ephemeralModePurgeHours: 0,
+        ephemeralModeCleanupDays: 0,
+        isZeroPersistenceMode: false,
         ...overrides,
     };
 }
@@ -47,6 +57,39 @@ describe('components/channel_list/header', () => {
         );
 
         expect(wrapper.getByTestId('channel_list_header.push_alert')).toBeTruthy();
+    });
+
+    it('should show ephemeral mode indicator when enabled', () => {
+        const wrapper = renderWithIntl(<Header {...getBaseProps({ephemeralModeEnabled: true})}/>);
+
+        expect(wrapper.getByTestId('channel_list_header.ephemeral_mode')).toBeTruthy();
+    });
+
+    it('should show the ephemeral mode snackbar with the configured timers on press', () => {
+        const wrapper = renderWithIntl(
+            <Header {...getBaseProps({ephemeralModeEnabled: true, ephemeralModePurgeHours: 24, ephemeralModeCleanupDays: 7})}/>,
+        );
+
+        fireEvent.press(wrapper.getByTestId('channel_list_header.ephemeral_mode'));
+
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED,
+            descriptionValues: {hours: 24, days: 7},
+        });
+    });
+
+    it('should show the zero persistence snackbar on press in zero persistence mode', () => {
+        const wrapper = renderWithIntl(<Header {...getBaseProps({ephemeralModeEnabled: true, isZeroPersistenceMode: true})}/>);
+
+        fireEvent.press(wrapper.getByTestId('channel_list_header.ephemeral_mode'));
+
+        expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+    });
+
+    it('should hide ephemeral mode indicator when disabled', () => {
+        const wrapper = renderWithIntl(<Header {...getBaseProps()}/>);
+
+        expect(wrapper.queryByTestId('channel_list_header.ephemeral_mode')).toBeNull();
     });
 
     describe('team menu affordance', () => {

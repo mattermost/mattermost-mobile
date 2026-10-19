@@ -4,11 +4,11 @@
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {scheduleOnRN} from 'react-native-worklets';
 
-import {isEdgeToEdge} from '@constants/device';
 import Events from '@constants/events';
 import {
     DEFAULT_INPUT_ACCESSORY_HEIGHT,
     KEYBOARD_TRANSITION_DURATION,
+    MIN_SOFTWARE_KEYBOARD_HEIGHT,
 } from '@keyboard/constants';
 import {calculateSearchHeight} from '@keyboard/state_machine/keyboard_utils';
 import {InputContainerStateType, type ActionUpdates, type InputContainerState, type StateEvent, type StateSnapshot} from '@keyboard/state_machine/types';
@@ -28,7 +28,8 @@ const emitDeviceEvent = (eventName: string, value: boolean) => {
 export function enterEmojiPickerOpen(snapshot: StateSnapshot, _event?: StateEvent, fromState?: string): ActionUpdates {
     'worklet';
 
-    let emojiPickerHeight = snapshot.lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
+    const hasRealKeyboardHeight = snapshot.lastKeyboardHeight > MIN_SOFTWARE_KEYBOARD_HEIGHT;
+    let emojiPickerHeight = hasRealKeyboardHeight ? snapshot.lastKeyboardHeight : DEFAULT_INPUT_ACCESSORY_HEIGHT;
 
     if (fromState === InputContainerStateType.IDLE) {
         // Coming from IDLE - animate emoji picker opening
@@ -37,12 +38,10 @@ export function enterEmojiPickerOpen(snapshot: StateSnapshot, _event?: StateEven
             inputAccessoryHeight: {value: emojiPickerHeight, animated: true},
         };
 
-        if (isEdgeToEdge) {
-            updates.postInputTranslateY = {value: emojiPickerHeight, animated: true};
+        updates.postInputTranslateY = {value: emojiPickerHeight, animated: true};
 
-            if (Platform.OS === 'ios') {
-                updates.scrollOffset = {value: emojiPickerHeight, animated: true};
-            }
+        if (Platform.OS === 'ios') {
+            updates.scrollOffset = {value: emojiPickerHeight, animated: true};
         }
 
         return updates;
@@ -60,7 +59,7 @@ export function enterEmojiPickerOpen(snapshot: StateSnapshot, _event?: StateEven
 
     // Coming from another state (e.g., KEYBOARD_TO_EMOJI)
     // Determine emoji picker height based on available information
-    if (snapshot.lastKeyboardHeight > 0) {
+    if (hasRealKeyboardHeight) {
         emojiPickerHeight = snapshot.lastKeyboardHeight;
     } else if (snapshot.postInputTranslateY > 0) {
         emojiPickerHeight = snapshot.postInputTranslateY;
@@ -112,13 +111,11 @@ export function enterKeyboardOpen(snapshot: StateSnapshot, event?: StateEvent): 
     // The event height might be the adjusted height from KeyboardGestureArea
     const height = wasGuarded ? snapshot.keyboardEventHeight : (event?.height ?? snapshot.keyboardEventHeight);
 
-    const MIN_KEYBOARD_HEIGHT = 75;
-
     const updates: ActionUpdates = {
         isEmojiPickerTransition: {value: false, animated: false},
     };
 
-    if (height > MIN_KEYBOARD_HEIGHT) {
+    if (height > MIN_SOFTWARE_KEYBOARD_HEIGHT) {
         if (!snapshot.isDraggingKeyboard) {
             updates.lastKeyboardHeight = {value: height, animated: false};
         }
@@ -151,7 +148,7 @@ export function enterEmojiSearchActive(snapshot: StateSnapshot): ActionUpdates {
     'worklet';
 
     const preSearchHeight = snapshot.inputAccessoryHeight;
-    const keyboardHeight = snapshot.lastKeyboardHeight > 0 ? snapshot.lastKeyboardHeight : snapshot.keyboardEventHeight;
+    const keyboardHeight = snapshot.lastKeyboardHeight > MIN_SOFTWARE_KEYBOARD_HEIGHT ? snapshot.lastKeyboardHeight : snapshot.keyboardEventHeight;
     const searchHeight = calculateSearchHeight(keyboardHeight, snapshot.tabBarHeight, snapshot.safeAreaBottom);
 
     scheduleOnRN(emitDeviceEvent, Events.EMOJI_PICKER_SEARCH_FOCUSED, true);

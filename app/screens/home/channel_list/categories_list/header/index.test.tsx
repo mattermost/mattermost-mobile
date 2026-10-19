@@ -90,6 +90,76 @@ describe('ChannelListHeader Index', () => {
         });
     });
 
+    it('should reflect ephemeral mode config of current server', async () => {
+        await operator.handleConfigs({
+            configs: [{id: 'MobileEphemeralModeEnabled', value: 'true'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+        await waitFor(() => {
+            expect(getByTestId('channel-list-header').props.ephemeralModeEnabled).toBe(true);
+        });
+    });
+
+    it('should pass the parsed ephemeral mode timers', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                {id: 'MobileEphemeralModeOfflinePersistenceTimerHours', value: '24'},
+                {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '7'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+        await waitFor(() => {
+            const component = getByTestId('channel-list-header');
+            expect(component.props.ephemeralModePurgeHours).toBe(24);
+            expect(component.props.ephemeralModeCleanupDays).toBe(7);
+        });
+    });
+
+    describe('isZeroPersistenceMode', () => {
+        it('should be true when cleanup days is zero', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+            await waitFor(() => {
+                expect(getByTestId('channel-list-header').props.isZeroPersistenceMode).toBe(true);
+            });
+        });
+
+        it('should be false when cleanup days is non-zero', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '7'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+            await waitFor(() => {
+                expect(getByTestId('channel-list-header').props.isZeroPersistenceMode).toBe(false);
+            });
+        });
+    });
+
     it('renders ChannelListHeader component with team and user data', async () => {
         const team = TestHelper.fakeTeam({
             id: currentTeamId,

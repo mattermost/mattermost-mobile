@@ -86,7 +86,7 @@ runs:
         id: get-simulator-udid
         shell: bash
         run: |
-          simulator_udid=$(xcrun simctl list devices "${{ inputs.device_name }}" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-4"[0]["udid"]')
+          simulator_udid=$(xcrun simctl list devices "${{ inputs.device_name }}" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-18-1"[0]["udid"]')
           echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
 
       - name: install certificate

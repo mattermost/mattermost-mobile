@@ -87,6 +87,16 @@ describe('mapping store', () => {
         expect(getNativeCallUUIDForCall('sA', 'cOther')).toBeUndefined();
         expect(getNativeCallUUIDForCall('sOther', 'cA')).toBeUndefined();
     });
+
+    it('reverse lookup returns undefined when callId provided but mapping.callId is empty (call_started not yet received)', () => {
+        setNativeCallMapping('uuid-a', {serverUrl: 'sA', channelId: 'cA', postId: '', threadId: '', callId: ''});
+        expect(getNativeCallUUIDForCall('sA', 'cA', 'call-1')).toBeUndefined();
+    });
+
+    it('reverse lookup returns uuid when callId matches mapping.callId', () => {
+        setNativeCallMapping('uuid-a', {serverUrl: 'sA', channelId: 'cA', postId: '', threadId: '', callId: 'call-1'});
+        expect(getNativeCallUUIDForCall('sA', 'cA', 'call-1')).toBe('uuid-a');
+    });
 });
 
 describe('clearNativeCallMapping wrapper', () => {
@@ -278,6 +288,32 @@ describe('endNativeCall', () => {
     it('no-op when no mapping matches', () => {
         endNativeCall(serverUrl, 'unknown', 'remoteEnded');
         expect(CallsNative.reportEnded).not.toHaveBeenCalled();
+    });
+
+    it('no-op when callId provided but mapping.callId is empty (stale call_end before call_started)', () => {
+        setNativeCallMapping('uuid-a', {
+            serverUrl,
+            channelId: 'ch1',
+            postId: '',
+            threadId: '',
+            callId: '',
+        });
+        endNativeCall(serverUrl, 'ch1', 'remoteEnded', 'call-1');
+        expect(CallsNative.reportEnded).not.toHaveBeenCalled();
+        expect(getNativeCallMapping('uuid-a')).toBeDefined();
+    });
+
+    it('ends the call when callId matches the mapping', () => {
+        setNativeCallMapping('uuid-a', {
+            serverUrl,
+            channelId: 'ch1',
+            postId: '',
+            threadId: '',
+            callId: 'call-1',
+        });
+        endNativeCall(serverUrl, 'ch1', 'remoteEnded', 'call-1');
+        expect(CallsNative.reportEnded).toHaveBeenCalledWith('uuid-a', 'remoteEnded');
+        expect(getNativeCallMapping('uuid-a')).toBeUndefined();
     });
 
     it('skips when not on iOS', () => {

@@ -72,6 +72,7 @@ class NetworkManagerSingleton {
         },
         requestAdapterConfiguration: {
             bearerAuthTokenResponseHeader: 'token',
+            enableSessionAttributes: true,
         },
     };
 

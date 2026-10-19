@@ -7,7 +7,7 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
 import {createCallAndAddToIds} from '@calls/actions/calls';
 import {hostRemovedErr} from '@calls/errors';
-import {endNativeCall, getNativeCallUUIDForCall} from '@calls/native_call';
+import {endNativeCall, getNativeCallMapping, getNativeCallUUIDForCall, setNativeCallMapping} from '@calls/native_call';
 import {
     callEnded,
     callStarted,
@@ -111,18 +111,31 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallS
         hostId: msg.data.host_id,
         dismissed: {},
     });
+
+    // Backfill the callId into the native mapping created by the VoIP push.
+    // Until this fires, endNativeCall treats the mapping as unconfirmed and
+    // ignores any call_end events that arrive with a callId.
+    const uuid = getNativeCallUUIDForCall(serverUrl, msg.data.channelID);
+    if (uuid) {
+        const existing = getNativeCallMapping(uuid);
+        if (existing) {
+            setNativeCallMapping(uuid, {...existing, callId: msg.data.id});
+        }
+    }
 };
 
 export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<EmptyData>) => {
     const channelId = msg.broadcast.channel_id;
     DeviceEventEmitter.emit(WebsocketEvents.CALLS_CALL_END, {channelId});
 
+    // Read callId before callEnded() removes the call from state. Passing it
+    // to endNativeCall lets the stale-replay guard reject events for a prior
+    // call whose call_end was buffered and replayed during a new call's ring.
+    const callId = getCallsState(serverUrl).calls[channelId]?.id;
+
     callEnded(serverUrl, channelId);
 
-    // The call is over on the server. Close any native overlay (ring or
-    // registered call) we still have for it — covers RTC-silent-death and
-    // caller-cancelled-the-ring.
-    endNativeCall(serverUrl, channelId, 'remoteEnded');
+    endNativeCall(serverUrl, channelId, 'remoteEnded', callId);
 };
 
 export const handleCallChannelEnabled = (serverUrl: string, msg: WebSocketMessage<EmptyData>) => {

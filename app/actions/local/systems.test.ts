@@ -23,6 +23,8 @@ import {
     storeDataRetentionPolicies,
     updateLastDataRetentionRun,
     dataRetentionCleanup,
+    dataRetentionCleanPosts,
+    performVacuum,
     setLastServerVersionCheck,
     setGlobalThreadsTab,
     dismissAnnouncement,
@@ -286,10 +288,8 @@ describe('dataRetention', () => {
             prepareRecordsOnly: false,
         });
 
-        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
         const {error} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeDefined(); // unsafeExecute loki error
-        spy.mockRestore();
     });
 
     it('retention on - dataRetentionCleanup', async () => {
@@ -314,10 +314,8 @@ describe('dataRetention', () => {
         prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
-        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
         const {error} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeDefined(); // LokiJSAdapter doesn't support unsafeSqlQuery
-        spy.mockRestore();
     });
 
     it('already cleaned today - dataRetentionCleanup', async () => {
@@ -343,8 +341,49 @@ describe('dataRetention', () => {
         prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
-        const {error} = await dataRetentionCleanup(serverUrl);
+        const {error, skipped} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeUndefined();
+        expect(skipped).toBe(true);
+    });
+});
+
+describe('dataRetentionCleanPosts', () => {
+    it('should delete every post when the ids span more than one batch', async () => {
+        const database = operator.database;
+        const unsafeExecuteSpy = jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        const postIds = Array.from({length: 1500}, (unused, index) => `postid${index}`);
+
+        const {error} = await dataRetentionCleanPosts(serverUrl, postIds);
+
+        expect(error).toBeUndefined();
+
+        const batches = unsafeExecuteSpy.mock.calls.map(([operations]) => {
+            const [[, batch]] = (operations as {sqls: Array<[string, string[]]>}).sqls;
+            return batch;
+        });
+        expect(batches.map((batch) => batch.length).sort((a, b) => b - a)).toEqual([1000, 500]);
+        expect(batches.flat().sort()).toEqual([...postIds].sort());
+    });
+});
+
+describe('performVacuum', () => {
+    it('should vacuum the server database', async () => {
+        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
+
+        await performVacuum(serverUrl);
+
+        expect(spy).toHaveBeenCalled();
+        spy.mockRestore();
+    });
+
+    it('should log and not throw when the vacuum fails', async () => {
+        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockRejectedValue(new Error('vacuum error'));
+
+        await expect(performVacuum(serverUrl)).resolves.toBeUndefined();
+
+        expect(logError).toHaveBeenCalledWith('unsafeVacuum', expect.stringContaining('vacuum error'));
+        spy.mockRestore();
     });
 });
 
@@ -461,16 +500,17 @@ describe('expiredBoRPostCleanup', () => {
 
         await expiredBoRPostCleanup(serverUrl);
 
+        const expiredIds = [borPostExpiredForMe.id, borPostExpiredForAll.id];
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
             sqls: [
-                [`DELETE FROM Post where id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM Reaction where post_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM File where post_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM Draft where root_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM PostsInThread where root_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM Thread where id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM ThreadParticipant where thread_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM ThreadsInTeam where thread_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                ['DELETE FROM Post where id IN (?,?)', expiredIds],
+                ['DELETE FROM Reaction where post_id IN (?,?)', expiredIds],
+                ['DELETE FROM File where post_id IN (?,?)', expiredIds],
+                ['DELETE FROM Draft where root_id IN (?,?)', expiredIds],
+                ['DELETE FROM PostsInThread where root_id IN (?,?)', expiredIds],
+                ['DELETE FROM Thread where id IN (?,?)', expiredIds],
+                ['DELETE FROM ThreadParticipant where thread_id IN (?,?)', expiredIds],
+                ['DELETE FROM ThreadsInTeam where thread_id IN (?,?)', expiredIds],
             ],
         });
     });
@@ -614,16 +654,17 @@ describe('expiredBoRPostCleanup', () => {
         await expiredBoRPostCleanup(serverUrl);
 
         // Should only delete the expired post
+        const expiredIds = [borPostExpired.id];
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
             sqls: [
-                [`DELETE FROM Post where id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM Reaction where post_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM File where post_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM Draft where root_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM PostsInThread where root_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM Thread where id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM ThreadParticipant where thread_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM ThreadsInTeam where thread_id IN ('${borPostExpired.id}')`, []],
+                ['DELETE FROM Post where id IN (?)', expiredIds],
+                ['DELETE FROM Reaction where post_id IN (?)', expiredIds],
+                ['DELETE FROM File where post_id IN (?)', expiredIds],
+                ['DELETE FROM Draft where root_id IN (?)', expiredIds],
+                ['DELETE FROM PostsInThread where root_id IN (?)', expiredIds],
+                ['DELETE FROM Thread where id IN (?)', expiredIds],
+                ['DELETE FROM ThreadParticipant where thread_id IN (?)', expiredIds],
+                ['DELETE FROM ThreadsInTeam where thread_id IN (?)', expiredIds],
             ],
         });
     });

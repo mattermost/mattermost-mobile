@@ -58,6 +58,8 @@ export const POST_TIME_TO_FAIL = toMilliseconds({seconds: 10});
 
 export const BOR_POST_CLEANUP_MIN_RUN_INTERVAL = toMilliseconds({minutes: 15});
 
+export const AUTO_CACHE_CLEANUP_PROTECTION_BUFFER = 20;
+
 export default {
     POST_COLLAPSE_TIMEOUT: toMilliseconds({minutes: 5}),
     POST_TYPES: PostTypes,

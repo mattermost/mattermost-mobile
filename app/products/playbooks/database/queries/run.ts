@@ -29,6 +29,12 @@ export const queryPlaybookRunsPerChannel = (database: Database, channelId: strin
     );
 };
 
+export const queryPlaybookRunsBefore = (database: Database, cutoff: number) => {
+    return database.get<PlaybookRunModel>(PLAYBOOK_RUN).query(
+        Q.where('create_at', Q.lt(cutoff)),
+    );
+};
+
 export const getPlaybookRunById = async (database: Database, id: string) => {
     try {
         const run = await database.get<PlaybookRunModel>(PLAYBOOK_RUN).find(id);
