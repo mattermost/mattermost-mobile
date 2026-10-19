@@ -83,7 +83,7 @@ export default class ClientTracking {
         if (preauthSecret && isSecureUrl(this.apiClient.baseUrl)) {
             this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
         } else {
-            // Remove shared password header when undefined
+            // Remove the header when the secret is undefined or the connection is not secure
             delete this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET];
         }
 
