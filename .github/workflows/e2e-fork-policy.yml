@@ -41,8 +41,10 @@ jobs:
               || startsWith(github.event.pull_request.base.ref, 'release-')))
     runs-on: ubuntu-24.04
     permissions:
+      # Read-only apart from statuses: this job never comments, labels or touches PR code.
+      actions: read
       contents: read
-      issues: write
+      issues: read
       pull-requests: read
       statuses: write
     steps:
@@ -68,6 +70,8 @@ jobs:
             core.setOutput('dry_run', process.env.DRY_RUN === 'true' ? 'true' : 'false');
             core.setOutput('pr_number', String(pr.number));
             core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('head_repo', pr.head.repo?.full_name || '');
+            core.setOutput('head_ref', pr.head.ref);
 
             if (pr.head.repo?.full_name === `${owner}/${repo}`) {
               core.info(`PR #${pr.number} is not from a fork; the E2E label manager handles it.`);
@@ -92,21 +96,9 @@ jobs:
                 return false;
               }
             };
-            const reset = async (why, refused = false) => {
+            const reset = async (why) => {
               core.setOutput('mode', 'pending');
               core.info(`Fork PR #${pr.number}: ${why}; resetting any waived contexts.`);
-              // Say so on the PR; otherwise the checks just stay pending.
-              if (refused && process.env.DRY_RUN !== 'true') {
-                try {
-                  await github.rest.issues.createComment({
-                    owner, repo, issue_number: pr.number,
-                    body: `E2E waiver refused: ${why}. The required E2E checks stay pending; a maintainer with write access must re-apply \`${label}\`.`,
-                  });
-                } catch (err) {
-                  // Don't fail the step: the reset below still has to run.
-                  core.warning(`Could not comment on PR #${pr.number}: ${err.message}`);
-                }
-              }
             };
 
             if (!pr.labels.some((l) => l.name === label)) {
@@ -126,7 +118,7 @@ jobs:
               filter((e) => Date.parse(e.created_at) === newest).
               map((e) => e.actor?.login || ''))];
             if (newestActors.length > 1) {
-              await reset(`${label} was applied by ${newestActors.join(', ')} at the same time`, waiving);
+              await reset(`${label} was applied by ${newestActors.join(', ')} at the same time`);
               return;
             }
             const latest = newestActors[0] || '';
@@ -134,7 +126,7 @@ jobs:
             const required = [...new Set([approver, latest].filter(Boolean))];
             for (const user of required.length ? required : ['']) {
               if (!(await hasWriteAccess(user))) {
-                await reset(`${label} was applied by '${user}', who lacks write access`, waiving);
+                await reset(`${label} was applied by '${user}', who lacks write access`);
                 return;
               }
             }
@@ -181,13 +173,15 @@ jobs:
           target_url: ''
 
       # The reset above covers the current head. Reset commits waived earlier too: the author
-      # could push away and back. The waiver comment (written by this workflow's bot) records each one.
+      # could push away and back. Every waiver ran this workflow on the PR's head at the time,
+      # so its earlier runs list them.
       - name: Reset earlier waived commits
         if: "!cancelled() && steps.decide.outputs.mode == 'pending' && steps.decide.outputs.dry_run != 'true'"
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          PR_NUMBER: ${{ steps.decide.outputs.pr_number }}
           HEAD_SHA: ${{ steps.decide.outputs.head_sha }}
+          HEAD_REPO: ${{ steps.decide.outputs.head_repo }}
+          HEAD_REF: ${{ steps.decide.outputs.head_ref }}
         with:
           script: |
             const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
@@ -195,15 +189,16 @@ jobs:
             // Present only in descriptions written by the waiver, so a reset never touches a real result.
             const MARKER = 'e2e overridden';
 
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner, repo, issue_number: Number(process.env.PR_NUMBER), per_page: 100,
-            });
             const shas = new Set();
-            for (const comment of comments) {
-              const waived = comment.user?.login === 'github-actions[bot]' &&
-                /^E2E checks waived by @\S+ for this fork PR at ([0-9a-f]{40})\./.exec(comment.body || '');
-              if (waived && waived[1] !== process.env.HEAD_SHA) {
-                shas.add(waived[1]);
+            if (process.env.HEAD_REPO) {
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner, repo, workflow_id: 'e2e-fork-policy.yml',
+                event: 'pull_request_target', branch: process.env.HEAD_REF, per_page: 100,
+              });
+              for (const run of runs) {
+                if (run.head_repository?.full_name === process.env.HEAD_REPO && run.head_sha !== process.env.HEAD_SHA) {
+                  shas.add(run.head_sha);
+                }
               }
             }
 
@@ -237,20 +232,3 @@ jobs:
             if (failures.length > 0) {
               throw new Error(`Failed to reset ${failures.length} status(es): ${failures.join('; ')}`);
             }
-
-      - name: Record the waiver on the PR
-        if: steps.decide.outputs.mode == 'success' && steps.decide.outputs.dry_run != 'true'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          PR_NUMBER: ${{ steps.decide.outputs.pr_number }}
-          HEAD_SHA: ${{ steps.decide.outputs.head_sha }}
-          APPROVER: ${{ steps.decide.outputs.approver }}
-        with:
-          script: |
-            const {owner, repo} = context.repo;
-            const body = [
-              `E2E checks waived by @${process.env.APPROVER} for this fork PR at ${process.env.HEAD_SHA}.`,
-              'Fork PRs cannot run E2E here: it needs repository secrets that fork code must not reach.',
-              'The waiver covers this commit only. After a new push, review it and re-apply `E2E/Override` (remove and add it).',
-            ].join('\n\n');
-            await github.rest.issues.createComment({owner, repo, issue_number: Number(process.env.PR_NUMBER), body});
