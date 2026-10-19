@@ -20,19 +20,30 @@ udid="$1"
 bundle_id="$2"
 LAUNCH_READY_TIMEOUT_SECS="${LAUNCH_READY_TIMEOUT_SECS:-180}"
 
+# simctl launch and terminate can hang on iOS 26.x, so bound each call.
+bounded() {
+    local secs=$1
+    shift
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$secs" "$@"
+    else
+        perl -e 'alarm shift; exec @ARGV' "$secs" "$@"
+    fi
+}
+
 app_path="$(xcrun simctl get_app_container "$udid" "$bundle_id" app)"
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 cp -R "$app_path" "$tmp_dir/"
 
-xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+bounded 15 xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
 xcrun simctl uninstall "$udid" "$bundle_id"
 xcrun simctl install "$udid" "$tmp_dir/$(basename "$app_path")"
 
 # Launching is the only check that FrontBoard knows the app; listapps reads the install registry.
 deadline=$((SECONDS + LAUNCH_READY_TIMEOUT_SECS))
 attempts=0
-until xcrun simctl launch "$udid" "$bundle_id" >/dev/null 2>&1; do
+until bounded 30 xcrun simctl launch "$udid" "$bundle_id" >/dev/null 2>&1; do
     attempts=$((attempts + 1))
     if ((SECONDS >= deadline)); then
         echo "::error::$bundle_id was reinstalled but would not launch within ${LAUNCH_READY_TIMEOUT_SECS}s" >&2
@@ -40,5 +51,5 @@ until xcrun simctl launch "$udid" "$bundle_id" >/dev/null 2>&1; do
     fi
     sleep 2
 done
-xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+bounded 15 xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
 echo "==> Reinstalled $bundle_id; it launched after $attempts failed attempt(s)"
