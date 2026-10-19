@@ -195,10 +195,10 @@ describe('CreateOrEditChannel', () => {
         });
     });
 
-    it('should not submit an option removed after its editor opened', async () => {
+    it('should not create the channel when an option removed after its editor opened leaves a required attribute unset', async () => {
         jest.mocked(createChannel).mockResolvedValue({channel: TestHelper.fakeChannel({id: 'created-channel', team_id: 'team1'})});
         const initialField = requiredField();
-        const {getByTestId, rerender} = renderWithEverything(
+        const {getByTestId, getByText, rerender} = renderWithEverything(
             <CreateOrEditChannel
                 {...getBaseProps()}
                 attributeFields={[initialField]}
@@ -224,14 +224,8 @@ describe('CreateOrEditChannel', () => {
             lastHeaderButton().props.onPress();
         });
 
-        expect(createChannel).toHaveBeenCalledWith(
-            expect.any(String),
-            'town-square',
-            expect.any(String),
-            expect.any(String),
-            expect.any(String),
-            [],
-        );
+        expect(createChannel).not.toHaveBeenCalled();
+        expect(getByText('This channel is missing a required attribute. Check the channel attributes and try again.')).toBeTruthy();
     });
 
     it('should not render the attribute section while editing', () => {
@@ -268,7 +262,7 @@ describe('CreateOrEditChannel', () => {
         });
 
         await waitFor(() => {
-            expect(getByText('This channel is missing a required attribute. Check the channel attributes above and try again.')).toBeTruthy();
+            expect(getByText('This channel is missing a required attribute. Check the channel attributes and try again.')).toBeTruthy();
         });
     });
 

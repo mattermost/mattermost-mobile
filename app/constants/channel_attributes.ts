@@ -34,6 +34,11 @@ export const USER_ATTRIBUTE_OBJECT_TYPE = 'user';
 // truncating it, so a caller that ever batches has to chunk. Nothing batches yet.
 export const MAX_PROPERTY_VALUE_PATCH_ITEMS = 50;
 
+// The field types whose stored value is an option id rather than free text. A
+// text attribute stores its display string directly, so only these can point at
+// an option that was renamed or removed.
+export const OPTION_BACKED_FIELD_TYPES = new Set<string>(['select', 'multiselect', 'rank']);
+
 // The longest a text attribute value may be, matching the server's own limit.
 // Longer input is refused with a 400 rather than trimmed.
 export const PROPERTY_TEXT_VALUE_MAX_LENGTH = 64;

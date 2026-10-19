@@ -256,4 +256,69 @@ describe('EphemeralStore', () => {
             subscription.unsubscribe();
         });
     });
+
+    describe('runExclusive', () => {
+        const key = 'server-url:channel-id';
+
+        const deferred = () => {
+            let resolve: () => void = () => undefined;
+            let reject: (error: Error) => void = () => undefined;
+            const promise = new Promise<void>((res, rej) => {
+                resolve = res;
+                reject = rej;
+            });
+            return {promise, resolve, reject};
+        };
+
+        it('should run tasks for the same key one at a time in call order', async () => {
+            const order: string[] = [];
+            const first = deferred();
+
+            const firstRun = EphemeralStore.runExclusive(key, async () => {
+                order.push('first:start');
+                await first.promise;
+                order.push('first:end');
+            });
+            const secondRun = EphemeralStore.runExclusive(key, async () => {
+                order.push('second');
+            });
+            const otherKeyRun = EphemeralStore.runExclusive('server-url:other-channel', async () => {
+                order.push('other-key');
+            });
+
+            await otherKeyRun;
+            expect(order).toEqual(['first:start', 'other-key']);
+
+            first.resolve();
+            await Promise.all([firstRun, secondRun]);
+            expect(order).toEqual(['first:start', 'other-key', 'first:end', 'second']);
+        });
+
+        it('should run the next task for a key after the previous one rejects', async () => {
+            const failing = deferred();
+            const next = jest.fn().mockResolvedValue('done');
+
+            const failedRun = EphemeralStore.runExclusive(key, () => failing.promise);
+            const nextRun = EphemeralStore.runExclusive(key, next);
+
+            failing.reject(new Error('network'));
+
+            await expect(failedRun).rejects.toThrow('network');
+            await expect(nextRun).resolves.toBe('done');
+            expect(next).toHaveBeenCalledTimes(1);
+        });
+
+        it('should remove the queue entry once the last task for a key settles', async () => {
+            // Private, and only observable this way; dot access would not type-check.
+            // eslint-disable-next-line dot-notation
+            const queue = EphemeralStore['propertyWriteQueue'];
+
+            const run = EphemeralStore.runExclusive(key, async () => undefined);
+            expect(queue.has(key)).toBe(true);
+
+            await run;
+            await new Promise(process.nextTick);
+            expect(queue.has(key)).toBe(false);
+        });
+    });
 });

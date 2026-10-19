@@ -3,7 +3,7 @@
 
 import {channelAttributeWriteLockKey} from '@actions/remote/channel_attributes';
 import {accessControlWriteLockKey, fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
-import {OWNED_OBJECT_TYPES} from '@constants/channel_attributes';
+import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, OWNED_OBJECT_TYPES} from '@constants/channel_attributes';
 import DatabaseManager from '@database/manager';
 import {getAccessControlGroupId, getPropertyValuesByFieldId} from '@queries/servers/properties';
 import EphemeralStore from '@store/ephemeral_store';
@@ -28,7 +28,7 @@ export async function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg
     }
 
     try {
-        await EphemeralStore.runExclusive(accessControlWriteLockKey(serverUrl), async () => {
+        const needsFieldFetch = await EphemeralStore.runExclusive(accessControlWriteLockKey(serverUrl), async () => {
             const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             const models = await operator.handlePropertyFields({fields: [field], prepareRecordsOnly: true});
             await operator.batchRecords(models, 'handlePropertyFieldCreatedOrUpdated', true);
@@ -41,10 +41,14 @@ export async function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg
             //
             // Narrowed to the object types this feature owns, and self-limiting: once
             // the fetch publishes the id, this stops firing.
-            if (OWNED_OBJECT_TYPES.has(field.object_type) && !(await getAccessControlGroupId(database))) {
-                fetchAccessControlAttributeFields(serverUrl, true);
-            }
+            return OWNED_OBJECT_TYPES.has(field.object_type) && !(await getAccessControlGroupId(database));
         });
+
+        // Called after the lock is released: the fetch takes the same lock, so
+        // awaiting it from inside would wait on itself forever.
+        if (needsFieldFetch) {
+            await fetchAccessControlAttributeFields(serverUrl, true);
+        }
     } catch (error) {
         logError('handlePropertyFieldCreatedOrUpdated', getFullErrorMessage(error));
     }
@@ -157,7 +161,12 @@ export async function handlePropertyValuesUpdated(serverUrl: string, msg: WebSoc
             // clear to our data. Instead, force a group-scoped REST reconciliation:
             // if the clear really was ours, the fetch will observe it and prune;
             // if it belonged to another group, the fetch finds our values
-            // unchanged and nothing is lost.
+            // unchanged and nothing is lost. Non-channel targets (users, posts,
+            // system) can never hold channel attributes, so they are skipped.
+            if (data.object_type !== CHANNEL_ATTRIBUTE_OBJECT_TYPE) {
+                logDebug('handlePropertyValuesUpdated', 'Ignoring cleared values for non-channel object type', data.object_type);
+                return;
+            }
             await fetchChannelAttributeValues(serverUrl, data.target_id, true);
             return;
         }

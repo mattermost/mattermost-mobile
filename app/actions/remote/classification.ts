@@ -8,7 +8,7 @@
 
 import {removeStoredFields} from '@actions/local/channel_attributes';
 import {channelAttributeWriteLockKey} from '@actions/remote/channel_attributes';
-import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES, OWNED_OBJECT_TYPES} from '@constants/channel_attributes';
+import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES, OPTION_BACKED_FIELD_TYPES, OWNED_OBJECT_TYPES} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_TARGET_ID,
     CLASSIFICATIONS_FIELD_TARGET_TYPE,
@@ -19,7 +19,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PROPERTY_FIELDS_SEARCH_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getAccessControlValuesForTarget, getPropertyFieldsByIds, isAccessControlPropertiesEnabled} from '@queries/servers/properties';
+import {getAccessControlGroupId, getPropertyFieldsByIds, isAccessControlPropertiesEnabled} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -29,11 +29,6 @@ import {logDebug, logError} from '@utils/log';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Database} from '@nozbe/watermelondb';
-
-// Only these types resolve a stored value against the field's option list. A text
-// attribute stores its display string directly, so treating an unmatched value as
-// a stale option would force a field refetch on every text value ever set.
-const OPTION_BACKED_TYPES = new Set<PropertyFieldType>(['select', 'multiselect', 'rank']);
 
 export function accessControlWriteLockKey(serverUrl: string): string {
     return `access-control:${serverUrl}`;
@@ -184,30 +179,17 @@ export async function fetchChannelAttributeValues(serverUrl: string, channelId: 
 
             values = await client.getPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, channelId);
 
-            // Upsert without targetId: passing targetId to handlePropertyValues
-            // makes the write authoritative by deleting every PropertyValue WHERE
-            // target_id=channelId that is not in the list. The table is shared
-            // across groups — managed channel categories and future features may
-            // store per-channel values in it — so a group-unscoped delete is data
-            // loss. Instead, we upsert the returned values and separately prune
-            // stale rows that belong to the access_control group.
-            const upsertModels = await operator.handlePropertyValues({values, prepareRecordsOnly: true});
-
-            // Prune access_control values the server no longer returns.
-            // getAccessControlValuesForTarget returns [] when the group id is not
-            // yet known, which is the safe direction for a destructive call.
-            const existing = await getAccessControlValuesForTarget(database, channelId);
-            const incomingIds = new Set(values.map((v) => v.id));
-            const stale = existing.filter((v) => !incomingIds.has(v.id));
-            const deleteModels = stale.length ? await operator.handlePropertyValues({
-                values: stale.map((v) => ({id: v.id, delete_at: Date.now()} as PropertyValue)),
+            // The PropertyValue table is shared across groups (managed channel
+            // categories and other features store per-channel values in it), so the
+            // prune is scoped to the access_control group. Until that group id is
+            // known, upsert only: an unscoped prune would delete other groups' rows.
+            const groupId = await getAccessControlGroupId(database);
+            const models = await operator.handlePropertyValues({
+                values,
+                ...(groupId ? {targetId: channelId, groupId} : {}),
                 prepareRecordsOnly: true,
-            }) : [];
-
-            // One propagated batch: a failed write must throw rather than leave the
-            // upsert applied and the prune silently skipped (or vice versa), and it
-            // must not reach setChannelAttributeValuesSynced below.
-            await operator.batchRecords([...upsertModels, ...deleteModels], 'fetchChannelAttributeValues', true);
+            });
+            await operator.batchRecords(models, 'fetchChannelAttributeValues', true);
             EphemeralStore.setChannelAttributeValuesSynced(serverUrl, channelId);
         });
 
@@ -269,7 +251,7 @@ async function resyncStaleOptions(serverUrl: string, database: Database, values:
             return true;
         }
 
-        if (!OPTION_BACKED_TYPES.has(field.type as PropertyFieldType)) {
+        if (!OPTION_BACKED_FIELD_TYPES.has(field.type)) {
             return false;
         }
 

@@ -46,26 +46,6 @@ export const getPropertyValuesByFieldId = (database: Database, fieldId: string) 
 };
 
 /**
- * The values stored against one target that belong to the access_control group.
- *
- * Scoped by group on purpose: several features keep per-channel values in this
- * table, so anything that deletes "everything for this target" has to be narrowed
- * or it takes another feature's data with it. Returns nothing when the group id is
- * not yet known, which is the safe direction for a destructive caller.
- */
-export const getAccessControlValuesForTarget = async (database: Database, targetId: string) => {
-    const groupId = await getAccessControlGroupId(database);
-    if (!groupId) {
-        return [];
-    }
-
-    return database.get<PropertyValueModel>(PROPERTY_VALUE).query(
-        Q.where('target_id', targetId),
-        Q.where('group_id', groupId),
-    ).fetch();
-};
-
-/**
  * Returns true when at least one of the two access_control features is on.
  *
  * A pure DB read — no remote I/O — so it belongs in the query layer rather than

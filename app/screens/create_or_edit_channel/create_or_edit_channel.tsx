@@ -30,7 +30,7 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 const messages = defineMessages({
     missingRequiredAttributes: {
         id: 'channel_attributes.create.missing_required',
-        defaultMessage: 'This channel is missing a required attribute. Check the channel attributes above and try again.',
+        defaultMessage: 'This channel is missing a required attribute. Check the channel attributes and try again.',
     },
     unsupportedRequiredAttribute: {
         id: 'channel_attributes.create.unsupported_required',
@@ -162,6 +162,17 @@ const CreateOrEditChannel = ({
         [attributeFields, attributeValues],
     );
 
+    // Required attributes gate Create only: editing gains no attribute gate, both
+    // because there is no attribute editing on this screen in edit mode and
+    // because a channel that already exists cannot regress into "incomplete".
+    const allRequiredAttributesSet = editing || attributeFields.every((field) => isPropertyValueSet(validAttributeValues[field.id]));
+
+    // attributesBlocked means some required attribute the caller could otherwise
+    // satisfy has no mobile editor at all — nothing typed here could ever fix
+    // that, so Create stays disabled rather than round-tripping into a server
+    // rejection with no way to resolve it on screen.
+    const canSubmitAttributes = editing || !attributesBlocked;
+
     const onAttributeValueChange = useCallback((fieldId: string, value: ChannelAttributeValueInput) => {
         setAttributeValues((current) => {
             if (!isPropertyValueSet(value)) {
@@ -183,6 +194,16 @@ const CreateOrEditChannel = ({
             return;
         }
 
+        // The header button can still hold this callback from before a field
+        // update made a draft value stale, so the gate is checked again here.
+        if (!allRequiredAttributesSet || !canSubmitAttributes) {
+            dispatch({
+                type: RequestActions.FAILURE,
+                error: formatMessage(canSubmitAttributes ? messages.missingRequiredAttributes : messages.unsupportedRequiredAttribute),
+            });
+            return;
+        }
+
         const propertyValues = attributeFields.
             filter((field) => isPropertyValueSet(validAttributeValues[field.id])).
             map((field) => ({field_id: field.id, value: validAttributeValues[field.id]}));
@@ -200,7 +221,7 @@ const CreateOrEditChannel = ({
         navigation.getParent()?.goBack();
         await new Promise((resolve) => setTimeout(resolve, 250));
         switchToChannelById(serverUrl, createdChannel.channel!.id, createdChannel.channel!.team_id);
-    }, [isValidDisplayName, serverUrl, displayName, purpose, header, type, attributeFields, validAttributeValues, formatMessage, navigation]);
+    }, [isValidDisplayName, allRequiredAttributesSet, canSubmitAttributes, serverUrl, displayName, purpose, header, type, attributeFields, validAttributeValues, formatMessage, navigation]);
 
     const onUpdateChannel = useCallback(async () => {
         if (!channel) {
@@ -248,17 +269,6 @@ const CreateOrEditChannel = ({
             ),
         });
     }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, isEnabled, theme.sidebarHeaderTextColor]);
-
-    // Required attributes gate Create only: editing gains no attribute gate, both
-    // because there is no attribute editing on this screen in edit mode and
-    // because a channel that already exists cannot regress into "incomplete".
-    const allRequiredAttributesSet = editing || attributeFields.every((field) => isPropertyValueSet(validAttributeValues[field.id]));
-
-    // attributesBlocked means some required attribute the caller could otherwise
-    // satisfy has no mobile editor at all — nothing typed here could ever fix
-    // that, so Create stays disabled rather than round-tripping into a server
-    // rejection with no way to resolve it on screen.
-    const canSubmitAttributes = editing || !attributesBlocked;
 
     useEffect(() => {
         setCanSave(

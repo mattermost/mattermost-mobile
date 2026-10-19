@@ -4,9 +4,10 @@
 import {Q, type Database} from '@nozbe/watermelondb';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
-import {fetchChannelAttributeValues} from '@actions/remote/classification';
+import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 
@@ -107,6 +108,43 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
         const fields = await getStoredFields(database);
         expect(fields).toHaveLength(1);
         expect(fields[0].name).toBe('updated');
+    });
+
+    it('should force a field fetch after releasing the lock when an owned field arrives before the group id is known', async () => {
+        // The real fetch takes the same lock; if the handler awaited it while still
+        // holding the lock, this would never resolve and the test would time out.
+        jest.mocked(fetchAccessControlAttributeFields).mockImplementationOnce(() => (
+            EphemeralStore.runExclusive(`access-control:${serverUrl}`, async () => ({}))
+        ));
+
+        const field = makeField('f1', {object_type: 'channel', target_type: 'system'});
+        const msg = {
+            event: 'property_field_created',
+            data: {property_field: JSON.stringify(field), object_type: 'channel'},
+            broadcast: {},
+            seq: 1,
+        } as WebSocketMessage;
+
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+
+        expect(fetchAccessControlAttributeFields).toHaveBeenCalledTimes(1);
+        expect(fetchAccessControlAttributeFields).toHaveBeenCalledWith(serverUrl, true);
+    });
+
+    it('should not fetch fields when the group id is already known', async () => {
+        await setAccessControlGroupId(serverUrl, groupId);
+
+        const field = makeField('f1', {object_type: 'channel'});
+        const msg = {
+            event: 'property_field_created',
+            data: {property_field: JSON.stringify(field), object_type: 'channel'},
+            broadcast: {},
+            seq: 1,
+        } as WebSocketMessage;
+
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+
+        expect(fetchAccessControlAttributeFields).not.toHaveBeenCalled();
     });
 
     it('should ignore events with no property_field data', async () => {
@@ -328,7 +366,7 @@ describe('handlePropertyValuesUpdated', () => {
 
         const clearedMessage = (data: Record<string, string>) => ({
             event: 'property_values_updated',
-            data: {values: '[]', ...data},
+            data: {values: '[]', object_type: 'channel', ...data},
             broadcast: {},
             seq: 1,
         } as WebSocketMessage);
@@ -352,6 +390,15 @@ describe('handlePropertyValuesUpdated', () => {
 
             // Nothing was deleted synchronously by the handler itself — the
             // reconciliation (mocked here) owns that decision.
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
+        });
+
+        it('should not trigger reconciliation when a non-channel target is cleared', async () => {
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: 'user-id', object_type: 'user'}));
+
+            expect(mockedFetchChannelAttributeValues).not.toHaveBeenCalled();
+
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });

@@ -4,6 +4,7 @@
 import {
     DISPLAY_BANNER_BOTTOM,
     DISPLAY_BANNER_TOP,
+    OPTION_BACKED_FIELD_TYPES,
     SIGNATURE_SEPARATOR,
 } from '@constants/channel_attributes';
 import {CLASSIFICATIONS_FIELD_NAME} from '@constants/classification';
@@ -86,17 +87,11 @@ const EDITABLE: AttributeEditability = {editable: true};
 // multiuser read-only.
 const EDITABLE_FIELD_TYPES = new Set<string>(['text', 'select', 'multiselect', 'rank']);
 
-// The field types whose stored value is an option id rather than free text — the
-// only ones a removed or renamed option can strand a draft against.
-const OPTION_BACKED_FIELD_TYPES = new Set<string>(['select', 'multiselect', 'rank']);
-
 // Ranks a field for display. Absent sort_order sorts last rather than first, so
 // an unconfigured field never jumps ahead of a configured one.
 const NO_SORT_ORDER = Number.MAX_SAFE_INTEGER;
 
 const DEFAULT_BANNER_COLOR = '#DDDDDD';
-
-const OPTION_BACKED_TYPES = new Set<PropertyFieldType>(['select', 'multiselect', 'rank']);
 
 function getFieldOptions(field: ChannelAttributeField): PropertyFieldOption[] {
     return field.attrs?.options ?? [];
@@ -331,6 +326,35 @@ export function canSetChannelAttributeOnCreate(field: ChannelAttributeField, can
 }
 
 /**
+ * The fields the channel-creation form should offer, in display order: required,
+ * with a mobile editor, and settable by the caller on create.
+ */
+export function getCreatableChannelAttributeFields<T extends ChannelAttributeField>(fields: T[], canManageSystem: boolean): T[] {
+    return fields.
+        filter((field) => isPropertyFieldRequired(field) && hasAttributeEditor(field) && canSetChannelAttributeOnCreate(field, canManageSystem)).
+        sort(compareChannelAttributeFields);
+}
+
+/**
+ * Whether some field the server will require from this caller (required, and the caller's
+ * tier passes canSetChannelAttributeOnCreate) but that has no mobile editor at
+ * all. The create form drops it for the same reason a sysadmin-only field is
+ * dropped — there is nothing to render — but unlike the sysadmin case the server
+ * does *not* also skip the requirement here, since the tier check passes. Left
+ * undetected, the create screen would let Create be tapped with no way to have
+ * supplied a value the server then rejects.
+ */
+export function hasCreationBlockingChannelAttribute(fields: ChannelAttributeField[], canManageSystem: boolean): boolean {
+    return fields.some((field) => isPropertyFieldRequired(field) && !hasAttributeEditor(field) && canSetChannelAttributeOnCreate(field, canManageSystem));
+}
+
+export function channelAttributePermissionsEqual(a: ChannelAttributePermissions, b: ChannelAttributePermissions): boolean {
+    return a.canManageChannelProperties === b.canManageChannelProperties &&
+        a.canManageChannelRoles === b.canManageChannelRoles &&
+        a.canManageSystem === b.canManageSystem;
+}
+
+/**
  * Both permission gates for one field: the channel-level one, already resolved by
  * the caller, and this field's tier.
  */
@@ -428,7 +452,7 @@ function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<R
     }
 
     const options = getFieldOptions(field);
-    const optionsBearing = OPTION_BACKED_TYPES.has(field.type as PropertyFieldType);
+    const optionsBearing = OPTION_BACKED_FIELD_TYPES.has(field.type);
 
     if (Array.isArray(raw)) {
         const unresolvedOptionIds: string[] = [];
@@ -660,14 +684,18 @@ function renderSignature(attribute: ResolvedChannelAttribute): string {
  */
 function editorSignatureKeys(field: ChannelAttributeField): string[] {
     const {attrs} = field;
-    const options = Array.isArray(attrs?.options) ? attrs.options.map((option) => [option.id, option.rank ?? '', option.color ?? '', option.name].join(SIGNATURE_SEPARATOR)).join(SIGNATURE_SEPARATOR) : '';
 
     return [
         attrs?.change_policy ?? '',
         attrs?.editable === false ? '0' : '1',
         typeof field.permissionValues === 'string' ? field.permissionValues : '',
-        options,
+        optionsSignature(field),
     ];
+}
+
+function optionsSignature(field: ChannelAttributeField): string {
+    const {attrs} = field;
+    return Array.isArray(attrs?.options) ? attrs.options.map((option) => [option.id, option.rank ?? '', option.color ?? '', option.name].join(SIGNATURE_SEPARATOR)).join(SIGNATURE_SEPARATOR) : '';
 }
 
 /**
@@ -711,6 +739,35 @@ function channelInfoSignature(attribute: ResolvedChannelAttribute): string {
  */
 export function channelInfoAttributesSignature(attributes: ResolvedChannelAttribute[]): string {
     return attributes.map(channelInfoSignature).join(SIGNATURE_SEPARATOR);
+}
+
+// What the create form renders for one field, plus what decides whether the
+// field is in the list at all (required flag, permission tier). Taken at
+// emission time for the same reason as resolvedAttributesSignature: a field
+// changed in place re-emits the same model instance.
+function creatableFieldSignature(field: ChannelAttributeField): string {
+    return [
+        field.id,
+
+        // The fallback label (getPropertyFieldLabel falls back to name when
+        // display_name is absent), the sort tie-break, and every row testID are
+        // all keyed off name, not just display_name.
+        field.name,
+        field.type,
+        field.permissionValues ?? '',
+        isPropertyFieldRequired(field) ? '1' : '0',
+        field.attrs?.display_name ?? '',
+        typeof field.attrs?.sort_order === 'number' ? String(field.attrs.sort_order) : '',
+        optionsSignature(field),
+    ].join(SIGNATURE_SEPARATOR);
+}
+
+/**
+ * The create-form counterpart of resolvedAttributesSignature, under the same
+ * rule: take it at emission time, never compare two lists after the fact.
+ */
+export function creatableFieldsSignature(fields: ChannelAttributeField[]): string {
+    return fields.map(creatableFieldSignature).join('|');
 }
 
 function hasAction(field: ChannelAttributeField, action: PropertyFieldAction): boolean {

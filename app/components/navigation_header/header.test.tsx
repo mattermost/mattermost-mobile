@@ -52,6 +52,19 @@ describe('Header', () => {
         expect(onTitlePress).not.toHaveBeenCalled();
     });
 
+    it('should call the title action when the non-interactive part of the subtitle is pressed', () => {
+        const props = getBaseProps();
+        const onTitlePress = jest.fn();
+        props.onTitlePress = onTitlePress;
+        props.title = 'Town Square';
+        props.subtitleComponent = <Text testID='custom-subtitle'>{'Attributes'}</Text>;
+        const {getByTestId} = render(<Header {...props}/>);
+
+        fireEvent.press(getByTestId('custom-subtitle'));
+
+        expect(onTitlePress).toHaveBeenCalledTimes(1);
+    });
+
     it('should fall back to subtitle text when subtitleComponent is absent', () => {
         const props = getBaseProps();
         props.subtitle = 'Legacy subtitle';

@@ -5,13 +5,12 @@ import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {SIGNATURE_SEPARATOR} from '@constants/channel_attributes';
 import {isDMorGM} from '@utils/channel';
 import {
-    canSetChannelAttributeOnCreate,
-    compareChannelAttributeFields,
-    hasAttributeEditor,
-    isPropertyFieldRequired,
+    channelAttributePermissionsEqual,
+    creatableFieldsSignature,
+    getCreatableChannelAttributeFields,
+    hasCreationBlockingChannelAttribute,
     type ChannelAttributeField,
     type ChannelAttributePermissions,
 } from '@utils/channel_attributes';
@@ -28,12 +27,6 @@ const NO_PERMISSIONS: ChannelAttributePermissions = {
     canManageChannelRoles: false,
     canManageSystem: false,
 };
-
-function permissionsEqual(a: ChannelAttributePermissions, b: ChannelAttributePermissions): boolean {
-    return a.canManageChannelProperties === b.canManageChannelProperties &&
-        a.canManageChannelRoles === b.canManageChannelRoles &&
-        a.canManageSystem === b.canManageSystem;
-}
 
 /**
  * The three permission answers every attribute row on a channel is judged
@@ -75,65 +68,11 @@ export const observeChannelAttributePermissions = (database: Database, channelId
                 })),
             );
         }),
-        distinctUntilChanged(permissionsEqual),
+        distinctUntilChanged(channelAttributePermissionsEqual),
     );
 };
 
 const EMPTY_CREATABLE_FIELDS: ChannelAttributeField[] = [];
-
-// WatermelonDB updates a record in place and re-emits the same model instance
-// (see the identical note on resolvedAttributesSignature in @utils/channel_attributes), so
-// comparing fields by reference here would always read as equal once a field's
-// required flag or permission_values tier changed in place — masking exactly the
-// change this list exists to react to. Snapshotting the keys that decide
-// membership in this list is what makes the comparison mean anything.
-// Mirrors editorSignatureKeys' option digest in @utils/channel_attributes: joined
-// with SIGNATURE_SEPARATOR rather than a plain delimiter because option.name is
-// admin-authored free text that can legally contain one.
-function fieldSignature(field: ChannelAttributeField): string {
-    const options = Array.isArray(field.attrs?.options) ?
-        field.attrs.options.map((option) => [option.id, option.rank ?? '', option.color ?? '', option.name].join(SIGNATURE_SEPARATOR)).join(SIGNATURE_SEPARATOR) :
-        '';
-
-    return [
-        field.id,
-
-        // The fallback label (getPropertyFieldLabel falls back to name when
-        // display_name is absent), the sort tie-break, and every row testID are
-        // all keyed off name, not just display_name.
-        field.name,
-        field.type,
-        field.permissionValues ?? '',
-        isPropertyFieldRequired(field) ? '1' : '0',
-
-        // The label and options are what the form actually renders, not just what
-        // decides membership in the list — an administrator renaming the field or
-        // its options while the create screen is open produced an emission this
-        // treated as identical.
-        field.attrs?.display_name ?? '',
-        typeof field.attrs?.sort_order === 'number' ? String(field.attrs.sort_order) : '',
-        options,
-    ].join(SIGNATURE_SEPARATOR);
-}
-
-function creatableFieldsSignature(fields: ChannelAttributeField[]): string {
-    return fields.map(fieldSignature).join('|');
-}
-
-function isCreatableWith(canManageSystem: boolean) {
-    return (field: ChannelAttributeField) => isPropertyFieldRequired(field) && hasAttributeEditor(field) && canSetChannelAttributeOnCreate(field, canManageSystem);
-}
-
-// A field the server will require from this caller (required, and the caller's
-// tier passes canSetChannelAttributeOnCreate) but that has no mobile editor at
-// all. observeCreatableChannelAttributeFields drops it for the same reason a
-// sysadmin-only field is dropped — there is nothing to render — but unlike the
-// sysadmin case the server does *not* also skip the requirement here, since the
-// tier check passes. Left undetected, the create screen would let Create be
-// tapped with no way to have supplied a value the server then rejects.
-function isBlockingUnsupportedWith(canManageSystem: boolean) {
-    return (field: ChannelAttributeField) => isPropertyFieldRequired(field) && !hasAttributeEditor(field) && canSetChannelAttributeOnCreate(field, canManageSystem);
-}
 
 /**
  * The required channel attributes a channel-creation form should offer, in
@@ -161,7 +100,7 @@ export const observeCreatableChannelAttributeFields = (database: Database): Obse
     ]).pipe(
         switchMap(([fields, user]) => observeCanManageSystem(database, user).pipe(
             map((canManageSystem) => {
-                const creatable = fields.filter(isCreatableWith(canManageSystem)).sort(compareChannelAttributeFields);
+                const creatable = getCreatableChannelAttributeFields(fields, canManageSystem);
                 return creatable.length === 0 ? EMPTY_CREATABLE_FIELDS : creatable;
             }),
         )),
@@ -189,7 +128,7 @@ export const observeChannelAttributeCreationBlocked = (database: Database): Obse
         observeCurrentUser(database),
     ]).pipe(
         switchMap(([fields, user]) => observeCanManageSystem(database, user).pipe(
-            map((canManageSystem) => fields.some(isBlockingUnsupportedWith(canManageSystem))),
+            map((canManageSystem) => hasCreationBlockingChannelAttribute(fields, canManageSystem)),
         )),
         distinctUntilChanged(),
     );

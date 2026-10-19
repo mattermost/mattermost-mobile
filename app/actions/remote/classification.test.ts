@@ -719,6 +719,34 @@ describe('fetchChannelAttributeValues', () => {
         expect(await getStoredValues(database, channelId)).toHaveLength(0);
     });
 
+    it('should keep another group\'s values on the channel when pruning', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const foreignValue = {...channelValue, id: 'cv-foreign', group_id: 'other_group'};
+        await operator.handlePropertyValues({values: [channelValue, foreignValue], prepareRecordsOnly: false});
+        await setAccessControlGroupId(serverUrl, CLASSIFICATIONS_GROUP_NAME);
+
+        setConfig({FeatureFlagChannelAttributes: 'true'});
+        mockClient.getPropertyValues.mockResolvedValueOnce([]);
+
+        await fetchChannelAttributeValues(serverUrl, channelId);
+
+        const values = await getStoredValues(database, channelId);
+        expect(values.map((v) => v.id)).toEqual(['cv-foreign']);
+    });
+
+    it('should not prune anything while the group id is unknown', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyValues({values: [channelValue], prepareRecordsOnly: false});
+
+        setConfig({FeatureFlagChannelAttributes: 'true'});
+        mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, id: 'cv-2'}]);
+
+        await fetchChannelAttributeValues(serverUrl, channelId);
+
+        const values = await getStoredValues(database, channelId);
+        expect(values.map((v) => v.id).sort()).toEqual(['cv-1', 'cv-2']);
+    });
+
     it('should return error when network client throws', async () => {
         setConfig({FeatureFlagChannelAttributes: 'true'});
         const networkError = new Error('network failure');
