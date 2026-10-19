@@ -728,3 +728,17 @@ export const convertValueFromServer = (value: string | string[], fieldType: stri
 export const isCustomFieldSamlLinked = (customField?: CustomProfileFieldModel): boolean => {
     return Boolean(customField?.attrs?.saml);
 };
+
+/**
+ * Order-insensitive comparison of space-separated role lists. An unknown previous value reads as a
+ * change, so a caller deciding whether to invalidate something fails closed.
+ */
+export const haveSameRoles = (previous: string | undefined, next: string) => {
+    if (previous === undefined) {
+        return false;
+    }
+    const toSet = (roles: string) => new Set(roles.split(' ').filter(Boolean));
+    const a = toSet(previous);
+    const b = toSet(next);
+    return a.size === b.size && [...a].every((role) => b.has(role));
+};
