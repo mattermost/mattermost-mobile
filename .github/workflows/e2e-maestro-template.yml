@@ -421,7 +421,13 @@ jobs:
               exit 1
             }
 
-          bash detox/maestro/scripts/reset_ios_app.sh "$SIMULATOR_ID" com.mattermost.rnbeta
+          bash detox/maestro/scripts/reset_ios_app.sh "$SIMULATOR_ID" com.mattermost.rnbeta || {
+            bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+              build/maestro-report-T67856_4.xml \
+              detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml \
+              "The app could not be reinstalled for a clean state before the flow"
+            exit 1
+          }
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
             --env MAESTRO_APP_RESET_BY_RUNNER=true \
@@ -485,7 +491,13 @@ jobs:
               exit 1
             }
 
-          bash detox/maestro/scripts/reset_ios_app.sh "$SIMULATOR_ID" com.mattermost.rnbeta
+          bash detox/maestro/scripts/reset_ios_app.sh "$SIMULATOR_ID" com.mattermost.rnbeta || {
+            bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+              build/maestro-report-T3261_1.xml \
+              detox/maestro/flows/account/report_problem_link_mode.yml \
+              "The app could not be reinstalled for a clean state before the flow"
+            exit 1
+          }
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
             --env MAESTRO_APP_RESET_BY_RUNNER=true \

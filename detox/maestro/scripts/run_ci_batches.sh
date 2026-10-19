@@ -99,7 +99,8 @@ build_maestro_env_args() {
     --env "SYNC_TOKEN=${SYNC_TOKEN:-}"
   )
   # reset_ios_app_for_batch gives each iOS batch a fresh install, so login.yml skips clearState.
-  [[ "$PLATFORM" == "ios" ]] && maestro_env_args+=(--env "MAESTRO_APP_RESET_BY_RUNNER=true")
+  # Without a device ID there is no reset, so clearState stays on.
+  [[ "$PLATFORM" == "ios" && -n "${DEVICE_ARGS[1]:-}" ]] && maestro_env_args+=(--env "MAESTRO_APP_RESET_BY_RUNNER=true")
   return 0
 }
 

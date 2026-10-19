@@ -742,11 +742,14 @@ jobs:
               echo "::warning::Runner lost its network route during ${#OUTAGE_SPECS[@]} spec(s); re-running only those: ${OUTAGE_SPECS[*]}"
               mv artifacts/jest-results.json artifacts/jest-results-attempt1.json
               run_specs "${OUTAGE_SPECS[@]}"
+              RERUN_EXIT_CODE=$?
               node utils/failed-jest-specs.js \
                 --attempt1 artifacts/jest-results-attempt1.json \
                 --attempt2 artifacts/jest-results.json \
                 --output artifacts/jest-results.json
-              if node -e 'process.exit(require("./artifacts/jest-results.json").success ? 0 : 1)'; then
+              MERGE_EXIT_CODE=$?
+              if [ "$RERUN_EXIT_CODE" -eq 0 ] && [ "$MERGE_EXIT_CODE" -eq 0 ] &&
+                node -e 'process.exit(require("./artifacts/jest-results.json").success ? 0 : 1)'; then
                 DETOX_EXIT_CODE=0
               fi
             fi

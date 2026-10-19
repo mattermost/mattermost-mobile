@@ -82,9 +82,10 @@ start_adb_server() {
 # the runner's upstream servers plus public fallbacks (the emulator takes at most 4).
 emulator_dns_servers() {
     {
-        if [[ -r /run/systemd/resolve/resolv.conf ]]; then
-            awk '$1 == "nameserver" && $2 !~ /^127\./ {print $2}' /run/systemd/resolve/resolv.conf
-        fi
+        local host_resolv=/etc/resolv.conf
+        [[ -r /run/systemd/resolve/resolv.conf ]] && host_resolv=/run/systemd/resolve/resolv.conf
+        # Loopback stubs are unreachable from inside the emulator.
+        awk '$1 == "nameserver" && $2 !~ /^127\./ && $2 != "::1" {print $2}' "$host_resolv" 2>/dev/null
         echo 1.1.1.1
         echo 8.8.8.8
     } | awk 'NF && !seen[$0]++' | head -4 | paste -sd, -
