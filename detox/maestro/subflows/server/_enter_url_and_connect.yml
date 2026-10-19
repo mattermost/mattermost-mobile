@@ -9,16 +9,15 @@
 appId: ${MAESTRO_APP_ID}
 ---
 # # Scroll back up: a previous attempt scrolled the form down to reach Connect.
-# After a failed connect iOS merges the label with the error into one element
-# ("Enter Server URL, <icon>, Cannot connect to the server."), so match the label as a prefix.
 - scrollUntilVisible:
     element:
-      text: "Enter Server URL(, .*)?"
+      id: "server_form.server_url.input"
     direction: UP
     timeout: 10000
     optional: true
 
-# # Re-enter URL and display name.
+# # Re-enter URL and display name. Tap the label, not the input id: it puts the caret at the end so
+# eraseText clears the old URL. After a failed connect iOS merges label and error, hence the prefix.
 - tapOn:
     text: "Enter Server URL(, .*)?"
 - eraseText: 120
