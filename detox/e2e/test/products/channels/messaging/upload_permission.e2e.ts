@@ -41,15 +41,14 @@ describe('Messaging - Upload Permission (ABAC)', () => {
     const channelsCategory = 'channels';
 
     let testChannel: any;
+    let controlChannel: any;
     let testTeam: any;
     let deniedUser: any;
     let allowedUser: any;
-    let permissionPolicyId: string | null = null;
     let attributeFieldId: string | null = null; // field UUID — used as the property values key
     let attributeFieldName: string | null = null; // field name  — used in CEL expressions
-    let attributeFieldCreated = false; // true if this run created the field (must clean up)
 
-    // Server settings this suite changes, restored as they were rather than to assumed defaults.
+    // Non-ABAC server settings this suite changes, restored as they were rather than to assumed defaults.
     let originalSettings: Record<string, any> = {};
 
     beforeAll(async () => {
@@ -64,10 +63,6 @@ describe('Messaging - Upload Permission (ABAC)', () => {
 
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
         originalSettings = {
-            AccessControlSettings: {
-                EnableAttributeBasedAccessControl: originalConfig?.AccessControlSettings?.EnableAttributeBasedAccessControl,
-                EnableUserManagedAttributes: originalConfig?.AccessControlSettings?.EnableUserManagedAttributes,
-            },
             PasswordSettings: {MinimumLength: originalConfig?.PasswordSettings?.MinimumLength},
             ServiceSettings: {AllowCorsFrom: originalConfig?.ServiceSettings?.AllowCorsFrom},
         };
@@ -84,6 +79,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         const {error: flagsError} = await System.apiEnableFeatureFlags(siteOneUrl, [
             'AttributeBasedAccessControl',
             'PermissionPolicies',
+            'ChannelPermissionPolicies',
         ]);
         if (flagsError) {
             throw new Error(`Failed to enable the feature flags: ${JSON.stringify(flagsError)}`);
@@ -98,17 +94,16 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             AccessControlSettings: {EnableUserManagedAttributes: true},
         });
 
-        // # Reuse existing "Department" attribute field or create it if absent
-        const {field, created, error: fieldError} = await AccessControl.apiGetOrCreateCustomProfileAttributeField(
+        // # Create a suite-specific field so another ABAC suite cannot delete it while this suite runs
+        attributeFieldName = `Department_${getRandomId()}`;
+        const {field, error: fieldError} = await AccessControl.apiCreateCustomProfileAttributeField(
             siteOneUrl,
-            'Department',
+            attributeFieldName,
         );
         if (fieldError) {
-            throw new Error(`Failed to get/create attribute field: ${JSON.stringify(fieldError)}`);
+            throw new Error(`Failed to create attribute field: ${JSON.stringify(fieldError)}`);
         }
         attributeFieldId = field.id;
-        attributeFieldName = field.name;
-        attributeFieldCreated = created;
 
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
@@ -119,28 +114,33 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             prefix: 'abac-upload',
         });
         testChannel = channel;
+        ({channel: controlChannel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: team.id,
+            type: 'O',
+            prefix: 'abac-upload-control',
+        }));
 
-        // # Create denied user (Department: "Sales") and add to team + channel
+        // # Create denied user (Department: "Sales") and add to the policy and control channels
         ({user: deniedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'denied'}));
         await Team.apiAddUserToTeam(siteOneUrl, deniedUser.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, testChannel.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, controlChannel.id);
         await setDepartment(deniedUser.id, attributeFieldId as string, 'Sales');
 
-        // # Create allowed user (Department: "Engineering") and add to team + channel
+        // # Create allowed user (Department: "Engineering") and add to the policy and control channels
         ({user: allowedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'allowed'}));
         await Team.apiAddUserToTeam(siteOneUrl, allowedUser.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, testChannel.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, controlChannel.id);
         await setDepartment(allowedUser.id, attributeFieldId as string, 'Engineering');
 
         // # Wait for the server-side attribute view to pick up the values (30s refresh gate)
         await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
 
-        // # Create a permission policy: Engineering can upload files, Sales cannot. System permission
-        // policies are server-wide, so uploads are restricted for users outside Engineering while this
-        // suite runs; afterAll deletes the policy first.
-        const {policy, error: policyError} = await AccessControl.apiCreatePermissionPolicy(
+        // # Scope the upload policy to this suite's channel
+        const {error: policyError} = await AccessControl.apiCreateChannelPermissionPolicy(
             siteOneUrl,
-            `abac-upload-policy-${getRandomId()}`,
+            testChannel.id,
             [{
                 actions: ['upload_file_attachment'],
                 expression: `user.attributes.${attributeFieldName} == "Engineering"`,
@@ -148,12 +148,6 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         );
         if (policyError) {
             throw new Error(`Failed to create permission policy: ${JSON.stringify(policyError)}`);
-        }
-        permissionPolicyId = policy?.id ?? null;
-
-        const {error: activateError} = await AccessControl.apiSetPolicyActive(siteOneUrl, permissionPolicyId as string);
-        if (activateError) {
-            throw new Error(`Failed to activate permission policy: ${JSON.stringify(activateError)}`);
         }
 
         // # Allow cross-origin WebSocket connections for the Android emulator
@@ -166,12 +160,12 @@ describe('Messaging - Upload Permission (ABAC)', () => {
 
     afterAll(async () => {
         // # Clean up the server first: a failing UI step must not leave the deny policy active on a
-        // shared server. Then policy, attribute field (if created), team, users, and config.
-        if (permissionPolicyId) {
-            await AccessControl.apiDeletePermissionPolicy(siteOneUrl, permissionPolicyId);
+        // shared server. Then policy, this suite's attribute field, team, users, and config.
+        if (testChannel?.id) {
+            await AccessControl.apiDeletePermissionPolicy(siteOneUrl, testChannel.id);
         }
-        if (attributeFieldCreated && attributeFieldId) {
-            await AccessControl.apiDeleteCustomProfileAttributeField(siteOneUrl, attributeFieldId);
+        if (attributeFieldName) {
+            await AccessControl.apiDeleteCustomProfileAttributeFieldByName(siteOneUrl, attributeFieldName);
         }
         if (testTeam?.id) {
             await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
@@ -185,7 +179,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         await System.apiPatchConfig(siteOneUrl, originalSettings);
     });
 
-    it('MM-68219_3 - should disable the attachment button when the policy denies uploads in the channel', async () => {
+    it('MM-68219_3 - should disable the attachment button only in the channel where the policy denies uploads', async () => {
         // # Log in as the denied user (Department: Sales) and open the channel
         await LoginScreen.login(deniedUser);
         await ChannelListScreen.toBeVisible();
@@ -196,6 +190,14 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.attachmentAction).not.toExist();
+
+        // * The same user can still upload in a channel without the policy
+        await ChannelScreen.back();
+        await ChannelScreen.open(channelsCategory, controlChannel.name);
+        await waitFor(ChannelScreen.attachmentAction).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
+        await expect(ChannelScreen.attachmentActionDisabled).not.toExist();
 
         await ChannelScreen.back();
         await HomeScreen.logout();
