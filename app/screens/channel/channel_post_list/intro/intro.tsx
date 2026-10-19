@@ -80,6 +80,8 @@ const Intro = ({channel, roles}: Props) => {
                 setFetching(value);
             }
         });
+
+        // A load that ended between the render and this subscription was not heard, so re-read it.
         setFetching(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
 
         return () => listener.remove();
@@ -108,7 +110,6 @@ const Intro = ({channel, roles}: Props) => {
                 size='small'
                 color={theme.centerChannelColor}
                 style={styles.container}
-                testID='channel_post_list.intro.loading'
             />
         );
     }

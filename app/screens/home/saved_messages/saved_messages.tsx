@@ -5,7 +5,7 @@ import {Q, type Database} from '@nozbe/watermelondb';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
@@ -17,7 +17,7 @@ import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
@@ -30,6 +30,7 @@ import {useCurrentScreen} from '@store/navigation_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {emitPostsInViewport} from '@utils/post_list/viewport';
 import {getTimezone} from '@utils/user';
 
 import EmptyState from './components/empty';
@@ -153,14 +154,7 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
             return;
         }
 
-        const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable && item.type === 'post') {
-                acc[`${Screens.SAVED_MESSAGES}-${item.value.currentPost.id}`] = true;
-            }
-            return acc;
-        }, {});
-
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+        emitPostsInViewport(Screens.SAVED_MESSAGES, viewableItems);
     }, []);
 
     const handleRefresh = useCallback(async () => {

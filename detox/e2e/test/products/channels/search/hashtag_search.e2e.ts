@@ -72,7 +72,9 @@ describe('Search - Hashtag Search', () => {
         // * Verify on search messages screen
         await SearchMessagesScreen.toBeVisible();
 
-        // # Type the hashtag into the search input and tap search
+        // # Type the hashtag into the search input and tap search (clear first: a failed
+        // earlier test can leave its query behind, and typing would append to it)
+        await SearchMessagesScreen.searchInput.clearText();
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
@@ -126,6 +128,7 @@ describe('Search - Hashtag Search', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type the hashtag into the search input and tap search
+        await SearchMessagesScreen.searchInput.clearText();
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
         await device.disableSynchronization();
         try {
@@ -188,6 +191,7 @@ describe('Search - Hashtag Search', () => {
         // elements via by.text(). Verify hashtag search functionality via the search screen.
         await ChannelListScreen.open();
         await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchInput.clearText();
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
@@ -230,6 +234,7 @@ describe('Search - Hashtag Search', () => {
         // platforms, so verify hashtag search through the search screen instead.
         await ChannelListScreen.open();
         await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchInput.clearText();
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
