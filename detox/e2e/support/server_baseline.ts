@@ -19,7 +19,7 @@ import {withTransportRetry} from './utils/transport_retry';
 /* eslint-disable no-console, no-process-env */
 
 /** Adapts the E2E axios client to the baseline transport. Non-2xx responses are returned, not thrown. */
-const transportFor = (baseUrl: string): BaselineTransport => ({
+export const transportFor = (baseUrl: string): BaselineTransport => ({
     async request<T = any>(method: 'GET' | 'PUT' | 'POST' | 'DELETE' | 'PATCH', path: string, body?: unknown) {
         const requestOnce = async (): Promise<{response?: {status: number; data: T}; error?: unknown; status?: number}> => {
             try {
