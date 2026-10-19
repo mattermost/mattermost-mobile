@@ -14,21 +14,31 @@ import {
 
 import client from './server_api/client';
 import User from './server_api/user';
+import {withTransportRetry} from './utils/transport_retry';
 
 /* eslint-disable no-console, no-process-env */
 
 /** Adapts the E2E axios client to the baseline transport. Non-2xx responses are returned, not thrown. */
 const transportFor = (baseUrl: string): BaselineTransport => ({
     async request<T = any>(method: 'GET' | 'PUT' | 'POST' | 'DELETE' | 'PATCH', path: string, body?: unknown) {
-        try {
-            const res = await client.request<T>({method, url: `${baseUrl}${path}`, data: body});
-            return {status: res.status, data: res.data};
-        } catch (error) {
-            if (axios.isAxiosError(error) && error.response) {
-                return {status: error.response.status, data: error.response.data as T};
+        const requestOnce = async (): Promise<{response?: {status: number; data: T}; error?: unknown; status?: number}> => {
+            try {
+                const res = await client.request<T>({method, url: `${baseUrl}${path}`, data: body});
+                return {response: {status: res.status, data: res.data}};
+            } catch (error) {
+                if (axios.isAxiosError(error) && error.response) {
+                    return {response: {status: error.response.status, data: error.response.data as T}};
+                }
+                return {error, status: 0};
             }
-            throw error;
+        };
+
+        // Only reads are retried; a short budget keeps several reads inside one beforeAll.
+        const result = method === 'GET' ? await withTransportRetry(requestOnce, {idempotent: true, label: `baseline GET ${path}`, budgetMs: 30_000}) : await requestOnce();
+        if (!result.response) {
+            throw result.error;
         }
+        return result.response;
     },
 });
 
