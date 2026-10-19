@@ -40,6 +40,7 @@ class ChannelListScreen {
         categoryHeaderPrefix: 'channel_list.category_header.',
         categoryPrefix: 'channel_list.category.',
         channelList: 'channel_list.flat_list',
+        sidebarScrollView: 'channel_list.scroll_view',
         draftChannelInfo: 'draft_post.channel_info',
         draftbuttonListScreen: 'channel_list.drafts.button',
         draftCountListScreen: 'channel_list.drafts.count',
@@ -57,6 +58,9 @@ class ChannelListScreen {
 
     channelListScreen = element(by.id(this.testID.channelListScreen));
     channelList = element(by.id(this.testID.channelList));
+
+    // On iOS the categories list grows to its full height inside this outer list, so only the outer one scrolls.
+    sidebarScroller = isIos() ? element(by.id(this.testID.sidebarScrollView)) : this.channelList;
     serverIcon = element(by.id(this.testID.serverIcon));
     headerTeamDisplayName = element(by.id(this.testID.headerTeamDisplayName));
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
@@ -118,7 +122,7 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
-        await bestEffortScroll(() => this.channelList.scrollTo('top'));
+        await bestEffortScroll(() => this.sidebarScroller.scrollTo('top'));
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -146,7 +150,7 @@ class ChannelListScreen {
                     // Not in this category yet — try the next
                 }
             }
-            await bestEffortScroll(() => this.channelList.scroll(280, 'down', 0.5, 0.45));
+            await bestEffortScroll(() => this.sidebarScroller.scroll(280, 'down', 0.5, 0.45));
         }
         /* eslint-enable no-await-in-loop */
 
@@ -192,7 +196,7 @@ class ChannelListScreen {
                     try {
                         // Synchronized on purpose: the next loop iteration asserts visibility,
                         // so the list has to settle first.
-                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                        await this.sidebarScroller.scroll(100, 'down', 0.5, 0.3);
                     } catch {
                         // The final assertion reports if the list edge still clips the row.
                     }
@@ -222,7 +226,7 @@ class ChannelListScreen {
                 break;
             } catch {
                 try {
-                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                    await this.sidebarScroller.scroll(100, 'down', 0.5, 0.3);
                 } catch {
                     // List edge reached — the taps below still report if it stays clipped.
                 }
