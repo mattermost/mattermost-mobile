@@ -241,9 +241,22 @@ class InteractiveDialogScreen {
 
     getFieldInput = (fieldName: string) => element(by.id(`AppFormElement.${fieldName}.input`));
 
-    // Tap a collapsible section header to expand or collapse it.
+    // Tap a collapsible section header to expand or collapse it. Expanding an outer
+    // section grows the form, so a deeper section's header can land below the fold;
+    // scroll it into view (like fillTextElement) before asserting visibility and tapping.
     toggleSection = async (sectionName: string) => {
         const toggle = this.getSectionToggle(sectionName);
+
+        await this.dismissKeyboard();
+        try {
+            await waitFor(toggle).
+                toBeVisible().
+                whileElement(by.id(this.testID.interactiveDialogScrollView)).
+                scroll(120, 'down');
+        } catch (scrollError) {
+            // Short dialog that doesn't scroll, or the header is already visible.
+        }
+
         await waitFor(toggle).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await toggle.tap();
         await wait(timeouts.ONE_SEC);
