@@ -49,7 +49,7 @@ export async function applyServerBaseline(baseUrl: string): Promise<BaselineRepo
     return report;
 }
 
-/** CI throws on drift (provisioning owns the baseline); locally drifted keys are applied without cleanup. */
+/** CI throws on drift (provisioning owns the baseline); locally drifted keys are applied without cleanup, and a failed apply throws. */
 export async function assertServerBaseline(baseUrl: string, keys: string[]): Promise<void> {
     const unknown = keys.filter((key) => !isBaselineKey(key));
     if (unknown.length > 0) {
@@ -76,6 +76,6 @@ export async function assertServerBaseline(baseUrl: string, keys: string[]): Pro
     console.warn(`[server_baseline] applying baseline locally for: ${driftKeys.join(', ')}`);
     const report = await applyBaseline(transport, {serverUrl: baseUrl, only: driftKeys, cleanup: false});
     if (!report.ok) {
-        console.warn(formatBaselineReport(report));
+        throw new Error(formatBaselineReport(report));
     }
 }
