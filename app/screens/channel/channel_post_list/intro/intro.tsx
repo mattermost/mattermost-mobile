@@ -7,7 +7,6 @@ import {ActivityIndicator, DeviceEventEmitter, Platform, StyleSheet, View} from 
 import {Events, General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import useDidUpdate from '@hooks/did_update';
 import EphemeralStore from '@store/ephemeral_store';
 import {isDefaultChannel} from '@utils/channel';
 
@@ -81,12 +80,9 @@ const Intro = ({channel, roles}: Props) => {
                 setFetching(value);
             }
         });
+        setFetching(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
 
         return () => listener.remove();
-    }, [serverUrl, channel?.id]);
-
-    useDidUpdate(() => {
-        setFetching(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
     }, [serverUrl, channel?.id]);
 
     useEffect(() => {
@@ -112,6 +108,7 @@ const Intro = ({channel, roles}: Props) => {
                 size='small'
                 color={theme.centerChannelColor}
                 style={styles.container}
+                testID='channel_post_list.intro.loading'
             />
         );
     }
