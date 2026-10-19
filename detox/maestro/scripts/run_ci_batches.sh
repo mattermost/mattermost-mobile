@@ -265,14 +265,16 @@ apply_config_baseline() {
   }
 
   echo "==> Re-applying config baseline on ${SITE_1_URL}"
-  # A config save can take ~90 s on a busy server, and a resent save queues behind it, so no --retry.
-  if ! curl -f -sS --show-error --connect-timeout 10 --max-time 240 -X PUT \
-    -H "Authorization: Bearer $ADMIN_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
-    "${SITE_1_URL}/api/v4/config/patch" >/dev/null; then
-    echo "Warning: could not PUT config baseline on ${SITE_1_URL}" >&2
+  # Waits out a slow save instead of resending it, and checks the value clients read.
+  local rc=0
+  bash "$SCRIPT_DIR/apply_client_config_value.sh" "$SITE_1_URL" "$ADMIN_TOKEN" \
+    '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+    EnableSignInWithEmail true || rc=$?
+  if ((rc == 3)); then
+    echo "Warning: this server does not allow the config baseline write; continuing with its own values" >&2
+    return 0
   fi
+  return "$rc"
 }
 
 ensure_calls_channel_enabled() {
@@ -466,7 +468,10 @@ log_resource_snapshot() {
   fi
 }
 
-apply_config_baseline
+apply_config_baseline || {
+  echo "::error::Could not apply the config baseline on ${SITE_1_URL}; stopping before any batch runs"
+  exit 1
+}
 
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
