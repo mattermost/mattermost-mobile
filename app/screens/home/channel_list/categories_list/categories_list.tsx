@@ -239,6 +239,7 @@ const CategoriesList = ({
                     nestedScrollEnabled={true}
                     style={styles.flex}
                     onLayout={onListLayout}
+                    testID='channel_list.scroll_view'
                 />
             </SafeAreaView>
         );
