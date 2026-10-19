@@ -33,7 +33,6 @@ class NotificationService: UNNotificationServiceExtension {
   }
 
   private var contentHandlerWrapper: ContentHandlerSafeWrapper?
-  private var isLoggerConfigured = false
 
   // Thread-safe access to bestAttemptContent
   private let contentQueue = DispatchQueue(label: "com.mattermost.notification.content", attributes: .concurrent)
@@ -50,11 +49,7 @@ class NotificationService: UNNotificationServiceExtension {
     }
   }
 
-  override init() {
-    super.init()
-    SessionAttributesOutboundHeader.setHandler { SessionAttributes.getOutboundHeader($0) }
-    initSentryAppExt()
-
+  private static let configureLogger: Void = {
     // Safely configure TurboLogger without force unwrapping
     guard let appGroupId = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String else {
       os_log(OSLogType.error, "NotificationService init: AppGroupIdentifier missing from Info.plist")
@@ -70,11 +65,10 @@ class NotificationService: UNNotificationServiceExtension {
       try TurboLogIOSNative.TurboLogger.configure(
         dailyRolling: false,
         maximumFileSize: 1024*1024,
-        maximumNumberOfFiles: 2,
+        maximumNumberOfFiles: 5,
         logsDirectory: containerUrl.appendingPathComponent("Logs").path,
         logsFilename: "MMLogs"
       )
-      isLoggerConfigured = true
 
       // Configure Gekidou to use TurboLogger
       Gekidou.GekidouLogger.shared.setLogHandler { level, message in
@@ -96,6 +90,13 @@ class NotificationService: UNNotificationServiceExtension {
     } catch {
       os_log(OSLogType.error, "NotificationService init: Failed to configure TurboLogger: %{public}@", String(describing: error))
     }
+  }()
+
+  override init() {
+    super.init()
+    SessionAttributesOutboundHeader.setHandler { SessionAttributes.getOutboundHeader($0) }
+    initSentryAppExt()
+    NotificationService.configureLogger
   }
   
   override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {

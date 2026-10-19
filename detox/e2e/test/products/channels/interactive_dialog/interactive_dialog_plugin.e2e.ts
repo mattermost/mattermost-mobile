@@ -349,8 +349,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                 EnablePublicLink: true,
                 EnableFileAttachments: true,
             },
-            FeatureFlags: {InteractiveDialogAppsForm: true},
         });
+        await System.apiPatchFeatureFlags(siteOneUrl, {InteractiveDialogAppsForm: true});
 
         const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {

@@ -32,10 +32,8 @@ export const enableClassificationMarkings = async (baseUrl: string): Promise<voi
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
-        const patchResult = await System.apiPatchConfig(baseUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
+        const patchResult = await System.apiPatchFeatureFlags(baseUrl, {
+            ClassificationMarkings: true,
         });
         if (patchResult.error) {
             if (await clientFlagIsTrue(baseUrl)) {
