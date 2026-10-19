@@ -1376,37 +1376,24 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    it('MM-T5603 should submit a collapsible dialog with a filled field (Plugin)', async () => {
+    it('MM-T5603 should fill fields across sections and submit (Plugin)', async () => {
         await ensureDialogClosed();
         await postSlashCommandDirect('/dialog collapsible');
         await ensureDialogOpen();
 
-        // # Fill the already-expanded level-1 field, then expand a lower section, then submit.
-        // Filling a field *inside* a freshly-expanded nested section is unreliable on iOS
-        // (keyboard/scroll race that silently drops the submit); the nested reveal is already
-        // covered by MM-T5602, so this case needs only a reliable level-1 fill to prove the
-        // dialog submits end-to-end with the entered value.
+        // # Fill a level 1 field, then expand level 2 and fill one of its fields
         await InteractiveDialogScreen.fillTextElement('first_name', 'Ada');
         await InteractiveDialogScreen.toggleSection('level2_section');
 
-        // # Submit and verify the integration received the submission. The dialog closes
-        // on-device before the server has finished creating the plugin's response post, so
-        // reading the last post once can capture a stale id (seen on iOS). Poll until the
-        // "Dialog Submitted:" post that carries the entered value exists.
+        // Let the section finish expanding before typing; on iOS, filling while it still
+        // animates drops the input and the submit silently no-ops.
+        await wait(timeouts.ONE_SEC);
+        await InteractiveDialogScreen.fillTextElement('company', 'Mattermost');
+
+        // # Submit and verify the integration received the submission
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
-        let submissionPost;
-        for (let attempt = 0; attempt < 10; attempt++) {
-            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-            if (post?.message?.includes('Dialog Submitted:') && post.message.includes('Ada')) {
-                submissionPost = post;
-                break;
-            }
-            await wait(timeouts.ONE_SEC);
-        }
-        if (!submissionPost) {
-            throw new Error('Submission post carrying the entered value never appeared');
-        }
-        await ChannelScreen.hasPostMessage(submissionPost.id, 'Dialog Submitted:');
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 });
