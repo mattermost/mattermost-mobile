@@ -1386,10 +1386,24 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await InteractiveDialogScreen.toggleSection('level2_section');
         await InteractiveDialogScreen.fillTextElement('company', 'Mattermost');
 
-        // # Submit and verify the integration received the submission
+        // # Submit and verify the integration received the submission. The dialog closes
+        // on-device before the server has finished creating the plugin's response post, so
+        // reading the last post once can capture a stale id (seen on iOS). Poll until the
+        // "Dialog Submitted:" post exists, then assert against that post id.
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+        let submissionPost;
+        for (let attempt = 0; attempt < 10; attempt++) {
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            if (post?.message?.includes('Dialog Submitted:')) {
+                submissionPost = post;
+                break;
+            }
+            await wait(timeouts.ONE_SEC);
+        }
+        if (!submissionPost) {
+            throw new Error('Submission post with "Dialog Submitted:" never appeared');
+        }
+        await ChannelScreen.hasPostMessage(submissionPost.id, 'Dialog Submitted:');
     });
 });
