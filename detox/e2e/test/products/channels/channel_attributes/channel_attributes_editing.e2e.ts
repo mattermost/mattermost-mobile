@@ -10,7 +10,7 @@
 import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
 import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {Channel, Properties, Team, User} from '@support/server_api';
-import {serverOneUrl, siteOneUrl} from '@support/test_config';
+import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
@@ -69,7 +69,9 @@ async function openChannel(channelName: string) {
     await ChannelScreen.open('channels', channelName);
 }
 
-describe('Channel Attributes - Setting values from Channel Info', () => {
+// FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
+// so enableChannelAttributes() can never succeed and every test here fails in beforeAll.
+(hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Setting values from Channel Info', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let lockAcquired = false;
@@ -546,7 +548,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 });
 
-describe('Channel Attributes - Member view (read-only)', () => {
+(hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Member view (read-only)', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let lockAcquired = false;

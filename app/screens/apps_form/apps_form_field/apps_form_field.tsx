@@ -25,6 +25,8 @@ import {selectKeyboardType} from '@utils/integrations';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import AppsFormFileField from '../apps_form_file_field';
+
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
 
@@ -37,6 +39,9 @@ export type Props = {
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
     userTimezone: string;
     isMilitaryTime: boolean;
+    setFieldUploading?: (fieldName: string, uploading: boolean) => void;
+    channelId?: string;
+    serverUrl?: string;
 }
 
 const dialogOptionToAppSelectOption = (option: DialogOption): AppSelectOption => ({
@@ -100,6 +105,9 @@ const AppsFormFieldComponent = React.memo(({
     performLookup,
     userTimezone,
     isMilitaryTime,
+    setFieldUploading,
+    channelId,
+    serverUrl,
 }: Props) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -132,6 +140,10 @@ const AppsFormFieldComponent = React.memo(({
     const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
     }, [name, onChange]);
+
+    const handlePendingChange = useCallback((hasPending: boolean) => {
+        setFieldUploading?.(name, hasPending);
+    }, [setFieldUploading, name]);
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
@@ -311,6 +323,24 @@ const AppsFormFieldComponent = React.memo(({
                 </View>
             );
         }
+        case AppFieldTypes.FILE: {
+            return (
+                <AppsFormFileField
+                    name={name}
+                    displayName={displayName}
+                    helpText={field.description}
+                    errorText={errorText}
+                    value={typeof value === 'string' ? value : ''}
+                    onChange={onChange}
+                    onPendingChange={handlePendingChange}
+                    allowMultiple={field.allow_multiple}
+                    readonly={Boolean(field.readonly)}
+                    channelId={channelId || ''}
+                    serverUrl={serverUrl || ''}
+                    testID={testID}
+                />
+            );
+        }
         case AppFieldTypes.DATE:
         case AppFieldTypes.DATETIME: {
             const hasValue = Boolean(value);
@@ -375,7 +405,7 @@ const AppsFormFieldComponent = React.memo(({
                         minDate={resolvedMinDate}
                         maxDate={resolvedMaxDate}
                         minuteInterval={field.datetime_config?.time_interval || field.time_interval || DEFAULT_TIME_INTERVAL_MINUTES}
-                        allowManualTimeEntry={field.datetime_config?.allow_manual_time_entry}
+                        allowManualTimeEntry={field.datetime_config?.manual_time_entry ?? field.datetime_config?.allow_manual_time_entry}
                         testID={testID}
                     />
 

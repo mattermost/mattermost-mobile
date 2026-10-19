@@ -3,12 +3,12 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import ChannelInfoAttributes from '@components/channel_info_attributes/channel_info_attributes';
 import {observeChannelAttributePermissions} from '@queries/servers/channel_attributes';
 import {observeChannelAttributesEnabled, observeResolvedChannelAttributes} from '@queries/servers/properties';
-import {selectChannelInfoAttributes, type ResolvedChannelAttribute} from '@utils/channel_attributes';
+import {channelInfoAttributesSignature, selectChannelInfoAttributes, type ResolvedChannelAttribute} from '@utils/channel_attributes';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -33,7 +33,16 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
         ),
         permissions,
     ]).pipe(
-        map(([resolved, perms]) => selectChannelInfoAttributes(resolved, perms)),
+
+        // Snapshotted at emission time for the same reason as in
+        // observeResolvedChannelAttributes: the field models are updated in place,
+        // so comparing two lists after the fact would see the new attrs on both.
+        map(([resolved, perms]) => {
+            const listed = selectChannelInfoAttributes(resolved, perms);
+            return {listed, signature: channelInfoAttributesSignature(listed)};
+        }),
+        distinctUntilChanged((a, b) => a.signature === b.signature),
+        map(({listed}) => listed),
     );
 
     return {attributes, permissions};

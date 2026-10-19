@@ -51,6 +51,7 @@ const attribute = (overrides: Partial<ResolvedChannelAttribute> = {}): ResolvedC
     rawValue: 'level-secret',
     option: OPTIONS[1],
     displayValue: 'Secret',
+    displayValues: [{value: 'Secret', color: OPTIONS[1].color}],
     ...overrides,
 });
 
@@ -105,9 +106,26 @@ describe('ChannelInfoAttributes', () => {
         expect(getByTestId('channel_info.attributes.classification.chip')).toBeTruthy();
     });
 
+    it('should render one chip per value for a multi-valued attribute', () => {
+        const multiselect = field({type: 'multiselect'});
+        const {getByTestId, getByText, queryByTestId} = render([attribute({
+            field: multiselect,
+            rawValue: ['level-public', 'level-secret'],
+            option: undefined,
+            displayValue: 'Public, Secret',
+            displayValues: [{value: 'Public', color: OPTIONS[0].color}, {value: 'Secret', color: OPTIONS[1].color}],
+        })]);
+
+        expect(getByTestId('channel_info.attributes.classification.chip.0')).toBeTruthy();
+        expect(getByTestId('channel_info.attributes.classification.chip.1')).toBeTruthy();
+        expect(queryByTestId('channel_info.attributes.classification.chip')).toBeNull();
+        expect(getByText('Public')).toBeTruthy();
+        expect(getByText('Secret')).toBeTruthy();
+    });
+
     it('should render Not set for a required attribute with no value', () => {
         const required = field({attrs: {options: OPTIONS, actions: ['display_label_info'], required: true}});
-        const {getByTestId} = render([attribute({field: required, rawValue: undefined, option: undefined, displayValue: ''})]);
+        const {getByTestId} = render([attribute({field: required, rawValue: undefined, option: undefined, displayValue: '', displayValues: []})]);
 
         expect(getByTestId('channel_info.attributes.classification.not_set')).toBeTruthy();
     });
@@ -155,7 +173,7 @@ describe('ChannelInfoAttributes', () => {
 
         it('should not explain a never policy before the first write, which the server allows', () => {
             const locked = field({attrs: {options: OPTIONS, actions: ['display_label_info'], change_policy: 'never'}});
-            const {queryByTestId, getByTestId} = render([attribute({field: locked, rawValue: undefined, option: undefined, displayValue: ''})]);
+            const {queryByTestId, getByTestId} = render([attribute({field: locked, rawValue: undefined, option: undefined, displayValue: '', displayValues: []})]);
 
             expect(queryByTestId('channel_info.attributes.classification.lock')).toBeNull();
             expect(getByTestId('channel_info.attributes.classification.edit')).toBeTruthy();
@@ -192,7 +210,7 @@ describe('ChannelInfoAttributes', () => {
             const dateField = field({id: 'cf-2', name: 'reviewed', type: 'date'});
             const {getByText} = render([
                 attribute(),
-                attribute({field: dateField, displayValue: '2026-01-01'}),
+                attribute({field: dateField, displayValue: '2026-01-01', displayValues: [{value: '2026-01-01'}]}),
             ]);
 
             expect(getByText('This attribute cannot be changed on mobile')).toBeTruthy();
@@ -368,7 +386,7 @@ describe('ChannelInfoAttributes', () => {
 
         it('should not offer a clear under a directional policy, which the server would refuse', () => {
             const raiseOnly = field({attrs: {options: OPTIONS, actions: ['display_label_info'], change_policy: 'raise_only'}});
-            const {getByTestId} = render([attribute({field: raiseOnly, rawValue: 'level-public', option: OPTIONS[0], displayValue: 'Public'})]);
+            const {getByTestId} = render([attribute({field: raiseOnly, rawValue: 'level-public', option: OPTIONS[0], displayValue: 'Public', displayValues: [{value: 'Public', color: OPTIONS[0].color}]})]);
 
             fireEvent.press(getByTestId('channel_info.attributes.classification.edit'));
 

@@ -40,6 +40,7 @@ class ChannelListScreen {
         categoryHeaderPrefix: 'channel_list.category_header.',
         categoryPrefix: 'channel_list.category.',
         channelList: 'channel_list.flat_list',
+        sidebarScrollView: 'channel_list.scroll_view',
         draftChannelInfo: 'draft_post.channel_info',
         draftbuttonListScreen: 'channel_list.drafts.button',
         draftCountListScreen: 'channel_list.drafts.count',
@@ -57,6 +58,9 @@ class ChannelListScreen {
 
     channelListScreen = element(by.id(this.testID.channelListScreen));
     channelList = element(by.id(this.testID.channelList));
+
+    // On iOS the categories list grows to its full height inside this outer list, so only the outer one scrolls.
+    sidebarScroller = isIos() ? element(by.id(this.testID.sidebarScrollView)) : this.channelList;
     serverIcon = element(by.id(this.testID.serverIcon));
     headerTeamDisplayName = element(by.id(this.testID.headerTeamDisplayName));
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
@@ -92,6 +96,12 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
+    // The row is written after the channel, so wait for it before archiving a channel the
+    // user was just added to; otherwise the app's pre-archive fetch can land last.
+    waitForChannelItem = async (categoryKey: string, channelName: string) => {
+        await waitFor(this.getChannelItemDisplayName(categoryKey, channelName)).toExist().withTimeout(timeouts.HALF_MIN);
+    };
+
     // Mention-count badge on a sidebar row. Badge returns null while its count is 0, so
     // `not.toExist()` is the "unread but not mentioned" assertion, not a visibility check.
     getChannelItemBadge = (categoryKey: string, channelName: string) => {
@@ -112,7 +122,7 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
-        await bestEffortScroll(() => this.channelList.scrollTo('top'));
+        await bestEffortScroll(() => this.sidebarScroller.scrollTo('top'));
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -140,7 +150,7 @@ class ChannelListScreen {
                     // Not in this category yet — try the next
                 }
             }
-            await bestEffortScroll(() => this.channelList.scroll(280, 'down', 0.5, 0.45));
+            await bestEffortScroll(() => this.sidebarScroller.scroll(280, 'down', 0.5, 0.45));
         }
         /* eslint-enable no-await-in-loop */
 
@@ -186,7 +196,7 @@ class ChannelListScreen {
                     try {
                         // Synchronized on purpose: the next loop iteration asserts visibility,
                         // so the list has to settle first.
-                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                        await this.sidebarScroller.scroll(100, 'down', 0.5, 0.3);
                     } catch {
                         // The final assertion reports if the list edge still clips the row.
                     }
@@ -194,6 +204,15 @@ class ChannelListScreen {
             }
             /* eslint-enable no-await-in-loop */
             await expect(label).toBeVisible(40);
+
+            // Tap the label, mid-row: the edge tap below sits two pixels from the neighbouring
+            // row and can open the wrong channel.
+            try {
+                await label.tap();
+                return;
+            } catch {
+                // Clipped by the tab bar — fall through to the edge tap that handles that case.
+            }
 
             // The last row can remain clipped by the tab bar, so tap its exposed top edge.
             await container.tap({x: 20, y: 2});
@@ -207,7 +226,7 @@ class ChannelListScreen {
                 break;
             } catch {
                 try {
-                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                    await this.sidebarScroller.scroll(100, 'down', 0.5, 0.3);
                 } catch {
                     // List edge reached — the taps below still report if it stays clipped.
                 }

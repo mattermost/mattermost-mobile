@@ -31,6 +31,22 @@ export const ToolApprovalStage = {
 export type ToolApprovalStage = typeof ToolApprovalStage[keyof typeof ToolApprovalStage];
 
 /**
+ * Marks a tool answered by the user picking from a set of options (e.g.
+ * AskUserQuestion). Mirrors llm.UserInteractionSelect on the server.
+ */
+export const UserInteractionSelect = 'select';
+
+/**
+ * A user's answer to a user-interaction tool call: the predefined option
+ * labels picked, plus optional free-form text. Mirrors
+ * mmtools.UserInteractionAnswer on the server.
+ */
+export interface ToolAnswer {
+    selected: string[];
+    custom?: string;
+}
+
+/**
  * Tool call data structure
  */
 export interface ToolCall {
@@ -41,10 +57,19 @@ export interface ToolCall {
     result?: string;
     status: ToolCallStatus;
 
+    // Non-empty for tools answered by the user instead of executed by the
+    // server (e.g. AskUserQuestion).
+    user_interaction?: string;
+
     // True for a pending call that passed the auto-execution policy. The call
     // may be running live or paused in a persisted round, but never needs an
     // individual approval decision.
     would_auto_execute?: boolean;
+
+    // True when the matching tool result has already received its terminal
+    // share/keep-private decision (decided_at set server-side). Derived from
+    // the conversation API; absent on live websocket payloads.
+    decided?: boolean;
 }
 
 /**

@@ -46,6 +46,7 @@ const attribute = (overrides: Partial<ResolvedChannelAttribute> = {}): ResolvedC
     field: field(),
     rawValue: undefined,
     displayValue: '',
+    displayValues: [],
     ...overrides,
 });
 

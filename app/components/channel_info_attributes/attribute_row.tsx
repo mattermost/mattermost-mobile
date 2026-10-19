@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
 
-import AttributeChip from '@components/attribute_chip';
+import AttributeChip, {attributeChipGroupStyle} from '@components/attribute_chip';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -70,11 +70,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexShrink: 1,
     },
     value: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'flex-end',
         gap: 4,
-        flexShrink: 0,
     },
+    valueGroup: attributeChipGroupStyle,
     notSet: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
         ...typography('Body', 200),
@@ -113,7 +115,7 @@ const AttributeRow = ({attribute, editability, showLockReason, failed, onPress}:
     const intl = useIntl();
     const styles = getStyleSheet(theme);
 
-    const {field, displayValue, option} = attribute;
+    const {field, displayValue, displayValues} = attribute;
     const label = getPropertyFieldLabel(field);
     const testID = `channel_info.attributes.${field.name}`;
 
@@ -124,13 +126,18 @@ const AttributeRow = ({attribute, editability, showLockReason, failed, onPress}:
     const value = (
         <View style={styles.value}>
             {displayValue ? (
-                <AttributeChip
-                    label={label}
-                    value={displayValue}
-                    color={option?.color}
-                    announceLabel={false}
-                    testID={`${testID}.chip`}
-                />
+                <View style={styles.valueGroup}>
+                    {displayValues.map((entry, index) => (
+                        <AttributeChip
+                            key={`${field.id}-${index}`}
+                            label={label}
+                            value={entry.value}
+                            color={entry.color}
+                            announceLabel={false}
+                            testID={displayValues.length > 1 ? `${testID}.chip.${index}` : `${testID}.chip`}
+                        />
+                    ))}
+                </View>
             ) : (
                 <FormattedText
                     {...messages.notSet}

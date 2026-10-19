@@ -5,6 +5,7 @@ import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
+import {SIGNATURE_SEPARATOR} from '@constants/channel_attributes';
 import {isDMorGM} from '@utils/channel';
 import {
     canSetChannelAttributeOnCreate,
@@ -16,7 +17,7 @@ import {
 } from '@utils/channel_attributes';
 
 import {observeChannel} from './channel';
-import {observeChannelAttributeFields, SIGNATURE_SEPARATOR} from './properties';
+import {observeChannelAttributeFields} from './properties';
 import {observeCanManageSystem, observePermissionForChannel} from './role';
 import {observeCurrentUser} from './user';
 
@@ -81,12 +82,12 @@ export const observeChannelAttributePermissions = (database: Database, channelId
 const EMPTY_CREATABLE_FIELDS: ChannelAttributeField[] = [];
 
 // WatermelonDB updates a record in place and re-emits the same model instance
-// (see the identical note on renderSignature in @queries/servers/properties), so
+// (see the identical note on resolvedAttributesSignature in @utils/channel_attributes), so
 // comparing fields by reference here would always read as equal once a field's
 // required flag or permission_values tier changed in place — masking exactly the
 // change this list exists to react to. Snapshotting the keys that decide
 // membership in this list is what makes the comparison mean anything.
-// Mirrors renderSignature's option digest in @queries/servers/properties: joined
+// Mirrors editorSignatureKeys' option digest in @utils/channel_attributes: joined
 // with SIGNATURE_SEPARATOR rather than a plain delimiter because option.name is
 // admin-authored free text that can legally contain one.
 function fieldSignature(field: ChannelAttributeField): string {

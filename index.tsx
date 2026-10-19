@@ -26,7 +26,7 @@ TurboLogger.configure({
     dailyRolling: false,
     logToFile: !__DEV__,
     maximumFileSize: 1024 * 1024,
-    maximumNumberOfFiles: 2,
+    maximumNumberOfFiles: 5,
 });
 
 if (__DEV__) {

@@ -4,11 +4,13 @@
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {terminateSession} from '@actions/local/session';
 import {refetchCurrentUser} from '@actions/remote/user';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepareCommonSystemValues} from '@queries/servers/system';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {applyPersistenceModeChange} from './refresh';
 
@@ -28,7 +30,7 @@ jest.mock('@init/credentials', () => ({
 }));
 jest.mock('@managers/ephemeral_mode_manager', () => ({
     __esModule: true,
-    default: {removeServer: jest.fn(), addServer: jest.fn()},
+    default: {removeServer: jest.fn(), addServer: jest.fn(), isZeroPersistenceMode: jest.fn()},
 }));
 jest.mock('@managers/websocket_manager', () => ({
     __esModule: true,
@@ -41,6 +43,9 @@ jest.mock('@queries/servers/system', () => ({
     prepareCommonSystemValues: jest.fn(),
 }));
 jest.mock('@utils/log');
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
+}));
 
 describe('applyPersistenceModeChange', () => {
     const serverUrl = 'https://server.test';
@@ -67,6 +72,7 @@ describe('applyPersistenceModeChange', () => {
             token: 'tok',
             preauthSecret: 'preauth',
         });
+        jest.mocked(EphemeralModeManager.isZeroPersistenceMode).mockReturnValue(false);
     });
 
     afterEach(() => {
@@ -147,5 +153,39 @@ describe('applyPersistenceModeChange', () => {
         expect(terminateSession).toHaveBeenCalledWith(serverUrl, false);
         expect(EphemeralModeManager.addServer).not.toHaveBeenCalled();
         expect(result.error).toBeTruthy();
+    });
+
+    it('should show the zero persistence snackbar when the active server enters zero persistence mode', async () => {
+        jest.mocked(EphemeralModeManager.isZeroPersistenceMode).mockReturnValue(true);
+
+        await applyPersistenceModeChange(serverUrl);
+
+        expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+    });
+
+    it('should not show the zero persistence snackbar when the server is not active', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('https://other.test');
+        jest.mocked(EphemeralModeManager.isZeroPersistenceMode).mockReturnValue(true);
+
+        await applyPersistenceModeChange(serverUrl);
+
+        expect(showSnackBar).not.toHaveBeenCalled();
+    });
+
+    it('should not show the zero persistence snackbar when the server did not enter zero persistence mode', async () => {
+        jest.mocked(EphemeralModeManager.isZeroPersistenceMode).mockReturnValue(false);
+
+        await applyPersistenceModeChange(serverUrl);
+
+        expect(showSnackBar).not.toHaveBeenCalled();
+    });
+
+    it('should not show the zero persistence snackbar when the wipe fails and the session is terminated', async () => {
+        jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValue({success: false});
+        jest.mocked(EphemeralModeManager.isZeroPersistenceMode).mockReturnValue(true);
+
+        await applyPersistenceModeChange(serverUrl);
+
+        expect(showSnackBar).not.toHaveBeenCalled();
     });
 });

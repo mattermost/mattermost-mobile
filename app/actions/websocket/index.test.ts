@@ -10,8 +10,10 @@ import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actio
 import {markChannelAsRead} from '@actions/remote/channel';
 import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
+import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
+import {invalidateRedactionOnResync} from '@actions/websocket/access_control';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
@@ -33,12 +35,14 @@ jest.mock('@actions/local/channel');
 jest.mock('@actions/local/ephemeral_mode/cleanup');
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/ephemeral_mode');
 jest.mock('@actions/remote/entry/common');
 jest.mock('@actions/remote/entry/deferred');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/user');
+jest.mock('@actions/websocket/access_control');
 jest.mock('@calls/actions/calls');
 jest.mock('@calls/utils');
 jest.mock('@database/manager');
@@ -175,6 +179,7 @@ describe('WebSocket Index Actions', () => {
             expect(openAllUnreadChannels).toHaveBeenCalled();
             expect(dataRetentionCleanup).toHaveBeenCalled();
             expect(expiredBoRPostCleanup).toHaveBeenCalled();
+            expect(flushAuditQueue).toHaveBeenCalledWith(serverUrl);
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
             expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
@@ -204,9 +209,31 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
             await handleReconnect(serverUrl);
 
-            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect', false);
             expect(markChannelAsRead).toHaveBeenCalledWith(serverUrl, currentChannelId, false, 'WebSocket Reconnect');
             expect(markChannelAsViewed).toHaveBeenCalledWith(serverUrl, currentChannelId, true);
+        });
+
+        it('should raise the redaction epoch on a reconnect before fetching the visible channel', async () => {
+            // A reconnect only reaches doReconnect when the server could not replay the missed events,
+            // so an ABAC change made while disconnected is known only through this invalidation.
+            jest.mocked(entry).mockResolvedValue({
+                models: [],
+                initialTeamId: currentTeamId,
+                initialChannelId: currentChannelId,
+                prefData: {preferences: []},
+                teamData: {memberships: [], teams: []},
+                chData: {memberships: [], channels: []},
+                gmConverted: false,
+            });
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
+
+            await handleReconnect(serverUrl);
+
+            expect(invalidateRedactionOnResync).toHaveBeenCalledWith(serverUrl);
+            expect(jest.mocked(invalidateRedactionOnResync).mock.invocationCallOrder[0]).
+                toBeLessThan(jest.mocked(fetchPostsForChannel).mock.invocationCallOrder[0]);
         });
 
         it('should fetch thread posts when CRT enabled', async () => {

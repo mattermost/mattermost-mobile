@@ -321,4 +321,6 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
     );
 };
 
-export default ChannelInfoAttributes;
+// Memoized because Channel Info holds many unrelated subscriptions, and
+// withObservables re-renders on every parent render in steady state.
+export default React.memo(ChannelInfoAttributes);

@@ -5,11 +5,15 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsViewed, markChannelAsUnread, storeMyChannelsForTeam, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement} from '@actions/local/post';
+import * as Redaction from '@actions/local/redaction';
 import {updateThread} from '@actions/local/thread';
 import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostAuthors} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {settleStreamedPost} from '@agents/actions/websocket';
+import {AGENT_POST_TYPES} from '@agents/constants';
+import streamingStore from '@agents/store/streaming_store';
 import {Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
@@ -39,6 +43,7 @@ jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/thread');
 jest.mock('@actions/remote/user');
+jest.mock('@agents/actions/websocket', () => ({settleStreamedPost: jest.fn()}));
 jest.mock('@utils/helpers');
 jest.mock('@utils/post', () => ({
     ...jest.requireActual('@utils/post'),
@@ -341,6 +346,38 @@ describe('WebSocket Post Actions', () => {
             expect(batchRecordsSpy).toHaveBeenCalledWith([expect.any(PostsInChannelModel)], 'handlePostEdited');
         });
 
+        it('should stamp the epoch current when the edit arrived, not one raised while it was handled', async () => {
+            // The payload carries the decision the server made at broadcast; an invalidation flushed
+            // during the author fetch must not be stamped onto it.
+            let counter = 1;
+            const captureSpy = jest.spyOn(Redaction, 'captureRedactionEpoch').mockImplementation(async () => counter);
+            mockedFetchPostAuthors.mockImplementation(async () => {
+                counter = 2;
+                return {authors: []};
+            });
+            const handlePostsSpy = jest.spyOn(operator, 'handlePosts');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(handlePostsSpy).toHaveBeenCalledWith(expect.objectContaining({redactionVerifiedEpoch: 1}));
+            captureSpy.mockRestore();
+            handlePostsSpy.mockRestore();
+        });
+
+        it('should not vouch for a burn-on-read edit, which the broadcast redaction does not cover', async () => {
+            const captureSpy = jest.spyOn(Redaction, 'captureRedactionEpoch').mockResolvedValue(5);
+            const handlePostsSpy = jest.spyOn(operator, 'handlePosts');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify({...editedPost, type: PostTypes.BURN_ON_READ})}} as WebSocketMessage);
+
+            expect(captureSpy).not.toHaveBeenCalled();
+            expect(handlePostsSpy).toHaveBeenCalledWith(expect.objectContaining({redactionVerifiedEpoch: undefined}));
+            captureSpy.mockRestore();
+            handlePostsSpy.mockRestore();
+        });
+
         it('should handle post edited event - post exists with permalink updates', async () => {
             const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
 
@@ -400,6 +437,50 @@ describe('WebSocket Post Actions', () => {
 
             expect(logWarningSpy).toHaveBeenCalledWith('Failed to sync permalink previews for edited post:', expect.any(Error));
             expect(batchRecordsSpy).toHaveBeenCalledWith([expect.any(PostsInChannelModel)], 'handlePostEdited');
+        });
+
+        it('should leave streaming state to the stream-end refetch for conversation-backed agent posts', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {conversation_id: 'conv1'}};
+            const removePostSpy = jest.spyOn(streamingStore, 'removePost');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(removePostSpy).not.toHaveBeenCalled();
+            expect(settleStreamedPost).not.toHaveBeenCalled();
+        });
+
+        it('should settle a conversation-backed agent post whose stream ended before the edit was stored', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {conversation_id: 'conv1'}};
+            streamingStore.startStreaming(serverUrl, agentPost.id);
+            streamingStore.endStreaming(serverUrl, agentPost.id);
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(settleStreamedPost).toHaveBeenCalledWith(serverUrl, agentPost.id);
+            streamingStore.removeServer(serverUrl);
+        });
+
+        it('should not settle a conversation-backed agent post that is still streaming', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {conversation_id: 'conv1'}};
+            streamingStore.startStreaming(serverUrl, agentPost.id);
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(settleStreamedPost).not.toHaveBeenCalled();
+            streamingStore.removeServer(serverUrl);
+        });
+
+        it('should clear streaming state for legacy agent posts without a conversation', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {}};
+            const removePostSpy = jest.spyOn(streamingStore, 'removePost');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(removePostSpy).toHaveBeenCalledWith(serverUrl, 'post1');
         });
 
         it('should handle post edited event - no operator', async () => {

@@ -250,10 +250,8 @@ describe('Classification Banner - Global Classification Banner', () => {
             // Inside the try: if this patch throws, the finally below still restores the
             // flag. Outside it, a failed patch would leave ClassificationMarkings off for
             // every later shard.
-            await System.apiPatchConfig(siteOneUrl, {
-                FeatureFlags: {
-                    ClassificationMarkings: false,
-                },
+            await System.apiPatchFeatureFlags(siteOneUrl, {
+                ClassificationMarkings: false,
             });
 
             await device.reloadReactNative();

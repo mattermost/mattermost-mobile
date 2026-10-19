@@ -6,20 +6,25 @@ import React, {useMemo, useCallback, useEffect, useState} from 'react';
 import {Text, View, Pressable, type LayoutChangeEvent} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
+import {fetchLinkedPost} from '@actions/remote/post';
 import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/edited_indicator';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
+import RedactedFilesPlaceholder from '@components/post_list/post/body/redacted_files_placeholder';
+import UnverifiedFilesPlaceholder from '@components/post_list/post/body/unverified_files_placeholder';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstants} from '@constants';
+import {HTTP_FORBIDDEN, HTTP_NOT_FOUND} from '@constants/network';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useUserLocale} from '@context/user_locale';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
+import {isErrorWithStatusCode} from '@utils/errors';
+import {getPermalinkRedactedFileCount, getPostTranslatedMessage, getPostTranslation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
@@ -37,10 +42,30 @@ const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 const MIN_PERMALINK_WIDTH = 340;
 const TABLET_PADDING_OFFSET = 40;
 
+// FlatList windowing remounts previews constantly. Without this, a linked post the fetch cannot
+// populate (deleted, or one the user may not read) would be requested again on every remount.
+const linkedPostFetchAttempts = new Set<string>();
+
+// Forbidden or not found is the server's final answer until access changes; any other failure may
+// resolve on a later mount.
+const isFinalFetchAnswer = (error: unknown) => isErrorWithStatusCode(error) && (error.status_code === HTTP_FORBIDDEN || error.status_code === HTTP_NOT_FOUND);
+
+const fetchLinkedPostOnce = async (serverUrl: string, postId: string, attemptKey: string, forgetOnSuccess = false) => {
+    if (linkedPostFetchAttempts.has(attemptKey)) {
+        return;
+    }
+    linkedPostFetchAttempts.add(attemptKey);
+    const {error} = await fetchLinkedPost(serverUrl, postId);
+    if (error ? !isFinalFetchAnswer(error) : forgetOnSuccess) {
+        linkedPostFetchAttempts.delete(attemptKey);
+    }
+};
+
 export type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
     author?: UserModel;
     currentUser?: UserModel;
+    hasLinkedPostFiles: boolean;
     isMilitaryTime: boolean;
     teammateNameDisplay: string;
     post?: PostModel;
@@ -49,6 +74,8 @@ export type PermalinkPreviewProps = {
     parentLocation?: string;
     parentPostId?: string;
     autotranslationsEnabled: boolean;
+    embedRequiredEpoch: number;
+    isEmbedRedactionVerified: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -124,6 +151,7 @@ const PermalinkPreview = ({
     embedData,
     author,
     currentUser,
+    hasLinkedPostFiles,
     isMilitaryTime,
     teammateNameDisplay,
     post,
@@ -132,6 +160,8 @@ const PermalinkPreview = ({
     parentLocation,
     parentPostId,
     autotranslationsEnabled,
+    embedRequiredEpoch,
+    isEmbedRedactionVerified,
 }: PermalinkPreviewProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -161,6 +191,31 @@ const PermalinkPreview = ({
             fetchUsersByIds(serverUrl, [userId], false);
         }
     }, [userId, author, serverUrl]);
+
+    const linkedPostId = embedData?.post_id;
+    const filesInfo = useMemo(() => {
+        return embedData?.post?.metadata?.files || [];
+    }, [embedData?.post?.metadata?.files]);
+    const embedFilesCount = filesInfo.length;
+    useEffect(() => {
+        if (!linkedPostId) {
+            return;
+        }
+        if (!post) {
+            // Per epoch: a refusal stops holding once access changes. Forgotten once stored, so a post
+            // evicted later can be fetched again.
+            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|missing|${embedRequiredEpoch}`, true);
+            return;
+        }
+
+        // When the embed shows accessible files but DB records are missing (e.g. after ABAC
+        // access is granted and file records were deleted during the denial period), re-fetch
+        // the linked post so handlePosts repopulates the file records. Once per epoch: a newer
+        // decision is worth another attempt.
+        if (isEmbedRedactionVerified && embedFilesCount > 0 && !hasLinkedPostFiles) {
+            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|files|${embedRequiredEpoch}`);
+        }
+    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isEmbedRedactionVerified, embedRequiredEpoch]);
 
     if (isOriginPostDeleted) {
         return null;
@@ -205,11 +260,17 @@ const PermalinkPreview = ({
         return `~${displayName}`;
     }, [channel_display_name, channel_type, authorDisplayName]);
 
-    const filesInfo = useMemo(() => {
-        return embedData?.post?.metadata?.files || [];
-    }, [embedData?.post?.metadata?.files]);
+    // The server only populates redacted_file_count while ABAC is enforced
+    // (FeatureFlagPermissionPolicies and EnableAttributeBasedAccessControl), so no client-side
+    // flag gate is needed here.
+    const redactedFileCount = getPermalinkRedactedFileCount(embedData, post?.metadata?.redacted_file_count ?? 0);
 
-    const hasFiles = filesInfo.length > 0;
+    // While the host is behind either channel's epoch, neither the attachments nor a denial claim
+    // about them is trustworthy. The placeholder re-verifies the host, which re-sanitizes the embed.
+    const showEmbeddedFiles = isEmbedRedactionVerified && hasLinkedPostFiles && embedFilesCount > 0;
+    const showRedactedPlaceholder = isEmbedRedactionVerified && redactedFileCount > 0;
+    const hostPostId = parentPostId ?? '';
+    const showUnverifiedPlaceholder = !isEmbedRedactionVerified && Boolean(hostPostId) && (embedFilesCount > 0 || redactedFileCount > 0);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const teamName = embedData.team_name;
@@ -304,7 +365,10 @@ const PermalinkPreview = ({
                         isEmbedded={true}
                     />
 
-                    {hasFiles && post && (
+                    {/* Both sources must agree: the embed carries what is rendered, and it is
+                        recalculated per user on every fetch, while hasLinkedPostFiles tells us the
+                        file records the gallery needs are actually stored. */}
+                    {showEmbeddedFiles && (
                         <PermalinkFiles
                             post={post}
                             location='permalink_preview'
@@ -312,6 +376,16 @@ const PermalinkPreview = ({
                             parentLocation={parentLocation}
                             parentPostId={parentPostId}
                             filesInfo={filesInfo}
+                        />
+                    )}
+                    {showRedactedPlaceholder && (
+                        <RedactedFilesPlaceholder/>
+                    )}
+                    {showUnverifiedPlaceholder && (
+                        <UnverifiedFilesPlaceholder
+                            postId={hostPostId}
+                            location={location}
+                            requiredEpoch={embedRequiredEpoch}
                         />
                     )}
                 </View>

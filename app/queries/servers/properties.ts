@@ -15,7 +15,9 @@ import {
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {
     deriveChannelAttributeBanner,
+    renderNativeBannerText,
     resolveChannelAttributes,
+    resolvedAttributesSignature,
     type ChannelAttributeBannerState,
     type ResolvedChannelAttribute,
 } from '@utils/channel_attributes';
@@ -26,11 +28,6 @@ import {getConfigValue, observeConfigBooleanValue, observeIsMinimumLicenseTier} 
 import type {PropertyFieldModel, PropertyValueModel, SystemModel} from '@database/models/server';
 
 const {SERVER: {PROPERTY_FIELD, PROPERTY_VALUE, SYSTEM}} = MM_TABLES;
-
-// ASCII unit separator. Joins per-attribute signatures with a byte no option name,
-// field name or colour can contain, so no value can forge a record boundary and
-// make two different configurations hash alike.
-export const SIGNATURE_SEPARATOR = '\u001f';
 
 export const getPropertyFieldsByNames = (database: Database, names: string[]) => {
     return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('name', Q.oneOf(names))).fetch();
@@ -223,7 +220,7 @@ export const observeResolvedChannelAttributes = (
             // field already reported the new attrs and every comparison of a
             // configuration change came out equal. Snapshotting it as a string at
             // emission time is what makes the comparison mean anything.
-            return {attributes, signature: attributes.map(renderSignature).join(SIGNATURE_SEPARATOR)};
+            return {attributes, signature: resolvedAttributesSignature(attributes)};
         }),
         distinctUntilChanged((a, b) => a.signature === b.signature),
         map(({attributes}) => attributes),
@@ -233,67 +230,20 @@ export const observeResolvedChannelAttributes = (
 export const observeChannelAttributeBanner = (
     database: Database,
     channelId: string,
-    nativeBannerText?: string,
-    authoredColor?: string,
+    bannerInfo?: ChannelBannerInfo,
 ): Observable<ChannelAttributeBannerState> => {
     return combineLatest([
         observeChannelAttributeFields(database),
         observePropertyValuesByTargetId(database, channelId),
         observeChannelAttributesEnabled(database),
     ]).pipe(
-        map(([fields, values, attributesEnabled]) => deriveChannelAttributeBanner(fields, values, nativeBannerText, authoredColor, attributesEnabled)),
+        map(([fields, values, attributesEnabled]) => ({
+            ...deriveChannelAttributeBanner(fields, values, bannerInfo, attributesEnabled),
+            nativeText: renderNativeBannerText(fields, values, bannerInfo?.text, attributesEnabled),
+        })),
         distinctUntilChanged((a, b) => a.hasBanner === b.hasBanner &&
             a.banner?.text === b.banner?.text &&
-            a.banner?.background_color === b.banner?.background_color),
+            a.banner?.background_color === b.banner?.background_color &&
+            a.nativeText === b.nativeText),
     );
 };
-
-/**
- * Everything the downstream surfaces read, as one string per attribute.
- *
- * The configuration keys have to be in here, not just the rendered value: which
- * surface an attribute appears on is decided *after* this comparator runs, by
- * selectAttributesForAction and selectChannelInfoAttributes reading attrs.actions
- * and attrs.required. Comparing only the value meant an administrator unticking
- * "show in header" produced an emission this treated as identical, so the chip
- * stayed on screen until the app restarted.
- */
-function renderSignature(attribute: ResolvedChannelAttribute): string {
-    const {attrs} = attribute.field;
-    const actions = Array.isArray(attrs?.actions) ? attrs.actions.join(',') : '';
-
-    // The option list is in here as a digest rather than by identity because it
-    // is what the editor offers. An administrator renaming, recolouring or
-    // removing an option has to reach an open row, and comparing only the
-    // rendered value meant the row kept offering an option the server had
-    // already stopped accepting. Joined with SIGNATURE_SEPARATOR rather than
-    // ':'/',' because option.name is admin-authored free text that can legally
-    // contain either, which would let two different option sets collide.
-    const options = Array.isArray(attrs?.options) ?attrs.options.map((option) => [option.id, option.rank ?? '', option.color ?? '', option.name].join(SIGNATURE_SEPARATOR)).join(SIGNATURE_SEPARATOR) :'';
-
-    return [
-        attribute.field.id,
-        attribute.field.name,
-        attribute.field.type,
-        attribute.displayValue,
-
-        // The raw stored value, not just the rendered display string: two options
-        // that happen to share a name and colour render identical display values,
-        // and without this, picking one over the other produced an emission this
-        // treated as unchanged.
-        JSON.stringify(attribute.rawValue ?? null),
-        attribute.option?.color ?? '',
-        attribute.unresolvedOptionIds?.join(',') ?? '',
-        actions,
-        attrs?.required === true ? '1' : '0',
-        attrs?.display_name ?? '',
-        typeof attrs?.sort_order === 'number' ? String(attrs.sort_order) : '',
-
-        // The three keys the editor gates on. Without them, narrowing a policy or
-        // revoking a tier produced an emission this treated as identical.
-        attrs?.change_policy ?? '',
-        attrs?.editable === false ? '0' : '1',
-        typeof attribute.field.permissionValues === 'string' ? attribute.field.permissionValues : '',
-        options,
-    ].join('|');
-}
