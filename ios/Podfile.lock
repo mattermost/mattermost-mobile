@@ -2536,7 +2536,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-network-client (1.11.2):
+  - react-native-network-client (1.11.5):
     - Alamofire (~> 5.11.2)
     - boost
     - DoubleConversion
@@ -2568,7 +2568,7 @@ PODS:
     - Starscream (~> 4.0.8)
     - SwiftyJSON (~> 5.0.2)
     - Yoga
-  - react-native-network-client-session-attributes (1.11.2)
+  - react-native-network-client-session-attributes (1.11.5)
   - react-native-notifications (5.2.2):
     - React-Core
   - react-native-paste-input (2.0.1):
@@ -4522,8 +4522,8 @@ SPEC CHECKSUMS:
   react-native-image-picker: 6051cfd030121b880a58f1cc0e5e33e9887804e4
   react-native-keyboard-controller: f8979f50dc2752ff5dc1656bd315d58cd6e78bba
   react-native-netinfo: 9fad4eedfec9840a10e73ac4591ea1158523309b
-  react-native-network-client: e50f0a63f14641be7b4c969df23f4bb70e437769
-  react-native-network-client-session-attributes: b80d7492a3de9c2103e28b3839fe91ff6ce2375b
+  react-native-network-client: 0318f0bf4060d676216479396ed9657f628aa639
+  react-native-network-client-session-attributes: c51531531c0f5e1b14f8b21e79c68eec23239d92
   react-native-notifications: e2d3c022d6077de7e420ba5c01b4bd9464f3941d
   react-native-paste-input: 4b1423c882afacf39d7e2617e6c94835dcefaf39
   react-native-performance: a7a65d0b0f3055c5db33e1433e4345143ef6a100
