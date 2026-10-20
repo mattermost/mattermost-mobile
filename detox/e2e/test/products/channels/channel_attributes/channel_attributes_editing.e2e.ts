@@ -14,7 +14,7 @@ import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_conf
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -64,7 +64,7 @@ function assertStoredValueUnset(stored: unknown) {
 }
 
 async function openChannel(channelName: string) {
-    await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
+    await waitFor(ChannelListScreen.headerTeamDisplayName).toExist().withTimeout(timeouts.TEN_SEC * 3);
     await wait(timeouts.TWO_SEC);
     await ChannelScreen.open('channels', channelName);
 }

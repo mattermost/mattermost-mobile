@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -167,7 +167,9 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
         };
     });
 
-    useEffect(() => {
+    // A layout effect so the token moves in the same commit that points the refs
+    // below at the new channel; queued saves check it before reading them.
+    useLayoutEffect(() => {
         visitToken.current += 1;
         saveSequence.current = new Map();
         pendingWrites.current = new Map();
@@ -220,6 +222,14 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
 
         const previousWrite = pendingWrites.current.get(fieldId) ?? Promise.resolve();
         const thisWrite = previousWrite.then(async () => {
+            // Replacing pendingWrites on a channel switch does not cancel a chain
+            // that is already queued, so drop it here before it reads the new
+            // channel's data and writes it against the old channelId.
+            if (token !== visitToken.current) {
+                logDebug('handleSubmit', 'skipped stale submit; channel changed', channelId, fieldId);
+                return {error: 'channel changed'};
+            }
+
             // Read after earlier writes finish. The sheet may have been open while
             // a websocket changed the field, value, or permissions, so captured
             // render data is not authoritative at request time.

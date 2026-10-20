@@ -72,7 +72,7 @@ function requireOption(optionIdsByName: Record<string, string | undefined>, name
 
 // Navigate into a public channel by name from the channel list sidebar.
 async function openChannel(channelName: string) {
-    await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
+    await waitFor(ChannelListScreen.headerTeamDisplayName).toExist().withTimeout(timeouts.TEN_SEC * 3);
     await wait(timeouts.TWO_SEC);
     await ChannelScreen.open('channels', channelName);
 }
@@ -381,7 +381,7 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
             // # Navigate to the DM — DMs appear under 'direct_messages' category.
             // Channel item testIDs use channel.name, which for DMs is userId__userId,
             // NOT the other user's username.
-            await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
+            await waitFor(ChannelListScreen.headerTeamDisplayName).toExist().withTimeout(timeouts.TEN_SEC * 3);
             await wait(timeouts.TWO_SEC);
             await ChannelScreen.open('direct_messages', dmChannel.name);
 

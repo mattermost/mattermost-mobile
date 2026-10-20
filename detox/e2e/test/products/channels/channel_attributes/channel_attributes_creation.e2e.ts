@@ -14,7 +14,7 @@ import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_conf
 import {ChannelAttributeForm, ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, CreateOrEditChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -179,7 +179,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
     }
 
     async function tapCreateAndWaitForChannelWithAttributes() {
-        const errorText = element(by.id('edit_channel_info.error.text'));
+        const errorText = CreateOrEditChannelScreen.errorText;
         await CreateOrEditChannelScreen.createButton.tap();
         await ChannelScreen.dismissScheduledPostTooltip();
 
@@ -234,7 +234,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         await CreateOrEditChannelScreen.createButton.tap();
         await wait(timeouts.ONE_SEC);
         await expect(CreateOrEditChannelScreen.createOrEditChannelScreen).toBeVisible();
-        await expect(element(by.id('edit_channel_info.error.text'))).not.toExist();
+        await expect(CreateOrEditChannelScreen.errorText).not.toExist();
 
         // # Set the required attribute.
         await ChannelAttributeForm.openEditor(REQUIRED_FIELD_NAME);
