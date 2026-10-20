@@ -5,8 +5,6 @@
 
 import {DEFAULT_MAX_FILE_SIZE_BYTES} from '@support/constants/file_settings';
 
-import {DEMO_PLUGIN_ID} from './demo-plugin-fixture';
-
 export type BaselineTransport = {
     request<T = any>(method: 'GET' | 'PUT' | 'POST' | 'DELETE' | 'PATCH', path: string, body?: unknown): Promise<{status: number; data: T}>;
 };
@@ -72,8 +70,6 @@ export type BaselineKeyStatus = {
 
 export const CONFIG_BASELINE: Readonly<Record<string, BaselineEntry>> = {
     'PluginSettings.Plugins[com.mattermost.calls].DefaultEnabled': {value: true},
-    [`PluginSettings.Plugins[${DEMO_PLUGIN_ID}].DialogOnlyMode`]: {value: true},
-    [`PluginSettings.PluginStates[${DEMO_PLUGIN_ID}].Enable`]: {value: true},
     'FileSettings.MaxFileSize': {value: DEFAULT_MAX_FILE_SIZE_BYTES, atLeast: true},
     'FileSettings.EnablePublicLink': {value: true},
     'FileSettings.EnableFileAttachments': {value: true},

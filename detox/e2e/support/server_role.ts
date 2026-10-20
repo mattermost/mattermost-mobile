@@ -8,11 +8,11 @@ export const serverRole = process.env.E2E_SERVER_ROLE || 'local';
 export const canMutateServer = process.env.CI !== 'true' || serverRole === 'mutation';
 
 /**
- * Fails a spec that changes server-wide state when it lands on a pool shard. Routing comes from
- * detox/e2e/server_mutation_specs.json; a miss there must fail loudly, not run on a shared server.
+ * Fails a spec that must not run on a pool shard. Routing comes from detox/e2e/server_mutation_specs.json;
+ * a miss there must fail loudly, not run on a shared server.
  */
-export const requireMutationServer = (specName: string) => {
+export const requireMutationServer = (specName: string, reason = 'changes server-wide state') => {
     if (!canMutateServer) {
-        throw new Error(`${specName} changes server-wide state and must run on the mutation shard (E2E_SERVER_ROLE=${serverRole}); add it to detox/e2e/server_mutation_specs.json`);
+        throw new Error(`${specName} ${reason} and must run on the mutation shard (E2E_SERVER_ROLE=${serverRole}); add it to detox/e2e/server_mutation_specs.json`);
     }
 };

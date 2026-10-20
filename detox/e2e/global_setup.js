@@ -94,8 +94,8 @@ const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localh
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
-// Installed by provisioning (REQUIRED_PLUGINS in provision/constants.ts); disabling them here
-// made the Agents suites skip silently.
+// Plugins in this set are never disabled by this setup; provisioning owns them (provision/constants.ts).
+// The demo plugin is installed only on server B.
 const PROVISIONED_PLUGINS = new Set(['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
 
 // Prepackaged plugins to keep enabled (shared with provisioning).

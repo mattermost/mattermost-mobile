@@ -24,6 +24,7 @@ import {
     waitForDialogSelectorButton,
 } from '@support/interactive_dialog_plugin_helper';
 import {Post} from '@support/server_api';
+import {requireMutationServer} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
 import {AttachmentOptions} from '@support/ui/component';
 import {
@@ -36,6 +37,7 @@ import {expect} from 'detox';
 
 const itNotIos = isIos() ? it.skip : it;
 
+// Routed to server B (detox/e2e/server_mutation_specs.json) because only B has the demo plugin.
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
@@ -44,6 +46,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     let setupFailed = false;
 
     beforeAll(async () => {
+        requireMutationServer('interactive_dialog_plugin', 'needs the demo plugin, which only server B has');
         try {
             ({channel: testChannel, team: testTeam, user: testUser} = await setUpDialogSuite(channelsCategory));
         } catch (error) {

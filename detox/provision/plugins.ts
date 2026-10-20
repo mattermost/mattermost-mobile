@@ -17,7 +17,6 @@ import {
     DEMO_PLUGIN_ID,
     PLUGIN_STATE_FAILED,
     PLUGIN_STATE_RUNNING,
-    REQUIRED_PLUGINS,
 } from './constants';
 import {getAgentsPluginDownloadUrl} from './env';
 import {sleep, uploadMultipartFile} from './http-client';
@@ -486,21 +485,21 @@ export async function installRequiredPlugin(
     }
 }
 
-/** Active plugins that are neither prepackaged nor installed by provisioning. */
-export function strayPluginIds(active: PluginListEntry[] = []): string[] {
-    const keep = new Set<string>([...PREPACKAGED_PLUGINS, ...REQUIRED_PLUGINS.map((plugin) => plugin.id)]);
-    return active.map((plugin) => plugin.id).filter((id) => !keep.has(id));
+/** Active plugins that are neither prepackaged nor provisioned for this server. */
+export function strayPluginIds(active: PluginListEntry[] | undefined, provisioned: readonly RequiredPlugin[]): string[] {
+    const keep = new Set<string>([...PREPACKAGED_PLUGINS, ...provisioned.map((plugin) => plugin.id)]);
+    return (active ?? []).map((plugin) => plugin.id).filter((id) => !keep.has(id));
 }
 
 /** Disables stray plugins once per run, so shards on read-only pool servers never have to. */
-export async function disableStrayPlugins(client: MattermostClient, token: string): Promise<void> {
+export async function disableStrayPlugins(client: MattermostClient, token: string, provisioned: readonly RequiredPlugin[]): Promise<void> {
     const res = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
     if (res.status !== 200) {
         logWarn(`Could not list plugins to disable stray ones (HTTP ${res.status})`);
         return;
     }
     /* eslint-disable no-await-in-loop -- one plugin at a time for clear provisioning logs */
-    for (const id of strayPluginIds(res.data?.active)) {
+    for (const id of strayPluginIds(res.data?.active, provisioned)) {
         const disableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(id)}/disable`, {}, token);
         if (disableRes.status === 200) {
             logInfo(`Disabled stray plugin ${id}`);
@@ -509,4 +508,27 @@ export async function disableStrayPlugins(client: MattermostClient, token: strin
         }
     }
     /* eslint-enable no-await-in-loop */
+}
+
+/** A violation message when the demo plugin is active on a server that was not provisioned with it. */
+export function demoPluginViolation(active: PluginListEntry[] | undefined, demoPlugin: boolean): string | undefined {
+    if (demoPlugin || !active?.some((plugin) => plugin.id === DEMO_PLUGIN_ID)) {
+        return undefined;
+    }
+    return `${DEMO_PLUGIN_ID} is active on a server provisioned without it; provisioning cannot finish`;
+}
+
+/** Fails provisioning when a server without the demo plugin still runs it, since the baseline no longer covers it. */
+export async function assertDemoPluginAbsent(client: MattermostClient, token: string, demoPlugin: boolean): Promise<void> {
+    if (demoPlugin) {
+        return;
+    }
+    const res = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
+    if (res.status !== 200) {
+        throw new Error(`Could not list plugins to verify ${DEMO_PLUGIN_ID} is absent (HTTP ${res.status})`);
+    }
+    const violation = demoPluginViolation(res.data?.active, demoPlugin);
+    if (violation) {
+        throw new Error(violation);
+    }
 }

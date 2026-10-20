@@ -150,7 +150,7 @@ jobs:
           fi
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  # PR E2E runs detox provision (demo plugin, license, config) before tests.
+  # Provisions license, config and plugins (demo plugin on site 2 only) before tests.
   # CMT previously skipped that and only used Matterwick-booted servers, so
   # interactive_dialog_plugin failed 24× with "Demo plugin is not active".
   provision-cmt-servers:
@@ -185,6 +185,24 @@ jobs:
             exit 1
           fi
 
+          # The demo plugin goes only to full-suite site 2 URLs; a pool, shared or smoke server must not be one of them.
+          DEMO_CONFLICTS=$(echo "$CMT_MATRIX" | jq -r '
+            . as $m
+            | ([ $m.server[] | select(.latest != true) | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url, .site_3_url ]
+              + [ $m.server[] | select(.latest == true) | .android_site_1_url, .ios_site_1_url, .site_3_url ]
+              | map(select(. != null and . != ""))) as $pool
+            | $m.server[] | select(.latest == true) | . as $row
+            | ["android", "ios"][] as $p
+            | $row[$p + "_site_2_url"] as $url
+            | select($url != null and $url != "" and ($pool | any(. == $url)))
+            | "\($row.version // "unknown"): \($p)_site_2_url \($url) is also a pool, shared or smoke server"
+          ')
+          if [ -n "$DEMO_CONFLICTS" ]; then
+            echo "::error::The demo plugin would land on a pool server; these site 2 URLs are also pool, shared or smoke servers:"
+            printf '%s\n' "$DEMO_CONFLICTS"
+            exit 1
+          fi
+
           URLS=$(echo "$CMT_MATRIX" | jq -r '
             .server[]
             | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url, .site_3_url
@@ -194,10 +212,20 @@ jobs:
             echo "::error::CMT_MATRIX contained no server URLs to provision"
             exit 1
           fi
+          # Only full-suite rows run the mutation shard on site 2 (smoke rows use smoke_test, which has no mutation specs).
+          DEMO_URLS=$(echo "$CMT_MATRIX" | jq -r '
+            .server[]
+            | select(.latest == true)
+            | .android_site_2_url, .ios_site_2_url
+            | select(. != null and . != "")
+          ' | awk 'NF && !seen[$0]++')
           echo "Provisioning $(echo "$URLS" | wc -l | tr -d ' ') unique server(s)"
           {
             echo "list<<EOF"
             printf '%s\n' "$URLS"
+            echo "EOF"
+            echo "demo<<EOF"
+            if [ -n "$DEMO_URLS" ]; then printf '%s\n' "$DEMO_URLS"; fi
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -208,6 +236,7 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
         with:
           server-urls: ${{ steps.urls.outputs.list }}
+          demo-plugin-server-urls: ${{ steps.urls.outputs.demo }}
 
   # Input follows the below schema
   # {
@@ -385,8 +414,8 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
-      # Full suite matches the PR/main shard count (template default 28); smoke stays single-shard.
-      parallelism: ${{ matrix.server.latest && '28' || '1' }}
+      # Full suite matches the PR/main shard count (template default 32); smoke stays single-shard.
+      parallelism: ${{ matrix.server.latest && '32' || '1' }}
       artifact_run_id: ${{ github.run_id }}
 
   detox-ipad-e2e:
@@ -518,8 +547,8 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
-      # Full suite matches the PR/main shard count (template default 28); smoke stays single-shard.
-      parallelism: ${{ matrix.server.latest && '28' || '1' }}
+      # Full suite matches the PR/main shard count (template default 32); smoke stays single-shard.
+      parallelism: ${{ matrix.server.latest && '32' || '1' }}
       artifact_run_id: ${{ github.run_id }}
 
   # Maestro runs only against the latest server version (no smoke-on-older variant).

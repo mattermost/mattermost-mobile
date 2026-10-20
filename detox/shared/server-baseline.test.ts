@@ -57,9 +57,7 @@ const freshConfig = (): JsonRecord => ({
         Plugins: {
             'com.mattermost.agents': {apiKey: 'real-secret'},
             'com.mattermost.calls': {DefaultEnabled: false},
-            'com.mattermost.demo-plugin': {DialogOnlyMode: false},
         },
-        PluginStates: {'com.mattermost.demo-plugin': {Enable: false}},
     },
     EmailSettings: {EnableSignInWithEmail: false, EnableSignInWithUsername: false},
     AccessControlSettings: {EnableAttributeBasedAccessControl: false, EnableUserManagedAttributes: false},
@@ -372,7 +370,7 @@ describe('applyBaseline', () => {
         assert.equal(report.ok, false);
         assert.equal(server.config.PluginSettings.Plugins['com.mattermost.calls'].licenseToken, 'real-license');
         assert.equal(JSON.stringify(writesOf(server.calls)).includes(REDACTED), false);
-        assert.equal(server.config.PluginSettings.Plugins['com.mattermost.demo-plugin'].DialogOnlyMode, true, 'unaffected plugin still applied');
+        assert.equal(server.config.FileSettings.EnablePublicLink, true, 'unaffected setting still applied');
     });
 
     it('keeps sibling plugin entries when writing one plugin map entry', async () => {
@@ -381,19 +379,17 @@ describe('applyBaseline', () => {
 
         assert.equal(server.config.PluginSettings.Plugins['com.mattermost.agents'].apiKey, 'real-secret');
         assert.equal(server.config.PluginSettings.Plugins['com.mattermost.calls'].DefaultEnabled, true);
-        assert.equal(server.config.PluginSettings.Plugins['com.mattermost.demo-plugin'].DialogOnlyMode, true);
-        assert.equal(server.config.PluginSettings.PluginStates['com.mattermost.demo-plugin'].Enable, true);
     });
 
     it('writes settings of a plugin that is not installed yet without failing on the hidden read-back', async () => {
-        const demo = 'com.mattermost.demo-plugin';
-        const installedPlugins = Object.keys(freshConfig().PluginSettings.Plugins).filter((id) => id !== demo);
+        const calls = 'com.mattermost.calls';
+        const installedPlugins = Object.keys(freshConfig().PluginSettings.Plugins).filter((id) => id !== calls);
         const server = createFakeServer({installedPlugins});
         const report = await applyBaseline(server.transport, {serverUrl: SERVER_URL});
 
-        assert.equal(server.config.PluginSettings.Plugins[demo].DialogOnlyMode, true, 'the write is stored');
-        assert.equal(report.failed.some((line) => line.includes(demo)), false);
-        assert.ok(report.info.some((line) => line.includes(`hides it until ${demo} is installed`)));
+        assert.equal(server.config.PluginSettings.Plugins[calls].DefaultEnabled, true, 'the write is stored');
+        assert.equal(report.failed.some((line) => line.includes(calls)), false);
+        assert.ok(report.info.some((line) => line.includes(`hides it until ${calls} is installed`)));
     });
 
     it('drives a flag the baseline wants off back to false in the full-map write', async () => {
@@ -493,13 +489,13 @@ describe('verifyBaseline', () => {
     });
 
     it('reports a plugin setting whose plugin is not installed as info, naming the plugin', async () => {
-        const demo = 'com.mattermost.demo-plugin';
-        const installedPlugins = Object.keys(freshConfig().PluginSettings.Plugins).filter((id) => id !== demo);
+        const calls = 'com.mattermost.calls';
+        const installedPlugins = Object.keys(freshConfig().PluginSettings.Plugins).filter((id) => id !== calls);
         const server = createFakeServer({installedPlugins});
         const report = await verifyBaseline(server.transport, {serverUrl: SERVER_URL, clientPollTimeoutMs: 0, sleep: sleepNoop});
 
-        assert.ok(report.info.some((line) => line.startsWith(`PluginSettings.Plugins[${demo}].DialogOnlyMode: ${demo} is not installed`)));
-        assert.equal(report.failed.some((line) => line.includes('DialogOnlyMode')), false);
+        assert.ok(report.info.some((line) => line.startsWith(`PluginSettings.Plugins[${calls}].DefaultEnabled: ${calls} is not installed`)));
+        assert.equal(report.failed.some((line) => line.includes('DefaultEnabled')), false);
     });
 
     it('fails when clients still see a flag on that the baseline wants off', async () => {

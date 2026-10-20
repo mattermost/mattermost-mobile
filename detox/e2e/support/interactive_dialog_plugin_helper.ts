@@ -10,7 +10,6 @@ import {
     DemoPlugin,
     Plugin,
     Setup,
-    System,
     User,
     Post,
 } from '@support/server_api';
@@ -277,20 +276,6 @@ async function dismissErrorAlert() {
     } catch {}
 }
 
-const isDialogOnlyModeConfigured = async (): Promise<boolean> => {
-    const {config} = await System.apiGetConfig(siteOneUrl);
-    const pluginSettings = config?.PluginSettings;
-    return pluginSettings?.PluginStates?.[DemoPlugin.id]?.Enable === true &&
-        pluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode === true;
-};
-
-// Provisioning enables the demo plugin in DialogOnlyMode; re-sending it re-enters plugin activation for every shard.
-const assertDialogOnlyMode = async () => {
-    if (!await isDialogOnlyModeConfigured()) {
-        throw new Error('Demo plugin is not enabled in DialogOnlyMode; provisioning must run first');
-    }
-};
-
 /** Shared suite setup for the demo-plugin dialog specs. */
 export async function setUpDialogSuite(channelsCategory: string) {
     const serverOneDisplayName = 'Server 1';
@@ -301,12 +286,11 @@ export async function setUpDialogSuite(channelsCategory: string) {
     await User.apiAdminLogin(siteOneUrl);
 
     // Provisioning owns these settings; the suite only checks them.
-    await assertDialogOnlyMode();
     await assertServerBaseline(siteOneUrl, ['ServiceSettings.EnableGifPicker', 'FileSettings.EnablePublicLink', 'FileSettings.EnableFileAttachments', 'FileSettings.EnableMobileUpload']);
 
     const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
     if (!statusCheck.isActive) {
-        throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
+        throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. It is installed only on server B: route this spec to B in detox/e2e/server_mutation_specs.json and provision B with --demo-plugin.`);
     }
     await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
