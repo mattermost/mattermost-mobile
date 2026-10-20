@@ -59,9 +59,7 @@ import {expect} from 'detox';
 // screens stay mounted underneath. Un-indexed matchers therefore throw
 // "multiple elements matched" — always probe/index. (Mobile twin of the Cypress
 // `#appsModal` gotcha.)
-const DIALOG_SCREEN_ID = 'interactive_dialog.screen';
-const CLOSE_BUTTON_ID = 'close.interactive_dialog.button';
-const SUBMIT_BUTTON_ID = 'interactive_dialog.submit.button';
+const {interactiveDialogScreen: DIALOG_SCREEN_ID, closeButton: CLOSE_BUTTON_ID, submitButton: SUBMIT_BUTTON_ID} = InteractiveDialogScreen.testID;
 
 // A single dialog matches several nodes per matcher (testID propagation across the
 // SafeAreaView and its inner/accessibility views), and up to 3 dialogs can stack, so
@@ -74,13 +72,10 @@ const BOARD_TITLE = 'Incident Response Board';
 const TRIAGE_TITLE = 'INC-301 — Triage';
 const NOTE_TITLE = 'INC-301 — Add Note';
 
-// testID = `AppFormElement.${name}` (apps_form_field.tsx), and @components/button
-// suffixes the spinner with `-loader` (components/button/index.tsx).
-const BTN_TRIAGE_INC301 = 'AppFormElement.btn_INC-301';
-const BTN_ADD_NOTE = 'AppFormElement.btn_add_note';
-const BTN_ESCALATE_FAIL = 'AppFormElement.btn_escalate_fail';
-const BTN_TRIAGE_LOADER = `${BTN_TRIAGE_INC301}-loader`;
-const BTN_TRIAGE_INC301_LABEL = `${BTN_TRIAGE_INC301}-label`;
+// Action button element names from the demo plugin's dialog definitions.
+const BTN_TRIAGE_INC301 = 'btn_INC-301';
+const BTN_ADD_NOTE = 'btn_add_note';
+const BTN_ESCALATE_FAIL = 'btn_escalate_fail';
 
 // The timeline note dialog sets submit_buttons, so it has no header Submit; these are
 // the option values of its hidden note_action select.
@@ -242,8 +237,8 @@ async function scrollTopDialog() {
     }
 }
 
-async function tapActionButton(testID: string) {
-    const button = element(by.id(testID));
+async function tapActionButton(elementName: string) {
+    const button = InteractiveDialogScreen.getActionButton(elementName);
     try {
         await waitFor(button).toBeVisible().withTimeout(timeouts.TEN_SEC);
     } catch {
@@ -564,7 +559,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
 
         // * The board re-fetched its form (refresh_on_return), so the INC-301 button
         // * shows the saved severity...
-        await waitFor(element(by.id(BTN_TRIAGE_INC301_LABEL))).toHaveText('🟢 INC-301').withTimeout(timeouts.TEN_SEC);
+        await waitFor(InteractiveDialogScreen.getActionButtonLabel(BTN_TRIAGE_INC301)).toHaveText('🟢 INC-301').withTimeout(timeouts.TEN_SEC);
 
         // * ...and the notes typed before opening triage were kept
         await expect(InteractiveDialogScreen.getTextInput('shift_notes')).toHaveText(shiftNotes);
@@ -620,7 +615,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
 
                 // * A spinner appears alongside the label (Button renders
                 // * {showLoader && loadingComponent} next to {label}, it does not replace it)
-                await waitFor(element(by.id(BTN_TRIAGE_LOADER))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+                await waitFor(InteractiveDialogScreen.getActionButtonLoader(BTN_TRIAGE_INC301)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
                 // # Repeat tap while the action is in flight.
                 //
@@ -631,7 +626,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
                 // claim ("ignore repeat taps") pass even when no second tap ever landed.
                 let repeatTapRejected = false;
                 try {
-                    await element(by.id(BTN_TRIAGE_INC301)).tap();
+                    await InteractiveDialogScreen.getActionButton(BTN_TRIAGE_INC301).tap();
                 } catch {
                     repeatTapRejected = true;
                 }
@@ -640,7 +635,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
                 // * absorbed by usePreventDoubleTap. Both are acceptable; what is NOT
                 // * acceptable is a second dialog, which the close-once check below proves.
                 if (!repeatTapRejected) {
-                    await waitFor(element(by.id(BTN_TRIAGE_LOADER))).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                    await waitFor(InteractiveDialogScreen.getActionButtonLoader(BTN_TRIAGE_INC301)).toBeVisible().withTimeout(timeouts.FIVE_SEC);
                 }
             } finally {
                 await safeEnableSynchronization();

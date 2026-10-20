@@ -196,11 +196,15 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     // The server should specify which fields trigger form refresh
     appField.refresh = element.refresh;
 
-    // Preserve action button configuration
-    if (element.type === DialogElementTypes.ACTION_BUTTON && element.action_button) {
-        appField.action_button_url = element.action_button.url;
-        if (element.action_button.context) {
-            appField.action_button_context = element.action_button.context;
+    // Preserve action button configuration. Action buttons carry no value, so they can
+    // never satisfy a required check.
+    if (element.type === DialogElementTypes.ACTION_BUTTON) {
+        appField.is_required = false;
+        if (element.action_button) {
+            appField.action_button_url = element.action_button.url;
+            if (element.action_button.context) {
+                appField.action_button_context = element.action_button.context;
+            }
         }
     }
 

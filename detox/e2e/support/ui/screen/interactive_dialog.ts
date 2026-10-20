@@ -30,6 +30,12 @@ class InteractiveDialogScreen {
 
     getTextInput = (elementName: string) => element(by.id(`AppFormElement.${elementName}.input`));
 
+    // testID = `AppFormElement.${name}` (apps_form_field.tsx), and @components/button
+    // suffixes the spinner with `-loader` and the text with `-label` (components/button/index.tsx).
+    getActionButton = (elementName: string) => element(by.id(`AppFormElement.${elementName}`));
+    getActionButtonLoader = (elementName: string) => element(by.id(`AppFormElement.${elementName}-loader`));
+    getActionButtonLabel = (elementName: string) => element(by.id(`AppFormElement.${elementName}-label`));
+
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
     setDialogInputText = async (input: Detox.NativeElement, value: string) => {
         await input.tap();

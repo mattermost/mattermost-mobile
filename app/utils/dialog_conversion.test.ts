@@ -695,6 +695,19 @@ describe('dialog_conversion', () => {
             expect(result.action_button_context).toEqual({parent_id: '123'});
         });
 
+        it('should not mark action_button elements as required when optional is omitted', () => {
+            const element = {
+                name: 'action_button_field',
+                type: DialogElementTypes.ACTION_BUTTON,
+                display_name: 'Open Child Dialog',
+                action_button: {url: '/plugins/my-plugin/child-dialog'},
+            } as DialogElement;
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result.is_required).toBe(false);
+        });
+
         it('should handle elements without options', () => {
             const element: DialogElement = {
                 name: 'text_field',
