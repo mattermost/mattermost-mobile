@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-native';
 import React from 'react';
 
 import DatabaseManager from '@database/manager';
@@ -18,8 +19,15 @@ jest.mock('@actions/remote/command', () => ({
     handleGotoLocation: jest.fn(),
 }));
 
+type MockFieldProps = {name: string; value: AppFormValue; onChange: (name: string, value: AppFormValue) => void};
+
+// Latest props each field rendered with, keyed by field name.
+const mockFieldProps: Record<string, MockFieldProps> = {};
 jest.mock('./apps_form_field', () => {
-    const MockField = () => null;
+    const MockField = (props: {name: string}) => {
+        mockFieldProps[props.name] = props as MockFieldProps;
+        return null;
+    };
     return {
         __esModule: true,
         default: MockField,
@@ -123,5 +131,95 @@ describe('AppsFormComponent navigation header', () => {
 
         const headerRight = lastHeaderRight();
         expect(headerRight?.().props.text).toBe('Triage');
+    });
+});
+
+describe('AppsFormComponent refresh on return', () => {
+    let database: Database;
+
+    const fields = (tasks: string, pickOptions: string[]) => [
+        {name: 'notes', type: 'text', value: ''},
+        {name: 'tasks', type: 'text', value: tasks},
+        {name: 'pick', type: 'static_select', options: pickOptions.map((value) => ({label: value, value}))},
+    ] as AppField[];
+
+    const formBefore = {title: 'Cargo', fields: fields('1 task', ['a', 'b'])} as AppForm;
+    const formAfter = {title: 'Cargo', fields: fields('2 tasks', ['a'])} as AppForm;
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should refresh with the current values and keep what the user entered', async () => {
+        const props = {...getProps(), refreshForm: jest.fn().mockResolvedValue({data: {type: 'form'}})};
+        const {rerender} = renderWithEverything(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={0}
+            />,
+            {database, serverUrl},
+        );
+
+        act(() => {
+            mockFieldProps.notes.onChange('notes', 'my notes');
+            mockFieldProps.pick.onChange('pick', {label: 'b', value: 'b'});
+        });
+
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formBefore}
+                    refreshNonce={1}
+                />,
+            );
+        });
+
+        expect(props.refreshForm).toHaveBeenCalledWith(expect.objectContaining({notes: 'my notes', tasks: '1 task'}));
+
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formAfter}
+                refreshNonce={1}
+            />,
+        );
+
+        expect(mockFieldProps.notes.value).toBe('my notes');
+        expect(mockFieldProps.tasks.value).toBe('2 tasks');
+
+        // The picked option was removed by the refresh.
+        expect(mockFieldProps.pick.value).toBe('');
+    });
+
+    it('should not re-apply user values when the form is replaced without a refresh on return', () => {
+        const props = getProps();
+        const {rerender} = renderWithEverything(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+            />,
+            {database, serverUrl},
+        );
+
+        act(() => {
+            mockFieldProps.notes.onChange('notes', 'my notes');
+        });
+
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formAfter}
+            />,
+        );
+
+        expect(mockFieldProps.notes.value).toBe('');
     });
 });

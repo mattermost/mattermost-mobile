@@ -962,6 +962,12 @@ describe('dialog_conversion', () => {
             trigger_id: 'test-trigger-id',
         };
 
+        it('should pass submit_buttons through so the named select renders as submit buttons', () => {
+            const result = convertDialogToAppForm({...mockConfig, dialog: {...mockConfig.dialog, submit_buttons: 'select_field'}});
+
+            expect(result.submit_buttons).toBe('select_field');
+        });
+
         it('should convert dialog config to app form correctly', () => {
             const result = convertDialogToAppForm(mockConfig);
 

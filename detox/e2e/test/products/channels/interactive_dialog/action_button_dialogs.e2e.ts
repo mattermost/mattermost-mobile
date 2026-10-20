@@ -34,6 +34,7 @@ import {
     Command,
     DemoPlugin,
     Plugin,
+    Post,
     Setup,
     System,
     User,
@@ -50,7 +51,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 // Stacked dialogs are separate expo-router screens pushed by
@@ -79,12 +80,22 @@ const BTN_TRIAGE_INC301 = 'AppFormElement.btn_INC-301';
 const BTN_ADD_NOTE = 'AppFormElement.btn_add_note';
 const BTN_ESCALATE_FAIL = 'AppFormElement.btn_escalate_fail';
 const BTN_TRIAGE_LOADER = `${BTN_TRIAGE_INC301}-loader`;
+const BTN_TRIAGE_INC301_LABEL = `${BTN_TRIAGE_INC301}-label`;
+
+// The timeline note dialog sets submit_buttons, so it has no header Submit; these are
+// the option values of its hidden note_action select.
+const NOTE_ACTION_ADD = 'add';
+const NOTE_ACTION_SAVE_CLOSE = 'close';
 
 const ACTION_FAILED_TEXT = 'Action failed';
 
 // Option labels include the plugin's emoji prefixes.
 const STATUS_RESOLVED = '✅ resolved';
 const SEVERITY_LOW = '🟢 low';
+
+// note_type defaults to "Update", so the select button already shows that text and
+// selecting it by text would match twice. Root Cause is unique on screen.
+const NOTE_TYPE_ROOT_CAUSE = 'Root Cause';
 
 // ===== Helper Functions =====
 
@@ -110,6 +121,23 @@ async function setPluginConfig(overrides: {[key: string]: any} = {}) {
     if (result.error) {
         throw new Error(`Failed to configure demo plugin: ${result.error.message || JSON.stringify(result.error)}`);
     }
+}
+
+// The demo plugin keeps incident state (severity, timeline notes) in memory, so a test
+// that saves triage or notes would change the data the next test starts from.
+// Restarting the plugin restores the defaults (INC-301: investigating / critical).
+async function resetDemoIncidents(teamId: string) {
+    await Plugin.apiDisablePluginById(siteOneUrl, DemoPlugin.id);
+    await Plugin.apiEnablePluginById(siteOneUrl, DemoPlugin.id);
+
+    const deadline = Date.now() + timeouts.ONE_MIN;
+    while (!(await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id)).isActive) {
+        if (Date.now() > deadline) {
+            throw new Error(`Demo plugin (${DemoPlugin.id}) did not become active after restart`);
+        }
+        await wait(timeouts.ONE_SEC);
+    }
+    await Command.waitForSlashCommandTrigger(siteOneUrl, teamId, 'dialog', {timeoutMs: timeouts.ONE_MIN});
 }
 
 // Stack depth is asserted through dialog TITLES, never by counting elements that
@@ -290,10 +318,31 @@ async function submitTopDialog() {
     throw new Error('submitTopDialog: could not submit the top dialog');
 }
 
+// Buttons rendered from submit_buttons stand in for the header Submit.
+async function tapSubmitOption(optionValue: string) {
+    const button = InteractiveDialogScreen.getSubmitOptionButton(optionValue);
+    try {
+        await waitFor(button).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    } catch {
+        // Below the fold, or covered by the keyboard from the message textarea.
+        await scrollTopDialog();
+        await waitFor(button).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    }
+    await button.tap();
+    await wait(timeouts.ONE_SEC);
+}
+
 // Unwind the WHOLE stack. Leaving levels open makes the next test hit
 // MAX_OPEN_DIALOGS, which drops dialogs silently.
 async function drainDialogStack() {
     const titles = [NOTE_TITLE, TRIAGE_TITLE, BOARD_TITLE];
+
+    // A failure mid-selection leaves the option picker on top of the stack, where the
+    // dialog close buttons cannot be reached.
+    try {
+        await InteractiveDialogScreen.integrationSelectorCancel.tap();
+        await wait(timeouts.ONE_SEC);
+    } catch {}
 
     // At most 3 can be stacked (MAX_OPEN_DIALOGS), plus one spare attempt.
     for (let attempt = 0; attempt < 4; attempt++) {
@@ -347,6 +396,8 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         }
         await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
+        await resetDemoIncidents(testChannel.team_id);
+
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await ChannelListScreen.toBeVisible();
@@ -365,6 +416,10 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         try {
             await HomeScreen.logout();
         } catch {}
+    });
+
+    beforeEach(async () => {
+        await resetDemoIncidents(testChannel.team_id);
     });
 
     afterEach(async () => {
@@ -479,15 +534,74 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await tapActionButton(BTN_ADD_NOTE);
         await waitForVisibleText(NOTE_TITLE);
 
-        // # Fill the note form (both fields are required) and submit
-        await InteractiveDialogScreen.selectOption('note_type', 'Update');
+        // # Fill the note form and save it
+        await InteractiveDialogScreen.selectOption('note_type', NOTE_TYPE_ROOT_CAUSE);
         await InteractiveDialogScreen.fillTextElement('message', 'Detox concurrent dialog note');
-        await submitTopDialog();
+        await tapSubmitOption(NOTE_ACTION_SAVE_CLOSE);
 
         // * The child closes but the triage parent survives its submission
         await waitForVisibleText(TRIAGE_TITLE);
         await expectNoDialog(NOTE_TITLE);
         await expectDialogStillStacked(BOARD_TITLE);
+    });
+
+    it('MM-T5007 should show a change saved in a child dialog on the parent and keep its typed values', async () => {
+        const shiftNotes = `Detox shift notes ${getRandomId()}`;
+
+        // # Type in the board's Shift Notes, then open triage for INC-301
+        await openIncidentBoard();
+        await InteractiveDialogScreen.fillTextElement('shift_notes', shiftNotes);
+        await tapActionButton(BTN_TRIAGE_INC301);
+        await waitForVisibleText(TRIAGE_TITLE);
+
+        // # Lower the severity (INC-301 starts critical) and save triage
+        await InteractiveDialogScreen.selectOption('severity', SEVERITY_LOW);
+        await submitTopDialog();
+
+        // * Triage closed and the board is on top again
+        await waitForVisibleText(BOARD_TITLE);
+        await expectNoDialog(TRIAGE_TITLE);
+
+        // * The board re-fetched its form (refresh_on_return), so the INC-301 button
+        // * shows the saved severity...
+        await waitFor(element(by.id(BTN_TRIAGE_INC301_LABEL))).toHaveText('🟢 INC-301').withTimeout(timeouts.TEN_SEC);
+
+        // * ...and the notes typed before opening triage were kept
+        await expect(InteractiveDialogScreen.getTextInput('shift_notes')).toHaveText(shiftNotes);
+    });
+
+    it('MM-T5008 should save a note staged with Add Note only once', async () => {
+        const noteMessage = `Detox staged note ${getRandomId()}`;
+
+        // # Open the timeline note dialog for INC-301
+        await openIncidentBoard();
+        await tapActionButton(BTN_TRIAGE_INC301);
+        await waitForVisibleText(TRIAGE_TITLE);
+        await tapActionButton(BTN_ADD_NOTE);
+        await waitForVisibleText(NOTE_TITLE);
+
+        // # Stage a note with Add Note
+        await InteractiveDialogScreen.selectOption('note_type', NOTE_TYPE_ROOT_CAUSE);
+        await InteractiveDialogScreen.fillTextElement('message', noteMessage);
+        await tapSubmitOption(NOTE_ACTION_ADD);
+
+        // * The dialog stays open with an empty message, ready for the next note
+        await waitForVisibleText(NOTE_TITLE);
+        await expect(InteractiveDialogScreen.getTextInput('message')).toHaveText('');
+
+        // # Save & Close without typing another note
+        await tapSubmitOption(NOTE_ACTION_SAVE_CLOSE);
+
+        // * Back on triage, with the note dialog gone
+        await waitForVisibleText(TRIAGE_TITLE);
+        await expectNoDialog(NOTE_TITLE);
+
+        // * The plugin saved exactly the one staged note
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const timesSaved = post.message.split(noteMessage).length - 1;
+        if (!post.message.includes('1 Timeline Note(s) Added') || timesSaved !== 1) {
+            throw new Error(`Expected the staged note to be saved once, got: ${post.message}`);
+        }
     });
 
     it('MM-T5005 should show a loader and ignore repeat taps while an action is in flight', async () => {
@@ -546,9 +660,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         }
     });
 
-    // Unskip once the ExecuteDialogAction status-check fix is on master — nothing in this
-    // test needs to change.
-    it.skip('MM-T5006 should surface an error and open no child when the action fails', async () => {
+    it('MM-T5006 should surface an error and open no child when the action fails', async () => {
         // # Open the board and tap the always-failing action button
         await openIncidentBoard();
         await tapActionButton(BTN_ESCALATE_FAIL);

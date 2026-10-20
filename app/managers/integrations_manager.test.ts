@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
+import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {setCurrentChannelId} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
@@ -160,5 +163,31 @@ describe('ServerIntegrationsManager', () => {
 
         await flush();
         expect(navigateToScreen).toHaveBeenCalledTimes(4);
+    });
+
+    it('should report the most recently opened dialog as the top dialog', async () => {
+        const manager = IntegrationsManager.getManager(serverUrl);
+
+        for (const triggerId of ['parent', 'child']) {
+            manager.setTriggerId(triggerId);
+            manager.setDialog(makeDialog(triggerId));
+        }
+        await flush();
+
+        expect(manager.getTopDialogTriggerId()).toBe('child');
+
+        manager.closeDialog('child');
+
+        expect(manager.getTopDialogTriggerId()).toBe('parent');
+    });
+
+    it('should emit an event when a dialog closes', () => {
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.INTERACTIVE_DIALOG_CLOSED, listener);
+
+        IntegrationsManager.getManager(serverUrl).closeDialog('trigger-1');
+        subscription.remove();
+
+        expect(listener).toHaveBeenCalledWith({serverUrl, triggerId: 'trigger-1'});
     });
 });

@@ -7,6 +7,8 @@ import {Text, View} from 'react-native';
 
 import {executeDialogAction} from '@actions/remote/integrations';
 import Button from '@components/button';
+import Markdown from '@components/markdown';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -27,6 +29,11 @@ const messages = defineMessages({
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {marginTop: 15, marginBottom: 10, marginLeft: 15, marginRight: 15},
+
+    // Description beside the button; it takes the remaining width and wraps.
+    row: {flexDirection: 'row', alignItems: 'center', gap: 8},
+    description: {flex: 1, minWidth: 0},
+    descriptionText: {color: theme.centerChannelColor, ...typography('Body', 100, 'Regular')},
     errorText: {color: theme.errorTextColor, marginTop: 4, ...typography('Body', 75, 'Regular')},
 }));
 
@@ -54,16 +61,36 @@ const AppsFormActionButton = ({field, testID}: Props) => {
         }
     }, [field.action_button_url, field.action_button_context, serverUrl, intl]));
 
+    const button = (
+        <Button
+            onPress={handlePress}
+            text={field.label || field.modal_label || ''}
+            theme={theme}
+            showLoader={loading}
+            disabled={loading || !field.action_button_url}
+            testID={testID}
+        />
+    );
+
     return (
         <View style={style.container}>
-            <Button
-                onPress={handlePress}
-                text={field.label || field.modal_label || ''}
-                theme={theme}
-                showLoader={loading}
-                disabled={loading || !field.action_button_url}
-                testID={testID}
-            />
+            {field.description ? (
+                <View style={style.row}>
+                    <View
+                        style={style.description}
+                        testID={`${testID}.description`}
+                    >
+                        <Markdown
+                            value={field.description}
+                            baseTextStyle={style.descriptionText}
+                            location={Screens.APPS_FORM}
+                            disableAtMentions={true}
+                            theme={theme}
+                        />
+                    </View>
+                    {button}
+                </View>
+            ) : button}
             {error && (
                 <Text style={style.errorText}>{error}</Text>
             )}

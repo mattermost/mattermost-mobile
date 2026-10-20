@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import {fetchCommands} from '@actions/remote/command';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {MAX_OPEN_DIALOGS} from '@constants/integrations';
 import DatabaseManager from '@database/manager';
 import {getCurrentChannelId} from '@queries/servers/system';
@@ -99,6 +101,17 @@ class ServerIntegrationsManager {
 
     public closeDialog(triggerId: string) {
         this.openDialogTriggerIds.delete(triggerId);
+        DeviceEventEmitter.emit(Events.INTERACTIVE_DIALOG_CLOSED, {serverUrl: this.serverUrl, triggerId});
+    }
+
+    // Dialogs stack in the order they open, and the Set keeps insertion order, so the
+    // last open trigger id is the dialog on top.
+    public getTopDialogTriggerId(): string | undefined {
+        let top: string | undefined;
+        for (const triggerId of this.openDialogTriggerIds) {
+            top = triggerId;
+        }
+        return top;
     }
 
     private async tryShowDialog(config: InteractiveDialogConfig) {

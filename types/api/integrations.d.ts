@@ -117,6 +117,12 @@ type InteractiveDialogConfig = {
         notify_on_cancel: boolean;
         state: string;
         source_url?: string;
+
+        // Name of a select element whose options render as submit buttons.
+        submit_buttons?: string;
+
+        // Re-fetch the dialog from source_url when a dialog opened on top of it closes.
+        refresh_on_return?: boolean;
     };
 };
 

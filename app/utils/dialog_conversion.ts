@@ -224,7 +224,7 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
         title: config.dialog.title,
         header: config.dialog.introduction_text || undefined,
         fields: convertedFields,
-        submit_buttons: undefined,
+        submit_buttons: config.dialog.submit_buttons || undefined,
 
         // Pass through submit label from dialog config
         submit_label: config.dialog.submit_label || undefined,

@@ -96,6 +96,23 @@ describe('AppsFormField action_button', () => {
         expect(getByText('Do the thing')).toBeTruthy();
     });
 
+    it('renders the field description beside the button', () => {
+        const {getByTestId, getByText} = renderWithEverything(
+            <AppsFormField
+                {...getProps({
+                    type: AppFieldTypes.ACTION_BUTTON,
+                    label: 'Schedule',
+                    description: 'Sortie 1',
+                    action_button_url: '/plugins/myplugin/actions/schedule',
+                })}
+            />,
+            {database, serverUrl},
+        );
+
+        expect(getByTestId('AppFormElement.dt.description')).toBeTruthy();
+        expect(getByText('Sortie 1')).toBeTruthy();
+    });
+
     it('calls executeDialogAction with the action url and context on press', async () => {
         jest.mocked(integrationActions.executeDialogAction).mockResolvedValue({data: {trigger_id: 'trigger1'}});
 

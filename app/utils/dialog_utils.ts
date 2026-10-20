@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {AppFieldTypes} from '@constants/apps';
+
 // Shared utilities for dialog and form handling
 
 /**
@@ -183,4 +185,44 @@ export function supportsOptions(fieldType: InteractiveDialogElementType | AppFie
  */
 export function supportsDataSource(fieldType: InteractiveDialogElementType): boolean {
     return fieldType === DialogElementTypes.SELECT;
+}
+
+// Returns the value the user entered for a field, adapted to the refreshed version of
+// that field, or undefined when it no longer fits: the field changed type, or the
+// options the user picked were removed.
+export function keepUserValue(field: AppField, previousField: AppField | undefined, value: AppFormValue): AppFormValue | undefined {
+    if (previousField && previousField.type !== field.type) {
+        return undefined;
+    }
+
+    if (field.type !== AppFieldTypes.STATIC_SELECT && field.type !== AppFieldTypes.RADIO) {
+        return value;
+    }
+
+    const optionValues = new Set((field.options || []).map((option) => option.value));
+    const hasOption = (v: string | AppSelectOption) => optionValues.has(typeof v === 'string' ? v : v.value);
+
+    if (Array.isArray(value)) {
+        return value.filter(hasOption);
+    }
+    if (typeof value === 'string' || (value && typeof value === 'object')) {
+        return hasOption(value) ? value : undefined;
+    }
+    return value;
+}
+
+// Initial values of the refreshed fields, with what the user entered re-applied where it
+// still fits.
+export function mergeUserValues(fields: AppField[] | undefined, initialValues: AppFormValues, previousFields: Map<string, AppField>, userValues: AppFormValues) {
+    const values = {...initialValues};
+    fields?.forEach((field) => {
+        if (!field.name || !(field.name in userValues) || field.type === AppFieldTypes.ACTION_BUTTON) {
+            return;
+        }
+        const kept = keepUserValue(field, previousFields.get(field.name), userValues[field.name]);
+        if (kept !== undefined) {
+            values[field.name] = kept;
+        }
+    });
+    return values;
 }
