@@ -350,7 +350,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                 EnableFileAttachments: true,
             },
         });
-        await System.apiPatchFeatureFlags(siteOneUrl, {InteractiveDialogAppsForm: true});
+        const {error: flagsError} = await System.apiEnableFeatureFlags(siteOneUrl, ['InteractiveDialogAppsForm']);
+        if (flagsError) {
+            throw new Error(`Failed to enable InteractiveDialogAppsForm: ${JSON.stringify(flagsError)}`);
+        }
 
         const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {

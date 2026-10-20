@@ -280,7 +280,7 @@ describe('Messaging - File Upload', () => {
             // # Open channel screen and attempt a client-side file attach
             await ChannelScreen.open(channelsCategory, testChannel.name);
             await wait(timeouts.TWO_SEC);
-            await ChannelScreen.fileQuickAction.tap();
+            await ChannelScreen.attachmentAction.tap();
             await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(timeouts.TWO_SEC);
 
             if (isIos()) {
