@@ -761,12 +761,56 @@ jobs:
               npm run e2e:ios-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
             fi
           }
+          # Diagnostics only (no behavior change): record what happens to the Jest process when it
+          # dies with a signal (detox reports exit code = null). Output goes under artifacts/diag,
+          # which the iOS report upload already ships.
+          DIAG_DIR=artifacts/diag
+          mkdir -p "$DIAG_DIR"
+          touch "$DIAG_DIR/step-marker"
+          (
+            while :; do
+              echo "$(date -u +%H:%M:%S) $(memory_pressure -Q 2>/dev/null | tail -1)"
+              ps -axo pid=,ppid=,rss=,etime=,comm= | grep -E 'jest|node|launchd_sim|Simulator|SpringBoard|applesimutils|simctl' || true
+              sleep 2
+            done
+          ) >> "$DIAG_DIR/sampler.log" 2>&1 &
+          SAMPLER_PID=$!
+          trap 'kill "$SAMPLER_PID" 2>/dev/null || true' EXIT
           run_specs "${SPECS[@]}"
           DETOX_EXIT_CODE=$?
+          echo "$DETOX_EXIT_CODE" > "$DIAG_DIR/detox-exit.txt"
+          log show --last 60m --style compact --predicate '(eventMessage CONTAINS[c] "memorystatus") OR (eventMessage CONTAINS[c] "jetsam") OR (process == "kernel" AND eventMessage CONTAINS[c] "kill")' > "$DIAG_DIR/unified-log.txt" 2>&1 || true
+          find "$HOME/Library/Logs/DiagnosticReports" /Library/Logs/DiagnosticReports -type f -newer "$DIAG_DIR/step-marker" -exec cp {} "$DIAG_DIR/" \; 2>/dev/null || true
+          ls -la "$DIAG_DIR" > "$DIAG_DIR/listing.txt" 2>&1 || true
           if [ ! -f artifacts/jest-results.json ]; then
             if [ -f artifacts/jest-stare/ios-data.json ]; then
               echo "⚠️ Detox left no jest-results.json — promoting jest-stare/ios-data.json"
               cp artifacts/jest-stare/ios-data.json artifacts/jest-results.json
+
+              # Jest was killed between spec files, so the files after that point never started.
+              # Run only those once in a fresh Jest; files that already ran keep their own result.
+              UNRUN_SPECS=()
+              while IFS= read -r spec; do
+                [ -n "$spec" ] && UNRUN_SPECS+=("$spec")
+              done < <(node utils/failed-jest-specs.js --unrun-only --results artifacts/jest-results.json --shard-specs "$MATRIX_SPECS")
+              if [ "${#UNRUN_SPECS[@]}" -gt 0 ]; then
+                echo "::warning::Jest died before finishing the shard (exit ${DETOX_EXIT_CODE}); running the ${#UNRUN_SPECS[@]} spec(s) it never started: ${UNRUN_SPECS[*]}"
+                mv artifacts/jest-results.json artifacts/jest-results-attempt1.json
+                run_specs "${UNRUN_SPECS[@]}"
+                UNRUN_EXIT_CODE=$?
+                if [ ! -f artifacts/jest-results.json ] && [ -f artifacts/jest-stare/ios-data.json ]; then
+                  cp artifacts/jest-stare/ios-data.json artifacts/jest-results.json
+                fi
+                node utils/failed-jest-specs.js \
+                  --attempt1 artifacts/jest-results-attempt1.json \
+                  --attempt2 artifacts/jest-results.json \
+                  --output artifacts/jest-results.json
+                MERGE_EXIT_CODE=$?
+                if [ "$UNRUN_EXIT_CODE" -eq 0 ] && [ "$MERGE_EXIT_CODE" -eq 0 ] &&
+                  node -e 'process.exit(require("./artifacts/jest-results.json").success ? 0 : 1)'; then
+                  DETOX_EXIT_CODE=0
+                fi
+              fi
             else
               echo "⚠️ Detox left no artifacts/jest-results.json (exit ${DETOX_EXIT_CODE}) — writing shard stub"
               node utils/write-tsio-failure-stub.mjs \
