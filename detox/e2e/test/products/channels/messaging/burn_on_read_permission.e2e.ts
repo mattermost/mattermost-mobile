@@ -68,11 +68,6 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
 
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
         originalSettings = {
-            FeatureFlags: {
-                AttributeBasedAccessControl: originalConfig?.FeatureFlags?.AttributeBasedAccessControl,
-                PermissionPolicies: originalConfig?.FeatureFlags?.PermissionPolicies,
-                BurnOnRead: originalConfig?.FeatureFlags?.BurnOnRead,
-            },
             AccessControlSettings: {
                 EnableAttributeBasedAccessControl: originalConfig?.AccessControlSettings?.EnableAttributeBasedAccessControl,
                 EnableUserManagedAttributes: originalConfig?.AccessControlSettings?.EnableUserManagedAttributes,
@@ -89,10 +84,17 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             PasswordSettings: {MinimumLength: 8},
         });
 
-        // # Enable ABAC, PermissionPolicies and burn-on-read
-        await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {AttributeBasedAccessControl: true, PermissionPolicies: true, BurnOnRead: true},
-        });
+        // # Enable ABAC, PermissionPolicies and burn-on-read. A partial FeatureFlags patch turns every
+        // other flag off server-wide, so only the missing flags are written. They are not turned back
+        // off afterwards: suites sharing this server rely on them.
+        const {error: flagsError} = await System.apiEnableFeatureFlags(siteOneUrl, [
+            'AttributeBasedAccessControl',
+            'PermissionPolicies',
+            'BurnOnRead',
+        ]);
+        if (flagsError) {
+            throw new Error(`Failed to enable the feature flags: ${JSON.stringify(flagsError)}`);
+        }
         const {error: abacError} = await AccessControl.apiEnableABAC(siteOneUrl);
         if (abacError) {
             throw new Error(`Failed to enable ABAC: ${JSON.stringify(abacError)}`);
