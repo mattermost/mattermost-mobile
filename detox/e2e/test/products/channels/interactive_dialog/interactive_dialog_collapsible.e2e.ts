@@ -338,18 +338,20 @@ describe('Interactive Dialog - Collapsible Sections (Plugin)', () => {
         await postSlashCommandDirect('/dialog collapsible');
         await ensureDialogOpen();
 
-        // # Fill a level 1 field, then expand level 2 and fill one of its fields
+        // # Fill the required level-1 fields, then expand level 2 for its required email.
+        // first_name, last_name, and email are all required; the submit is blocked until
+        // every one is filled, so a missing field yields no post at all.
         await InteractiveDialogScreen.fillTextElement('first_name', 'Ada');
+        await InteractiveDialogScreen.fillTextElement('last_name', 'Lovelace');
         await InteractiveDialogScreen.toggleSection('level2_section');
 
         // Let the section finish expanding before typing; on iOS, filling while it still
         // animates drops the input and the submit silently no-ops.
         await wait(timeouts.ONE_SEC);
-        await InteractiveDialogScreen.fillTextElement('company', 'Mattermost');
+        await InteractiveDialogScreen.fillTextElement('email', 'ada@example.com');
 
-        // # Submit and verify the integration received the submission. Assert on the
-        // server's post rather than re-checking the rendered post in the UI, which flakes
-        // when the client hasn't rendered the just-created post within the timeout.
+        // # Submit and verify via the server post (a post only appears once every required
+        // field is accepted), not the rendered UI, which flakes on the just-created post.
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
