@@ -530,8 +530,36 @@ jobs:
           name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
-      - name: Upload Android Test Report (retry)
-        if: always() && steps.upload-android-report.outcome == 'failure'
+      # Same two-retry sequence as the iOS template (see there).
+      - name: Await results service
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      - name: Upload Android Test Report (retry 1)
+        id: upload-android-report-retry
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+
+      - name: Await results service (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure' &&
+          steps.upload-android-report-retry.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      - name: Upload Android Test Report (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure' &&
+          steps.upload-android-report-retry.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}

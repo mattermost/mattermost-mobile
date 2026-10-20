@@ -876,8 +876,38 @@ jobs:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
-      - name: Upload iOS Test Report (retry)
-        if: always() && steps.upload-ios-report.outcome == 'failure'
+      # upload-artifact fails fast on ENOTFOUND/ETIMEDOUT (no internal retry), so each retry
+      # waits for the results service to answer before it runs.
+      - name: Await results service
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      - name: Upload iOS Test Report (retry 1)
+        id: upload-ios-report-retry
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+
+      - name: Await results service (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure' &&
+          steps.upload-ios-report-retry.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      # Last attempt: overwrite clears an artifact a timed-out attempt may have left behind.
+      - name: Upload iOS Test Report (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure' &&
+          steps.upload-ios-report-retry.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
