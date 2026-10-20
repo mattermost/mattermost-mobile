@@ -6,7 +6,7 @@ import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {License} from '@constants';
-import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
+import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES, FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
@@ -125,6 +125,31 @@ export const observeChannelAttributesEnabled = (database: Database) => {
         map(([enabled, licensed]) => enabled && licensed),
         distinctUntilChanged(),
     );
+};
+
+/**
+ * Whether the server refuses a channel create that is missing a required
+ * attribute. Mirrors the webapp isChannelAttributesRequiredEnabled selector and
+ * the server's IsChannelAttributesRequiredEnabled(): the flag is a kill switch,
+ * so with it off a field can still carry required=true without anything
+ * enforcing it.
+ */
+export const observeChannelAttributesRequiredEnabled = (database: Database) => {
+    const required = observeConfigBooleanValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, false);
+
+    return combineLatest([observeChannelAttributesEnabled(database), required]).pipe(
+        map(([enabled, requiredEnabled]) => enabled && requiredEnabled),
+        distinctUntilChanged(),
+    );
+};
+
+/**
+ * Whether the classification field is available. The server also wants an
+ * Enterprise licence, which callers here already imply by sitting behind the
+ * Enterprise Advanced gate of observeChannelAttributesEnabled.
+ */
+export const observeClassificationMarkingsEnabled = (database: Database) => {
+    return observeConfigBooleanValue(database, FEATURE_FLAG_CLASSIFICATION_MARKINGS, false);
 };
 
 /**

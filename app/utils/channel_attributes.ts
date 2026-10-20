@@ -325,13 +325,66 @@ export function canSetChannelAttributeOnCreate(field: ChannelAttributeField, can
     }
 }
 
+export type ChannelAttributeCreateFlags = {
+
+    // FeatureFlagChannelAttributesRequired, on top of channel attributes being enabled.
+    requiredEnforced: boolean;
+
+    // FeatureFlagClassificationMarkings.
+    classificationAvailable: boolean;
+};
+
+// Matched by name, as in deriveChannelAttributeBanner and for the same reason:
+// mobile does not persist linked_field_id, and the server allows only one live
+// channel field per name in the group.
+function isClassificationField(field: ChannelAttributeField): boolean {
+    return field.name === CLASSIFICATIONS_FIELD_NAME;
+}
+
+// Mirrors the server's channelAttributeFieldAvailable: it refuses a value for
+// the classification field while its feature is off, so offering it would only
+// lead to a 400.
+function isFieldAvailableOnCreate(field: ChannelAttributeField, classificationAvailable: boolean): boolean {
+    return classificationAvailable || !isClassificationField(field);
+}
+
+function isOfferableOnCreate(field: ChannelAttributeField, canManageSystem: boolean): boolean {
+    return hasAttributeEditor(field) && canSetChannelAttributeOnCreate(field, canManageSystem);
+}
+
+// A plain copy, never the WatermelonDB model with its attrs changed in place.
+function asOptionalField(field: ChannelAttributeField): ChannelAttributeField {
+    return {
+        id: field.id,
+        name: field.name,
+        type: field.type,
+        permissionValues: field.permissionValues,
+        attrs: {...field.attrs, required: false},
+    };
+}
+
 /**
- * The fields the channel-creation form should offer, in display order: required,
- * with a mobile editor, and settable by the caller on create.
+ * The fields the channel-creation form should offer, in display order.
+ *
+ * With required attributes enforced: the required ones with a mobile editor that
+ * the caller may set on create. With the kill switch engaged the server demands
+ * nothing, so only classification is offered, as an optional copy, matching the
+ * webapp's courtesy exception. Every other field stays hidden, and a stored
+ * required=true no longer forces a value.
  */
-export function getCreatableChannelAttributeFields<T extends ChannelAttributeField>(fields: T[], canManageSystem: boolean): T[] {
-    return fields.
-        filter((field) => isPropertyFieldRequired(field) && hasAttributeEditor(field) && canSetChannelAttributeOnCreate(field, canManageSystem)).
+export function getCreatableChannelAttributeFields(
+    fields: ChannelAttributeField[],
+    canManageSystem: boolean,
+    {requiredEnforced, classificationAvailable}: ChannelAttributeCreateFlags,
+): ChannelAttributeField[] {
+    const available = fields.filter((field) => isFieldAvailableOnCreate(field, classificationAvailable) && isOfferableOnCreate(field, canManageSystem));
+
+    if (!requiredEnforced) {
+        return available.filter(isClassificationField).map(asOptionalField);
+    }
+
+    return available.
+        filter(isPropertyFieldRequired).
         sort(compareChannelAttributeFields);
 }
 
@@ -343,9 +396,23 @@ export function getCreatableChannelAttributeFields<T extends ChannelAttributeFie
  * does *not* also skip the requirement here, since the tier check passes. Left
  * undetected, the create screen would let Create be tapped with no way to have
  * supplied a value the server then rejects.
+ *
+ * Never true with the kill switch engaged, and never for a field whose feature is
+ * off: the server requires neither.
  */
-export function hasCreationBlockingChannelAttribute(fields: ChannelAttributeField[], canManageSystem: boolean): boolean {
-    return fields.some((field) => isPropertyFieldRequired(field) && !hasAttributeEditor(field) && canSetChannelAttributeOnCreate(field, canManageSystem));
+export function hasCreationBlockingChannelAttribute(
+    fields: ChannelAttributeField[],
+    canManageSystem: boolean,
+    {requiredEnforced, classificationAvailable}: ChannelAttributeCreateFlags,
+): boolean {
+    if (!requiredEnforced) {
+        return false;
+    }
+
+    return fields.some((field) => isPropertyFieldRequired(field) &&
+        isFieldAvailableOnCreate(field, classificationAvailable) &&
+        !hasAttributeEditor(field) &&
+        canSetChannelAttributeOnCreate(field, canManageSystem));
 }
 
 export function channelAttributePermissionsEqual(a: ChannelAttributePermissions, b: ChannelAttributePermissions): boolean {

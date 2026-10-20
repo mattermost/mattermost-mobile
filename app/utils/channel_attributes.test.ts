@@ -11,10 +11,12 @@ import {
     deriveChannelAttributeBanner,
     flattenChannelAttributesToChips,
     getAttributeEditability,
+    getCreatableChannelAttributeFields,
     getPropertyFieldChangePolicy,
     getPropertyFieldLabel,
     groupChannelAttributeChipsByField,
     hasAttributeEditor,
+    hasCreationBlockingChannelAttribute,
     isPropertyFieldRequired,
     reachableOptions,
     isPropertyValueSet,
@@ -665,6 +667,71 @@ describe('canSetChannelAttributeOnCreate', () => {
         expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f'}), true)).toBe(false);
         expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'none'}), true)).toBe(false);
         expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'everyone'}), true)).toBe(false);
+    });
+});
+
+describe('channel attribute fields on create', () => {
+    const ENFORCED = {requiredEnforced: true, classificationAvailable: true};
+    const NOT_ENFORCED = {requiredEnforced: false, classificationAvailable: true};
+
+    const requiredClassification = field({id: 'cf-1', name: 'classification', permissionValues: 'member', attrs: {required: true, options: CLASSIFICATION_OPTIONS}});
+    const requiredSelect = field({id: 'f-select', name: 'sensitivity', type: 'select', permissionValues: 'member', attrs: {required: true}});
+    const optionalSelect = field({id: 'f-optional', name: 'region', type: 'select', permissionValues: 'member', attrs: {required: false}});
+    const requiredDate = field({id: 'f-date', name: 'review_date', type: 'date', permissionValues: 'member', attrs: {required: true}});
+
+    describe('getCreatableChannelAttributeFields', () => {
+        it('should offer only required fields when required attributes are enforced', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect, optionalSelect, requiredDate], false, ENFORCED);
+
+            expect(fields.map((f) => f.id)).toEqual(['cf-1', 'f-select']);
+        });
+
+        it('should offer only classification, as an optional copy, when required attributes are not enforced', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect, requiredDate], false, NOT_ENFORCED);
+
+            expect(fields).toHaveLength(1);
+            expect(fields[0].id).toBe('cf-1');
+            expect(isPropertyFieldRequired(fields[0])).toBe(false);
+            expect(fields[0].attrs?.options).toEqual(CLASSIFICATION_OPTIONS);
+
+            // The source field, a WatermelonDB model in the app, is left as it was.
+            expect(isPropertyFieldRequired(requiredClassification)).toBe(true);
+        });
+
+        it('should offer nothing when required attributes are not enforced and classification is unavailable', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect], false, {requiredEnforced: false, classificationAvailable: false});
+
+            expect(fields).toHaveLength(0);
+        });
+
+        it('should not offer a required classification while classification is unavailable', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect], false, {requiredEnforced: true, classificationAvailable: false});
+
+            expect(fields.map((f) => f.id)).toEqual(['f-select']);
+        });
+
+        it('should still apply the tier to the classification exception', () => {
+            const sysadminClassification = field({...requiredClassification, permissionValues: 'sysadmin'});
+
+            expect(getCreatableChannelAttributeFields([sysadminClassification], false, NOT_ENFORCED)).toHaveLength(0);
+            expect(getCreatableChannelAttributeFields([sysadminClassification], true, NOT_ENFORCED)).toHaveLength(1);
+        });
+    });
+
+    describe('hasCreationBlockingChannelAttribute', () => {
+        it('should block on a required field with no editor when required attributes are enforced', () => {
+            expect(hasCreationBlockingChannelAttribute([requiredDate], false, ENFORCED)).toBe(true);
+        });
+
+        it('should not block on a required field with no editor when required attributes are not enforced', () => {
+            expect(hasCreationBlockingChannelAttribute([requiredDate], false, NOT_ENFORCED)).toBe(false);
+        });
+
+        it('should ignore a required classification with no editor while classification is unavailable', () => {
+            const dateClassification = field({...requiredClassification, type: 'date'});
+
+            expect(hasCreationBlockingChannelAttribute([dateClassification], false, {requiredEnforced: true, classificationAvailable: false})).toBe(false);
+        });
     });
 });
 

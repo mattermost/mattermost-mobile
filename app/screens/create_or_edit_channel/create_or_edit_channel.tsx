@@ -17,7 +17,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
-import {isPropertyValueSet, pruneStaleAttributeValues, type ChannelAttributeField} from '@utils/channel_attributes';
+import {isPropertyFieldRequired, isPropertyValueSet, pruneStaleAttributeValues, type ChannelAttributeField} from '@utils/channel_attributes';
 import {getServerError} from '@utils/errors';
 import {changeOpacity} from '@utils/theme';
 
@@ -165,7 +165,10 @@ const CreateOrEditChannel = ({
     // Required attributes gate Create only: editing gains no attribute gate, both
     // because there is no attribute editing on this screen in edit mode and
     // because a channel that already exists cannot regress into "incomplete".
-    const allRequiredAttributesSet = editing || attributeFields.every((field) => isPropertyValueSet(validAttributeValues[field.id]));
+    // Only fields still marked required count: with the required flag off the
+    // form can offer classification as optional, and an empty optional field must
+    // not block Create.
+    const allRequiredAttributesSet = editing || attributeFields.every((field) => !isPropertyFieldRequired(field) || isPropertyValueSet(validAttributeValues[field.id]));
 
     // attributesBlocked means some required attribute the caller could otherwise
     // satisfy has no mobile editor at all — nothing typed here could ever fix

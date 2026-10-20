@@ -14,6 +14,8 @@ const observedFlagValues = async (baseUrl: string) => {
     return {
         server: serverConfig?.FeatureFlags?.ChannelAttributes,
         client: clientConfig?.FeatureFlagChannelAttributes,
+        serverRequired: serverConfig?.FeatureFlags?.ChannelAttributesRequired,
+        clientRequired: clientConfig?.FeatureFlagChannelAttributesRequired,
     };
 };
 
@@ -62,18 +64,21 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
 };
 
 /**
- * Attempt to enable the ChannelAttributes feature flag.
+ * Attempt to enable the ChannelAttributes feature flag, together with
+ * ChannelAttributesRequired. The server defaults the latter to off, and without it
+ * required attributes are neither enforced by the server nor offered by the app.
  *
  * Throws when the server license, Split, or
  * `MM_FEATUREFLAGS_CHANNELATTRIBUTES` keeps it off.
  */
 export const enableChannelAttributes = async (baseUrl: string): Promise<void> => {
-    let lastObserved: {server?: unknown; client?: unknown} = {};
+    let lastObserved: {server?: unknown; client?: unknown; serverRequired?: unknown; clientRequired?: unknown} = {};
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
         const patchResult = await System.apiPatchFeatureFlags(baseUrl, {
             ChannelAttributes: true,
+            ChannelAttributesRequired: true,
         });
         if (patchResult.error) {
             throw new Error(`enableChannelAttributes: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
@@ -82,6 +87,11 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<void> =>
         const enabled = await System.waitForClientConfigFlag(
             baseUrl,
             'FeatureFlagChannelAttributes',
+            'true',
+            {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
+        ) && await System.waitForClientConfigFlag(
+            baseUrl,
+            'FeatureFlagChannelAttributesRequired',
             'true',
             {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
         );
@@ -93,14 +103,16 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<void> =>
 
         logWarn(
             `[enableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ` +
-            `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
+            `server=${String(lastObserved.server)} client=${String(lastObserved.client)} ` +
+            `serverRequired=${String(lastObserved.serverRequired)} clientRequired=${String(lastObserved.clientRequired)}`,
         );
     }
     /* eslint-enable no-await-in-loop */
 
     throw new Error(
-        'enableChannelAttributes: FeatureFlagChannelAttributes did not become true. ' +
-        `Last observed server=${String(lastObserved.server)} client=${String(lastObserved.client)}. ` +
-        'Cloud Spinwick installations may need MM_FEATUREFLAGS_CHANNELATTRIBUTES=true in Matterwick PriorityEnv.',
+        'enableChannelAttributes: FeatureFlagChannelAttributes and FeatureFlagChannelAttributesRequired did not both become true. ' +
+        `Last observed server=${String(lastObserved.server)} client=${String(lastObserved.client)} ` +
+        `serverRequired=${String(lastObserved.serverRequired)} clientRequired=${String(lastObserved.clientRequired)}. ` +
+        'Cloud Spinwick installations may need MM_FEATUREFLAGS_CHANNELATTRIBUTES=true and MM_FEATUREFLAGS_CHANNELATTRIBUTESREQUIRED=true in Matterwick PriorityEnv.',
     );
 };

@@ -4,8 +4,9 @@
 import {firstValueFrom} from 'rxjs';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
-import {General, Permissions} from '@constants';
-import {CHANNEL_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
+import {General, License, Permissions} from '@constants';
+import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES, FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED} from '@constants/channel_attributes';
+import {CLASSIFICATIONS_FIELD_NAME, FEATURE_FLAG_CLASSIFICATION_MARKINGS} from '@constants/classification';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
@@ -67,6 +68,23 @@ const makeField = (overrides?: Partial<PropertyField>): PropertyField => ({
 });
 
 const seedFields = (fields: PropertyField[]) => operator.handlePropertyFields({fields, prepareRecordsOnly: false});
+
+const seedFlags = async ({requiredEnforced = true, classificationAvailable = true} = {}) => {
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+        prepareRecordsOnly: false,
+    });
+    await operator.handleConfigs({
+        configs: [
+            {id: 'BuildEnterpriseReady', value: 'true'},
+            {id: FEATURE_FLAG_CHANNEL_ATTRIBUTES, value: 'true'},
+            {id: FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, value: String(requiredEnforced)},
+            {id: FEATURE_FLAG_CLASSIFICATION_MARKINGS, value: String(classificationAvailable)},
+        ],
+        configsToDelete: [],
+        prepareRecordsOnly: false,
+    });
+};
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
@@ -185,6 +203,7 @@ describe('observeChannelAttributePermissions', () => {
 describe('observeCreatableChannelAttributeFields', () => {
     beforeEach(async () => {
         await setAccessControlGroupId(serverUrl, groupId);
+        await seedFlags();
     });
 
     it('should include a required, member-tier field for any user', async () => {
@@ -243,6 +262,48 @@ describe('observeCreatableChannelAttributeFields', () => {
         const fields = await firstValueFrom(observeCreatableChannelAttributeFields(database));
 
         expect(fields.map((f) => f.id)).toEqual(['f-a', 'f-b']);
+    });
+
+    it('should offer only classification, as optional, while required attributes are not enforced', async () => {
+        await seedFlags({requiredEnforced: false});
+        await seedUser('system_user');
+        await seedFields([
+            makeField({id: 'f-class', name: CLASSIFICATIONS_FIELD_NAME}),
+            makeField({id: 'f-other'}),
+        ]);
+
+        const fields = await firstValueFrom(observeCreatableChannelAttributeFields(database));
+
+        expect(fields).toHaveLength(1);
+        expect(fields[0].id).toBe('f-class');
+        expect(fields[0].attrs?.required).toBe(false);
+    });
+
+    it('should not offer a required classification while classification markings are off', async () => {
+        await seedFlags({classificationAvailable: false});
+        await seedUser('system_user');
+        await seedFields([makeField({id: 'f-class', name: CLASSIFICATIONS_FIELD_NAME})]);
+
+        const fields = await firstValueFrom(observeCreatableChannelAttributeFields(database));
+
+        expect(fields).toHaveLength(0);
+    });
+
+    it('should re-emit when the required flag is turned off at runtime', async () => {
+        await seedUser('system_user');
+        await seedFields([makeField({id: 'f1'})]);
+
+        const emissions: ChannelAttributeField[][] = [];
+        const subscription = observeCreatableChannelAttributeFields(database).subscribe((fields) => {
+            emissions.push(fields);
+        });
+
+        await seedFlags({requiredEnforced: false});
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        subscription.unsubscribe();
+
+        expect(emissions[0].map((f) => f.id)).toEqual(['f1']);
+        expect(emissions[emissions.length - 1]).toHaveLength(0);
     });
 
     // WatermelonDB updates a record in place and re-emits the same model
@@ -313,6 +374,7 @@ describe('observeCreatableChannelAttributeFields', () => {
 describe('observeChannelAttributeCreationBlocked', () => {
     beforeEach(async () => {
         await setAccessControlGroupId(serverUrl, groupId);
+        await seedFlags();
     });
 
     it('should report blocked for a required, member-tier field with no mobile editor', async () => {
@@ -359,5 +421,21 @@ describe('observeChannelAttributeCreationBlocked', () => {
         const blocked = await firstValueFrom(observeChannelAttributeCreationBlocked(database));
 
         expect(blocked).toBe(true);
+    });
+
+    it('should release the block when the required flag is turned off at runtime', async () => {
+        await seedUser('system_user');
+        await seedFields([makeField({id: 'f1', type: 'date'})]);
+
+        const emissions: boolean[] = [];
+        const subscription = observeChannelAttributeCreationBlocked(database).subscribe((blocked) => {
+            emissions.push(blocked);
+        });
+
+        await seedFlags({requiredEnforced: false});
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        subscription.unsubscribe();
+
+        expect(emissions).toEqual([true, false]);
     });
 });

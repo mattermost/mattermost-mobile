@@ -5,13 +5,18 @@ import {waitFor} from '@testing-library/react-native';
 import {firstValueFrom} from 'rxjs';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
-import {CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
+import {License} from '@constants';
+import {FEATURE_FLAG_CHANNEL_ATTRIBUTES, FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED} from '@constants/channel_attributes';
+import {CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, FEATURE_FLAG_CLASSIFICATION_MARKINGS} from '@constants/classification';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 import {
     observeChannelAttributeBanner,
     observeChannelAttributeFields,
+    observeChannelAttributesRequiredEnabled,
     observeClassificationBannerState,
+    observeClassificationMarkingsEnabled,
     observeResolvedChannelAttributes,
 } from './properties';
 
@@ -366,5 +371,62 @@ describe('observeResolvedChannelAttributes re-emission', () => {
         });
 
         expect(emissions).toHaveLength(1);
+    });
+});
+
+describe('feature flag observables', () => {
+    const seedConfig = (configs: Array<{id: string; value: string}>) => operator.handleConfigs({
+        configs,
+        configsToDelete: [],
+        prepareRecordsOnly: false,
+    });
+
+    const emissionsWhile = async (observable: ReturnType<typeof observeClassificationMarkingsEnabled>, mutate: () => Promise<unknown>) => {
+        const emissions: boolean[] = [];
+        const subscription = observable.subscribe((value) => emissions.push(value));
+        await mutate();
+        await waitFor(() => expect(emissions.length).toBeGreaterThan(1));
+        subscription.unsubscribe();
+        return emissions;
+    };
+
+    describe('observeChannelAttributesRequiredEnabled', () => {
+        beforeEach(async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+                prepareRecordsOnly: false,
+            });
+            await seedConfig([
+                {id: 'BuildEnterpriseReady', value: 'true'},
+                {id: FEATURE_FLAG_CHANNEL_ATTRIBUTES, value: 'true'},
+                {id: FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, value: 'false'},
+            ]);
+        });
+
+        it('should follow the required flag as it is turned on and off', async () => {
+            const observable = observeChannelAttributesRequiredEnabled(database);
+
+            expect(await emissionsWhile(observable, () => seedConfig([{id: FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, value: 'true'}]))).toEqual([false, true]);
+            expect(await emissionsWhile(observable, () => seedConfig([{id: FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, value: 'false'}]))).toEqual([true, false]);
+        });
+
+        it('should be off when channel attributes are off, whatever the required flag says', async () => {
+            await seedConfig([
+                {id: FEATURE_FLAG_CHANNEL_ATTRIBUTES, value: 'false'},
+                {id: FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, value: 'true'},
+            ]);
+
+            expect(await firstValueFrom(observeChannelAttributesRequiredEnabled(database))).toBe(false);
+        });
+    });
+
+    describe('observeClassificationMarkingsEnabled', () => {
+        it('should follow the classification markings flag', async () => {
+            await seedConfig([{id: FEATURE_FLAG_CLASSIFICATION_MARKINGS, value: 'false'}]);
+
+            const emissions = await emissionsWhile(observeClassificationMarkingsEnabled(database), () => seedConfig([{id: FEATURE_FLAG_CLASSIFICATION_MARKINGS, value: 'true'}]));
+
+            expect(emissions).toEqual([false, true]);
+        });
     });
 });

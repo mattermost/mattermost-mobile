@@ -67,6 +67,7 @@ export const DISPLAY_LABEL_HEADER = 'display_label_header';
 // Feature flag config keys — stored as constants so callers don't spread bare
 // strings and grep can find all references.
 export const FEATURE_FLAG_CHANNEL_ATTRIBUTES = 'FeatureFlagChannelAttributes';
+export const FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED = 'FeatureFlagChannelAttributesRequired';
 
 // Neutral chip colours for the dark channel header. Shared between AttributeChip
 // and the +N overflow pill in ChannelAttributeLabels so both stay in sync.

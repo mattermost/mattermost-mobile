@@ -154,6 +154,45 @@ describe('CreateOrEditChannel', () => {
         });
     });
 
+    it('should let an optional attribute stay empty and leave it out of the create request', async () => {
+        jest.mocked(createChannel).mockResolvedValue({channel: TestHelper.fakeChannel({id: 'created-channel', team_id: 'team1'})});
+
+        // What the form is given with the required flag off: classification as an
+        // optional copy.
+        const {getByTestId, getByText} = renderWithEverything(
+            <CreateOrEditChannel
+                {...getBaseProps()}
+                attributeFields={[requiredField({name: 'classification', attrs: {required: false, options: [{id: 'opt-1', name: 'HIGH'}]}})]}
+            />,
+            {database, serverUrl},
+        );
+
+        expect(getByText('Channel Attributes')).toBeTruthy();
+
+        act(() => {
+            fireEvent.changeText(getByTestId('channel_info_form.display_name.input'), 'town-square');
+        });
+
+        await waitFor(() => {
+            expect(lastHeaderButton().props.disabled).toBe(false);
+        });
+
+        await act(async () => {
+            lastHeaderButton().props.onPress();
+        });
+
+        await waitFor(() => {
+            expect(createChannel).toHaveBeenCalledWith(
+                expect.any(String),
+                'town-square',
+                expect.any(String),
+                expect.any(String),
+                expect.any(String),
+                [],
+            );
+        });
+    });
+
     it('should send the chosen attribute values on create', async () => {
         jest.mocked(createChannel).mockResolvedValue({channel: TestHelper.fakeChannel({id: 'created-channel', team_id: 'team1'})});
 
