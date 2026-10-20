@@ -396,6 +396,86 @@ describe('WebSocketClient', () => {
         }));
     });
 
+    describe('verifyConnection', () => {
+        const pong = (seq: number) => {
+            mockConn.onMessage.mock.calls[0][0]({message: {data: {text: WebsocketEvents.PONG}, seq_reply: seq, status: 'OK'}});
+        };
+
+        it('should resolve false without pinging when not connected', async () => {
+            await expect(client.verifyConnection()).resolves.toBe(false);
+            expect(mockConn.send).not.toHaveBeenCalled();
+        });
+
+        it('should keep the socket open when the ping is answered', async () => {
+            await client.initialize();
+            await advanceTimers(10);
+            pong(2);
+            mockConn.send.mockClear();
+
+            const verified = client.verifyConnection();
+            expect(mockConn.send).toHaveBeenCalledWith(JSON.stringify({action: 'ping', seq: 3}));
+            pong(3);
+
+            await expect(verified).resolves.toBe(true);
+            await advanceTimers(5100);
+            expect(client.isConnected()).toBe(true);
+        });
+
+        it('should not count the pong to an earlier ping as verification', async () => {
+            await client.initialize();
+            await advanceTimers(10);
+
+            const settled = jest.fn();
+            const verified = client.verifyConnection();
+            verified.then(settled);
+            pong(2);
+            await advanceTimers(10);
+            expect(settled).not.toHaveBeenCalled();
+
+            pong(3);
+            await expect(verified).resolves.toBe(true);
+        });
+
+        it('should close the socket to reconnect when the ping goes unanswered', async () => {
+            await client.initialize();
+            await advanceTimers(10);
+            pong(2);
+
+            const verified = client.verifyConnection();
+            await advanceTimers(5100);
+
+            await expect(verified).resolves.toBe(false);
+            expect(client.isConnected()).toBe(false);
+            expect(logInfo).toHaveBeenCalledWith('websocket did not answer a ping, reconnecting', expect.any(String));
+        });
+
+        it('should share one ping between concurrent calls', async () => {
+            await client.initialize();
+            await advanceTimers(10);
+            pong(2);
+            mockConn.send.mockClear();
+
+            const first = client.verifyConnection();
+            const second = client.verifyConnection();
+            expect(second).toBe(first);
+            expect(mockConn.send).toHaveBeenCalledTimes(1);
+            pong(3);
+
+            await expect(first).resolves.toBe(true);
+        });
+
+        it('should resolve false when the socket is closed before the ping is answered', async () => {
+            await client.initialize();
+            await advanceTimers(10);
+            pong(2);
+
+            const verified = client.verifyConnection();
+            client.close(false);
+
+            await expect(verified).resolves.toBe(false);
+        });
+    });
+
     it('should clear ping interval on close', async () => {
         enableFakeTimers();
 
