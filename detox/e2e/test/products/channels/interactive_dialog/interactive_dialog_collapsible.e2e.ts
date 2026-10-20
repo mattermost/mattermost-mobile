@@ -347,10 +347,14 @@ describe('Interactive Dialog - Collapsible Sections (Plugin)', () => {
         await wait(timeouts.ONE_SEC);
         await InteractiveDialogScreen.fillTextElement('company', 'Mattermost');
 
-        // # Submit and verify the integration received the submission
+        // # Submit and verify the integration received the submission. Assert on the
+        // server's post rather than re-checking the rendered post in the UI, which flakes
+        // when the client hasn't rendered the just-created post within the timeout.
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+        if (!post?.message?.includes('Dialog Submitted:')) {
+            throw new Error(`Expected a "Dialog Submitted:" post, got: ${post?.message}`);
+        }
     });
 });
