@@ -5,6 +5,7 @@ import {DisconnectReason, LocalAudioTrack, Room, RoomEvent} from 'livekit-client
 import {Platform} from 'react-native';
 
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {livekitConnectTimeout, peerConnectTimeout} from '@calls/connection/constants';
 import {createAudioRouteManager, stopAudioSession} from '@calls/connection/session/audio';
 import {hostRemovedErr} from '@calls/errors';
 import {
@@ -25,6 +26,7 @@ import {
 import {DefaultCurrentCall} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
 import {advanceTimers, enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
+import {logError} from '@utils/log';
 
 import {newLiveKitConnection} from './connection';
 
@@ -209,6 +211,19 @@ describe('newLiveKitConnection', () => {
         const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl);
 
         await expect(connection.waitForPeerConnection()).resolves.toBe('minted-session');
+    });
+
+    it('should keep waiting for the room past the rtcd peer timeout and reject once the livekit timeout passes', async () => {
+        mockRoom.connect.mockReturnValue(new Promise(() => {}));
+        const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl);
+        const settled = jest.fn();
+        connection.waitForPeerConnection().catch(settled);
+
+        await advanceTimers(peerConnectTimeout + 1);
+        expect(settled).not.toHaveBeenCalled();
+
+        await advanceTimers(livekitConnectTimeout);
+        expect(settled).toHaveBeenCalledWith(new Error('timed out waiting for peer connection'));
     });
 
     it('should stop the audio session and reject when the join request fails', async () => {
@@ -524,6 +539,12 @@ describe('newLiveKitConnection', () => {
         expect(setUserMuted).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'sessionA', true);
     });
 
+    it('does not report our own microphone as muted before it is published', async () => {
+        await connect([participant('userA', 'sessionA')]);
+
+        expect(setUserMuted).not.toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, SESSION_ID, expect.anything());
+    });
+
     it('turns voice off for a session that drops out of the active speaker set', async () => {
         await connect();
 
@@ -556,6 +577,57 @@ describe('newLiveKitConnection', () => {
         expect(opts).toEqual({reliable: true, topic: 'reaction'});
     });
 
+    it('logs a reaction that fails to send', async () => {
+        mockRoom.localParticipant.publishData.mockRejectedValueOnce(new Error('send failed'));
+        const connection = await connect();
+
+        connection.sendReaction({name: 'thumbsup', unified: '1F44D'});
+        await advanceTimers(0);
+
+        expect(logError).toHaveBeenCalled();
+    });
+
+    it('logs a hand raise that fails', async () => {
+        mockRoom.localParticipant.setAttributes.mockRejectedValueOnce(new Error('update failed'));
+        const connection = await connect();
+
+        connection.raiseHand();
+        await advanceTimers(0);
+
+        expect(logError).toHaveBeenCalled();
+    });
+
+    it('logs a hand lower that fails', async () => {
+        mockRoom.localParticipant.setAttributes.mockRejectedValueOnce(new Error('update failed'));
+        const connection = await connect();
+
+        connection.unraiseHand();
+        await advanceTimers(0);
+
+        expect(logError).toHaveBeenCalled();
+    });
+
+    it('stops showing the user as live when unmuting the microphone fails', async () => {
+        const connection = await connect([], () => {}, true);
+        await advanceTimers(0);
+        micTrack?.unmute.mockRejectedValueOnce(new Error('track ended'));
+
+        connection.unmute();
+        await advanceTimers(0);
+
+        expect(clearStartUnmuted).toHaveBeenCalled();
+    });
+
+    it('logs a room disconnect that fails', async () => {
+        const connection = await connect();
+        mockRoom.disconnect.mockRejectedValueOnce(new Error('close failed'));
+
+        connection.disconnect();
+        await advanceTimers(0);
+
+        expect(logError).toHaveBeenCalled();
+    });
+
     it('surfaces the senders own reaction, which livekit does not echo back', async () => {
         const connection = await connect();
         const emoji = {name: 'thumbsup', unified: '1F44D'};
@@ -582,6 +654,14 @@ describe('newLiveKitConnection', () => {
             emoji,
             timestamp: 1700000000000,
         });
+    });
+
+    it('ignores a received reaction whose payload is not valid json', async () => {
+        await connect();
+
+        roomHandlers[RoomEvent.DataReceived](new TextEncoder().encode('not json'), participant('userA', 'sessionA'), undefined, 'reaction');
+
+        expect(userReacted).not.toHaveBeenCalled();
     });
 
     it('stops the audio session and route manager on disconnect', async () => {

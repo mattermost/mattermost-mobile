@@ -2,3 +2,5 @@
 // See LICENSE.txt for license information.
 
 export const peerConnectTimeout = 5000;
+
+export const livekitConnectTimeout = 30000;

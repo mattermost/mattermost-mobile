@@ -20,7 +20,7 @@ import {
 import {Platform} from 'react-native';
 
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
-import {peerConnectTimeout} from '@calls/connection/constants';
+import {livekitConnectTimeout} from '@calls/connection/constants';
 import {createAudioRouteManager, startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/session/foreground_service';
 import {createCallAndAddToIds} from '@calls/convert_call';
@@ -176,7 +176,10 @@ export async function newLiveKitConnection(
 
     const unmute = () => {
         micMuted = false;
-        micTrack?.unmute();
+        micTrack?.unmute().catch((err) => {
+            logError('calls: unable to unmute microphone track:', getFullErrorMessage(err));
+            clearStartUnmuted();
+        });
     };
 
     const initializeVoiceTrack = async () => {
@@ -199,13 +202,17 @@ export async function newLiveKitConnection(
         prepareMicTrack();
     }
 
+    const disconnectRoom = () => {
+        room.disconnect().catch((err) => logError('calls: unable to disconnect livekit room:', getFullErrorMessage(err)));
+    };
+
     const disconnect = (err?: Error) => {
         if (isClosed) {
             return;
         }
         isClosed = true;
 
-        room.disconnect();
+        disconnectRoom();
         micTrack?.stop();
         stopAudioSession();
         audioRoute.stop();
@@ -220,11 +227,13 @@ export async function newLiveKitConnection(
     };
 
     const raiseHand = () => {
-        room.localParticipant.setAttributes({[CALL_ATTRIBUTES.RAISED_HAND]: String(Date.now())});
+        room.localParticipant.setAttributes({[CALL_ATTRIBUTES.RAISED_HAND]: String(Date.now())}).
+            catch((err) => logError('calls: unable to raise hand:', getFullErrorMessage(err)));
     };
 
     const unraiseHand = () => {
-        room.localParticipant.setAttributes({[CALL_ATTRIBUTES.RAISED_HAND]: ''});
+        room.localParticipant.setAttributes({[CALL_ATTRIBUTES.RAISED_HAND]: ''}).
+            catch((err) => logError('calls: unable to lower hand:', getFullErrorMessage(err)));
     };
 
     const sendReaction = (emoji: EmojiData) => {
@@ -234,7 +243,7 @@ export async function newLiveKitConnection(
         room.localParticipant.publishData(
             new TextEncoder().encode(JSON.stringify(payload)),
             {reliable: true, topic: CALL_MESSAGE_TOPICS.REACTION},
-        );
+        ).catch((err) => logError('calls: unable to send reaction:', getFullErrorMessage(err)));
 
         // publishData does not deliver to the sender, so the local reaction is surfaced here.
         // On the rtcd path the server's broadcast echoes back and does this instead.
@@ -305,7 +314,9 @@ export async function newLiveKitConnection(
 
         const userIDs = participants.map((participant) => {
             const userID = joinParticipant(participant);
-            seedParticipantState(participant);
+            if (participant !== room.localParticipant) {
+                seedParticipantState(participant);
+            }
             return userID;
         });
         fetchMissingProfilesByIds(serverUrl, userIDs);
@@ -403,18 +414,19 @@ export async function newLiveKitConnection(
             return;
         }
 
-        const {userID, sessionID} = parseIdentity(participant.identity);
-        try {
-            const {emojiData, timestamp} = JSON.parse(new TextDecoder().decode(payload)) as ReactionPayload;
-            userReacted(serverUrl, channelID, {
-                user_id: userID,
-                session_id: sessionID,
-                emoji: emojiData,
-                timestamp,
-            });
-        } catch (err) {
-            logError('calls: failed to parse received reaction:', getFullErrorMessage(err));
+        const reaction = safeParseJSON(new TextDecoder().decode(payload)) as ReactionPayload | string | null;
+        if (!reaction || typeof reaction === 'string') {
+            logError('calls: failed to parse received reaction');
+            return;
         }
+
+        const {userID, sessionID} = parseIdentity(participant.identity);
+        userReacted(serverUrl, channelID, {
+            user_id: userID,
+            session_id: sessionID,
+            emoji: reaction.emojiData,
+            timestamp: reaction.timestamp,
+        });
     });
 
     room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack, publication: RemoteTrackPublication) => {
@@ -465,7 +477,7 @@ export async function newLiveKitConnection(
         }
 
         if (isClosed) {
-            room.disconnect();
+            disconnectRoom();
             return;
         }
 
@@ -497,7 +509,7 @@ export async function newLiveKitConnection(
                     onPeerConnected = null;
                     reject(new Error('timed out waiting for peer connection'));
                 }
-            }, peerConnectTimeout);
+            }, livekitConnectTimeout);
         });
     };
 
