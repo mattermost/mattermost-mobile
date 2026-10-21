@@ -94,6 +94,21 @@ describe('WebSocketClient', () => {
         expect(logInfo).toHaveBeenCalledWith('websocket connecting to wss://example.com/api/v4/websocket');
     });
 
+    it('should log an error when creating the WebSocket client fails', async () => {
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
+        const error = new Error('"wss://example.com/api/v4/websocket" is not a valid WebSocket URL');
+        mockedGetOrCreateWebSocketClient.mockRejectedValueOnce(error);
+
+        await client.initialize();
+
+        expect(logError).toHaveBeenCalledWith(
+            'WebSocketClient.initialize: failed to create WebSocket client',
+            'server',
+            serverUrl,
+            '"<redacted websocket URL>" is not a valid WebSocket URL',
+        );
+    });
+
     it('should handle WebSocket open event - skip sync', async () => {
         const firstConnectCallback = jest.fn();
         client.setFirstConnectCallback(firstConnectCallback);
