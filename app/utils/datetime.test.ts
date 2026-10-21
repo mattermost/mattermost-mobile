@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
+
 import {getIntlShape} from '@utils/general';
 
 import {formatTime, getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday, parseTimeString, toValidMinuteInterval} from './datetime';
@@ -280,12 +282,18 @@ describe('toValidMinuteInterval', () => {
         expect(toValidMinuteInterval()).toBe(30);
     });
 
-    it('should honor supported intervals regardless of platform', () => {
-        // Regression: Android used to be short-circuited to 30, which snapped both the
-        // time picker and the rounded min/default dates to half-hour steps.
-        // The fix removed the Platform.OS branch entirely — this test is platform-agnostic.
-        expect(toValidMinuteInterval(10)).toBe(10);
-        expect(toValidMinuteInterval(15)).toBe(15);
-        expect(toValidMinuteInterval(60)).toBe(30);
+    it('should honor supported intervals on Android (regression MM-10094)', () => {
+        // Regression: the old Android branch returned 30 unconditionally, so supported
+        // intervals like 10 and 15 were silently clamped. Jest defaults to Platform.OS='ios',
+        // so this case must explicitly run as android to catch the regression.
+        const origOS = Platform.OS;
+        Platform.OS = 'android';
+        try {
+            expect(toValidMinuteInterval(10)).toBe(10);
+            expect(toValidMinuteInterval(15)).toBe(15);
+            expect(toValidMinuteInterval(60)).toBe(30);
+        } finally {
+            Platform.OS = origOS;
+        }
     });
 });
