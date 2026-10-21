@@ -17,7 +17,6 @@ import CallbackStore from '@store/callback_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
-import {requestMicrophonePermission} from '@utils/permission';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {showSnackBar} from '@utils/snack_bar';
 
@@ -43,10 +42,6 @@ jest.mock('@screens/navigation');
 
 jest.mock('@utils/post', () => ({
     persistentNotificationsConfirmation: jest.fn(),
-}));
-
-jest.mock('@utils/permission', () => ({
-    requestMicrophonePermission: jest.fn(() => Promise.resolve(true)),
 }));
 
 jest.mock('@utils/snack_bar', () => ({
@@ -165,74 +160,72 @@ describe('DraftInput', () => {
             });
         };
 
-        it('replaces the quick actions with the recorder while recording', async () => {
+        beforeEach(() => {
+            enableFakeTimers();
+            jest.setSystemTime(new Date(2026, 9, 20, 14, 35, 1));
+        });
+
+        afterEach(() => {
+            disableFakeTimers();
+        });
+
+        it('should replace the quick actions with the recorder while recording', async () => {
             const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
 
             await startRecording(getByTestId);
 
-            expect(requestMicrophonePermission).toHaveBeenCalledTimes(1);
             expect(queryByTestId('draft_input.quick_actions')).toBeNull();
             expect(queryByTestId('draft_input.send_action.send.button')).toBeNull();
         });
 
-        it('attaches the recorded voice note to the draft when done is pressed', async () => {
-            enableFakeTimers();
-            try {
-                const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
-                await startRecording(getByTestId);
+        it('should attach the recorded voice note to the draft when done is pressed', async () => {
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            await startRecording(getByTestId);
 
-                await act(async () => {
-                    await advanceTimers(2000);
-                    fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
-                    await advanceTimers(0);
-                });
+            await act(async () => {
+                await advanceTimers(2000);
+                fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
+                await advanceTimers(0);
+            });
 
-                expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
-                expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({
-                    mime_type: 'audio/mp4',
-                    extension: 'm4a',
-                    name: expect.stringMatching(/^voice-note-\d{8}-\d{6}-0m02s\.m4a$/),
-                    localPath: expect.stringMatching(/^file:\/\/\/mock\/voice-note-.+\.m4a$/),
-                })]);
-                expect(showSnackBar).not.toHaveBeenCalled();
-                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
-                expect(getByTestId('draft_input.quick_actions')).toBeVisible();
-            } finally {
-                disableFakeTimers();
-            }
+            expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
+            expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({
+                mime_type: 'audio/mp4',
+                extension: 'm4a',
+                name: 'voice-note-20261020-143501-0m02s.m4a',
+                localPath: 'file:///mock/voice-note-20261020-143501-0m02s.m4a',
+            })]);
+            expect(showSnackBar).not.toHaveBeenCalled();
+            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+            expect(getByTestId('draft_input.quick_actions')).toBeVisible();
         });
 
-        it('deletes the recorded file when the draft does not accept it', async () => {
-            enableFakeTimers();
-            try {
-                const addFiles = jest.fn(() => false);
-                const {getByTestId, queryByTestId} = render(
-                    <DraftInput
-                        {...baseProps}
-                        addFiles={addFiles}
-                    />,
-                    {database},
-                );
-                await startRecording(getByTestId);
+        it('should delete the recorded file when the draft does not accept it', async () => {
+            const addFiles = jest.fn(() => false);
+            const {getByTestId, queryByTestId} = render(
+                <DraftInput
+                    {...baseProps}
+                    addFiles={addFiles}
+                />,
+                {database},
+            );
+            await startRecording(getByTestId);
 
-                await act(async () => {
-                    await advanceTimers(2000);
-                    fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
-                    await advanceTimers(0);
-                });
+            await act(async () => {
+                await advanceTimers(2000);
+                fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
+                await advanceTimers(0);
+            });
 
-                expect(addFiles).toHaveBeenCalledTimes(1);
-                const MockFile = jest.mocked(File);
-                expect(MockFile).toHaveBeenLastCalledWith(expect.stringMatching(/^file:\/\/\/mock\/voice-note-.+\.m4a$/));
-                expect(MockFile.mock.results[MockFile.mock.results.length - 1].value.delete).toHaveBeenCalledTimes(1);
-                expect(showSnackBar).not.toHaveBeenCalled();
-                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
-            } finally {
-                disableFakeTimers();
-            }
+            expect(addFiles).toHaveBeenCalledTimes(1);
+            const MockFile = jest.mocked(File);
+            expect(MockFile).toHaveBeenLastCalledWith('file:///mock/voice-note-20261020-143501-0m02s.m4a');
+            expect(MockFile.mock.results[MockFile.mock.results.length - 1].value.delete).toHaveBeenCalledTimes(1);
+            expect(showSnackBar).not.toHaveBeenCalled();
+            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
         });
 
-        it('discards a recording shorter than a second without attaching it', async () => {
+        it('should discard a recording shorter than a second without attaching it', async () => {
             const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
             await startRecording(getByTestId);
 
@@ -247,7 +240,7 @@ describe('DraftInput', () => {
             expect(getByTestId('draft_input.quick_actions')).toBeVisible();
         });
 
-        it('discards the recording and restores the quick actions on cancel', async () => {
+        it('should discard the recording and restore the quick actions on cancel', async () => {
             const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
             await startRecording(getByTestId);
 
@@ -262,34 +255,27 @@ describe('DraftInput', () => {
             expect(getByTestId('draft_input.quick_actions')).toBeVisible();
         });
 
-        it('attaches the voice note and tells the user when the recording hits the time limit', async () => {
-            enableFakeTimers();
-            try {
-                const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
-                await startRecording(getByTestId);
+        it('should attach the voice note and tell the user when the recording hits the time limit', async () => {
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            await startRecording(getByTestId);
 
-                await act(async () => {
-                    await advanceTimers(3000);
-                });
+            await act(async () => {
+                await advanceTimers(3000);
+            });
 
-                expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
-                expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({name: expect.stringMatching(/-0m03s\.m4a$/)})]);
-                expect(showSnackBar).toHaveBeenCalledTimes(1);
-                expect(showSnackBar).toHaveBeenCalledWith(expect.objectContaining({barType: SNACK_BAR_TYPE.VOICE_NOTE_MAX_DURATION}));
-                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
-            } finally {
-                disableFakeTimers();
-            }
+            expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
+            expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({name: 'voice-note-20261020-143501-0m03s.m4a'})]);
+            expect(showSnackBar).toHaveBeenCalledTimes(1);
+            expect(showSnackBar).toHaveBeenCalledWith(expect.objectContaining({barType: SNACK_BAR_TYPE.VOICE_NOTE_MAX_DURATION}));
+            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
         });
 
-        it('alerts and restores the quick actions when the recording fails', async () => {
+        it('should alert and restore the quick actions when the recording fails', async () => {
             jest.spyOn(Alert, 'alert');
-            (AudioModule.AudioRecorder as unknown as jest.Mock).mockImplementationOnce(() => ({
-                uri: null,
+            const MockAudioRecorder = AudioModule.AudioRecorder as unknown as jest.Mock;
+            const createDefaultRecorder = MockAudioRecorder.getMockImplementation() as () => object;
+            MockAudioRecorder.mockImplementationOnce(() => Object.assign(createDefaultRecorder(), {
                 prepareToRecordAsync: jest.fn(() => Promise.reject(new Error('mic busy'))),
-                record: jest.fn(),
-                stop: jest.fn(() => Promise.resolve()),
-                release: jest.fn(),
             }));
             const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
 

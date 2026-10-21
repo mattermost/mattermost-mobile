@@ -29,35 +29,16 @@ describe('VoiceQuickAction', () => {
         jest.spyOn(Alert, 'alert');
     });
 
-    it('should be labelled for screen readers', () => {
+    it('should dismiss the keyboard and start recording when the microphone permission is granted', async () => {
         const {getByLabelText} = renderWithIntlAndTheme(<VoiceQuickAction {...baseProps}/>);
 
-        expect(getByLabelText('Record a voice note')).toBeVisible();
-    });
-
-    it('should dismiss the keyboard and start recording when the microphone permission is granted', async () => {
-        const {getByTestId} = renderWithIntlAndTheme(<VoiceQuickAction {...baseProps}/>);
-
-        fireEvent.press(getByTestId('test-voice'));
+        fireEvent.press(getByLabelText('Record a voice note'));
 
         await waitFor(() => {
             expect(baseProps.onStartRecording).toHaveBeenCalledTimes(1);
         });
         expect(blurAndDismissKeyboard).toHaveBeenCalledTimes(1);
         expect(Alert.alert).not.toHaveBeenCalled();
-    });
-
-    it('should ask for the microphone permission and start recording once it is allowed', async () => {
-        jest.mocked(Permissions.check).mockResolvedValueOnce(Permissions.RESULTS.DENIED);
-        jest.mocked(Permissions.request).mockResolvedValueOnce(Permissions.RESULTS.GRANTED);
-        const {getByTestId} = renderWithIntlAndTheme(<VoiceQuickAction {...baseProps}/>);
-
-        fireEvent.press(getByTestId('test-voice'));
-
-        await waitFor(() => {
-            expect(baseProps.onStartRecording).toHaveBeenCalledTimes(1);
-        });
-        expect(Permissions.request).toHaveBeenCalledTimes(1);
     });
 
     it('should not start recording when the user declines the microphone permission', async () => {

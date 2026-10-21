@@ -219,23 +219,28 @@ describe('QuickActions burn-on-read permission', () => {
 
 describe('QuickActions voice note availability', () => {
     let database: Database;
+    let unmountQuickActions: (() => void) | undefined;
 
-    const renderQuickActions = () => renderWithEverything(
-        <QuickActions
-            testID='channel.post_draft.quick_actions'
-            channelId={channelId}
-            fileCount={0}
-            addFiles={jest.fn()}
-            onStartVoiceRecording={jest.fn()}
-            updateValue={jest.fn()}
-            value=''
-            postPriority={{priority: PostPriorityType.STANDARD}}
-            updatePostPriority={jest.fn()}
-            focus={jest.fn()}
-            location={Screens.CHANNEL}
-        />,
-        {database, serverUrl},
-    );
+    const renderQuickActions = () => {
+        const result = renderWithEverything(
+            <QuickActions
+                testID='channel.post_draft.quick_actions'
+                channelId={channelId}
+                fileCount={0}
+                addFiles={jest.fn()}
+                onStartVoiceRecording={jest.fn()}
+                updateValue={jest.fn()}
+                value=''
+                postPriority={{priority: PostPriorityType.STANDARD}}
+                updatePostPriority={jest.fn()}
+                focus={jest.fn()}
+                location={Screens.CHANNEL}
+            />,
+            {database, serverUrl},
+        );
+        unmountQuickActions = result.unmount;
+        return result;
+    };
 
     beforeEach(async () => {
         const server = await TestHelper.setupServerDatabase(serverUrl);
@@ -243,6 +248,9 @@ describe('QuickActions voice note availability', () => {
     });
 
     afterEach(async () => {
+        // Unmount before tearing down the database so the observers don't update outside act().
+        unmountQuickActions?.();
+        unmountQuickActions = undefined;
         setCurrentCall(null);
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });

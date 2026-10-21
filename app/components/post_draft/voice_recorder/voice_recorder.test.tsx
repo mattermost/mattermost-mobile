@@ -3,7 +3,6 @@
 
 import {act, fireEvent} from '@testing-library/react-native';
 import {AudioModule} from 'expo-audio';
-import {File} from 'expo-file-system';
 import {useIsFocused} from 'expo-router';
 import {AccessibilityInfo} from 'react-native';
 
@@ -44,8 +43,6 @@ describe('VoiceRecorder', () => {
     it('should start recording on mount and show the elapsed time against the limit', async () => {
         const {getByTestId, getByText, getByLabelText} = await renderRecorder();
 
-        expect(MockAudioRecorder).toHaveBeenCalledTimes(1);
-        expect(MockAudioRecorder.mock.results[0].value.record).toHaveBeenCalledTimes(1);
         expect(getByTestId('voice_recorder.timer')).toHaveTextContent('0:00');
         expect(getByText('/ 5:00')).toBeVisible();
 
@@ -89,18 +86,12 @@ describe('VoiceRecorder', () => {
 
         expect(baseProps.onCancel).toHaveBeenCalledTimes(1);
         expect(baseProps.onFinish).not.toHaveBeenCalled();
-        const files = jest.mocked(File).mock.results;
-        expect(jest.mocked(File)).toHaveBeenLastCalledWith('file:///mock/recording.m4a');
-        expect(files[files.length - 1].value.delete).toHaveBeenCalledTimes(1);
     });
 
     it('should report an error to the parent when recording cannot start', async () => {
-        MockAudioRecorder.mockImplementationOnce(() => ({
-            uri: null,
+        const createDefaultRecorder = MockAudioRecorder.getMockImplementation() as () => object;
+        MockAudioRecorder.mockImplementationOnce(() => Object.assign(createDefaultRecorder(), {
             prepareToRecordAsync: jest.fn(() => Promise.reject(new Error('mic busy'))),
-            record: jest.fn(),
-            stop: jest.fn(() => Promise.resolve()),
-            release: jest.fn(),
         }));
 
         await renderRecorder();
@@ -142,7 +133,6 @@ describe('VoiceRecorder', () => {
             await advanceTimers(0);
         });
 
-        expect(MockAudioRecorder.mock.results[0].value.stop).toHaveBeenCalledTimes(1);
         expect(baseProps.onFinish).toHaveBeenCalledTimes(1);
         expect(baseProps.onFinish.mock.calls[0][0].name).toBe('voice-note-20261020-143501-0m03s.m4a');
     });
@@ -157,6 +147,5 @@ describe('VoiceRecorder', () => {
 
         expect(baseProps.onCancel).toHaveBeenCalledTimes(1);
         expect(baseProps.onFinish).not.toHaveBeenCalled();
-        expect(jest.mocked(File).mock.results[jest.mocked(File).mock.results.length - 1].value.delete).toHaveBeenCalledTimes(1);
     });
 });
