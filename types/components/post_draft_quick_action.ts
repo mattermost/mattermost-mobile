@@ -7,6 +7,7 @@ export interface QuickActionAttachmentProps {
     maxFilesReached: boolean;
     maxFileCount: number;
     onUploadFiles: (files: ExtractedFileInfo[]) => void;
+    onRecordVoiceNote?: () => void;
     showAttachLogs?: boolean;
     testID?: string;
 }

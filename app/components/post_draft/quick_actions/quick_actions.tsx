@@ -101,6 +101,7 @@ export default function QuickActions({
         maxFileCount,
         maxFilesReached,
         onUploadFiles: addFiles,
+        onRecordVoiceNote: voiceDisabled ? undefined : onStartVoiceRecording,
         showAttachLogs,
     };
 

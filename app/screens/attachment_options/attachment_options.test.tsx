@@ -11,6 +11,7 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import PickerUtil from '@utils/file/file_picker';
 import {logError} from '@utils/log';
+import {requestMicrophonePermission} from '@utils/permission';
 
 import AttachmentOptions from './attachment_options';
 
@@ -39,6 +40,10 @@ jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(() => false),
 }));
 
+jest.mock('@utils/permission', () => ({
+    requestMicrophonePermission: jest.fn(),
+}));
+
 describe('AttachmentOptions', () => {
     const mockDismissBottomSheet = dismissBottomSheet as jest.Mock;
     const mockAttachFileFromPhotoGallery = jest.fn();
@@ -63,6 +68,92 @@ describe('AttachmentOptions', () => {
             attachFileFromCamera: mockAttachFileFromCamera,
             attachFileFromFiles: mockAttachFileFromFiles,
         }));
+    });
+
+    describe('voice note', () => {
+        it('should not render the voice note option when onRecordVoiceNote is not provided', () => {
+            const {queryByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...baseProps}/>,
+            );
+
+            expect(queryByTestId('file_attachment.voice_note')).toBeNull();
+        });
+
+        it('should dismiss the sheet and start recording once the microphone permission is granted', async () => {
+            jest.mocked(requestMicrophonePermission).mockResolvedValue(true);
+            const onRecordVoiceNote = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions
+                    {...baseProps}
+                    onRecordVoiceNote={onRecordVoiceNote}
+                />,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.voice_note'));
+
+            await waitFor(() => {
+                expect(onRecordVoiceNote).toHaveBeenCalledTimes(1);
+            });
+            expect(mockDismissBottomSheet).toHaveBeenCalledTimes(1);
+            expect(requestMicrophonePermission).toHaveBeenCalledTimes(1);
+        });
+
+        it('should not start recording when the microphone permission is not granted', async () => {
+            jest.mocked(requestMicrophonePermission).mockResolvedValue(false);
+            const onRecordVoiceNote = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions
+                    {...baseProps}
+                    onRecordVoiceNote={onRecordVoiceNote}
+                />,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.voice_note'));
+
+            await waitFor(() => {
+                expect(requestMicrophonePermission).toHaveBeenCalledTimes(1);
+            });
+            expect(onRecordVoiceNote).not.toHaveBeenCalled();
+        });
+
+        it('should alert instead of recording when uploads are disabled', async () => {
+            const onRecordVoiceNote = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions
+                    {...baseProps}
+                    canUploadFiles={false}
+                    onRecordVoiceNote={onRecordVoiceNote}
+                />,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.voice_note'));
+
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledWith('Error', 'File uploads are disabled');
+            });
+            expect(requestMicrophonePermission).not.toHaveBeenCalled();
+            expect(onRecordVoiceNote).not.toHaveBeenCalled();
+        });
+
+        it('should alert instead of recording when the file limit is reached', async () => {
+            const onRecordVoiceNote = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions
+                    {...baseProps}
+                    maxFilesReached={true}
+                    maxFileCount={10}
+                    onRecordVoiceNote={onRecordVoiceNote}
+                />,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.voice_note'));
+
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledWith('Error', 'Maximum 10 files allowed');
+            });
+            expect(requestMicrophonePermission).not.toHaveBeenCalled();
+            expect(onRecordVoiceNote).not.toHaveBeenCalled();
+        });
     });
 
     describe('action handlers', () => {

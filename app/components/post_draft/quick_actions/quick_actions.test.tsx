@@ -1,11 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fireEvent, waitFor} from '@testing-library/react-native';
+
 import {Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {openAttachmentOptions} from '@utils/navigation';
 
 import QuickActions from './quick_actions';
+
+jest.mock('@utils/navigation', () => ({
+    ...jest.requireActual('@utils/navigation'),
+    openAttachmentOptions: jest.fn(),
+}));
 
 jest.mock('@components/post_draft/quick_actions/bor_quick_action', () => ({
     __esModule: true,
@@ -216,6 +224,27 @@ describe('Quick Actions', () => {
             expect(getByTestId('test-quick-actions.voice_action.disabled')).toBeDisabled();
         });
 
+        it('should offer voice notes in the attachment sheet only when recording is available', async () => {
+            const {getByTestId, rerender} = renderWithIntlAndTheme(<QuickActions {...baseProps}/>);
+
+            fireEvent.press(getByTestId('test-quick-actions.attachment_action'));
+            await waitFor(() => {
+                expect(openAttachmentOptions).toHaveBeenCalledTimes(1);
+            });
+            expect(jest.mocked(openAttachmentOptions).mock.calls[0][0].onRecordVoiceNote).toBe(baseProps.onStartVoiceRecording);
+
+            rerender(
+                <QuickActions
+                    {...baseProps}
+                    isCallActive={true}
+                />,
+            );
+            fireEvent.press(getByTestId('test-quick-actions.attachment_action'));
+            await waitFor(() => {
+                expect(openAttachmentOptions).toHaveBeenCalledTimes(2);
+            });
+            expect(jest.mocked(openAttachmentOptions).mock.calls[1][0].onRecordVoiceNote).toBeUndefined();
+        });
     });
 
     describe('BoR quick action', () => {
