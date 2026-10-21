@@ -64,6 +64,7 @@ class ChannelScreen {
         introUnfavoriteAction: 'channel_post_list.intro_options.unfavorite.action',
         introChannelInfoAction: 'channel_post_list.intro_options.channel_info.action',
         toastMessage: 'toast.message',
+        banner: 'channel.banner',
         postPriorityPicker: 'channel.post_draft.quick_actions.post_priority_action',
         postPriorityImportantMessage: 'post_priority_picker_item.important',
         postPriorityUrgentMessage: 'post_priority_picker_item.urgent',
@@ -121,6 +122,7 @@ class ChannelScreen {
     introUnfavoriteAction = element(by.id(this.testID.introUnfavoriteAction));
     introChannelInfoAction = element(by.id(this.testID.introChannelInfoAction));
     toastMessage = element(by.id(this.testID.toastMessage));
+    banner = element(by.id(this.testID.banner));
     applyPostPriority = element(by.text('Apply'));
 
     // convenience props
@@ -141,6 +143,9 @@ class ChannelScreen {
     postDraftArchivedCloseChannelButton = PostDraft.getPostDraftArchivedCloseChannelButton(this.testID.channelScreenPrefix);
     postDraftReadOnly = PostDraft.getPostDraftReadOnly(this.testID.channelScreenPrefix);
     postInput = PostDraft.getPostInput(this.testID.channelScreenPrefix);
+    attachmentAction = PostDraft.getAttachmentAction(this.testID.channelScreenPrefix);
+    attachmentActionDisabled = PostDraft.getAttachmentActionDisabled(this.testID.channelScreenPrefix);
+    borAction = PostDraft.getBoRAction(this.testID.channelScreenPrefix);
     sendButton = SendButton.getSendButton(this.testID.channelScreenPrefix);
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.channelScreenPrefix);
 

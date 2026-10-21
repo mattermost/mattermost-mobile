@@ -1,4 +1,4 @@
-# Server Database - Schema Version 22
+# Server Database - Schema Version 23
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -181,6 +181,7 @@ message_count number
 roles string
 viewed_at number
 autotranslation_disabled boolean
+redaction_required_epoch number
 
 
 MyChannelSettings
@@ -285,6 +286,7 @@ original_id string
 pending_post_id string INDEX
 previous_post_id string
 props string
+redaction_verified_epoch number
 root_id string
 type string INDEX
 update_at number

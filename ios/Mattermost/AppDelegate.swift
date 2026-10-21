@@ -67,7 +67,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
                 try TurboLogger.configure(
                     dailyRolling: false,
                     maximumFileSize: 1024 * 1024,
-                    maximumNumberOfFiles: 2,
+                    maximumNumberOfFiles: 5,
                     logsDirectory: logsURL.path,
                     logsFilename: "MMLogs"
                 )

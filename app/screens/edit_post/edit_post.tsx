@@ -20,10 +20,11 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
+import {useFetchRenderPermissions} from '@hooks/render_permissions';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import PostError from '@screens/edit_post/post_error';
 import {navigateBack} from '@screens/navigation';
-import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledWarning} from '@utils/file';
+import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledByPolicyWarning, uploadDisabledWarning} from '@utils/file';
 import {dismissKeyboard} from '@utils/keyboard';
 
 import EditPostInput from './edit_post_input';
@@ -40,6 +41,7 @@ type EditPostProps = {
     maxFileCount: number;
     maxFileSize: number;
     canUploadFiles: boolean;
+    canUploadFilesByPolicy: boolean;
 }
 
 const AUTOCOMPLETE_SEPARATION = 8;
@@ -71,6 +73,7 @@ const EditPost = ({
     maxFileCount,
     maxFileSize,
     canUploadFiles,
+    canUploadFilesByPolicy,
 }: EditPostProps) => {
     const editingMessage = post.messageSource || post.message;
     const navigation = useNavigation();
@@ -90,6 +93,7 @@ const EditPost = ({
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    useFetchRenderPermissions(post.channelId);
 
     const hasNoCurrentFiles = postFiles.length === 0;
     const shouldDeleteOnSave = !postMessage && canDelete && hasNoCurrentFiles;
@@ -162,6 +166,11 @@ const EditPost = ({
             return;
         }
 
+        if (!canUploadFilesByPolicy) {
+            setErrorLine(uploadDisabledByPolicyWarning(intl));
+            return;
+        }
+
         const currentFileCount = postFiles?.length || 0;
         const availableCount = maxFileCount - currentFileCount;
         if (newFiles.length > availableCount) {
@@ -195,7 +204,7 @@ const EditPost = ({
         if (!currentMessageTooLong) {
             setErrorLine(undefined);
         }
-    }, [canUploadFiles, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles, postMessage, maxPostSize, handleUploadError]);
+    }, [canUploadFiles, canUploadFilesByPolicy, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles, postMessage, maxPostSize, handleUploadError]);
 
     const handleFileRemoval = useCallback((id: string) => {
         const fileToRemove = postFiles?.find((file) => {

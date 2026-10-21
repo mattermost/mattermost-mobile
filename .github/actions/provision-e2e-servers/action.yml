@@ -3,13 +3,19 @@
 name: Provision E2E test servers
 description: >-
   Validate Matterwick server URLs, cache the demo-plugin fixture, and run
-  detox provision (license + plugins) on each unique URL. PR E2E and CMT share
-  this so dialog/plugin specs do not assume a pre-provisioned server.
+  detox provision (license + plugins) on each unique URL. The demo plugin is
+  installed only on demo-plugin-server-urls; every other URL is provisioned
+  without it. PR E2E and CMT share this so dialog/plugin specs do not assume a
+  pre-provisioned server.
 
 inputs:
   server-urls:
     description: Newline-separated HTTPS Mattermost test server URLs
     required: true
+  demo-plugin-server-urls:
+    description: Newline-separated subset of server-urls that get the demo plugin (the mutation servers B); empty means none
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -17,6 +23,7 @@ runs:
     - name: Validate server URLs
       env:
         SERVER_URLS: ${{ inputs.server-urls }}
+        DEMO_PLUGIN_SERVER_URLS: ${{ inputs.demo-plugin-server-urls }}
       run: |
         set -euo pipefail
         validate_url() {
@@ -59,19 +66,28 @@ runs:
           echo "::error::No server URLs provided to provision-e2e-servers"
           exit 1
         fi
+
+        while IFS= read -r url; do
+          [ -z "$url" ] && continue
+          if ! grep -Fxq -- "$url" <<< "$SERVER_URLS"; then
+            echo "::error::demo-plugin-server-urls entry is not in server-urls: $url"
+            exit 1
+          fi
+        done <<< "$DEMO_PLUGIN_SERVER_URLS"
       shell: bash
 
     # Runner (not the Mattermost origin) fetches the tarball. install_from_url
     # through Cloudflare 524s and wedges config/patch + uploads for the shard.
     - name: Cache demo plugin fixture
       id: demo-plugin-cache
+      if: inputs.demo-plugin-server-urls != ''
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz
         key: mattermost-plugin-demo-linux-amd64-v0.12.1
 
     - name: Download demo plugin fixture
-      if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+      if: inputs.demo-plugin-server-urls != '' && steps.demo-plugin-cache.outputs.cache-hit != 'true'
       run: |
         mkdir -p detox/e2e/support/fixtures
         curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz \
@@ -82,6 +98,7 @@ runs:
     - name: Provision servers (license + plugins)
       env:
         SERVER_URLS: ${{ inputs.server-urls }}
+        DEMO_PLUGIN_SERVER_URLS: ${{ inputs.demo-plugin-server-urls }}
       run: |
         set -euo pipefail
         cd detox
@@ -90,8 +107,13 @@ runs:
         while IFS= read -r url; do
           [ -z "$url" ] && continue
           if [ -z "${provisioned[$url]+x}" ]; then
-            echo "--- Provisioning $url ---"
-            npm run provision -- "$url"
+            if grep -Fxq -- "$url" <<< "$DEMO_PLUGIN_SERVER_URLS"; then
+              demo_flag=--demo-plugin
+            else
+              demo_flag=--no-demo-plugin
+            fi
+            echo "--- Provisioning $url ($demo_flag) ---"
+            npm run provision -- "$url" "$demo_flag"
             provisioned["$url"]=1
           fi
         done <<< "$SERVER_URLS"
