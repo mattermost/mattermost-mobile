@@ -80,17 +80,38 @@ jest.mock('expo-file-system', () => {
 });
 
 jest.mock('expo-audio', () => {
+    // Mirrors the native recorder closely enough for timers: the recorded duration follows
+    // the (fake) clock while recording and freezes once paused, e.g. by the system.
     function makeRecorderInstance() {
+        const state = {isRecording: false, startedAt: 0, recordedMs: 0};
         return {
-            uri: 'file:///mock/recording.m4a',
-            isRecording: false,
+            uri: 'file:///mock/recording.m4a' as string | null,
+            get isRecording() {
+                return state.isRecording;
+            },
             currentTime: 0,
             prepareToRecordAsync: jest.fn().mockResolvedValue(undefined),
-            record: jest.fn(),
-            stop: jest.fn().mockResolvedValue(undefined),
-            pause: jest.fn(),
+            record: jest.fn(() => {
+                state.isRecording = true;
+                state.startedAt = Date.now();
+            }),
+            pause: jest.fn(() => {
+                state.recordedMs += Date.now() - state.startedAt;
+                state.isRecording = false;
+            }),
+            stop: jest.fn(() => {
+                state.isRecording = false;
+                return Promise.resolve();
+            }),
             release: jest.fn(),
-            getStatus: jest.fn().mockReturnValue({canRecord: true, isRecording: false, durationMillis: 0, mediaServicesDidReset: false, url: null}),
+            getStatus: jest.fn(() => ({
+                canRecord: true,
+                isRecording: state.isRecording,
+                durationMillis: state.recordedMs + (state.isRecording ? Date.now() - state.startedAt : 0),
+                mediaServicesDidReset: false,
+                url: null,
+            })),
+            addListener: jest.fn(() => ({remove: jest.fn()})),
         };
     }
 
@@ -100,6 +121,7 @@ jest.mock('expo-audio', () => {
         IOSOutputFormat: {MPEG4AAC: 'aac '},
         RecordingPresets: {HIGH_QUALITY: {}, LOW_QUALITY: {}},
         setAudioModeAsync: jest.fn().mockResolvedValue(undefined),
+        setIsAudioActiveAsync: jest.fn().mockResolvedValue(undefined),
         getRecordingPermissionsAsync: jest.fn().mockResolvedValue({granted: true, status: 'granted'}),
         requestRecordingPermissionsAsync: jest.fn().mockResolvedValue({granted: true, status: 'granted'}),
     };

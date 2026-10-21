@@ -73,6 +73,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 type Props = Pick<VoiceRecorderOptions, 'onFinish' | 'onError'> & {
     testID?: string;
+
+    /** Called when the recording is cancelled or discarded for being too short. */
     onCancel: () => void;
 };
 
@@ -90,7 +92,7 @@ export default function VoiceRecorder({
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const {elapsedMs, start, stop, cancel} = useVoiceRecorder({onFinish, onError});
+    const {elapsedMs, start, stop, cancel} = useVoiceRecorder({onFinish, onDiscard: onCancel, onError});
 
     const pulse = useSharedValue(1);
     const dotStyle = useAnimatedStyle(() => ({opacity: pulse.value}));

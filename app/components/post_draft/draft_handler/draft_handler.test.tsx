@@ -10,6 +10,7 @@ import NetworkManager from '@managers/network_manager';
 import {getDraft} from '@queries/servers/drafts';
 import {renderWithEverything, renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import SendHandler from '../send_handler';
 
@@ -107,9 +108,17 @@ describe('components/post_draft/draft_handler/DraftHandler', () => {
                 expect(getByTestId('post_draft.voice_recorder')).toBeVisible();
             });
 
-            await act(async () => {
-                fireEvent.press(getByTestId('post_draft.voice_recorder.done'));
-            });
+            // Record for a couple of seconds; anything under a second is discarded.
+            enableFakeTimers();
+            try {
+                await act(async () => {
+                    await advanceTimers(2000);
+                    fireEvent.press(getByTestId('post_draft.voice_recorder.done'));
+                    await advanceTimers(0);
+                });
+            } finally {
+                disableFakeTimers();
+            }
 
             let draftFiles: FileInfo[] = [];
             await waitFor(async () => {

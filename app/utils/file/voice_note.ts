@@ -1,7 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {File} from 'expo-file-system';
+
+import {getFullErrorMessage} from '@utils/errors';
+import {pathWithPrefix} from '@utils/file';
+import {logDebug} from '@utils/log';
+
 export const VOICE_NOTE_MAX_DURATION_MS = 5 * 60 * 1000;
+
+// Anything shorter is almost certainly an accidental tap, so it is discarded instead of attached.
+export const VOICE_NOTE_MIN_DURATION_MS = 1000;
 export const VOICE_NOTE_EXTENSION = 'm4a';
 export const VOICE_NOTE_MIME_TYPE = 'audio/mp4';
 
@@ -33,4 +42,22 @@ export const formatVoiceNoteDuration = (durationMs: number) => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${pad(seconds)}`;
+};
+
+/**
+ * Deletes a recorded voice note from disk, e.g. when it is cancelled or cannot be attached.
+ */
+export const deleteVoiceNoteFile = (uri: string | null | undefined) => {
+    if (!uri) {
+        return;
+    }
+
+    try {
+        const file = new File(pathWithPrefix('file://', uri));
+        if (file.exists) {
+            file.delete();
+        }
+    } catch (error) {
+        logDebug('deleteVoiceNoteFile failed', getFullErrorMessage(error));
+    }
 };

@@ -2,14 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {act, renderHook} from '@testing-library/react-native';
-import {AudioModule, setAudioModeAsync} from 'expo-audio';
+import {AudioModule, setAudioModeAsync, setIsAudioActiveAsync, type RecordingStatus} from 'expo-audio';
 import {File} from 'expo-file-system';
+import {AppState, type AppStateStatus} from 'react-native';
 
+import {setCurrentCall} from '@calls/state';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {VOICE_NOTE_MAX_DURATION_MS} from '@utils/file/voice_note';
 import {hapticFeedback} from '@utils/general';
 
 import {useVoiceRecorder, VOICE_NOTE_RECORDING_OPTIONS} from './use_voice_recorder';
+
+import type {CurrentCall} from '@calls/types/calls';
 
 jest.mock('@utils/general', () => ({
     ...jest.requireActual('@utils/general'),
@@ -20,23 +24,43 @@ type MockRecorder = {
     uri: string | null;
     prepareToRecordAsync: jest.Mock;
     record: jest.Mock;
+    pause: jest.Mock;
     stop: jest.Mock;
     release: jest.Mock;
+    getStatus: jest.Mock;
+    addListener: jest.Mock;
 };
 
 describe('useVoiceRecorder', () => {
     const onFinish = jest.fn();
+    const onDiscard = jest.fn();
     const onError = jest.fn();
     const MockAudioRecorder = AudioModule.AudioRecorder as unknown as jest.Mock;
 
-    const getRecorder = (): MockRecorder => MockAudioRecorder.mock.results[0].value;
+    const getRecorder = (index = 0): MockRecorder => MockAudioRecorder.mock.results[index].value;
     const lastFile = () => {
         const files = jest.mocked(File).mock.results;
         return files[files.length - 1].value;
     };
 
     const renderRecorder = (maxDurationMs?: number) => {
-        return renderHook(() => useVoiceRecorder({maxDurationMs, onFinish, onError}));
+        return renderHook(() => useVoiceRecorder({maxDurationMs, onFinish, onDiscard, onError}));
+    };
+
+    // Lets the chained stop/release/audio session promises settle.
+    const flushPromises = async () => {
+        for (let i = 0; i < 5; i++) {
+            // eslint-disable-next-line no-await-in-loop
+            await advanceTimers(0);
+        }
+    };
+
+    const startRecording = async (maxDurationMs?: number) => {
+        const hook = renderRecorder(maxDurationMs);
+        await act(async () => {
+            await hook.result.current.start();
+        });
+        return hook;
     };
 
     beforeEach(() => {
@@ -44,11 +68,12 @@ describe('useVoiceRecorder', () => {
         jest.setSystemTime(new Date(2026, 9, 20, 14, 35, 1));
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        setCurrentCall(null);
         disableFakeTimers();
     });
 
-    it('should start recording with the platform recording options and report elapsed time', async () => {
+    it('should start recording with the platform recording options and report the recorded time', async () => {
         const {result} = renderRecorder();
 
         expect(result.current.isRecording).toBe(false);
@@ -61,7 +86,7 @@ describe('useVoiceRecorder', () => {
         const {android, ios, web, ...common} = VOICE_NOTE_RECORDING_OPTIONS;
         expect(MockAudioRecorder).toHaveBeenCalledTimes(1);
         expect(MockAudioRecorder).toHaveBeenCalledWith({...common, ...ios});
-        expect(setAudioModeAsync).toHaveBeenCalledWith(expect.objectContaining({allowsRecording: true}));
+        expect(setAudioModeAsync).toHaveBeenCalledWith(expect.objectContaining({allowsRecording: true, playsInSilentMode: true}));
         expect(getRecorder().record).toHaveBeenCalledTimes(1);
         expect(result.current.isRecording).toBe(true);
         expect(result.current.elapsedMs).toBe(0);
@@ -74,7 +99,7 @@ describe('useVoiceRecorder', () => {
         await act(async () => {
             await advanceTimers(2500);
         });
-        expect(result.current.elapsedMs).toBe(3500);
+        expect(result.current.elapsedMs).toBe(3000);
     });
 
     it('should ignore a second start while already recording', async () => {
@@ -89,11 +114,8 @@ describe('useVoiceRecorder', () => {
         expect(getRecorder().record).toHaveBeenCalledTimes(1);
     });
 
-    it('should resolve the recording into an audio/mp4 m4a file on stop', async () => {
-        const {result} = renderRecorder();
-        await act(async () => {
-            await result.current.start();
-        });
+    it('should resolve the recording into an audio/mp4 m4a file on stop and release the audio session', async () => {
+        const {result} = await startRecording();
 
         // The size reported for the attachment is the size of the recorded file on disk.
         const MockFile = jest.mocked(File);
@@ -127,25 +149,62 @@ describe('useVoiceRecorder', () => {
         }, false);
         expect(onError).not.toHaveBeenCalled();
         expect(getRecorder().release).toHaveBeenCalledTimes(1);
-        expect(setAudioModeAsync).toHaveBeenLastCalledWith({allowsRecording: false});
+
+        // The idle mode is spelled out in full so nothing falls back to its default.
+        expect(setAudioModeAsync).toHaveBeenLastCalledWith({
+            allowsRecording: false,
+            playsInSilentMode: true,
+            interruptionMode: 'mixWithOthers',
+            shouldPlayInBackground: false,
+            shouldRouteThroughEarpiece: false,
+            allowsBackgroundRecording: false,
+        });
+        expect(setIsAudioActiveAsync).toHaveBeenCalledWith(false);
         expect(hapticFeedback).toHaveBeenCalledTimes(2);
         expect(result.current.isRecording).toBe(false);
     });
 
-    it('should automatically stop at the five minute limit and flag it', async () => {
-        const {result} = renderRecorder();
+    it('should only stop the native recorder once when stop is called twice', async () => {
+        const {result} = await startRecording();
         await act(async () => {
-            await result.current.start();
+            await advanceTimers(3000);
         });
 
         await act(async () => {
-            await advanceTimers(VOICE_NOTE_MAX_DURATION_MS - 1);
+            await Promise.all([result.current.stop(), result.current.stop()]);
+        });
+
+        expect(getRecorder().stop).toHaveBeenCalledTimes(1);
+        expect(getRecorder().release).toHaveBeenCalledTimes(1);
+        expect(onFinish).toHaveBeenCalledTimes(1);
+    });
+
+    it('should discard a recording shorter than a second instead of finishing', async () => {
+        const {result} = await startRecording();
+        await act(async () => {
+            await advanceTimers(500);
+            await result.current.stop();
+        });
+
+        expect(onDiscard).toHaveBeenCalledTimes(1);
+        expect(onFinish).not.toHaveBeenCalled();
+        expect(onError).not.toHaveBeenCalled();
+        expect(jest.mocked(File)).toHaveBeenLastCalledWith('file:///mock/recording.m4a');
+        expect(lastFile().delete).toHaveBeenCalledTimes(1);
+        expect(getRecorder().release).toHaveBeenCalledTimes(1);
+    });
+
+    it('should automatically stop at the five minute limit of recorded audio and flag it', async () => {
+        const {result} = await startRecording();
+
+        await act(async () => {
+            await advanceTimers(VOICE_NOTE_MAX_DURATION_MS - 250);
         });
         expect(getRecorder().stop).not.toHaveBeenCalled();
         expect(result.current.isRecording).toBe(true);
 
         await act(async () => {
-            await advanceTimers(1);
+            await advanceTimers(250);
         });
 
         expect(getRecorder().stop).toHaveBeenCalledTimes(1);
@@ -163,11 +222,204 @@ describe('useVoiceRecorder', () => {
         expect(onFinish).toHaveBeenCalledTimes(1);
     });
 
-    it('should discard the temp file on cancel without finishing', async () => {
-        const {result} = renderRecorder();
+    it('should stop and keep the recording when the system pauses the recorder', async () => {
+        const {result} = await startRecording();
         await act(async () => {
-            await result.current.start();
+            await advanceTimers(10000);
         });
+
+        // e.g. an incoming phone call; the recorder is never resumed afterwards.
+        getRecorder().pause();
+        await act(async () => {
+            await advanceTimers(20000);
+        });
+
+        expect(getRecorder().stop).toHaveBeenCalledTimes(1);
+        expect(onFinish).toHaveBeenCalledTimes(1);
+
+        // The name carries the audio actually captured, not the wall-clock time.
+        expect(onFinish.mock.calls[0][0].name).toBe('voice-note-20261020-143501-0m10s.m4a');
+        expect(onFinish.mock.calls[0][1]).toBe(false);
+        expect(result.current.isRecording).toBe(false);
+    });
+
+    it('should stop and keep the recording when the app goes to the background', async () => {
+        const addAppStateListener = jest.mocked(AppState.addEventListener);
+        await startRecording();
+        await act(async () => {
+            await advanceTimers(4000);
+        });
+
+        expect(addAppStateListener).toHaveBeenCalledTimes(1);
+        const handler = addAppStateListener.mock.calls[0][1] as (state: AppStateStatus) => void;
+
+        // Control center or a system alert only makes the app inactive.
+        await act(async () => {
+            handler('inactive');
+            await advanceTimers(0);
+        });
+        expect(getRecorder().stop).not.toHaveBeenCalled();
+
+        await act(async () => {
+            handler('background');
+            await flushPromises();
+        });
+        expect(getRecorder().stop).toHaveBeenCalledTimes(1);
+        expect(onFinish).toHaveBeenCalledTimes(1);
+        expect(onFinish.mock.calls[0][0].name).toBe('voice-note-20261020-143501-0m04s.m4a');
+    });
+
+    it('should report an error and discard the file when the recorder fails mid-way', async () => {
+        await startRecording();
+        const recorder = getRecorder();
+        expect(recorder.addListener).toHaveBeenCalledWith('recordingStatusUpdate', expect.any(Function));
+        const listener = recorder.addListener.mock.calls[0][1] as (status: RecordingStatus) => void;
+
+        await act(async () => {
+            listener({id: '1', isFinished: true, hasError: true, error: 'encoder failed', url: null});
+            await flushPromises();
+        });
+
+        expect(onError).toHaveBeenCalledTimes(1);
+        expect(onFinish).not.toHaveBeenCalled();
+        expect(lastFile().delete).toHaveBeenCalledTimes(1);
+        expect(recorder.release).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stop and keep the recording without resetting the audio session when a call starts', async () => {
+        const {result} = await startRecording();
+        await act(async () => {
+            await advanceTimers(6000);
+        });
+        jest.mocked(setAudioModeAsync).mockClear();
+
+        await act(async () => {
+            setCurrentCall({channelId: 'channel-id'} as CurrentCall);
+            await flushPromises();
+        });
+
+        expect(getRecorder().stop).toHaveBeenCalledTimes(1);
+        expect(onFinish).toHaveBeenCalledTimes(1);
+        expect(result.current.isRecording).toBe(false);
+
+        // The call owns the audio session now.
+        expect(setAudioModeAsync).not.toHaveBeenCalled();
+        expect(setIsAudioActiveAsync).not.toHaveBeenCalled();
+    });
+
+    it('should refuse to start while a call is active', async () => {
+        setCurrentCall({channelId: 'channel-id'} as CurrentCall);
+
+        await startRecording();
+
+        expect(MockAudioRecorder).not.toHaveBeenCalled();
+        expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it('should only let one composer record at a time', async () => {
+        const first = await startRecording();
+        await act(async () => {
+            await advanceTimers(2000);
+        });
+
+        // e.g. the thread composer while the channel one is still recording.
+        const secondOnError = jest.fn();
+        const second = renderHook(() => useVoiceRecorder({onFinish, onDiscard, onError: secondOnError}));
+        await act(async () => {
+            await second.result.current.start();
+        });
+
+        expect(MockAudioRecorder).toHaveBeenCalledTimes(1);
+        expect(secondOnError).toHaveBeenCalledTimes(1);
+        expect(second.result.current.isRecording).toBe(false);
+        expect(first.result.current.isRecording).toBe(true);
+
+        await act(async () => {
+            await first.result.current.stop();
+        });
+        await act(async () => {
+            await second.result.current.start();
+        });
+
+        expect(MockAudioRecorder).toHaveBeenCalledTimes(2);
+        expect(second.result.current.isRecording).toBe(true);
+    });
+
+    it('should clean up without recording when cancelled while start is pending', async () => {
+        let resolvePrepare: () => void = () => undefined;
+        MockAudioRecorder.mockImplementationOnce(() => ({
+            uri: 'file:///mock/recording.m4a',
+            prepareToRecordAsync: jest.fn(() => new Promise<void>((resolve) => {
+                resolvePrepare = resolve;
+            })),
+            record: jest.fn(),
+            stop: jest.fn(() => Promise.resolve()),
+            release: jest.fn(),
+            getStatus: jest.fn(),
+            addListener: jest.fn(),
+        }));
+        const {result} = renderRecorder();
+
+        let starting: Promise<void> = Promise.resolve();
+        await act(async () => {
+            starting = result.current.start();
+            await advanceTimers(0);
+        });
+        await act(async () => {
+            await result.current.cancel();
+        });
+        await act(async () => {
+            resolvePrepare();
+            await starting;
+        });
+
+        const recorder = getRecorder();
+        expect(recorder.record).not.toHaveBeenCalled();
+        expect(recorder.stop).not.toHaveBeenCalled();
+        expect(recorder.release).toHaveBeenCalledTimes(1);
+        expect(lastFile().delete).toHaveBeenCalledTimes(1);
+        expect(onError).not.toHaveBeenCalled();
+        expect(result.current.isRecording).toBe(false);
+
+        // No timer was left polling the released recorder.
+        await advanceTimers(1000);
+        expect(recorder.getStatus).not.toHaveBeenCalled();
+    });
+
+    it('should clean up without recording when unmounted while start is pending', async () => {
+        let resolvePrepare: () => void = () => undefined;
+        MockAudioRecorder.mockImplementationOnce(() => ({
+            uri: 'file:///mock/recording.m4a',
+            prepareToRecordAsync: jest.fn(() => new Promise<void>((resolve) => {
+                resolvePrepare = resolve;
+            })),
+            record: jest.fn(),
+            stop: jest.fn(() => Promise.resolve()),
+            release: jest.fn(),
+            getStatus: jest.fn(),
+            addListener: jest.fn(),
+        }));
+        const {result, unmount} = renderRecorder();
+
+        let starting: Promise<void> = Promise.resolve();
+        await act(async () => {
+            starting = result.current.start();
+            await advanceTimers(0);
+        });
+        unmount();
+        resolvePrepare();
+        await starting;
+
+        const recorder = getRecorder();
+        expect(recorder.record).not.toHaveBeenCalled();
+        expect(recorder.release).toHaveBeenCalledTimes(1);
+        expect(onError).not.toHaveBeenCalled();
+        await advanceTimers(1000);
+        expect(recorder.getStatus).not.toHaveBeenCalled();
+    });
+
+    it('should discard the temp file on cancel without finishing', async () => {
+        const {result} = await startRecording();
 
         await act(async () => {
             await result.current.cancel();
@@ -195,11 +447,7 @@ describe('useVoiceRecorder', () => {
             stop: jest.fn(() => Promise.resolve()),
             release: jest.fn(),
         }));
-        const {result} = renderRecorder();
-
-        await act(async () => {
-            await result.current.start();
-        });
+        const {result} = await startRecording();
 
         expect(onError).toHaveBeenCalledTimes(1);
         expect(onFinish).not.toHaveBeenCalled();
@@ -208,14 +456,12 @@ describe('useVoiceRecorder', () => {
     });
 
     it('should report an error and discard the temp file when stopping fails', async () => {
-        const {result} = renderRecorder();
-        await act(async () => {
-            await result.current.start();
-        });
+        const {result} = await startRecording();
         const recorder = getRecorder();
         recorder.stop.mockRejectedValueOnce(new Error('stop failed'));
 
         await act(async () => {
+            await advanceTimers(2000);
             await result.current.stop();
         });
 
@@ -224,24 +470,15 @@ describe('useVoiceRecorder', () => {
         expect(jest.mocked(File)).toHaveBeenLastCalledWith('file:///mock/recording.m4a');
         expect(lastFile().delete).toHaveBeenCalledTimes(1);
         expect(recorder.release).toHaveBeenCalledTimes(1);
-        expect(setAudioModeAsync).toHaveBeenLastCalledWith({allowsRecording: false});
         expect(result.current.isRecording).toBe(false);
     });
 
     it('should report an error when the recorder produces no file', async () => {
-        MockAudioRecorder.mockImplementationOnce(() => ({
-            uri: null,
-            prepareToRecordAsync: jest.fn(() => Promise.resolve()),
-            record: jest.fn(),
-            stop: jest.fn(() => Promise.resolve()),
-            release: jest.fn(),
-        }));
-        const {result} = renderRecorder();
-        await act(async () => {
-            await result.current.start();
-        });
+        const {result} = await startRecording();
+        getRecorder().uri = null;
 
         await act(async () => {
+            await advanceTimers(2000);
             await result.current.stop();
         });
 
@@ -251,13 +488,10 @@ describe('useVoiceRecorder', () => {
     });
 
     it('should stop and discard an in-progress recording on unmount', async () => {
-        const {result, unmount} = renderRecorder();
-        await act(async () => {
-            await result.current.start();
-        });
+        const {unmount} = await startRecording();
 
         unmount();
-        await advanceTimers(0);
+        await flushPromises();
 
         const recorder = getRecorder();
         expect(recorder.stop).toHaveBeenCalledTimes(1);

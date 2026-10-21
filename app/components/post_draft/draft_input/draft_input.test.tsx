@@ -175,6 +175,33 @@ describe('DraftInput', () => {
         });
 
         it('attaches the recorded voice note to the draft when done is pressed', async () => {
+            enableFakeTimers();
+            try {
+                const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+                await startRecording(getByTestId);
+
+                await act(async () => {
+                    await advanceTimers(2000);
+                    fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
+                    await advanceTimers(0);
+                });
+
+                expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
+                expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({
+                    mime_type: 'audio/mp4',
+                    extension: 'm4a',
+                    name: expect.stringMatching(/^voice-note-\d{8}-\d{6}-0m02s\.m4a$/),
+                    localPath: expect.stringMatching(/^file:\/\/\/mock\/voice-note-.+\.m4a$/),
+                })]);
+                expect(showSnackBar).not.toHaveBeenCalled();
+                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+                expect(getByTestId('draft_input.quick_actions')).toBeVisible();
+            } finally {
+                disableFakeTimers();
+            }
+        });
+
+        it('discards a recording shorter than a second without attaching it', async () => {
             const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
             await startRecording(getByTestId);
 
@@ -183,16 +210,9 @@ describe('DraftInput', () => {
             });
 
             await waitFor(() => {
-                expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
+                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
             });
-            expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({
-                mime_type: 'audio/mp4',
-                extension: 'm4a',
-                name: expect.stringMatching(/^voice-note-\d{8}-\d{6}-\d+m\d{2}s\.m4a$/),
-                localPath: expect.stringMatching(/^file:\/\/\/mock\/voice-note-.+\.m4a$/),
-            })]);
-            expect(showSnackBar).not.toHaveBeenCalled();
-            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+            expect(baseProps.addFiles).not.toHaveBeenCalled();
             expect(getByTestId('draft_input.quick_actions')).toBeVisible();
         });
 
