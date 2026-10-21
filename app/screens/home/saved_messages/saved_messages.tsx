@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database} from '@nozbe/watermelondb';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -14,15 +17,20 @@ import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
+import {observeSavedPostsByIds, queryPostsById} from '@queries/servers/post';
+import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {useCurrentScreen} from '@store/navigation_store';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {emitPostsInViewport} from '@utils/post_list/viewport';
 import {getTimezone} from '@utils/user';
 
 import EmptyState from './components/empty';
@@ -35,7 +43,7 @@ type Props = {
     appsEnabled?: boolean;
     currentUser: UserModel;
     customEmojiNames: string[];
-    posts: PostModel[];
+    database: Database;
 }
 
 const edges: Edge[] = ['left', 'right'];
@@ -51,9 +59,23 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Props) {
+function observeSavedPosts(database: Database) {
+    return querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
+        switchMap((rows) => {
+            const ids = rows.map((preference) => preference.name);
+            return ids.length ? observeSavedPostsByIds(database, ids) : of$(new Set<string>());
+        }),
+        switchMap((savedPostIds) => {
+            const ids = [...savedPostIds];
+            return ids.length ? queryPostsById(database, ids, Q.asc).observe() : of$([]);
+        }),
+    );
+}
+
+function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: Props) {
     const intl = useIntl();
-    const [loading, setLoading] = useState(!posts.length);
+    const [posts, setPosts] = useState<PostModel[]>([]);
+    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -84,6 +106,18 @@ function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Prop
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
     }, [isFocused, opacity, translateSide, translateX]);
+
+    useEffect(() => {
+        if (!isFocused) {
+            return undefined;
+        }
+
+        const subscription = observeSavedPosts(database).subscribe({
+            next: setPosts,
+            error: (error) => logError('error on SavedMessages posts subscription', getFullErrorMessage(error)),
+        });
+        return () => subscription.unsubscribe();
+    }, [database, isFocused]);
 
     useEffect(() => {
         if (isFocused) {
@@ -120,14 +154,7 @@ function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Prop
             return;
         }
 
-        const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable && item.type === 'post') {
-                acc[`${Screens.SAVED_MESSAGES}-${item.value.currentPost.id}`] = true;
-            }
-            return acc;
-        }, {});
-
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+        emitPostsInViewport(Screens.SAVED_MESSAGES, viewableItems);
     }, []);
 
     const handleRefresh = useCallback(async () => {

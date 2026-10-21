@@ -3,9 +3,12 @@
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
+import {invalidateRedactionGlobally, RedactionInvalidationReason} from '@actions/local/redaction';
 import {storeConfig} from '@actions/local/systems';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getLicense} from '@queries/servers/system';
 
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
@@ -15,7 +18,19 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/ephemeral_mode/wipe');
 jest.mock('@actions/local/systems');
+jest.mock('@actions/local/redaction', () => ({
+    ...jest.requireActual('@actions/local/redaction'),
+    invalidateRedactionGlobally: jest.fn(),
+}));
+jest.mock('@actions/websocket/access_control');
 jest.mock('@database/manager');
+jest.mock('@managers/session_attributes_manager', () => ({
+    __esModule: true,
+    default: {
+        refreshManifest: jest.fn().mockResolvedValue(undefined),
+        removeServer: jest.fn(),
+    },
+}));
 jest.mock('@queries/servers/system');
 
 describe('WebSocket System Actions', () => {
@@ -98,6 +113,20 @@ describe('WebSocket System Actions', () => {
             expect(handleSystem).toHaveBeenCalled();
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
         });
+
+        it('should invalidate file decisions only when the license crosses the ABAC tier', async () => {
+            // Below Enterprise Advanced the ABAC engine refuses to evaluate and every decision denies.
+            const advanced = {IsLicensed: 'true', SkuShortName: 'advanced'} as ClientLicense;
+            const professional = {IsLicensed: 'true', SkuShortName: 'professional'} as ClientLicense;
+
+            jest.mocked(getLicense).mockResolvedValue(advanced);
+            await handleLicenseChangedEvent(serverUrl, {data: {license: {...advanced, Users: '100'}}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+
+            await handleLicenseChangedEvent(serverUrl, {data: {license: professional}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledTimes(1);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.LicenseChanged);
+        });
     });
 
     describe('handleConfigChangedEvent', () => {
@@ -112,6 +141,21 @@ describe('WebSocket System Actions', () => {
             } as WebSocketMessage;
             await handleConfigChangedEvent(serverUrl, msg);
             expect(storeConfig).not.toHaveBeenCalled();
+        });
+
+        it('should invalidate file decisions in both directions of an ABAC enforcement change', async () => {
+            // On: nothing cached before enforcement may be trusted. Off: cached denials must be re-checked.
+            const enforced = {FeatureFlagPermissionPolicies: 'true', EnableAttributeBasedAccessControl: 'true'} as ClientConfig;
+            const notEnforced = {FeatureFlagPermissionPolicies: 'true', EnableAttributeBasedAccessControl: 'false'} as ClientConfig;
+
+            jest.mocked(getConfig).mockResolvedValue(notEnforced);
+            await handleConfigChangedEvent(serverUrl, {data: {config: enforced}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.ConfigChanged);
+            expect(invalidateRedactionGlobally).not.toHaveBeenCalled();
+
+            jest.mocked(getConfig).mockResolvedValue(enforced);
+            await handleConfigChangedEvent(serverUrl, {data: {config: notEnforced}} as WebSocketMessage);
+            expect(invalidateRedactionGlobally).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.ConfigChanged);
         });
 
         it('should handle config update with no display name change', async () => {
@@ -154,6 +198,45 @@ describe('WebSocket System Actions', () => {
 
             expect(storeConfig).toHaveBeenCalledWith(serverUrl, mockConfig);
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should re-init session attributes when feature flag is enabled', async () => {
+            jest.mocked(getConfig).mockResolvedValue({
+                FeatureFlagSessionAttributes: 'false',
+            } as ClientConfig);
+
+            const msg = {
+                data: {
+                    config: {
+                        FeatureFlagSessionAttributes: 'true',
+                    },
+                },
+            } as WebSocketMessage;
+
+            await handleConfigChangedEvent(serverUrl, msg);
+
+            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
+
+            // The session attributes sent with each request are part of the ABAC subject.
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.SessionAttributes);
+        });
+
+        it('should stop sending session attributes when feature flag is disabled', async () => {
+            jest.mocked(getConfig).mockResolvedValue({
+                FeatureFlagSessionAttributes: 'true',
+            } as ClientConfig);
+
+            const msg = {
+                data: {
+                    config: {
+                        FeatureFlagSessionAttributes: 'false',
+                    },
+                },
+            } as WebSocketMessage;
+
+            await handleConfigChangedEvent(serverUrl, msg);
+
+            expect(SessionAttributesManager.removeServer).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should reconcile the persistence flag against the new config so a live MEM-cleanup change clears zero-persistence', async () => {

@@ -279,10 +279,9 @@ describe('Messaging - Message Permalink Preview', () => {
         const targetMessage = `Message to be deleted ${getRandomId()}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(targetMessage);
 
         await wait(timeouts.TWO_SEC);
-        const {post: targetPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: targetPost} = await ChannelScreen.postMessageAndVerify(targetMessage, testChannel.id, siteOneUrl);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
         await expect(postListPostItem).toBeVisible();
@@ -307,7 +306,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItem: postToDelete} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
-        await postToDelete.longPress();
+        await postToDelete.longPress(timeouts.TWO_SEC);
 
         await PostOptionsScreen.toBeVisible();
         await PostOptionsScreen.deletePost({confirm: true});

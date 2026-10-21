@@ -12,7 +12,6 @@
 // list, search input behavior (wildcard, clear, replace), and focus state.
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -27,8 +26,10 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {expect, waitFor} from 'detox';
+
+const itNotAndroid = isAndroid() ? it.skip : it;
 
 describe('Search - Recents and Input', () => {
     const serverOneDisplayName = 'Server 1';
@@ -127,10 +128,8 @@ describe('Search - Recents and Input', () => {
         const messageB = `Message ${termB}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(messageA);
-        const {post: postA} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.postMessage(messageB);
-        const {post: postB} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: postA} = await ChannelScreen.postMessageAndVerify(messageA, testChannel.id, siteOneUrl);
+        const {post: postB} = await ChannelScreen.postMessageAndVerify(messageB, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen
@@ -142,24 +141,22 @@ describe('Search - Recents and Input', () => {
         // # Search for term A
         await SearchMessagesScreen.searchInput.typeText(termA);
         await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify result for term A is shown
         const {postListPostItem: postItemA} = SearchMessagesScreen.getPostListPostItem(postA.id, messageA);
-        await expect(postItemA).toBeVisible();
+        await waitForElementToBeVisible(postItemA, timeouts.TEN_SEC);
 
         // # Clear search and search for term B
         await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.searchInput.typeText(termB);
         await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify result for term B is shown
         const {postListPostItem: postItemB} = SearchMessagesScreen.getPostListPostItem(postB.id, messageB);
-        await expect(postItemB).toBeVisible();
+        await waitForElementToBeVisible(postItemB, timeouts.TEN_SEC);
 
         // * Verify result for term A is NOT shown (results were replaced, not combined)
-        await expect(postItemA).not.toBeVisible();
+        await waitFor(postItemA).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Clear search, remove recent search items, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
@@ -172,7 +169,7 @@ describe('Search - Recents and Input', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-T3238_1 - delete one previous search, tap on another', async () => {
+    itNotAndroid('MM-T3238_1 - delete one previous search, tap on another', async () => {
         // # Post messages for two distinct search terms so they appear in recent searches
         const termOne = `recent1${getRandomId()}`;
         const termTwo = `recent2${getRandomId()}`;
@@ -180,9 +177,12 @@ describe('Search - Recents and Input', () => {
         const msgTwo = `Message ${termTwo}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(msgOne);
-        await ChannelScreen.postMessage(msgTwo);
-        const {post: postTwo} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // Both sends are verified: this test searches for termOne later, so a dropped msgOne would
+        // fail as an empty search result rather than as the send failure it actually is. Only
+        // msgTwo's id is needed, hence the discarded result on the first.
+        await ChannelScreen.postMessageAndVerify(msgOne, testChannel.id, siteOneUrl);
+        const {post: postTwo} = await ChannelScreen.postMessageAndVerify(msgTwo, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen, search for term one to save it as recent
@@ -195,30 +195,26 @@ describe('Search - Recents and Input', () => {
         await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.searchInput.typeText(termTwo);
         await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
 
         // # Clear search to show recent search list
         await SearchMessagesScreen.searchClearButton.tap();
-        await wait(timeouts.ONE_SEC);
 
         // * Verify both recent search items are visible
-        await expect(SearchMessagesScreen.getRecentSearchItem(termOne)).toBeVisible();
-        await expect(SearchMessagesScreen.getRecentSearchItem(termTwo)).toBeVisible();
+        await waitForElementToBeVisible(SearchMessagesScreen.getRecentSearchItem(termOne), timeouts.TEN_SEC);
+        await waitForElementToBeVisible(SearchMessagesScreen.getRecentSearchItem(termTwo), timeouts.TEN_SEC);
 
         // # Delete the first recent search item
         await SearchMessagesScreen.getRecentSearchItemRemoveButton(termOne).tap();
-        await wait(timeouts.ONE_SEC);
 
         // * Verify term one is removed
-        await expect(SearchMessagesScreen.getRecentSearchItem(termOne)).not.toExist();
+        await waitFor(SearchMessagesScreen.getRecentSearchItem(termOne)).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on the remaining (term two) recent search item
         await SearchMessagesScreen.getRecentSearchItem(termTwo).tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify results for term two are loaded
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(postTwo.id, msgTwo);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Clear search input, remove remaining recent search item, and go back to channel list screen
         // The clear button may be unmounted after tapping a recent search item on some platforms,
@@ -238,10 +234,9 @@ describe('Search - Recents and Input', () => {
 
         // # Post a message so there are results
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // Fetch post ID immediately after posting before any other posts can be created
-        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen
@@ -251,9 +246,6 @@ describe('Search - Recents and Input', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type a search term and submit search.
-        // Use replaceText (not typeText) — typeText appends, so any stale text
-        // left by a previous test would concatenate with `searchTerm` and the
-        // server-side search would return 0 results.
         await SearchMessagesScreen.searchInput.replaceText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);

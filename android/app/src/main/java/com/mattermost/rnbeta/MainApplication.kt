@@ -15,6 +15,8 @@ import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.mattermost.networkclient.RCTOkHttpClientFactory
+import com.mattermost.networkclient.sessionattributes.SessionAttributes
+import com.mattermost.rnshare.ShareWorker
 import com.mattermost.rnshare.helpers.RealPathUtil
 import com.mattermost.turbolog.TurboLog
 import com.mattermost.turbolog.ConfigureOptions
@@ -56,7 +58,7 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         // Delete any previous temp files created by the app
         val tempFolder = File(applicationContext.cacheDir, RealPathUtil.CACHE_DIR_NAME)
         RealPathUtil.deleteTempFiles(tempFolder)
-        TurboLog.configure(options = ConfigureOptions(logsDirectory = applicationContext.cacheDir.absolutePath + "/logs", logPrefix = applicationContext.packageName))
+        TurboLog.configure(options = ConfigureOptions(maximumNumberOfFiles = 5, logsDirectory = applicationContext.cacheDir.absolutePath + "/logs", logPrefix = applicationContext.packageName))
 
         TurboLog.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
 
@@ -65,6 +67,11 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         // requests that originate from React Native's OKHttpClient
         OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory())
         ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory().createNewNetworkModuleClient()
+
+        // ShareWorker can run without React Native loaded, so ApiClientModuleImpl may never
+        // initialize the session attributes engine.
+        SessionAttributes.init(this)
+        ShareWorker.getSessionAttributesHeader = SessionAttributes::getOutboundHeader
 
         loadReactNative(this)
         ApplicationLifecycleDispatcher.onApplicationCreate(this)

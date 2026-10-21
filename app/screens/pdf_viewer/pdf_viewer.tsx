@@ -12,16 +12,19 @@ import {
 import {useNavigation} from 'expo-router';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, View} from 'react-native';
+import {Alert, DeviceEventEmitter, View} from 'react-native';
 
 import {setFileAsBlocked} from '@actions/local/file';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
+import {getFileById} from '@queries/servers/file';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
+import EphemeralStore from '@store/ephemeral_store';
 import {deleteFile} from '@utils/file';
 import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -133,6 +136,33 @@ const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) =
     useDidMount(() => {
         return dismiss;
     });
+
+    useDidMount(() => {
+        let active = true;
+        const previousFileViewerPostId = EphemeralStore.getCurrentFileViewerPostId();
+        (async () => {
+            try {
+                const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                const file = await getFileById(database, fileId);
+                if (active && file?.postId) {
+                    EphemeralStore.setCurrentFileViewerPostId(file.postId);
+                }
+            } catch {
+                // file not in DB — no protection needed
+            }
+        })();
+        return () => {
+            active = false;
+            EphemeralStore.setCurrentFileViewerPostId(previousFileViewerPostId);
+        };
+    });
+
+    // An ABAC change can revoke access to this document while it is open, and the viewer was handed
+    // its file by value, so no database change can reach it. The gallery listens for the same event.
+    useEffect(() => {
+        const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, onClose);
+        return () => subscription.remove();
+    }, [onClose]);
 
     return (
         <View style={styles.flex}>

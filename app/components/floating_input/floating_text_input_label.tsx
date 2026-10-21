@@ -3,6 +3,7 @@
 
 // Note: This file has been adapted from the library https://github.com/csath/react-native-reanimated-text-input
 
+import {RUNNING_E2E} from '@env';
 import React, {useState, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
 import {type LayoutChangeEvent, type NativeSyntheticEvent, type StyleProp, type TargetedEvent, TextInput, type TextInputFocusEventData, type TextInputProps, type TextStyle} from 'react-native';
 
@@ -13,6 +14,10 @@ import FloatingInputContainer from './floating_input_container';
 import {onExecution} from './utils';
 
 const DEFAULT_INPUT_HEIGHT = 48;
+
+// Expose the input's value to the accessibility tree only in E2E builds so Maestro
+// can read the typed value. Gated so real builds are byte-for-byte unchanged.
+const isRunningE2e = RUNNING_E2E === 'true';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     input: {
@@ -151,6 +156,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                 multiline={multiline}
                 textAlignVertical='top'
                 value={value}
+                accessibilityValue={isRunningE2e ? {text: value} : undefined}
                 onFocus={onTextInputFocus}
                 onBlur={onTextInputBlur}
                 ref={inputRef}

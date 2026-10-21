@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Preference,
     Setup,
 } from '@support/server_api';
@@ -65,13 +64,12 @@ describe('Messaging - Follow and Unfollow Message', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
 
         // # Wait for keyboard to dismiss and message to be visible
         await wait(timeouts.ONE_SEC);
 
         // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
@@ -104,12 +102,11 @@ describe('Messaging - Follow and Unfollow Message', () => {
         // # Open a channel screen, post a message, open post options for message, and tap on follow message option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
 
         // # Wait for keyboard to dismiss and message to be visible
         await wait(timeouts.ONE_SEC);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitForElementToBeVisible(postListPostItem);
 

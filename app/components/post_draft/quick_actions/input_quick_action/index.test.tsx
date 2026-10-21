@@ -10,12 +10,6 @@ jest.mock('@context/keyboard_state', () => ({
     useKeyboardState: jest.fn(),
 }));
 
-jest.mock('@hooks/use_focus_after_emoji_dismiss', () => ({
-    useFocusAfterEmojiDismiss: jest.fn((_inputRef, focusInput) => ({
-        focus: focusInput,
-    })),
-}));
-
 describe('InputQuickAction', () => {
     const mockGetCursorPosition = jest.fn(() => 0);
     const mockSetCursorPosition = jest.fn();

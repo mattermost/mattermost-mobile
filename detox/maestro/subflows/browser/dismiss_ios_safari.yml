@@ -1,0 +1,22 @@
+# Dismiss SFSafariViewController / the Safari sheet.
+# Same branches as help_url.yml: breadcrumb, then the system Done control.
+# Do not tap text: Mattermost here — that label is also the in-app back-to-host
+# control after dismiss and would re-enter the sheet (CI 33924565190).
+#
+# Usage: - runFlow: ../../subflows/browser/dismiss_ios_safari.yml
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow:
+    when:
+      visible:
+        id: "breadcrumb"
+    commands:
+      - tapOn:
+          id: "breadcrumb"
+- runFlow:
+    when:
+      visible:
+        text: "Done"
+    commands:
+      - tapOn:
+          text: "Done"

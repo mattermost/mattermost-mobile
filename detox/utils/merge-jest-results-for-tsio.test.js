@@ -14,6 +14,8 @@ const {
     toTsioDetoxSuite,
     relativizeDetoxPath,
     writeMergedJestResultsForTsio,
+    appendUnreportedSpecs,
+    parseExpectedSpecs,
 } = require('./merge-jest-results-for-tsio');
 
 describe('merge-jest-results-for-tsio', () => {
@@ -155,5 +157,46 @@ describe('merge-jest-results-for-tsio', () => {
         assert.equal(JSON.parse(fs.readFileSync(out, 'utf8')).testResults.length, 2);
 
         fs.rmSync(dir, {recursive: true, force: true});
+    });
+
+    it('should mark specs that never reported as failed', () => {
+        // main d943628: machine-4's Jest was killed mid-run, jest-stare's partial report
+        // was promoted, and 3 specs vanished from a report that published 100% green.
+        const merged = {testResults: [{testFilePath: 'detox/e2e/test/a.e2e.ts', testResults: [{status: 'passed'}]}]};
+        const missing = appendUnreportedSpecs(merged, [
+            'detox/e2e/test/a.e2e.ts',
+            'detox/e2e/test/b.e2e.ts',
+            'detox/e2e/test/c.e2e.ts',
+        ]);
+
+        assert.deepEqual(missing, ['detox/e2e/test/b.e2e.ts', 'detox/e2e/test/c.e2e.ts']);
+        assert.equal(merged.testResults.length, 3, 'every assigned spec must appear');
+        assert.equal(merged.testResults[1].testResults[0].status, 'failed');
+        assert.match(merged.testResults[1].testResults[0].failureMessages[0], /produced no result/);
+    });
+
+    it('should not touch a complete report', () => {
+        const merged = {testResults: [{testFilePath: 'detox/e2e/test/a.e2e.ts'}]};
+        assert.deepEqual(appendUnreportedSpecs(merged, ['detox/e2e/test/a.e2e.ts']), []);
+        assert.equal(merged.testResults.length, 1);
+    });
+
+    it('should mark every spec failed when no shard reported at all', () => {
+        // If the merge exits before this, TSIO never receives a report and the commit
+        // status stays pending instead of failing.
+        const merged = mergeJestResultsForTsio([]);
+        const missing = appendUnreportedSpecs(merged, ['detox/e2e/test/a.e2e.ts', 'detox/e2e/test/b.e2e.ts']);
+        assert.equal(missing.length, 2);
+        assert.equal(merged.testResults.length, 2, 'a run with no shard reports must still emit a report');
+    });
+
+    it('should flatten a generate-specs matrix and de-duplicate', () => {
+        const specs = parseExpectedSpecs(JSON.stringify({include: [
+            {runId: 1, specs: 'a.e2e.ts  b.e2e.ts'},
+            {runId: 2, specs: 'b.e2e.ts c.e2e.ts'},
+        ]}));
+        assert.deepEqual(specs, ['a.e2e.ts', 'b.e2e.ts', 'c.e2e.ts']);
+        assert.deepEqual(parseExpectedSpecs(''), []);
+        assert.deepEqual(parseExpectedSpecs('{}'), []);
     });
 });

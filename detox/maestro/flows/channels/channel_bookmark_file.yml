@@ -107,10 +107,22 @@ appId: ${MAESTRO_APP_ID}
     timeout: 30000
 
 # # Wait for upload to finish before saving (save stays disabled until file_id is set).
+# Bounded by the client's real upload ceiling, not a round number. uploadAttachment sets
+# timeoutInterval: toMilliseconds({minutes: 3}) = 180 s (app/client/rest/files.ts), and
+# channel_bookmark.file.upload_complete is gated on file.id, which is only set in
+# onComplete. So until that 180 s expires the app has made no decision at all: a shorter
+# wait can only observe "still uploading" and reports a slow-but-successful upload as a
+# test failure. Run 34487859024 failed here at the old 30 s bound with the request still
+# in flight — a healthy upload is 3.3 s in CI and 5-10.6 s locally against a cloud server,
+# so 30 s was never a real upload budget, only the point where the test stopped looking.
+# 180 s ceiling + 15 s for the native rejection to reach onError and render the error/retry
+# UI on a loaded CI emulator. The full 195 s is only spent when an upload genuinely stalls;
+# the normal path still exits in seconds, and a stall now fails with the error state on
+# screen instead of an ambiguous "Uploading... (0%)".
 - extendedWaitUntil:
     visible:
       id: "channel_bookmark.file.upload_complete"
-    timeout: 30000
+    timeout: 195000
 
 # # Tap Save to create the bookmark.
 # iOS: header NavigationButton testID tap may not fire onPress on CI builds; use label text.

@@ -1,19 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
+
 import {markChannelAsViewed} from '@actions/local/channel';
-import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
+import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
+import {isRedactionEnforced} from '@actions/local/redaction';
+import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {fetchClassificationBanner} from '@actions/remote/classification';
+import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
 import {
     entry,
     handleEntryAfterLoadNavigation,
     setExtraSessionProps,
 } from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
+import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
+import {invalidateRedactionOnResync} from '@actions/websocket/access_control';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -21,6 +27,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -63,7 +70,12 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     const {database} = operator;
 
+    // Guards against RUNNINGBOARD 0xdead10cc if the app backgrounds mid-sync.
+    const activityToken = await RNUtils.beginDatabaseActivity(serverUrl, 'doReconnect');
+
     try {
+        await SessionAttributesManager.refreshManifest(serverUrl);
+
         const lastFullSync = await getLastFullSync(database);
         const now = Date.now();
 
@@ -86,6 +98,12 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+
+        // Every path here may have lost websocket events, so any ABAC change they carried is gone.
+        // Awaited so the epoch is raised before the fetch below captures it, and placed after
+        // entry() commits its config models so the predicate reads the server's current state.
+        await invalidateRedactionOnResync(serverUrl);
+
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
@@ -100,7 +118,17 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         checkIsAgentsPluginEnabled(serverUrl);
-        fetchClassificationBanner(serverUrl);
+        fetchAccessControlAttributeFields(serverUrl, true);
+
+        // Values may have changed while the socket was down, and the events that
+        // would have reported it are gone. Dropping the per-channel dedupe makes
+        // the next visit to each channel refetch them — but the channel already on
+        // screen is never re-entered, so it is refetched explicitly or it would
+        // keep showing what it had when the connection dropped.
+        EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
+        if (currentChannelId) {
+            fetchChannelAttributeValues(serverUrl, currentChannelId);
+        }
 
         await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
@@ -108,14 +136,30 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         openAllUnreadChannels(serverUrl, groupLabel);
 
-        dataRetentionCleanup(serverUrl);
+        doCleanup(serverUrl);
 
-        expiredBoRPostCleanup(serverUrl);
+        flushAuditQueue(serverUrl);
 
         AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
     } finally {
         setTeamLoading(serverUrl, false);
+        if (activityToken) {
+            RNUtils.endDatabaseActivity(activityToken);
+        }
+    }
+}
+
+async function doCleanup(serverUrl: string) {
+    const dataRetention = await dataRetentionCleanup(serverUrl);
+    const autoCache = await autoCacheCleanup(serverUrl);
+    await expiredBoRPostCleanup(serverUrl);
+
+    const dataRetentionRan = !dataRetention.skipped && !dataRetention.error;
+    const autoCacheRan = !autoCache.skipped && !autoCache.error;
+
+    if (dataRetentionRan || autoCacheRan) {
+        await performVacuum(serverUrl);
     }
 }
 
@@ -129,6 +173,10 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentChannelId = await getCurrentChannelId(database);
         const isCRTEnabled = await getIsCRTEnabled(database);
+
+        // Neither a since-fetch nor a fromCreateAt thread fetch can re-deliver a post whose only
+        // change was its redaction state, so with policies active the visible surfaces need a page.
+        const abacEnforced = await isRedactionEnforced(database);
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
@@ -140,20 +188,18 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
             const rootId = EphemeralStore.getCurrentThreadId();
             if (rootId) {
                 const lastPost = await getLastPostInThread(database, rootId);
-                if (lastPost) {
-                    if (lastPost) {
-                        const options: FetchPaginatedThreadOptions = {};
-                        options.fromCreateAt = lastPost.createAt;
-                        options.fromPost = lastPost.id;
-                        options.direction = 'down';
-                        await fetchPostThread(serverUrl, rootId, options, false, groupLabel);
-                    }
+                const options: FetchPaginatedThreadOptions = {};
+                if (lastPost && !abacEnforced) {
+                    options.fromCreateAt = lastPost.createAt;
+                    options.fromPost = lastPost.id;
+                    options.direction = 'down';
                 }
+                await fetchPostThread(serverUrl, rootId, options, false, groupLabel);
             }
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
+            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel, abacEnforced);
             markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
             if (!EphemeralStore.wasNotificationTapped()) {
                 markChannelAsViewed(serverUrl, currentChannelId, true);

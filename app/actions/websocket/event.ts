@@ -15,6 +15,7 @@ import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
+import {handleChannelAccessControlUpdatedEvent, handlePermissionPolicyUpdatedEvent, handleRedactionForPropertyFieldChanged, handleRedactionForPropertyValuesUpdated} from './access_control';
 import * as category from './category';
 import * as channel from './channel';
 import * as files from './files';
@@ -30,7 +31,15 @@ import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRole
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import * as teams from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent, handleCustomProfileAttributesFieldUpdatedEvent, handleCustomProfileAttributesFieldDeletedEvent} from './users';
+import {
+    handleCustomProfileAttributesFieldDeletedEvent,
+    handleCustomProfileAttributesFieldUpdatedEvent,
+    handleCustomProfileAttributesValuesUpdatedEvent,
+    handleSessionAttributesPropertyFieldEvent,
+    handleStatusChangedEvent,
+    handleUserTypingEvent,
+    handleUserUpdatedEvent,
+} from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
@@ -317,15 +326,28 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.PROPERTY_FIELD_CREATED:
         case WebsocketEvents.PROPERTY_FIELD_UPDATED:
             handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+            handleSessionAttributesPropertyFieldEvent(serverUrl, msg);
+            handleRedactionForPropertyFieldChanged(serverUrl, msg);
             break;
 
         case WebsocketEvents.PROPERTY_FIELD_DELETED:
             handlePropertyFieldDeleted(serverUrl, msg);
+            handleRedactionForPropertyFieldChanged(serverUrl, msg);
             break;
 
         case WebsocketEvents.PROPERTY_VALUES_UPDATED:
             handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
             handlePropertyValuesUpdated(serverUrl, msg);
+            handleRedactionForPropertyValuesUpdated(serverUrl, msg);
+            break;
+
+        // Attribute-based access control policies
+        case WebsocketEvents.PERMISSION_POLICY_UPDATED:
+            handlePermissionPolicyUpdatedEvent(serverUrl);
+            break;
+
+        case WebsocketEvents.CHANNEL_ACCESS_CONTROL_UPDATED:
+            handleChannelAccessControlUpdatedEvent(serverUrl, msg);
             break;
 
         // Agents

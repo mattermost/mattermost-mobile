@@ -4,6 +4,11 @@
 #
 # NOTE: The "Schedule a message" tutorial tooltip may appear on the first channel visit.
 # Dismiss it via testID if present.
+#
+# Do NOT anchor on `channel.screen`: it is a plain SafeAreaView container that Maestro
+# does not resolve on either platform, so every flow that uses this sub-flow fails with
+# "Assertion is false: id: channel.screen is visible". The channel-item disappearing and
+# the composer appearing are the two anchors that are actually matchable here.
 appId: ${MAESTRO_APP_ID}
 ---
 # # Expand the Channels category and open the test channel

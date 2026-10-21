@@ -11,6 +11,7 @@ import {
     deriveApprovalStageForPost,
     extractAnnotationsFromTurn,
     extractReasoningFromTurn,
+    getResponseAnchorSequence,
     statusStringToEnum,
 } from './turn_content';
 
@@ -396,6 +397,93 @@ describe('buildRoundsFromTurns', () => {
         const rounds = buildRoundsFromTurns(conversation, POST_ID);
 
         expect(rounds[0].toolCalls[0].arguments).toBeUndefined();
+    });
+
+    it('should carry would_auto_execute from the tool_use block so the card hides its approval controls', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {type: BlockType.ToolUse, id: 'auto', name: 'search', status: ToolCallStatusString.Pending, would_auto_execute: true},
+                    {type: BlockType.ToolUse, id: 'manual', name: 'write', status: ToolCallStatusString.Pending},
+                ],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(1);
+        expect(rounds[0].toolCalls).toHaveLength(2);
+        expect(rounds[0].toolCalls[0].would_auto_execute).toBe(true);
+        expect(rounds[0].toolCalls[1].would_auto_execute).toBeUndefined();
+    });
+
+    it('should carry user_interaction from the tool_use block so questions render as question cards', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [{type: BlockType.ToolUse, id: 'question', name: 'AskUserQuestion', status: ToolCallStatusString.Pending, user_interaction: 'select'}],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds[0].toolCalls[0].user_interaction).toBe('select');
+    });
+
+    it('should mark a tool call decided when its result block records decided_at', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {type: BlockType.ToolUse, id: 'decidedCall', name: 'search', status: ToolCallStatusString.Success},
+                    {type: BlockType.ToolUse, id: 'undecidedCall', name: 'read', status: ToolCallStatusString.Success},
+                ],
+            }),
+            makeTurn({
+                sequence: 2,
+                role: 'tool_result',
+                content: [
+                    {type: BlockType.ToolResult, tool_use_id: 'decidedCall', content: 'ok', decided_at: 1723000000000},
+                    {type: BlockType.ToolResult, tool_use_id: 'undecidedCall', content: 'ok'},
+                ],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds[0].toolCalls.map((t) => t.decided)).toEqual([true, false]);
+    });
+});
+
+describe('getResponseAnchorSequence', () => {
+    it('should return the sequence of the post\'s highest-sequence assistant turn', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({sequence: 1, role: 'assistant', post_id: POST_ID, content: []}),
+            makeTurn({sequence: 2, role: 'user', content: []}),
+            makeTurn({sequence: 3, role: 'assistant', post_id: POST_ID, content: []}),
+            makeTurn({sequence: 4, role: 'assistant', post_id: 'otherPost', content: []}),
+        ]);
+
+        expect(getResponseAnchorSequence(conversation, POST_ID)).toBe(3);
+    });
+
+    it('should return -1 when the post has no response turn yet', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+        ]);
+
+        expect(getResponseAnchorSequence(conversation, POST_ID)).toBe(-1);
     });
 });
 

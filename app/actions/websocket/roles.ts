@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
 import DatabaseManager from '@database/manager';
 import {getRoleById} from '@queries/servers/role';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {haveSameRoles} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -57,6 +60,9 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
 
     // update User Table record
     const user = await getCurrentUser(database);
+
+    // Read before prepareUpdate, which rewrites the model in memory.
+    const rolesChanged = !haveSameRoles(user?.roles, msg.data.roles);
     if (user) {
         user!.prepareUpdate((u) => {
             u.roles = msg.data.roles;
@@ -65,6 +71,12 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     }
 
     await operator.batchRecords(models, 'handleUserRoleUpdatedEvent');
+
+    // The ABAC subject carries the resolved system role, so a role change can flip a file-access
+    // decision without touching any post.
+    if (rolesChanged) {
+        invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.UserRoles);
+    }
 }
 
 export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {

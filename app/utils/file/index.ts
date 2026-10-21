@@ -8,10 +8,11 @@ import mimeDB from 'mime-db';
 import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
-import {Files} from '@constants';
+import {Files, ServerErrors} from '@constants';
+import {getFullErrorMessage} from '@utils/errors';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 
@@ -164,6 +165,39 @@ export function deleteFileCacheByDir(dir: string) {
     return true;
 }
 
+/**
+ * Per-file eviction, for when the server confirms a denial: the FileModel rows are destroyed, but the
+ * downloaded bytes would stay readable on disk. Each file is looked for both where its row says it
+ * was saved and where downloads land by default, because opening a document never records its path.
+ * Failures are swallowed: a file that cannot be removed must not stop the denial being recorded.
+ */
+export function deleteDownloadedFiles(serverUrl: string | undefined, files: FileModel[]) {
+    for (const f of files) {
+        const paths = new Set<string>();
+        if (f.localPath) {
+            try {
+                paths.add(decodeURIComponent(f.localPath));
+            } catch {
+                paths.add(f.localPath);
+            }
+        }
+        if (serverUrl) {
+            paths.add(getLocalFilePathFromFile(serverUrl, f));
+        }
+
+        for (const path of paths) {
+            try {
+                const file = new File(pathWithPrefix('file://', path));
+                if (file.exists) {
+                    file.delete();
+                }
+            } catch (error) {
+                logDebug('deleteDownloadedFiles: could not remove a cached file', getFullErrorMessage(error));
+            }
+        }
+    }
+}
+
 function deleteFilesInDir(directory: string) {
     if (directory) {
         const dir = new Directory(directory);
@@ -255,6 +289,11 @@ export const isImage = (file?: FileInfo | FileModel) => {
         return true;
     }
 
+    // A draft persisted before its file metadata resolved has neither, despite the types.
+    if (!file.extension && !file.name) {
+        return false;
+    }
+
     const fileExt = extractExtension(file.extension || file.name);
 
     if (!SUPPORTED_IMAGE_FORMAT.includes(fileExt)) {
@@ -263,7 +302,7 @@ export const isImage = (file?: FileInfo | FileModel) => {
 
     let mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
     if (!mimeType) {
-        mimeType = lookupMimeType(file.extension) || lookupMimeType(file.name);
+        mimeType = lookupMimeType(fileExt);
     }
 
     return Boolean(mimeType?.startsWith('image/'));
@@ -482,7 +521,20 @@ export function uploadDisabledWarning(intl: IntlShape) {
     });
 }
 
+export function uploadDisabledByPolicyWarning(intl: IntlShape) {
+    return intl.formatMessage({
+        id: 'mobile.file_upload.disabled_by_policy',
+        defaultMessage: 'File uploads are restricted in this channel',
+    });
+}
+
 export function getUploadErrorMessage(intl: IntlShape, errorMessage: string, errorName?: string) {
+    // The client may not know about a denial yet (the decision is still loading or went stale), so the
+    // server's own refusal is shown in the same words the disabled button would have used.
+    if (errorName === ServerErrors.UPLOAD_DENIED_BY_POLICY_ERROR) {
+        return uploadDisabledByPolicyWarning(intl);
+    }
+
     // iOS: Alamofire wraps all network errors with this prefix
     const isIosNetworkError = errorMessage.startsWith('URLSessionTask failed with error:');
 

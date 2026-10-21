@@ -128,11 +128,12 @@ export const endNativeCall = (
     serverUrl: string,
     channelId: string,
     reason: 'unanswered' | 'answeredElsewhere' | 'declinedElsewhere' | 'remoteEnded' | 'failed',
+    callId?: string,
 ) => {
     if (Platform.OS !== 'ios') {
         return;
     }
-    const uuid = getNativeCallUUIDForCall(serverUrl, channelId);
+    const uuid = getNativeCallUUIDForCall(serverUrl, channelId, callId);
     if (!uuid) {
         return;
     }

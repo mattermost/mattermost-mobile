@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {type ImageLoadEventData} from 'expo-image';
-import React, {useCallback, useContext, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useContext, useMemo, useState} from 'react';
 import {Pressable, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
@@ -86,7 +86,7 @@ const MmBlocksImageContent = ({
         return computeMmBlocksImageLayout(caps, layoutWidth, imageMetadata, viewPortWidth);
     }, [caps, imageMetadata, intrinsicSize, layoutWidth, viewPortWidth]);
 
-    const fileId = useRef(`uid-mm-blocks-image-${urlSafeBase64Encode(imageUrl)}`);
+    const fileId = useMemo(() => `uid-mm-blocks-image-${urlSafeBase64Encode(imageUrl)}`, [imageUrl]);
 
     const dimensionsStyle = useMemo(() => ({
         width: layout.width,
@@ -97,7 +97,7 @@ const MmBlocksImageContent = ({
 
     const onPress = useCallback(() => {
         const item: GalleryItemType = {
-            id: fileId.current,
+            id: fileId,
             postId,
             uri: displaySrc,
             width: layout.galleryWidth,
@@ -106,10 +106,10 @@ const MmBlocksImageContent = ({
             mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',
             lastPictureUpdate: 0,
-            cacheKey: fileId.current,
+            cacheKey: fileId,
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
-    }, [altText, displaySrc, galleryIdentifier, imageUrl, layout.galleryHeight, layout.galleryWidth, postId]);
+    }, [altText, displaySrc, fileId, galleryIdentifier, imageUrl, layout.galleryHeight, layout.galleryWidth, postId]);
 
     const {ref, onGestureEvent, styles: galleryStyles} = useGalleryItem(
         galleryIdentifier,
@@ -159,9 +159,9 @@ const MmBlocksImageContent = ({
 
         return (
             <ExpoImage
-                id={fileId.current}
+                id={fileId}
                 ref={ref}
-                nativeID={`MmBlocksImage-${fileId.current}`}
+                nativeID={`MmBlocksImage-${fileId}`}
                 source={{uri: displaySrc}}
                 style={[dimensionsStyle, {borderRadius: imageBorderRadius}]}
                 contentFit={imageStyle === 'person' ? 'cover' : 'contain'}

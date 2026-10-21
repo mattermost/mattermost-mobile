@@ -10,6 +10,7 @@ const xml2js = require('xml2js');
 const {ARTIFACTS_DIR} = require('./constants');
 
 const MAX_FAILED_TITLES = 5;
+const TEST_STATUS_PRIORITY = {failed: 3, passed: 2, pending: 1, skipped: 1, todo: 1};
 
 function convertXmlToJson(xml, platform) {
     const jsonFile = `${ARTIFACTS_DIR}/${platform}-junit.json`;
@@ -106,6 +107,62 @@ function getAllTests(testSuites) {
         duration,
         start,
         end,
+    };
+}
+
+function getAllTestsFromJestResults(report) {
+    const suites = new Set();
+    const testsByKey = new Map();
+    let startTime;
+
+    for (const suite of report?.testResults || []) {
+        suites.add(suite.testFilePath);
+        if (typeof suite.perfStats?.start === 'number') {
+            startTime = startTime === undefined ? suite.perfStats.start : Math.min(startTime, suite.perfStats.start);
+        }
+
+        for (const test of suite.testResults || []) {
+            const name = test.fullName || test.title;
+            const key = `${suite.testFilePath}\0${name}`;
+            const previous = testsByKey.get(key);
+            if (!previous || (TEST_STATUS_PRIORITY[test.status] || 0) > (TEST_STATUS_PRIORITY[previous.status] || 0)) {
+                testsByKey.set(key, test);
+            }
+        }
+    }
+
+    const tests = [];
+    let skipped = 0;
+    let failures = 0;
+    let duration = 0;
+    for (const test of testsByKey.values()) {
+        const testDuration = test.duration || 0;
+        duration += testDuration;
+        if (test.status === 'failed') {
+            failures++;
+        } else if (test.status !== 'passed') {
+            skipped++;
+        }
+        tests.push({
+            name: test.fullName || test.title,
+            time: testDuration,
+            failure: test.status === 'failed' ? test.failureMessages : '',
+            skipped: test.status === 'passed' || test.status === 'failed' ? '' : test.status,
+        });
+    }
+
+    const startDate = new Date(startTime || Date.now());
+    const start = startDate.toISOString();
+    startDate.setTime(startDate.getTime() + duration);
+    return {
+        suites: [...suites],
+        tests,
+        skipped,
+        failures,
+        errors: 0,
+        duration,
+        start,
+        end: startDate.toISOString(),
     };
 }
 
@@ -383,6 +440,7 @@ module.exports = {
     generateShortSummary,
     generateTestReport,
     getAllTests,
+    getAllTestsFromJestResults,
     removeOldGeneratedReports,
     sendReport,
     readJsonFromFile,

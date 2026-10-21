@@ -201,7 +201,22 @@ export const getRecentPostsInChannel = async (database: Database, channelId: str
     return [];
 };
 
-export const queryPostsById = (database: Database, postIds: string[], sort?: Q.SortOrder) => {
+/**
+ * The server-known post immediately newer than `createAt` in a channel, so that "posts before it"
+ * starts at the post at `createAt`. Pending posts are skipped: the server does not know their ids.
+ */
+export const getNewerPostInChannel = async (database: Database, channelId: string, createAt: number) => {
+    const posts = await database.get<PostModel>(POST).query(
+        Q.where('channel_id', channelId),
+        Q.where('create_at', Q.gt(createAt)),
+        Q.where('delete_at', Q.eq(0)),
+        Q.sortBy('create_at', Q.asc),
+        Q.take(5),
+    ).fetch();
+    return posts.find((p) => p.pendingPostId !== p.id);
+};
+
+export const queryPostsById =(database: Database, postIds: string[], sort?: Q.SortOrder) => {
     const clauses: Q.Clause[] = [Q.where('id', Q.oneOf(postIds))];
     if (sort) {
         clauses.push(Q.sortBy('create_at', sort));
@@ -426,4 +441,26 @@ export const syncPermalinkPreviewsForEditedPost = async (
         logWarning('Error syncing permalink previews for edited post:', error);
         return [];
     }
+};
+
+// Returns the create_at of the nth post in channelId that is strictly older
+// than anchor (sorted descending). Returns undefined when fewer than n such
+// posts exist
+export const createAtOfNthPostOlderThan = async (
+    database: Database,
+    channelId: string,
+    anchor: number,
+    n: number,
+): Promise<number | undefined> => {
+    const posts = await database.get<PostModel>(POST).query(
+        Q.where('channel_id', Q.eq(channelId)),
+        Q.where('create_at', Q.lt(anchor)),
+        Q.where('delete_at', Q.eq(0)),
+        Q.sortBy('create_at', Q.desc),
+        Q.take(n),
+    ).fetch();
+    if (posts.length < n) {
+        return undefined;
+    }
+    return posts[posts.length - 1].createAt;
 };

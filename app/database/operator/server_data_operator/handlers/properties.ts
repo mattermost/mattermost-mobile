@@ -9,6 +9,7 @@ import {
     transformPropertyValueRecord,
 } from '@database/operator/server_data_operator/transformers/properties';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {safeArrayCast} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
@@ -33,7 +34,8 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
      * removes its property values. When `groupId` is provided the list is treated as the
      * authoritative set for that group, so stored fields missing from it are pruned as well.
      */
-    handlePropertyFields = async ({fields = [], groupId, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
+    handlePropertyFields = async ({fields: rawFields, groupId, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
+        const fields = safeArrayCast<PropertyField>(rawFields);
         if (!fields.length && !groupId) {
             logWarning('handlePropertyFields was called without any fields to sync or a groupId to prune');
             return [];
@@ -90,7 +92,8 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
      * provided the list is treated as the authoritative set for that target, so stored values
      * missing from it are pruned as well.
      */
-    handlePropertyValues = async ({values = [], targetId, prepareRecordsOnly = true}: HandlePropertyValuesArgs): Promise<Model[]> => {
+    handlePropertyValues = async ({values: rawValues, targetId, prepareRecordsOnly = true}: HandlePropertyValuesArgs): Promise<Model[]> => {
+        const values = safeArrayCast<PropertyValue>(rawValues);
         if (!values.length && !targetId) {
             logWarning('handlePropertyValues was called without any values to sync or a targetId to prune');
             return [];

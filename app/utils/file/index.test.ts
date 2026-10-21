@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Directory} from 'expo-file-system';
+import {Directory, File} from 'expo-file-system';
 import Permissions from 'react-native-permissions';
 
 import {getIntlShape} from '@utils/general';
@@ -9,6 +9,7 @@ import {logError} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
 
 import {
+    deleteDownloadedFiles,
     deleteFileCache,
     deleteFileCacheByDir,
     extractFileInfo,
@@ -33,6 +34,9 @@ import {
     pathWithPrefix,
     uploadDisabledWarning,
 } from './index';
+
+import type FileModel from '@typings/database/models/servers/file';
+import type {Asset} from 'react-native-image-picker';
 
 jest.mock('react-native', () => {
     const RN = jest.requireActual('react-native');
@@ -125,6 +129,22 @@ describe('Image utils', () => {
         });
     });
 
+    describe('deleteDownloadedFiles', () => {
+        it('should remove both the recorded path and the default download path', () => {
+            // Opening a document downloads it to the default path without recording it on the row.
+            jest.mocked(File).mockClear();
+            const file = {id: 'fileid', name: 'doc.pdf', extension: 'pdf', mimeType: 'application/pdf', localPath: '/data/my%20doc.pdf'} as unknown as FileModel;
+
+            deleteDownloadedFiles('http://server.com', [file]);
+
+            const uris = jest.mocked(File).mock.calls.map(([uri]) => uri);
+            expect(uris).toEqual(['file:///data/my doc.pdf', pathWithPrefix('file://', getLocalFilePathFromFile('http://server.com', file))]);
+            for (const result of jest.mocked(File).mock.results) {
+                expect(result.value.delete).toHaveBeenCalled();
+            }
+        });
+    });
+
     describe('lookupMimeType', () => {
         it('should return correct mime type', () => {
             expect(lookupMimeType('file.txt')).toBe('text/plain');
@@ -172,6 +192,11 @@ describe('Image utils', () => {
             expect(isImage({name: 'file.jpg', mimeType: 'image/jpeg'} as unknown as FileInfo)).toBe(true);
             expect(isImage({name: 'file.png', mimeType: 'text/plain'} as unknown as FileInfo)).toBe(false);
             expect(isImage({name: 'file.png', extension: '.png'} as unknown as FileInfo)).toBe(true);
+            expect(isImage({name: 'file.png'} as unknown as FileInfo)).toBe(true);
+        });
+
+        it('should return false for a file with no name and no extension', () => {
+            expect(isImage({mime_type: 'image/jpg', localPath: 'file:///draft.jpg'} as unknown as FileInfo)).toBe(false);
         });
     });
 
@@ -236,6 +261,17 @@ describe('Image utils', () => {
             result = await extractFileInfo([{uri: 'file://somefile', size: 12345, fileName: 'file.png', type: 'image/png'}]);
             expect(result).toEqual(expect.any(Array));
         });
+
+        it('should read the size from the local file when the asset has no file size', async () => {
+            jest.mocked(File).mockImplementationOnce(() => ({info: () => ({exists: true, size: 999})}) as unknown as File);
+
+            const result = await extractFileInfo([{uri: 'file:///tmp/A1B2C3.jpg', fileName: 'A1B2C3.jpg', type: 'image/jpg'}] as unknown as Asset[]);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].name).toBe('A1B2C3.jpg');
+            expect(result[0].size).toBe(999);
+            expect(logError).not.toHaveBeenCalled();
+        });
     });
 
     describe('fileSizeWarning', () => {
@@ -268,6 +304,11 @@ describe('Image utils', () => {
         it('should map Android network errors to user-friendly message', () => {
             const msg = getUploadErrorMessage(intl, 'Network error', 'java.net.UnknownHostException');
             expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
+        });
+
+        it('should explain a refusal by a permission policy instead of showing the server text', () => {
+            const msg = getUploadErrorMessage(intl, 'server text', 'api.file.upload_file.abac_denied.app_error');
+            expect(msg).toBe('File uploads are restricted in this channel');
         });
 
         it('should return original message for non-network errors', () => {

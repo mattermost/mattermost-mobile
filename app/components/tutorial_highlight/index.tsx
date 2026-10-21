@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Modal, Platform, StatusBar, View, useWindowDimensions} from 'react-native';
+import {Modal, Platform, View, useWindowDimensions} from 'react-native';
 
-import {isAndroidEdgeToEdge} from '@constants/device';
 import {useTutorial} from '@context/tutorial';
 
 import HighlightItem from './item';
@@ -27,10 +26,7 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
 
     const onRootLayout = useCallback(() => {
         itemRef.current?.measure((x, y, w, h, pageX, pageY) => {
-            let offset = inModal && Platform.OS === 'ios' ? rootOffset : 0;
-            if (!isAndroidEdgeToEdge && StatusBar.currentHeight) {
-                offset = StatusBar.currentHeight;
-            }
+            const offset = inModal && Platform.OS === 'ios' ? rootOffset : 0;
 
             setItemBounds({
                 startX: pageX,

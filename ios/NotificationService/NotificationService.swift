@@ -3,6 +3,7 @@ import UserNotifications
 import Intents
 import os.log
 import TurboLogIOSNative
+import react_native_network_client_session_attributes
 
 class NotificationService: UNNotificationServiceExtension {
 
@@ -32,7 +33,6 @@ class NotificationService: UNNotificationServiceExtension {
   }
 
   private var contentHandlerWrapper: ContentHandlerSafeWrapper?
-  private var isLoggerConfigured = false
 
   // Thread-safe access to bestAttemptContent
   private let contentQueue = DispatchQueue(label: "com.mattermost.notification.content", attributes: .concurrent)
@@ -49,10 +49,7 @@ class NotificationService: UNNotificationServiceExtension {
     }
   }
 
-  override init() {
-    super.init()
-    initSentryAppExt()
-
+  private static let configureLogger: Void = {
     // Safely configure TurboLogger without force unwrapping
     guard let appGroupId = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String else {
       os_log(OSLogType.error, "NotificationService init: AppGroupIdentifier missing from Info.plist")
@@ -68,11 +65,10 @@ class NotificationService: UNNotificationServiceExtension {
       try TurboLogIOSNative.TurboLogger.configure(
         dailyRolling: false,
         maximumFileSize: 1024*1024,
-        maximumNumberOfFiles: 2,
+        maximumNumberOfFiles: 5,
         logsDirectory: containerUrl.appendingPathComponent("Logs").path,
         logsFilename: "MMLogs"
       )
-      isLoggerConfigured = true
 
       // Configure Gekidou to use TurboLogger
       Gekidou.GekidouLogger.shared.setLogHandler { level, message in
@@ -94,6 +90,13 @@ class NotificationService: UNNotificationServiceExtension {
     } catch {
       os_log(OSLogType.error, "NotificationService init: Failed to configure TurboLogger: %{public}@", String(describing: error))
     }
+  }()
+
+  override init() {
+    super.init()
+    SessionAttributesOutboundHeader.setHandler { SessionAttributes.getOutboundHeader($0) }
+    initSentryAppExt()
+    NotificationService.configureLogger
   }
   
   override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
@@ -154,34 +157,28 @@ class NotificationService: UNNotificationServiceExtension {
   
   private func sendMessageIntent() {
     guard let notification = bestAttemptContent else { return }
-    if #available(iOSApplicationExtension 15.0, *) {
-      let overrideUsername = notification.userInfo["override_username"] as? String
-      let senderId = notification.userInfo["sender_id"] as? String
+    let overrideUsername = notification.userInfo["override_username"] as? String
+    let senderId = notification.userInfo["sender_id"] as? String
 
-      guard let serverUrl = notification.userInfo["server_url"] as? String
-      else {
-        Gekidou.GekidouLogger.shared.log(.info, "NotificationService sendMessageIntent: No intent created. will call contentHandler to present notification")
-        contentHandlerWrapper?.callOnce(with: notification)
-        return
-      }
+    guard let serverUrl = notification.userInfo["server_url"] as? String
+    else {
+      Gekidou.GekidouLogger.shared.log(.info, "NotificationService sendMessageIntent: No intent created. will call contentHandler to present notification")
+      contentHandlerWrapper?.callOnce(with: notification)
+      return
+    }
 
-      let overrideIconUrl = notification.userInfo["override_icon_url"] as? String
-      Gekidou.GekidouLogger.shared.log(.info, "NotificationService sendMessageIntent: Fetching profile Image in server", serverUrl, "for sender", senderId ?? overrideUsername ?? "no sender is set")
-      if senderId != nil || overrideIconUrl != nil {
-        PushNotification.default.fetchProfileImageSync(serverUrl, senderId: senderId ?? "", overrideIconUrl: overrideIconUrl) {[weak self] data in
-          self?.sendMessageIntentCompletion(data)
-        }
-      } else {
-        self.sendMessageIntentCompletion(nil)
+    let overrideIconUrl = notification.userInfo["override_icon_url"] as? String
+    Gekidou.GekidouLogger.shared.log(.info, "NotificationService sendMessageIntent: Fetching profile Image in server", serverUrl, "for sender", senderId ?? overrideUsername ?? "no sender is set")
+    if senderId != nil || overrideIconUrl != nil {
+      PushNotification.default.fetchProfileImageSync(serverUrl, senderId: senderId ?? "", overrideIconUrl: overrideIconUrl) {[weak self] data in
+        self?.sendMessageIntentCompletion(data)
       }
     } else {
-      // iOS < 15.0, deliver notification without intent
-      contentHandlerWrapper?.callOnce(with: notification)
+      self.sendMessageIntentCompletion(nil)
     }
   }
   
   // Helper method to donate INIntent (assumes already on main thread)
-  @available(iOSApplicationExtension 15.0, *)
   private func donateIntent(_ intent: INSendMessageIntent, with notification: UNNotificationContent) {
     let interaction = INInteraction(intent: intent, response: nil)
     interaction.direction = .incoming
@@ -214,30 +211,25 @@ class NotificationService: UNNotificationServiceExtension {
       comment: "")
     bestAttemptContent?.userInfo.updateValue("false", forKey: "verified")
 
-    if #available(iOSApplicationExtension 15.0, *) {
-      // Create INIntent on main thread for thread safety
-      DispatchQueue.main.async { [weak self] in
-        guard let self = self else { return }
+    // Create INIntent on main thread for thread safety
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
 
-        let intent = INSendMessageIntent(recipients: nil,
-                                         outgoingMessageType: .outgoingMessageText,
-                                         content: "We could not verify this notification with the server",
-                                         speakableGroupName: nil,
-                                         conversationIdentifier: "NOT_VERIFIED",
-                                         serviceName: nil,
-                                         sender: nil,
-                                         attachments: nil)
-        self.donateIntent(intent, with: notification)
-      }
-    } else {
-      contentHandlerWrapper?.callOnce(with: notification)
+      let intent = INSendMessageIntent(recipients: nil,
+                                       outgoingMessageType: .outgoingMessageText,
+                                       content: "We could not verify this notification with the server",
+                                       speakableGroupName: nil,
+                                       conversationIdentifier: "NOT_VERIFIED",
+                                       serviceName: nil,
+                                       sender: nil,
+                                       attachments: nil)
+      self.donateIntent(intent, with: notification)
     }
   }
 
   private func sendMessageIntentCompletion(_ avatarData: Data?) {
     guard let notification = bestAttemptContent else { return }
-    if #available(iOSApplicationExtension 15.0, *),
-       let imgData = avatarData,
+    if let imgData = avatarData,
        let channelId = notification.userInfo["channel_id"] as? String {
       Gekidou.GekidouLogger.shared.log(.info, "NotificationService sendMessageIntentCompletion: creating intent")
 

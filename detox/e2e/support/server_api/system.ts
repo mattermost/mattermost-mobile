@@ -4,6 +4,7 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import jestExpect from 'expect';
 
 import client from './client';
@@ -91,6 +92,24 @@ export const apiGetClientConfigOld = async (baseUrl: string): Promise<any> => {
 };
 
 /**
+ * Max post length in runes. Computed by the server and published only in the client config —
+ * `ServiceSettings.MaxPostSize` does not exist, so never read it from the admin config.
+ * @param {string} baseUrl - the base server URL
+ * @return {number} the server's MaxPostSize
+ */
+export const apiGetMaxPostSize = async (baseUrl: string): Promise<number> => {
+    const {config, error} = await apiGetClientConfigOld(baseUrl);
+    if (error) {
+        throw new Error(`apiGetMaxPostSize: could not read client config: ${JSON.stringify(error)}`);
+    }
+    const maxPostSize = Number(config?.MaxPostSize);
+    if (!Number.isInteger(maxPostSize) || maxPostSize <= 0) {
+        throw new Error(`apiGetMaxPostSize: client config MaxPostSize is ${JSON.stringify(config?.MaxPostSize)}`);
+    }
+    return maxPostSize;
+};
+
+/**
  * Wait for a client configuration flag to reach the expected value.
  * @param {string} baseUrl - the base server URL
  * @param {string} flagKey - client configuration key
@@ -102,16 +121,27 @@ export const waitForClientConfigFlag = async (
     baseUrl: string,
     flagKey: string,
     expectedValue: string,
-    options: {maxAttempts?: number; pollMs?: number} = {},
+    options: {maxAttempts?: number; pollMs?: number; acceptAbsentAsEnabled?: boolean} = {},
 ): Promise<boolean> => {
     const maxAttempts = options.maxAttempts ?? 60;
     const pollMs = options.pollMs ?? timeouts.ONE_SEC;
+    const acceptAbsentAsEnabled = options.acceptAbsentAsEnabled === true && expectedValue === 'true';
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         // eslint-disable-next-line no-await-in-loop -- client config propagation is asynchronous
-        const {config} = await apiGetClientConfigOld(baseUrl);
-        if (config?.[flagKey] === expectedValue) {
-            return true;
+        const {config, error} = await apiGetClientConfigOld(baseUrl);
+        if (!error && config) {
+            const value = config[flagKey];
+            if (String(value) === expectedValue) {
+                return true;
+            }
+
+            // Mobile treats a missing ExperimentalViewArchivedChannels as enabled
+            // (only explicit 'false' turns the feature off). Failed fetches are
+            // not "absent" — keep polling until a successful payload arrives.
+            if (acceptAbsentAsEnabled && (value === undefined || value === null || value === '')) {
+                return true;
+            }
         }
 
         if (attempt < maxAttempts - 1) {
@@ -147,9 +177,21 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<any> => {
+    // A config patch is idempotent: replaying the same partial config converges on
+    // the same server state.
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
+            return {config: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiUpdateConfig'});
+};
+
+const patchConfigOnce = async (baseUrl: string, patch: any): Promise<any> => {
     try {
-        // Use config/patch endpoint for partial updates — no need to GET+merge+PUT the full config
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
+        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patch);
         return {config: response.data};
     } catch (err) {
         return getResponseFromError(err);
@@ -158,6 +200,9 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
 
 /**
  * Replace server configuration with a complete config object.
+ *
+ * Do not use this against a shared test server: it reverts every setting another
+ * shard changed since the config was read. Use apiPatchConfig instead.
  * @param {string} baseUrl - the base server URL
  * @param {Object} config - complete server configuration
  * @return {Object} returns {config} on success or {error, status} on error
@@ -179,12 +224,64 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
-    try {
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
+    // Idempotent for the same reason as apiUpdateConfig above.
+    return withTransportRetry(() => patchConfigOnce(baseUrl, patchConfig), {idempotent: true, label: 'apiPatchConfig'});
+};
+
+const getFeatureFlags = (baseUrl: string): Promise<any> => {
+    return withTransportRetry(async () => {
+        const {config, error, status} = await apiGetConfig(baseUrl);
+        if (error || !config) {
+            return {error: error ?? {message: 'getFeatureFlags: empty config response'}, status};
+        }
+        return {config, flags: config.FeatureFlags ?? {}};
+    }, {idempotent: true, label: 'getFeatureFlags'});
+};
+
+/**
+ * Patch feature flags without resetting flags omitted from the requested changes.
+ * @param {string} baseUrl - the base server URL
+ * @param {Record<string, boolean>} flags - feature flags to update
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiPatchFeatureFlags = async (baseUrl: string, flags: Record<string, boolean>): Promise<any> => {
+    return withTransportRetry(async () => {
+        const {flags: current, error, status} = await getFeatureFlags(baseUrl);
+        if (error) {
+            return {error, status};
+        }
+
+        return patchConfigOnce(baseUrl, {FeatureFlags: {...current, ...flags}});
+    }, {idempotent: true, label: 'apiPatchFeatureFlags'});
+};
+
+/**
+ * Turn feature flags on without touching the others, and only where needed.
+ *
+ * FeatureFlags fields are plain bools, so the server cannot tell an omitted flag from a
+ * false one: patching {FeatureFlags: {A: true}} sets every other flag to false. (Only servers
+ * with a Split key accept flag writes at all, as the cloud test servers do; elsewhere the
+ * server ignores them.) This reads the current flags and patches them back in full, and
+ * skips the write when every named flag is already on or absent from this server version.
+ * @param {string} baseUrl - the base server URL
+ * @param {string[]} names - the flags to turn on, e.g. ['PermissionPolicies']
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
+    const {config, flags: current, error, status} = await getFeatureFlags(baseUrl);
+    if (error) {
+        return {error, status};
     }
+
+    const toEnable = names.filter((name) => name in current && current[name] !== true);
+    if (!toEnable.length) {
+        return {config};
+    }
+
+    const enabled = Object.fromEntries(toEnable.map((name) => [name, true]));
+    return apiPatchConfig(baseUrl, {
+        FeatureFlags: {...current, ...enabled},
+    });
 };
 
 /**
@@ -489,10 +586,13 @@ export const System = {
     apiEnsureAtLeastOneConfirmedRemoteCluster,
     apiEmailTest,
     apiGetClientConfigOld,
+    apiGetMaxPostSize,
     apiGetClientLicense,
     apiGetConfig,
     apiGetRemoteClusters,
+    apiEnableFeatureFlags,
     apiPatchConfig,
+    apiPatchFeatureFlags,
     apiPingServerStatus,
     apiReplaceConfig,
     waitForClientConfigFlag,

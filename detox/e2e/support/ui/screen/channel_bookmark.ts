@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
-import {waitFor} from 'detox';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
     testID = {
@@ -21,6 +21,10 @@ class ChannelBookmarkScreen {
         emojiPickerScreen: 'emoji_picker.screen',
         emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
         emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
+        optionsSheet: 'channel_bookmark.options.sheet',
+        editOption: 'channel_bookmark.options.edit',
+        addLinkOption: 'channel_bookmark.type.link',
+        addFileOption: 'channel_bookmark.type.file',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
@@ -39,17 +43,21 @@ class ChannelBookmarkScreen {
     linkInputDescription = element(by.id(this.testID.linkInputDescription));
     titleInput = element(by.id(this.testID.titleInput));
 
-    // Add bookmark bottom sheet options (by text)
-    addALinkOption = element(by.text('Add a link'));
-    attachAFileOption = element(by.text('Attach a file'));
+    addALinkOption = element(by.id(this.testID.addLinkOption));
+    attachAFileOption = element(by.id(this.testID.addFileOption));
 
+    // Gorhom sheet: Detox idle never settles, so toExist reports "'not null' doesn't match
+    // the selected view". Corner tap avoids the row-center miss.
     tapAddALinkOption = async () => {
-        await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);
-        await this.addALinkOption.tap();
+        await withSynchronizationDisabled(async () => {
+            await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);
+            await this.addALinkOption.tap({x: 1, y: 1});
+        });
     };
 
     // Edit options (long press on bookmark)
-    editOption = element(by.text('Edit'));
+    optionsSheet = element(by.id(this.testID.optionsSheet));
+    editOption = element(by.id(this.testID.editOption));
     deleteOption = element(by.text('Delete'));
     copyLinkOption = element(by.text('Copy Link'));
     shareOption = element(by.text('Share'));
@@ -59,46 +67,16 @@ class ChannelBookmarkScreen {
     deleteConfirmCancelButton = element(by.text('Cancel'));
 
     /**
-     * Bookmark options is a bottom sheet with no Cancel row, so dismiss it by swiping a row.
+     * Dismiss the bookmark options bottom sheet (generic_bottom_sheet route).
      */
     dismissOptionsSheet = async () => {
-        const swipeTargets = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
-        let sheetVisible = false;
-        /* eslint-disable no-await-in-loop -- probe which option rows are on this sheet */
-        for (const target of swipeTargets) {
-            try {
-                await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                sheetVisible = true;
-                break;
-            } catch {
-                // Row not present on this sheet variant.
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-
-        if (!sheetVisible) {
-            return;
-        }
-
+        const sheet = this.optionsSheet;
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            /* eslint-disable no-await-in-loop -- swipe the first visible sheet row */
-            for (const target of swipeTargets) {
-                try {
-                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                    await target.swipe('down', 'fast', 0.9, 0.5, 0.1);
-                    await wait(timeouts.ONE_SEC);
-                    break;
-                } catch {
-                    // Try next row.
-                }
-            }
-            /* eslint-enable no-await-in-loop */
+            await sheet.swipe('down');
         }
-
-        await waitFor(this.editOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
-        await waitFor(this.copyLinkOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(sheet).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     // Error alert
@@ -148,7 +126,18 @@ class ChannelBookmarkScreen {
     };
 
     waitForLinkLoadingToFinish = async (timeout = timeouts.ONE_MIN) => {
-        await waitFor(this.linkLoading).not.toExist().withTimeout(timeout);
+        const deadline = Date.now() + timeout;
+        /* eslint-disable no-await-in-loop -- poll until the OG spinner is gone */
+        while (Date.now() < deadline) {
+            try {
+                await expect(this.linkLoading).not.toExist();
+                return;
+            } catch {
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await expect(this.linkLoading).not.toExist();
     };
 
     runUnsynchronized = async <T>(action: () => Promise<T>): Promise<T> => {

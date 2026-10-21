@@ -89,6 +89,25 @@ describe('Messaging - Channel Link', () => {
         await ChannelScreen.back();
     });
 
+    it('MM-T66560_1 - should be able to open joined channel by tapping on channel link that ends in a channel ID', async () => {
+        // # Open a channel screen and post a channel link to target channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
+        const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.id}`;
+        await ChannelScreen.postMessage(channelLink);
+
+        // # Tap on channel link
+        await waitFor(element(by.text(channelLink))).toExist().withTimeout(timeouts.TEN_SEC);
+        await element(by.text(channelLink)).tap();
+
+        // * Verify redirected to target channel
+        await waitFor(ChannelScreen.headerTitle).toHaveText(targetChannel.display_name).withTimeout(timeouts.HALF_MIN);
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
     it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
         // # Open testChannel and open the reply thread for the pre-posted plain-text parent.
         await ChannelScreen.open(channelsCategory, testChannel.name);

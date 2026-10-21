@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AccessControl from './access_control';
 import Bot from './bot';
 import Channel from './channel';
 import ChannelBookmark from './channel_bookmark';
 import Command, {apiGetTeamCommands, waitForSlashCommandTrigger} from './command';
 import CustomProfileAttributes from './custom_profile_attributes';
 import Ldap from './ldap';
-import Playbooks from './playbooks';
-import PlaybooksHelpers from './playbooks_helpers';
+import Mfa from './mfa';
 import Plugin, {AgentsPlugin, CallsPlugin, DemoPlugin} from './plugin';
 import Post from './post';
 import Preference from './preference';
@@ -17,10 +17,12 @@ import Setup from './setup';
 import Status from './status';
 import System from './system';
 import Team from './team';
+import TermsOfService from './terms_of_service';
 import User from './user';
 import Webhook from './webhook';
 
 export {
+    AccessControl,
     AgentsPlugin,
     Bot,
     CallsPlugin,
@@ -32,8 +34,7 @@ export {
     CustomProfileAttributes,
     DemoPlugin,
     Ldap,
-    Playbooks,
-    PlaybooksHelpers,
+    Mfa,
     Plugin,
     Post,
     Preference,
@@ -42,6 +43,7 @@ export {
     Status,
     System,
     Team,
+    TermsOfService,
     User,
     Webhook,
 };

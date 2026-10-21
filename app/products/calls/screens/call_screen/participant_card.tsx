@@ -4,9 +4,11 @@
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import CallAvatar from '@calls/components/call_avatar';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
+import {useCallingPulseAnimationStyle} from '@calls/hooks';
 import {avatarL, avatarM, usernameL, usernameM} from '@calls/screens/call_screen/call_screen';
 import {useCurrentCall} from '@calls/state';
 import {makeCallsTheme} from '@calls/utils';
@@ -19,8 +21,10 @@ import type {CallSession, CallsTheme} from '@calls/types/calls';
 
 type Props = {
     session: CallSession;
+    isRinging: boolean;
     smallerAvatar: boolean;
     teammateNameDisplay: string;
+    showHostBadge: boolean;
     onPress: () => void;
     onLongPress: () => void;
 }
@@ -50,23 +54,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         ...typography('Body', 100, 'SemiBold'),
     },
     usernameShort: {
-        marginTop: 0,
         width: usernameM,
     },
 }));
 
-export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, onPress, onLongPress}: Props) => {
+export const ParticipantCard = ({session, isRinging, smallerAvatar, teammateNameDisplay, showHostBadge, onPress, onLongPress}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const currentCall = useCurrentCall();
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
+    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isRinging);
 
-    const mySession = currentCall?.sessions[currentCall.mySessionId];
     const screenShareOn = Boolean(currentCall?.screenOn);
     const avatarSize = smallerAvatar ? avatarM : avatarL;
 
-    if (!currentCall || !mySession) {
+    // Deliberately not gated on our own session being in the call: the card for someone else has
+    // nothing to do with ours, and a call we're placing has no session for us yet.
+    if (!currentCall) {
         return null;
     }
 
@@ -74,18 +79,19 @@ export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, on
         <Pressable
             onPress={onPress}
             onLongPress={onLongPress}
+            disabled={isRinging}
         >
             {({pressed}) => (
-                <View
-                    style={[style.user, pressed && style.pressed, screenShareOn && style.userScreenOn]}
-                    key={session.sessionId}
+                <Animated.View
+                    testID={isRinging ? 'calls.calling_participant' : undefined}
+                    style={[style.user, pressed && style.pressed, screenShareOn && style.userScreenOn, callingPulseAnimationStyle]}
                 >
                     <View style={[screenShareOn && style.profileScreenOn]}>
                         <CallAvatar
                             userModel={session.userModel}
                             speaking={currentCall.voiceOn[session.sessionId]}
-                            muted={session.muted}
-                            sharingScreen={session.sessionId === currentCall.screenOn}
+                            muted={isRinging ? undefined : session.muted}
+                            sharingScreen={screenShareOn && session.sessionId === currentCall.screenOn}
                             raisedHand={Boolean(session.raisedHand)}
                             reaction={session.reaction?.emoji}
                             size={avatarSize}
@@ -97,12 +103,12 @@ export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, on
                         numberOfLines={1}
                     >
                         {displayUsername(session.userModel, intl.locale, teammateNameDisplay)}
-                        {session.sessionId === mySession.sessionId &&
+                        {session.sessionId === currentCall.mySessionId &&
                             ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
                         }
                     </Text>
-                    {session.userId === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
-                </View>
+                    {showHostBadge && session.userId === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
+                </Animated.View>
             )}
         </Pressable>
     );

@@ -1,35 +1,48 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
-import {BehaviorSubject, combineLatest, type Subscription} from 'rxjs';
-import {distinctUntilChanged, skip} from 'rxjs/operators';
+import {AppState, type AppStateStatus, DeviceEventEmitter, type NativeEventSubscription} from 'react-native';
+import {asapScheduler, BehaviorSubject, combineLatest, type Subscription} from 'rxjs';
+import {debounceTime, distinctUntilChanged, skip} from 'rxjs/operators';
 
+import {attachAuditEventErrorReason, enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
+import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
+import {parseNonNegativeConfigNumber} from '@utils/config';
+import {toMilliseconds} from '@utils/datetime';
+import {getFullErrorMessage} from '@utils/errors';
 import {deleteFileCache} from '@utils/file';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
+import {showSnackBar, type ShowSnackBarArgs} from '@utils/snack_bar';
 
 type ServerEntry =
     | {kind: 'zpm'}
-    | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number};
+    | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number; cleanupDays: number};
+
+// Conservative checkpoints since the offline-persistence timer is configured in whole
+// hours — a sub-minute heads-up isn't meaningful lead time at that scale.
+const WIPE_WARNING_THRESHOLDS_MS = [30 * 60_000, 10 * 60_000, 60_000];
 
 class EphemeralModeManagerSingleton {
     private offlineSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
     private disconnectionTimers: Record<string, NodeJS.Timeout> = {};
     private purgeTimers: Record<string, NodeJS.Timeout> = {};
+    private warnTimers: Record<string, NodeJS.Timeout[]> = {};
     private wsSubscriptions: Record<string, Subscription> = {};
     private configSubscriptions: Record<string, Subscription> = {};
     private appStateSubscription?: NativeEventSubscription;
 
     private trackedServers = new Map<string, ServerEntry>();
+    private cleanupDays: Record<string, number> = {};
     private wipeInProgress = new Set<string>();
     private evalQueue: Record<string, Promise<unknown>> = {};
 
@@ -56,13 +69,43 @@ class EphemeralModeManagerSingleton {
                 if (server && server.persistenceFlag === 'wiped') {
                     // Recover from a wipe interrupted by app termination before
                     // the DB + file artifacts were both deleted.
-                    await this.wipeServerArtifacts(serverUrl);
+                    const [databaseResult, filesResult] = await this.wipeServerArtifacts(serverUrl);
+                    if (!databaseResult.success || !filesResult.success) {
+                        logError('EphemeralModeManager.init: resumed wipe failed after retries, server re-added with stale data', serverUrl);
+                        try {
+                            // Add a failure as a new entry in the audit log and keep the original attempt entry untouched.
+                            await enqueueAuditEvent(serverUrl, {
+                                kind: EphemeralModeAuditEventKind.OfflinePurge,
+                                offlineTimeMinutes: 0,
+                                occurredAt: Date.now(),
+                                errorReason: 'resumed wipe failed after retries, server re-added with stale data',
+                            });
+                        } catch (auditError) {
+                            logError('EphemeralModeManager.init: failed to enqueue resumed-wipe-failure audit event', getFullErrorMessage(auditError));
+                        }
+                    }
                 }
+                await this.notifyIfEphemeralModeActiveOnStart(serverUrl, server);
                 await this.addServer(serverUrl);
             } catch (error) {
                 logError('EphemeralModeManager.init', error);
             }
         }));
+    };
+
+    // Runs once per cold start (not on foreground) so users are reminded of the
+    // device's persistence mode every time the app launches, not just when it changes.
+    private notifyIfEphemeralModeActiveOnStart = async (serverUrl: string, server: Awaited<ReturnType<typeof getServer>>) => {
+        if (server?.persistenceFlag === 'zero-persistence') {
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+        }
+    };
+
+    private showSnackBarForActiveServer = async (serverUrl: string, args: ShowSnackBarArgs) => {
+        const activeUrl = await DatabaseManager.getActiveServerUrl();
+        if (serverUrl === activeUrl) {
+            showSnackBar(args);
+        }
     };
 
     public cleanup = () => {
@@ -88,6 +131,7 @@ class EphemeralModeManagerSingleton {
         this.trackedServers.delete(serverUrl);
         this.configSubscriptions[serverUrl]?.unsubscribe();
         delete this.configSubscriptions[serverUrl];
+        delete this.cleanupDays[serverUrl];
         delete this.offlineSubjects[serverUrl];
         this.maybeRemoveAppStateListener();
     };
@@ -96,8 +140,17 @@ class EphemeralModeManagerSingleton {
         return this.offlineSubjects[serverUrl]?.getValue() ?? false;
     };
 
+    public getAutoCacheCleanupDays = (serverUrl: string): number => {
+        const entry = this.trackedServers.get(serverUrl);
+        return entry?.kind === 'mem' ? entry.cleanupDays : 0;
+    };
+
     public isZeroPersistenceMode = (serverUrl: string): boolean => {
         return this.trackedServers.get(serverUrl)?.kind === 'zpm';
+    };
+
+    public isEphemeralModeEnabled = (serverUrl: string): boolean => {
+        return this.trackedServers.has(serverUrl);
     };
 
     public addServer = async (serverUrl: string, {cleanFileCache = true}: {cleanFileCache?: boolean} = {}) => {
@@ -121,13 +174,23 @@ class EphemeralModeManagerSingleton {
             observeConfigValue(database, 'MobileEphemeralModeEnabled'),
             observeConfigValue(database, 'MobileEphemeralModeDisconnectionTimeoutSeconds'),
             observeConfigValue(database, 'MobileEphemeralModeOfflinePersistenceTimerHours'),
+            observeConfigValue(database, 'MobileEphemeralModeAutoCacheCleanupDays'),
         ]).pipe(
+
+            // Each config row emits separately, so a single sync touching several
+            // settings would otherwise deliver one partially-updated tuple per row.
+            debounceTime(0, asapScheduler),
             distinctUntilChanged(
-                ([prevEnabled, prevTimeout, prevPurgeHours], [nextEnabled, nextTimeout, nextPurgeHours]) =>
-                    prevEnabled === nextEnabled && prevTimeout === nextTimeout && prevPurgeHours === nextPurgeHours,
+                (
+                    [prevEnabled, prevTimeout, prevPurgeHours, prevCleanupDays],
+                    [nextEnabled, nextTimeout, nextPurgeHours, nextCleanupDays],
+                ) =>
+                    prevEnabled === nextEnabled && prevTimeout === nextTimeout &&
+                    prevPurgeHours === nextPurgeHours && prevCleanupDays === nextCleanupDays,
             ),
-        ).subscribe(([enabledStr, timeoutStr, purgeHoursStr]) => {
-            this.onEphemeralModeConfigChange(serverUrl, enabledStr, timeoutStr, purgeHoursStr);
+        ).subscribe(([enabledStr, timeoutStr, purgeHoursStr, cleanupDaysStr]) => {
+            // Serialise with runWipe so a config change can't interleave with an in-flight wipe.
+            this.enqueueEval(serverUrl, () => this.onEphemeralModeConfigChange(serverUrl, enabledStr, timeoutStr, purgeHoursStr, cleanupDaysStr));
         });
     };
 
@@ -136,28 +199,39 @@ class EphemeralModeManagerSingleton {
         enabledStr: string | undefined,
         timeoutStr: string | undefined,
         purgeHoursStr: string | undefined,
+        cleanupDaysStr: string | undefined,
     ) => {
         const nextEnabled = enabledStr === 'true';
-        const nextThresholdMs = Math.max(0, Number(timeoutStr ?? '0')) * 1000;
-        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 3600 * 1000;
+        const nextThresholdMs = toMilliseconds({seconds: parseNonNegativeConfigNumber(timeoutStr)});
+        const nextPurgeHours = parseNonNegativeConfigNumber(purgeHoursStr);
+        const nextPurgeThresholdMs = toMilliseconds({hours: nextPurgeHours});
+        const nextCleanupDays = parseNonNegativeConfigNumber(cleanupDaysStr);
         const wasActive = this.trackedServers.get(serverUrl)?.kind === 'mem';
 
+        if (nextEnabled && nextCleanupDays > 0) {
+            logDebug('EphemeralModeManager: auto cache cleanup config received, days:', nextCleanupDays, 'for', serverUrl);
+        }
+
         if (nextEnabled && !wasActive) {
-            this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs);
+            this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs, nextCleanupDays);
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
             return;
         }
         if (!nextEnabled && wasActive) {
             await this.untrack(serverUrl);
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED});
             return;
         }
+
         if (nextEnabled && wasActive) {
-            this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs: nextThresholdMs, purgeThresholdMs: nextPurgeThresholdMs});
+            this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs: nextThresholdMs, purgeThresholdMs: nextPurgeThresholdMs, cleanupDays: nextCleanupDays});
             this.enqueueEval(serverUrl, async () => {
                 await this.evaluateServer(serverUrl);
                 if (this.isOffline(serverUrl)) {
                     await this.evaluatePurge(serverUrl);
                 }
             });
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_SETTINGS_UPDATED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
             return;
         }
 
@@ -165,8 +239,8 @@ class EphemeralModeManagerSingleton {
         await setDisconnectedSince(serverUrl, null);
     };
 
-    private track = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number) => {
-        this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs, purgeThresholdMs});
+    private track = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number, cleanupDays: number) => {
+        this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs, purgeThresholdMs, cleanupDays});
         this.ensureAppStateListener();
 
         // skip(1) drops the BehaviorSubject's replay of the current WS state so it
@@ -186,6 +260,7 @@ class EphemeralModeManagerSingleton {
         delete this.wsSubscriptions[serverUrl];
         this.clearDisconnectionTimer(serverUrl);
         this.clearPurgeTimer(serverUrl);
+        this.clearWarnTimer(serverUrl);
         if (!silent) {
             // Server is still alive (feature disabled at runtime); flush offline state.
             await this.flagOffline(serverUrl, false);
@@ -308,6 +383,14 @@ class EphemeralModeManagerSingleton {
         }
     };
 
+    private clearWarnTimer = (serverUrl: string) => {
+        const handles = this.warnTimers[serverUrl];
+        if (handles) {
+            handles.forEach(clearTimeout);
+            delete this.warnTimers[serverUrl];
+        }
+    };
+
     private flagOffline = async (serverUrl: string, value: boolean) => {
         const subject = this.getOfflineSubject(serverUrl);
         const prev = subject.getValue();
@@ -327,6 +410,8 @@ class EphemeralModeManagerSingleton {
         if (entry?.kind !== 'mem') {
             return;
         }
+
+        await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISCONNECTED});
 
         let database;
         try {
@@ -349,8 +434,13 @@ class EphemeralModeManagerSingleton {
     };
 
     private onTransitionToOnline = async (serverUrl: string) => {
+        logDebug('EphemeralModeManager: online', serverUrl);
         this.clearPurgeTimer(serverUrl);
+        this.clearWarnTimer(serverUrl);
         await clearEphemeralModeState(serverUrl);
+
+        // emit event so UI can react in case of reconnection and the ephemeral mode offline snackbar is showing
+        DeviceEventEmitter.emit(Events.EPHEMERAL_MODE_RECONNECTED);
     };
 
     private evaluatePurge = async (serverUrl: string) => {
@@ -366,6 +456,7 @@ class EphemeralModeManagerSingleton {
         const server = await getServer(serverUrl);
         if (server && server.persistenceFlag === 'wiped') {
             this.clearPurgeTimer(serverUrl);
+            this.clearWarnTimer(serverUrl);
             return;
         }
 
@@ -397,14 +488,38 @@ class EphemeralModeManagerSingleton {
         const remainingMs = (offlineSince + entry.purgeThresholdMs) - now;
 
         this.clearPurgeTimer(serverUrl);
+        this.clearWarnTimer(serverUrl);
         if (remainingMs <= 0) {
             await this.runWipe(serverUrl);
             return;
         }
+        this.scheduleWipeWarnings(serverUrl, remainingMs);
         this.purgeTimers[serverUrl] = setTimeout(() => {
             delete this.purgeTimers[serverUrl];
             this.enqueueEval(serverUrl, () => this.runWipe(serverUrl));
         }, remainingMs);
+    };
+
+    private scheduleWipeWarnings = (serverUrl: string, remainingMs: number) => {
+        const timers: NodeJS.Timeout[] = [];
+        let firedImmediateWarning = false;
+        for (const threshold of WIPE_WARNING_THRESHOLDS_MS) {
+            if (threshold < remainingMs) {
+                timers.push(setTimeout(() => {
+                    this.showSnackBarForActiveServer(serverUrl, {
+                        barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                        messageValues: {minutes: threshold / 60_000},
+                    });
+                }, remainingMs - threshold));
+            } else if (!firedImmediateWarning) {
+                firedImmediateWarning = true;
+                this.showSnackBarForActiveServer(serverUrl, {
+                    barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                    messageValues: {minutes: Math.max(1, Math.ceil(remainingMs / 60_000))},
+                });
+            }
+        }
+        this.warnTimers[serverUrl] = timers;
     };
 
     private wipeServerArtifacts = (serverUrl: string) => {
@@ -415,12 +530,33 @@ class EphemeralModeManagerSingleton {
         ]);
     };
 
+    private enqueueOfflinePurgeAuditEvent = async (serverUrl: string): Promise<string | undefined> => {
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const purgeAt = Date.now();
+            const offlineSince = await getOfflineSince(database);
+
+            // Only queried when offlineSince is missing — the expected case never pays for it.
+            const disconnectedSince = offlineSince === undefined ? await getDisconnectedSince(database) : undefined;
+            const since = offlineSince ?? disconnectedSince ?? purgeAt;
+            return await enqueueAuditEvent(serverUrl, {
+                kind: EphemeralModeAuditEventKind.OfflinePurge,
+                offlineTimeMinutes: Math.max(0, Math.round((purgeAt - since) / 60_000)),
+                occurredAt: purgeAt,
+            });
+        } catch (error) {
+            logError('EphemeralModeManager.enqueueOfflinePurgeAuditEvent', getFullErrorMessage(error));
+            return undefined;
+        }
+    };
+
     private runWipe = async (serverUrl: string) => {
-        if (this.wipeInProgress.has(serverUrl)) {
+        if (this.wipeInProgress.has(serverUrl) || this.trackedServers.get(serverUrl)?.kind !== 'mem') {
             return;
         }
         this.wipeInProgress.add(serverUrl);
 
+        let auditEventId: string | undefined;
         try {
             const activeUrl = await DatabaseManager.getActiveServerUrl();
             const displayName = (await getServerDisplayName(serverUrl)) || serverUrl;
@@ -429,17 +565,31 @@ class EphemeralModeManagerSingleton {
                 navigateToScreen(Screens.DATA_ERASED, {serverUrl, displayName}, true);
             }
 
+            auditEventId = await this.enqueueOfflinePurgeAuditEvent(serverUrl);
+
             await DatabaseManager.updatePersistenceFlag(serverUrl, 'wiped');
 
             this.pauseSubscriptions(serverUrl);
-            const [{success}] = await this.wipeServerArtifacts(serverUrl);
-            if (!success) {
-                logError('EphemeralModeManager.runWipe: wipe failed after retries, server re-added with stale data', serverUrl);
+            const [databaseResult, filesResult] = await this.wipeServerArtifacts(serverUrl);
+            if (!databaseResult.success || !filesResult.success) {
+                throw new Error('wipe artifacts failed after retries');
             }
-            await this.addServer(serverUrl);
         } catch (error) {
-            logError('EphemeralModeManager.runWipe', error);
+            logError('EphemeralModeManager.runWipe', getFullErrorMessage(error));
+            if (auditEventId) {
+                try {
+                    await attachAuditEventErrorReason(serverUrl, auditEventId, 'unexpected error during wipe');
+                } catch (attachError) {
+                    logError('EphemeralModeManager.runWipe: attachAuditEventErrorReason failed', getFullErrorMessage(attachError));
+                }
+            }
         } finally {
+            try {
+                await this.addServer(serverUrl);
+            } catch (error) {
+                logError('EphemeralModeManager.runWipe: addServer failed', getFullErrorMessage(error));
+            }
+
             this.wipeInProgress.delete(serverUrl);
         }
     };

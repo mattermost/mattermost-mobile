@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import {joinCallAndOpenCallScreen} from '@calls/actions/calls';
+import {showLimitRestrictedAlert} from '@calls/alerts';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -14,14 +17,16 @@ jest.mock('@calls/actions', () => ({
     dismissIncomingCall: jest.fn(),
 }));
 
+jest.mock('@calls/actions/calls', () => ({
+    joinCallAndOpenCallScreen: jest.fn(),
+}));
+
 jest.mock('@calls/alerts', () => ({
-    leaveAndJoinWithAlert: jest.fn(),
     showLimitRestrictedAlert: jest.fn(),
 }));
 
 jest.mock('@calls/state', () => ({
     removeIncomingCall: jest.fn(),
-    setJoiningChannelId: jest.fn(),
 }));
 
 jest.mock('@components/user_avatars_stack');
@@ -56,5 +61,25 @@ describe('JoinCallBanner', () => {
         const {getByTestId} = renderWithIntlAndTheme(<JoinCallBanner {...props}/>);
 
         expect(getByTestId('user-avatars-stack').props.bottomSheetTitle.defaultMessage).toBe('Call participants');
+    });
+
+    it('should join the call and open the call screen when pressed', () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithIntlAndTheme(<JoinCallBanner {...props}/>);
+
+        fireEvent.press(getByTestId('calls.join_call_banner.join'));
+
+        expect(joinCallAndOpenCallScreen).toHaveBeenCalledWith(expect.anything(), props.serverUrl, props.channelId);
+    });
+
+    it('should not join a call that is at capacity', () => {
+        const props = getBaseProps();
+        props.limitRestrictedInfo = {limitRestricted: true, maxParticipants: 8, isCloudStarter: false};
+        const {getByTestId} = renderWithIntlAndTheme(<JoinCallBanner {...props}/>);
+
+        fireEvent.press(getByTestId('calls.join_call_banner.join'));
+
+        expect(showLimitRestrictedAlert).toHaveBeenCalled();
+        expect(joinCallAndOpenCallScreen).not.toHaveBeenCalled();
     });
 });

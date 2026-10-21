@@ -8,43 +8,61 @@ import DatabaseManager from '@database/manager';
 import {logWarning} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-export const getAllServerCredentials = async (): Promise<ServerCredential[]> => {
-    const serverCredentials: ServerCredential[] = [];
+// After initialize(), this is the logged-in DB-active set — not a live Keystore listing.
+let cachedServerCredentials: ServerCredential[] | undefined;
+
+export const clearCachedServerCredentials = () => {
+    cachedServerCredentials = undefined;
+};
+
+const replaceCachedCredential = (serverUrl: string, credential: ServerCredential | null) => {
+    if (cachedServerCredentials === undefined) {
+        return;
+    }
+
+    const rest = cachedServerCredentials.filter((c) => c.serverUrl !== serverUrl);
+    cachedServerCredentials = credential ? [...rest, credential] : rest;
+};
+
+const getAllKeychainServerUrls = async (): Promise<string[]> => {
+    if (Platform.OS === 'ios') {
+        return KeyChain.getAllInternetPasswordServers();
+    }
+    return KeyChain.getAllGenericPasswordServices();
+};
+
+export const getAllServerCredentials = async (knownServerUrls?: string[]): Promise<ServerCredential[]> => {
+    if (cachedServerCredentials !== undefined) {
+        return cachedServerCredentials.map((c) => ({...c}));
+    }
 
     let serverUrls: string[];
-    if (Platform.OS === 'ios') {
-        serverUrls = await KeyChain.getAllInternetPasswordServers();
+
+    // Empty knownServerUrls intentionally lists (wiped/fresh DB).
+    if (knownServerUrls?.length) {
+        serverUrls = knownServerUrls;
     } else {
-        serverUrls = await KeyChain.getAllGenericPasswordServices();
+        serverUrls = await getAllKeychainServerUrls();
     }
 
-    for await (const serverUrl of serverUrls) {
-        const serverCredential = await getServerCredentials(serverUrl);
+    const serverCredentials = (await Promise.all(
+        serverUrls.map((serverUrl) => getServerCredentials(serverUrl)),
+    )).filter((credential): credential is ServerCredential => Boolean(credential));
 
-        if (serverCredential) {
-            serverCredentials.push(serverCredential);
-        }
-    }
-
-    return serverCredentials;
+    cachedServerCredentials = serverCredentials;
+    return serverCredentials.map((c) => ({...c}));
 };
 
 export const getActiveServerUrl = async () => {
     let serverUrl = await DatabaseManager.getActiveServerUrl();
     if (!serverUrl) {
-        let serverUrls: string[];
-        if (Platform.OS === 'ios') {
-            serverUrls = await KeyChain.getAllInternetPasswordServers();
-        } else {
-            serverUrls = await KeyChain.getAllGenericPasswordServices();
-        }
-
+        const serverUrls = await getAllKeychainServerUrls();
         serverUrl = serverUrls[0];
     }
     return serverUrl || undefined;
 };
 
-export const setServerCredentials = (serverUrl: string, token: string, preauthSecret?: string) => {
+export const setServerCredentials = async (serverUrl: string, token: string, preauthSecret?: string) => {
     if (!(serverUrl && token)) {
         return;
     }
@@ -61,22 +79,30 @@ export const setServerCredentials = (serverUrl: string, token: string, preauthSe
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
 
-        // Store main token credentials (clean format)
-        KeyChain.setInternetCredentials(serverUrl, token, token, options);
-
-        // Store preauth secret separately if provided
-        if (preauthSecret) {
-            KeyChain.setGenericPassword('preshared_secret', preauthSecret, {
-                server: serverUrl,
-                ...options,
-            });
-        } else {
-            // Remove preauth secret if not provided
-            KeyChain.resetGenericPassword({
-                server: serverUrl,
-                ...options,
-            });
+        const stored = await KeyChain.setInternetCredentials(serverUrl, token, token, options);
+        if (stored === false) {
+            throw new Error('failed to store credentials');
         }
+
+        if (preauthSecret) {
+            const storedSecret = await KeyChain.setGenericPassword('preshared_secret', preauthSecret, {
+                server: serverUrl,
+                ...options,
+            });
+            if (storedSecret === false) {
+                throw new Error('failed to store preauth secret');
+            }
+        } else {
+            const reset = await KeyChain.resetGenericPassword({
+                server: serverUrl,
+                ...options,
+            });
+            if (reset === false) {
+                throw new Error('failed to reset preauth secret');
+            }
+        }
+
+        replaceCachedCredential(serverUrl, {serverUrl, userId: token, token, preauthSecret});
     } catch (e) {
         logWarning('could not set credentials', e);
     }
@@ -84,11 +110,19 @@ export const setServerCredentials = (serverUrl: string, token: string, preauthSe
 
 export const removeServerCredentials = async (serverUrl: string) => {
     await KeyChain.resetInternetCredentials({server: serverUrl});
+    replaceCachedCredential(serverUrl, null);
 };
 
 export const removePreauthSecret = async (serverUrl: string) => {
     try {
-        await KeyChain.resetGenericPassword({server: serverUrl});
+        const reset = await KeyChain.resetGenericPassword({server: serverUrl});
+        if (reset === false) {
+            return;
+        }
+        const existing = cachedServerCredentials?.find((c) => c.serverUrl === serverUrl);
+        if (existing) {
+            existing.preauthSecret = undefined;
+        }
     } catch (e) {
         // Preauth secret might not exist, ignore errors
     }
@@ -114,6 +148,11 @@ export const removeActiveServerCredentials = async () => {
 };
 
 export const getServerCredentials = async (serverUrl: string): Promise<ServerCredential|null> => {
+    const cached = cachedServerCredentials?.find((c) => c.serverUrl === serverUrl);
+    if (cached) {
+        return {...cached};
+    }
+
     try {
         // Get main credentials
         const credentials = await KeyChain.getInternetCredentials(serverUrl);

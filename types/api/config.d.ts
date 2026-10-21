@@ -46,6 +46,7 @@ interface ClientConfig {
     EmailLoginButtonColor: string;
     EmailLoginButtonTextColor: string;
     EmailNotificationContentsType: string;
+    EnableAttributeBasedAccessControl?: string;
     EnableBanner: string;
     EnableBotAccountCreation: string;
     EnableBurnOnRead: string;
@@ -127,13 +128,16 @@ interface ClientConfig {
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
+    FeatureFlagChannelAttributes?: string;
     FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
     FeatureFlagCustomProfileAttributes?: string;
     FeatureFlagMmBlocksEnabled?: string;
+    FeatureFlagPermissionPolicies?: string;
     FeatureFlagRecurringScheduledPosts?: string;
+    FeatureFlagSessionAttributes?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;

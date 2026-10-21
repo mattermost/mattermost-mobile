@@ -16,7 +16,7 @@ inputs:
   device_os_version:
     description: The os of the device used for the tests
     required: false
-    default: "iOS 17.1"
+    default: "iOS 18.1"
   durations_file:
     description: >-
       Optional spec-duration manifest (from .github/actions/s3-spec-durations).
@@ -29,6 +29,9 @@ outputs:
   specs:
     description: The specs generated for the strategy
     value: ${{ steps.generate-specs.outputs.specs }}
+  shard_count:
+    description: Number of matrix shards in specs.include (for TSIO missing-shard checks)
+    value: ${{ steps.generate-specs.outputs.shard_count }}
 runs:
   using: "composite"
   steps:
@@ -51,4 +54,5 @@ runs:
           exit 1
         fi
         echo "specs=$(cat output.json)" >> "$GITHUB_OUTPUT"
+        echo "shard_count=$(jq '.include | length' output.json)" >> "$GITHUB_OUTPUT"
       shell: bash
