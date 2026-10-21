@@ -6,10 +6,11 @@
 import {createIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, DeepLink, Events, ServerErrors} from '@constants';
+import {ActionType, DeepLink, Events, Navigation, Screens, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getCurrentChannelId} from '@queries/servers/system';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 
@@ -714,6 +715,36 @@ describe('app/actions/remote/channel', () => {
             const result = await handleKickFromChannel(serverUrl, channelId);
             expect(result).toBeDefined();
             expect(result).not.toHaveProperty('error');
+        });
+
+        it('should switch a tablet to Threads when CRT is on and nothing is left to fall back to', async () => {
+            mockIsTablet.mockReturnValue(true);
+            mockGetActiveServer.mockImplementationOnce(() => ({url: serverUrl}));
+            await operator.handleConfigs({
+                configs: [{id: 'CollapsedThreads', value: 'always_on'}, {id: 'Version', value: '7.6.0'}],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            const onNavigate = jest.fn();
+            const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, onNavigate);
+
+            await handleKickFromChannel(serverUrl, channelId);
+
+            listener.remove();
+            mockIsTablet.mockReturnValue(false);
+            expect(await getCurrentChannelId(operator.database)).toBe('');
+            expect(onNavigate).toHaveBeenCalledWith(Screens.GLOBAL_THREADS);
+        });
+
+        it('should clear the current channel on a tablet when CRT is off and nothing is left to fall back to', async () => {
+            mockIsTablet.mockImplementationOnce(() => true);
+            mockGetActiveServer.mockImplementationOnce(() => ({url: serverUrl}));
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+            await handleKickFromChannel(serverUrl, channelId);
+
+            expect(await getCurrentChannelId(operator.database)).toBe('');
         });
 
     });

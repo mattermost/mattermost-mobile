@@ -286,6 +286,35 @@ describe('create, update & delete posts', () => {
         expect(stored?.props?.failed).toBe(true);
     });
 
+    it('createPost - should revalidate the channel decisions when the server refuses a burn-on-read post', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: 'api.post.create_post.burn_on_read.abac_denied.app_error'};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        await createPost(serverUrl, post1);
+
+        expect(expireEntry).toHaveBeenCalledTimes(1);
+        expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
+        expireEntry.mockRestore();
+    });
+
+    it('createPost - should keep the channel decisions when the post fails for another reason', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        await createPost(serverUrl, post1);
+
+        expect(expireEntry).not.toHaveBeenCalled();
+        expireEntry.mockRestore();
+    });
+
     it('createPost - root', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 

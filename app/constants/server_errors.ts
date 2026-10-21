@@ -9,6 +9,7 @@ export default {
     TEAM_MEMBERSHIP_DENIAL_ERROR_ID: 'api.team.add_members.user_denied',
     DUPLICATE_CHANNEL_NAME: 'store.sql_channel.save_channel.exists.app_error',
     UPLOAD_DENIED_BY_POLICY_ERROR: 'api.file.upload_file.abac_denied.app_error',
+    BOR_DENIED_BY_POLICY_ERROR: 'api.post.create_post.burn_on_read.abac_denied.app_error',
     CHANNEL_ACCESS_DENIED: 'api.channel.channel_read_access.abac_denied.app_error',
     CHANNEL_WRITE_ACCESS_DENIED: 'api.channel.channel_write_access.abac_denied.app_error',
     CHANNEL_MANAGEMENT_ACCESS_DENIED: 'api.channel.channel_management_access.abac_denied.app_error',

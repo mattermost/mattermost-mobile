@@ -1509,7 +1509,14 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
                 } else {
                     await setCurrentTeamAndChannelId(operator, teamId, channelId);
                 }
-            } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
+            } else if (currentServer?.url === serverUrl && await getIsCRTEnabled(database)) {
+                // Nothing left in the team to fall back to: show Threads, as the tablet does for a team
+                // with no current channel.
+                await switchToGlobalThreads(serverUrl, teamId, false);
+            } else {
+                // The kicked channel is about to be removed, so it must not stay the open one.
+                await setCurrentChannelId(operator, '');
+            }
         } else {
             await setCurrentChannelId(operator, '');
         }

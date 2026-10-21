@@ -23,6 +23,7 @@ import {handleChannelAccessDenied} from './channel';
 import {fetchRenderPermissions} from './render_permissions';
 import {forceLogoutIfNecessary} from './session';
 
+import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database, Model} from '@nozbe/watermelondb';
 
 const BATCH_SIZE = 10;
@@ -91,7 +92,8 @@ async function prepareRestoredChannels(serverUrl: string, database: Database, ch
 // The server leaves denied and archived channels out of the team's channel list, so the list alone
 // tells which stored channels were denied and which were regained. Memberships are only fetched to
 // restore the regained ones.
-async function checkTeam(serverUrl: string, database: Database, teamId: string): Promise<Model[]> {
+async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId: string): Promise<Model[]> {
+    const {database} = operator;
     const client = NetworkManager.getClient(serverUrl);
     let channels: Channel[];
     try {
@@ -101,29 +103,37 @@ async function checkTeam(serverUrl: string, database: Database, teamId: string):
         return [];
     }
 
-    // A session denied every channel in the team gets none of them back, so all of them are purged.
+    // An empty list means every stored team channel was denied: a user with no memberships at all
+    // gets a 404 instead, and DMs and GMs, which the policy never denies, would be listed.
     const listed = new Set(channels.map((c) => c.id));
     const deniedIds = (await queryMyChannelsByTeam(database, teamId).fetchIds()).filter((id) => !listed.has(id));
 
-    const models: Model[] = [];
     if (deniedIds.length) {
         const currentChannelId = await getCurrentChannelId(database);
-        if (deniedIds.includes(currentChannelId)) {
-            // Shared with a denied view call or render decision, so the open channel is kicked once.
-            await handleChannelAccessDenied(serverUrl, currentChannelId);
-        }
-
+        const removed: Model[] = [];
         for (const id of deniedIds) {
             if (id !== currentChannelId) {
                 // eslint-disable-next-line no-await-in-loop
                 const {models: prepared} = await removeCurrentUserFromChannel(serverUrl, id, true);
                 if (prepared?.length) {
-                    models.push(...prepared);
+                    removed.push(...prepared);
                 }
             }
         }
+
+        // Written before the open channel is kicked: on tablet the kick switches to a fallback
+        // channel, which must not be one this pass is about to remove.
+        if (removed.length) {
+            await operator.batchRecords(removed, 'checkTeamChannelAccessDenied');
+        }
+
+        if (deniedIds.includes(currentChannelId)) {
+            // Shared with a denied view call or render decision, so the open channel is kicked once.
+            await handleChannelAccessDenied(serverUrl, currentChannelId);
+        }
     }
 
+    const models: Model[] = [];
     const storedIds = new Set(await queryAllMyChannel(database).fetchIds());
     const regained = channels.filter((c) => !storedIds.has(c.id) && isRestorable(c));
     if (regained.length) {
@@ -171,7 +181,7 @@ async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChecks
             const models: Model[] = [];
             for (const teamId of teamIds) {
                 // eslint-disable-next-line no-await-in-loop
-                models.push(...await checkTeam(serverUrl, database, teamId));
+                models.push(...await checkTeam(serverUrl, operator, teamId));
             }
             if (models.length) {
                 await operator.batchRecords(models, 'checkTeamChannelAccess');

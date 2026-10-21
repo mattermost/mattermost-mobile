@@ -24,6 +24,7 @@ import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers
 import {queryAllUsers} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {isBoRPost} from '@utils/bor';
 import {expireChannelDecisionsOnDenial} from '@utils/channel_policy';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
@@ -156,6 +157,11 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     } catch (error) {
         logDebug('Error sending a post', getFullErrorMessage(error));
         expireChannelDecisionsOnDenial(serverUrl, newPost.channel_id, error);
+        if (isServerError(error) && error.server_error_id === ServerErrors.BOR_DENIED_BY_POLICY_ERROR) {
+            // The stored decision allowed a burn-on-read post that the server refused, so it is out of date.
+            RenderPermissionsStore.expireEntry(serverUrl, newPost.channel_id);
+        }
+
         const errorPost = {
             ...newPost,
             id: pendingPostId,

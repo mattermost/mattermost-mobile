@@ -9,6 +9,7 @@ export const RenderPermissionAction = {
     ChannelReadAccess: 'channel_read_access',
     ChannelWriteAccess: 'channel_write_access',
     UploadFileAttachment: 'upload_file_attachment',
+    CreateBurnOnReadPost: 'create_burn_on_read_post',
 } as const;
 export type RenderPermissionActionName = typeof RenderPermissionAction[keyof typeof RenderPermissionAction];
 

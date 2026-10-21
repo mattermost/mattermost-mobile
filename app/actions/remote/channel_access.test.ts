@@ -216,7 +216,27 @@ describe('channel access', () => {
             expect(await storedChannelIds()).toEqual(['channel1', 'channel2']);
         });
 
-        it('should purge every team channel when the channel list response is empty', async () => {
+        it('should remove the other denied channels before kicking the denied current channel', async () => {
+            await enableFeature();
+            await seed([channel('channel1'), channel('channel2'), channel('channel3')]);
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'channel2'}],
+                prepareRecordsOnly: false,
+            });
+            mockClient.getMyChannels.mockResolvedValueOnce([]);
+            let storedAtKick: string[] = [];
+            mockDenied.mockImplementationOnce(async () => {
+                storedAtKick = await storedChannelIds();
+                return {};
+            });
+
+            await reconcileChannelAccess(serverUrl);
+
+            // Nothing but the open channel is left for a tablet kick to fall back to.
+            expect(storedAtKick).toEqual(['channel2']);
+        });
+
+        it('should remove every stored team channel when the channel list response is empty', async () => {
             await enableFeature();
             await seed([
                 channel('channel1'),
@@ -229,6 +249,7 @@ describe('channel access', () => {
             await reconcileChannelAccess(serverUrl);
 
             expect(await storedChannelIds()).toEqual(['archived', 'dmchannel']);
+            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
         });
 
         it('should change nothing when the channel list request fails', async () => {
