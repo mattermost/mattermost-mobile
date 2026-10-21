@@ -19,7 +19,8 @@ import {usePersistentNotificationProps} from '@hooks/persistent_notification_pro
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {useCurrentScreen} from '@store/navigation_store';
-import {VOICE_NOTE_MAX_DURATION_MS} from '@utils/file/voice_note';
+import {deleteVoiceNoteFile, VOICE_NOTE_MAX_DURATION_MS} from '@utils/file/voice_note';
+import {logDebug} from '@utils/log';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -67,7 +68,9 @@ export type Props = {
     value: string;
     uploadFileError: React.ReactNode;
     updateValue: React.Dispatch<React.SetStateAction<string>>;
-    addFiles: (files: FileInfo[]) => void;
+
+    /** Returns whether the files were accepted (upload permission, file count and size limits). */
+    addFiles: (files: ExtractedFileInfo[]) => boolean;
     updatePostInputTop: (top: number) => void;
     setIsFocused: (isFocused: boolean) => void;
     scheduledPostsEnabled: boolean;
@@ -197,6 +200,12 @@ function DraftInput({
     });
 
     const handleSendMessage = useCallback(async (schedulingInfoParam?: SchedulingInfo) => {
+        // A hardware keyboard can still send from the input while a voice note is recording.
+        if (isRecordingVoiceNote) {
+            logDebug('DraftInput.handleSendMessage ignored while recording a voice note');
+            return Promise.resolve();
+        }
+
         const schedulingInfo = (schedulingInfoParam && 'scheduled_at' in schedulingInfoParam) ? schedulingInfoParam : undefined;
 
         if (persistentNotificationsEnabled) {
@@ -205,7 +214,7 @@ function DraftInput({
             return Promise.resolve();
         }
         return sendMessage(schedulingInfo);
-    }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
+    }, [isRecordingVoiceNote, persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
     const handleShowScheduledPostOptions = useCallback(async () => {
         if (!scheduledPostsEnabled) {
@@ -227,7 +236,12 @@ function DraftInput({
 
     const handleVoiceNoteFinish = useCallback((file: ExtractedFileInfo, maxDurationReached: boolean) => {
         setIsRecordingVoiceNote(false);
-        addFiles([file as FileInfo]);
+        if (!addFiles([file])) {
+            // The upload error is already shown; the recording is not referenced anywhere else.
+            deleteVoiceNoteFile(file.localPath);
+            return;
+        }
+
         if (maxDurationReached) {
             showSnackBar({
                 barType: SNACK_BAR_TYPE.VOICE_NOTE_MAX_DURATION,
@@ -239,7 +253,7 @@ function DraftInput({
     const handleVoiceNoteError = useCallback(() => {
         setIsRecordingVoiceNote(false);
         Alert.alert(
-            intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
+            intl.formatMessage({id: 'mobile.voice_note.record_failed_title', defaultMessage: 'Recording failed'}),
             intl.formatMessage({id: 'mobile.voice_note.record_failed', defaultMessage: 'Unable to record a voice note'}),
         );
     }, [intl]);

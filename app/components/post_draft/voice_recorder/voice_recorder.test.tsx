@@ -4,6 +4,8 @@
 import {act, fireEvent} from '@testing-library/react-native';
 import {AudioModule} from 'expo-audio';
 import {File} from 'expo-file-system';
+import {useIsFocused} from 'expo-router';
+import {AccessibilityInfo} from 'react-native';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
@@ -20,6 +22,7 @@ describe('VoiceRecorder', () => {
     };
 
     const renderRecorder = async () => {
+        jest.mocked(useIsFocused).mockReturnValue(true);
         const result = renderWithIntlAndTheme(<VoiceRecorder {...baseProps}/>);
 
         // Let the recording started on mount get going.
@@ -106,10 +109,54 @@ describe('VoiceRecorder', () => {
         expect(baseProps.onFinish).not.toHaveBeenCalled();
     });
 
-    it('should label the cancel and done buttons for screen readers', async () => {
+    it('should announce the start and the end of the recording once to screen readers', async () => {
+        const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
         const {getByTestId} = await renderRecorder();
 
-        expect(getByTestId('voice_recorder.cancel')).toHaveProp('accessibilityLabel', 'Cancel recording');
-        expect(getByTestId('voice_recorder.done')).toHaveProp('accessibilityLabel', 'Finish recording and attach voice note');
+        expect(announce).toHaveBeenCalledTimes(1);
+        expect(announce).toHaveBeenLastCalledWith('Recording voice note');
+
+        // The per-second timer is not announced.
+        await act(async () => {
+            await advanceTimers(5000);
+        });
+        expect(announce).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('voice_recorder.done'));
+            await advanceTimers(0);
+        });
+        expect(announce).toHaveBeenCalledTimes(2);
+        expect(announce).toHaveBeenLastCalledWith('Voice note attached');
+    });
+
+    it('should stop and attach the recording when another screen covers the composer', async () => {
+        const {rerender} = await renderRecorder();
+        await act(async () => {
+            await advanceTimers(3000);
+        });
+
+        jest.mocked(useIsFocused).mockReturnValue(false);
+        await act(async () => {
+            rerender(<VoiceRecorder {...baseProps}/>);
+            await advanceTimers(0);
+        });
+
+        expect(MockAudioRecorder.mock.results[0].value.stop).toHaveBeenCalledTimes(1);
+        expect(baseProps.onFinish).toHaveBeenCalledTimes(1);
+        expect(baseProps.onFinish.mock.calls[0][0].name).toBe('voice-note-20261020-143501-0m03s.m4a');
+    });
+
+    it('should treat a recording shorter than a second as cancelled', async () => {
+        const {getByTestId} = await renderRecorder();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('voice_recorder.done'));
+            await advanceTimers(0);
+        });
+
+        expect(baseProps.onCancel).toHaveBeenCalledTimes(1);
+        expect(baseProps.onFinish).not.toHaveBeenCalled();
+        expect(jest.mocked(File).mock.results[jest.mocked(File).mock.results.length - 1].value.delete).toHaveBeenCalledTimes(1);
     });
 });

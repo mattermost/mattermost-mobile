@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useIsFocused} from 'expo-router';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, type PressableStateCallbackType, type StyleProp, Text, View, type ViewStyle} from 'react-native';
+import {AccessibilityInfo, Pressable, type PressableStateCallbackType, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
+import useDidUpdate from '@hooks/did_update';
 import {useVoiceRecorder, type VoiceRecorderOptions} from '@hooks/use_voice_recorder';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {formatVoiceNoteDuration, VOICE_NOTE_MAX_DURATION_MS} from '@utils/file/voice_note';
@@ -81,7 +83,8 @@ type Props = Pick<VoiceRecorderOptions, 'onFinish' | 'onError'> & {
 /**
  * Replaces the composer quick actions while a voice note is being recorded. Recording
  * starts as soon as the bar mounts; the parent is told the result through `onFinish`,
- * `onCancel` or `onError` and is expected to unmount the bar afterwards.
+ * `onCancel` or `onError` and is expected to unmount the bar afterwards. Leaving the
+ * screen stops the recording and attaches what was recorded so far.
  */
 export default function VoiceRecorder({
     testID,
@@ -92,7 +95,17 @@ export default function VoiceRecorder({
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const {elapsedMs, start, stop, cancel} = useVoiceRecorder({onFinish, onDiscard: onCancel, onError});
+    const isFocused = useIsFocused();
+
+    const handleFinish = useCallback((file: ExtractedFileInfo, maxDurationReached: boolean) => {
+        AccessibilityInfo.announceForAccessibility(intl.formatMessage({
+            id: 'mobile.voice_note.attached',
+            defaultMessage: 'Voice note attached',
+        }));
+        onFinish(file, maxDurationReached);
+    }, [intl, onFinish]);
+
+    const {isRecording, elapsedMs, start, stop, cancel} = useVoiceRecorder({onFinish: handleFinish, onDiscard: onCancel, onError});
 
     const pulse = useSharedValue(1);
     const dotStyle = useAnimatedStyle(() => ({opacity: pulse.value}));
@@ -101,6 +114,22 @@ export default function VoiceRecorder({
         pulse.value = withRepeat(withTiming(0.2, {duration: PULSE_DURATION_MS, easing: Easing.inOut(Easing.ease)}), -1, true);
         start();
     });
+
+    useDidUpdate(() => {
+        if (isRecording) {
+            AccessibilityInfo.announceForAccessibility(intl.formatMessage({
+                id: 'mobile.voice_note.recording_started',
+                defaultMessage: 'Recording voice note',
+            }));
+        }
+    }, [isRecording]);
+
+    // Another screen (a thread, a profile, a notification) covered the composer.
+    useDidUpdate(() => {
+        if (!isFocused) {
+            stop();
+        }
+    }, [isFocused]);
 
     const handleCancel = usePreventDoubleTap(useCallback(async () => {
         await cancel();
@@ -133,7 +162,6 @@ export default function VoiceRecorder({
             <View
                 style={styles.status}
                 accessible={true}
-                accessibilityLiveRegion='polite'
                 accessibilityLabel={intl.formatMessage({
                     id: 'mobile.voice_note.recording_accessibility',
                     defaultMessage: 'Recording voice note, {elapsed}',

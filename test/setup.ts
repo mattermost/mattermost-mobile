@@ -163,6 +163,7 @@ jest.mock('expo-router', () => ({
         getState: jest.fn(() => ({})),
         addListener: jest.fn(() => jest.fn()),
     }),
+    useIsFocused: jest.fn(() => true),
     useSegments: () => [],
     usePathname: () => '/',
     useLocalSearchParams: () => ({}),

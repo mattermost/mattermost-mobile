@@ -3,6 +3,7 @@
 
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import {AudioModule} from 'expo-audio';
+import {File} from 'expo-file-system';
 import React from 'react';
 import {Alert} from 'react-native';
 
@@ -78,7 +79,7 @@ describe('DraftInput', () => {
         value: '',
         uploadFileError: null,
         updateValue: jest.fn(),
-        addFiles: jest.fn(),
+        addFiles: jest.fn(() => true),
         updatePostInputTop: jest.fn(),
         setIsFocused: jest.fn(),
         scheduledPostsEnabled: true,
@@ -201,6 +202,36 @@ describe('DraftInput', () => {
             }
         });
 
+        it('deletes the recorded file when the draft does not accept it', async () => {
+            enableFakeTimers();
+            try {
+                const addFiles = jest.fn(() => false);
+                const {getByTestId, queryByTestId} = render(
+                    <DraftInput
+                        {...baseProps}
+                        addFiles={addFiles}
+                    />,
+                    {database},
+                );
+                await startRecording(getByTestId);
+
+                await act(async () => {
+                    await advanceTimers(2000);
+                    fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
+                    await advanceTimers(0);
+                });
+
+                expect(addFiles).toHaveBeenCalledTimes(1);
+                const MockFile = jest.mocked(File);
+                expect(MockFile).toHaveBeenLastCalledWith(expect.stringMatching(/^file:\/\/\/mock\/voice-note-.+\.m4a$/));
+                expect(MockFile.mock.results[MockFile.mock.results.length - 1].value.delete).toHaveBeenCalledTimes(1);
+                expect(showSnackBar).not.toHaveBeenCalled();
+                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+            } finally {
+                disableFakeTimers();
+            }
+        });
+
         it('discards a recording shorter than a second without attaching it', async () => {
             const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
             await startRecording(getByTestId);
@@ -267,7 +298,7 @@ describe('DraftInput', () => {
             });
 
             await waitFor(() => {
-                expect(Alert.alert).toHaveBeenCalledWith('Error', 'Unable to record a voice note');
+                expect(Alert.alert).toHaveBeenCalledWith('Recording failed', 'Unable to record a voice note');
             });
             expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
             expect(getByTestId('draft_input.quick_actions')).toBeVisible();

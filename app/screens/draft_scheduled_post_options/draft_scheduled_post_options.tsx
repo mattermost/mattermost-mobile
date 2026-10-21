@@ -48,6 +48,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const TITLE_HEIGHT = 64;
 const ITEM_HEIGHT = 48;
 
+// The send handler is only used to send the draft from here, never to attach files.
+const rejectFiles = () => false;
+
 const DraftScheduledPostOptions: React.FC<Props> = ({
     draftType,
     channel,
@@ -106,7 +109,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     clearDraft={emptyFunction}
                     updateCursorPosition={emptyFunction}
                     updatePostInputTop={emptyFunction}
-                    addFiles={emptyFunction}
+                    addFiles={rejectFiles}
                     setIsFocused={emptyFunction}
                     updateValue={emptyFunction}
                 />
