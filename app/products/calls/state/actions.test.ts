@@ -88,6 +88,7 @@ import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
 jest.mock('@calls/alerts');
 jest.mock('@calls/native_call', () => ({
     endNativeCall: jest.fn(),
+    syncNativeCallId: jest.fn(),
 }));
 
 jest.mock('@constants/calls', () => {
@@ -598,6 +599,26 @@ describe('useCallsState', () => {
 
         expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-2', 'remoteEnded');
         expect(endNativeCall).not.toHaveBeenCalledWith('server1', 'channel-1', expect.anything());
+    });
+
+    it('setCalls matches ringing native calls to the calls in the server snapshot', async () => {
+        const {syncNativeCallId} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        await act(async () => setCalls('server1', 'myId', {'channel-1': call1, 'channel-2': call2}, {}));
+
+        expect(syncNativeCallId).toHaveBeenCalledTimes(2);
+        expect(syncNativeCallId).toHaveBeenCalledWith('server1', 'channel-1', call1.id);
+        expect(syncNativeCallId).toHaveBeenCalledWith('server1', 'channel-2', call2.id);
+    });
+
+    it('setCallForChannel matches a ringing native call to the fetched call', () => {
+        const {syncNativeCallId} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        act(() => setCallForChannel('server1', 'channel-1', call1));
+
+        expect(syncNativeCallId).toHaveBeenCalledWith('server1', 'channel-1', call1.id);
     });
 
     it('setCalls does not end the native overlay for calls still present', async () => {

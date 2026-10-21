@@ -17,6 +17,7 @@ const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
 const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
 const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 const PING_INTERVAL = toMilliseconds({seconds: 30});
+const VERIFY_CONNECTION_TIMEOUT = toMilliseconds({seconds: 5});
 const WAIT_FOR_CLOSE_TIMEOUT = 500;
 const DEFAULT_OPTIONS = {
     forceConnection: true,
@@ -37,6 +38,12 @@ export default class WebSocketClient {
     private pingInterval: NodeJS.Timeout | undefined;
     private waitingForPong: boolean = false;
     private pendingCloseResolver?: () => void;
+    private pendingVerification?: {
+        promise: Promise<boolean>;
+        resolve: (alive: boolean) => void;
+        seq: number;
+        timeout: NodeJS.Timeout;
+    };
 
     // The first time we connect to a server (on init or login)
     // we do the sync out of the websocket lifecycle.
@@ -182,7 +189,13 @@ export default class WebSocketClient {
             return;
         }
 
-        this.conn!.onOpen(() => {
+        const conn = this.conn;
+        conn.onOpen(() => {
+            if (this.isReplaced(conn, 'open')) {
+                conn.close();
+                return;
+            }
+
             clearTimeout(this.connectionTimeout);
             clearInterval(this.pingInterval);
 
@@ -227,10 +240,7 @@ export default class WebSocketClient {
                         return;
                     }
 
-                    // We are not calling this.close() because we need to auto-restart.
-                    this.responseSequence = 1;
-                    clearInterval(this.pingInterval);
-                    this.conn?.close();
+                    this.close(false);
                 },
                 PING_INTERVAL,
             );
@@ -238,12 +248,17 @@ export default class WebSocketClient {
             this.connectFailCount = 0;
         });
 
-        this.conn!.onClose((ev) => {
+        conn.onClose((ev) => {
+            if (this.isReplaced(conn, 'close')) {
+                return;
+            }
+
             clearTimeout(this.connectionTimeout);
             clearInterval(this.pingInterval);
 
             this.conn = undefined;
             this.responseSequence = 1;
+            this.settleVerification(false);
 
             if (this.pendingCloseResolver) {
                 this.pendingCloseResolver();
@@ -295,7 +310,11 @@ export default class WebSocketClient {
             );
         });
 
-        this.conn!.onError((evt: any) => {
+        conn.onError((evt: any) => {
+            if (this.isReplaced(conn, 'error')) {
+                return;
+            }
+
             if (evt.url === this.url) {
                 if (this.connectFailCount <= 1) {
                     logError('websocket error', 'server', this.serverUrl, 'code', evt?.code, 'reason', evt?.reason);
@@ -307,7 +326,12 @@ export default class WebSocketClient {
             }
         });
 
-        this.conn!.onMessage((evt: any) => {
+        conn.onMessage((evt: any) => {
+            if (this.isReplaced(conn, 'message')) {
+                conn.close();
+                return;
+            }
+
             const msg = evt.message;
 
             // This indicates a reply to a websocket request.
@@ -319,6 +343,9 @@ export default class WebSocketClient {
                 }
                 if (msg.data?.text === WebsocketEvents.PONG) {
                     this.waitingForPong = false;
+                    if (msg.seq_reply === this.pendingVerification?.seq) {
+                        this.settleVerification(true);
+                    }
                 }
             } else if (this.eventCallback) {
                 if (reliableWebSockets) {
@@ -366,7 +393,7 @@ export default class WebSocketClient {
             }
         });
 
-        this.conn.open();
+        conn.open();
     }
 
     public setConnectingCallback(callback: () => void) {
@@ -407,7 +434,57 @@ export default class WebSocketClient {
         this.responseSequence = 1;
         clearTimeout(this.connectionTimeout);
         clearInterval(this.pingInterval);
+        this.settleVerification(false);
         this.conn?.close();
+    }
+
+    /**
+     * Checks that an open socket still reaches the server, e.g. after the device changes networks, and
+     * closes it (auto-reconnecting) only if the ping goes unanswered. Concurrent calls share one ping.
+     */
+    public verifyConnection(): Promise<boolean> {
+        if (this.pendingVerification) {
+            return this.pendingVerification.promise;
+        }
+
+        if (!this.isConnected()) {
+            return Promise.resolve(false);
+        }
+
+        let resolve!: (alive: boolean) => void;
+        const promise = new Promise<boolean>((r) => {
+            resolve = r;
+        });
+        const timeout = setTimeout(() => {
+            logInfo('websocket did not answer a ping, reconnecting', this.url);
+            this.close(false);
+        }, VERIFY_CONNECTION_TIMEOUT);
+        this.waitingForPong = true;
+        const seq = this.ping();
+        this.pendingVerification = {promise, resolve, seq, timeout};
+
+        return promise;
+    }
+
+    // A socket this client no longer holds can still deliver events, e.g. one whose close event arrived
+    // although it stayed open. Acting on them would tear down or desync the current socket.
+    private isReplaced(conn: WebSocketClientInterface, event: string) {
+        if (conn === this.conn) {
+            return false;
+        }
+
+        logInfo('websocket ignored an event from a replaced connection', event, this.url);
+        return true;
+    }
+
+    private settleVerification(alive: boolean) {
+        if (!this.pendingVerification) {
+            return;
+        }
+
+        clearTimeout(this.pendingVerification.timeout);
+        this.pendingVerification.resolve(alive);
+        this.pendingVerification = undefined;
     }
 
     public waitForClose(): Promise<void> {
@@ -431,6 +508,7 @@ export default class WebSocketClient {
     public invalidate() {
         clearTimeout(this.connectionTimeout);
         clearInterval(this.pingInterval);
+        this.settleVerification(false);
         this.conn?.invalidate();
         this.conn = undefined;
     }
@@ -444,6 +522,8 @@ export default class WebSocketClient {
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.send(JSON.stringify(msg));
         }
+
+        return msg.seq;
     }
 
     private sendMessage(action: string, data: any) {
