@@ -7,9 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
-import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {Channel, Properties, Team, User} from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -70,25 +69,18 @@ async function openChannel(channelName: string) {
 }
 
 // FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
-// so enableChannelAttributes() can never succeed and every test here fails in beforeAll.
+// so the server baseline cannot turn it on.
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Setting values from Channel Info', () => {
     const serverOneDisplayName = 'Server 1';
-    let lockOwner = '';
-    let lockAcquired = false;
-    let canControlFlag = false;
     let testUser: any;
     let testTeam: any;
     let testChannel: any = null;
 
     beforeAll(async () => {
-        lockOwner = createClassificationLockOwner();
-        await acquireClassificationLock(siteOneUrl, lockOwner);
-        lockAcquired = true;
-
         // A prior interrupted run may have left a required field behind, which would
         // block channel creation before any of these tests got started.
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
-        canControlFlag = await disableChannelAttributes(siteOneUrl);
+        await assertServerBaseline(siteOneUrl, ['FeatureFlags.ChannelAttributes']);
 
         const {team} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'team'});
         testTeam = team;
@@ -101,40 +93,17 @@ async function openChannel(channelName: string) {
     });
 
     afterAll(async () => {
-        if (!lockAcquired) {
-            return;
-        }
-
         let cleanupError: unknown;
         try {
-            try {
-                await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
-            } catch (error) {
-                cleanupError ??= error;
-            }
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
+        } catch (error) {
+            cleanupError ??= error;
+        }
 
-            if (canControlFlag) {
-                try {
-                    const disabled = await disableChannelAttributes(siteOneUrl);
-                    if (!disabled) {
-                        cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes editing afterAll cleanup');
-                    }
-                } catch (error) {
-                    cleanupError ??= error;
-                }
-            }
-
-            try {
-                await HomeScreen.logout();
-            } catch (error) {
-                cleanupError ??= error;
-            }
-        } finally {
-            try {
-                await releaseClassificationLock(siteOneUrl, lockOwner);
-            } catch (error) {
-                cleanupError ??= error;
-            }
+        try {
+            await HomeScreen.logout();
+        } catch (error) {
+            cleanupError ??= error;
         }
 
         if (cleanupError) {
@@ -147,10 +116,6 @@ async function openChannel(channelName: string) {
     });
 
     afterEach(async () => {
-        if (!lockAcquired) {
-            return;
-        }
-
         let cleanupError: unknown;
         if (testChannel) {
             const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
@@ -164,11 +129,6 @@ async function openChannel(channelName: string) {
         } catch (error) {
             cleanupError ??= error;
         }
-
-        // The flag stays on between tests. Every write to FeatureFlags reads the whole
-        // set and writes it back, so a suite on another shard that reads while ours is
-        // briefly off writes "off" back over our next enable. Only the flag-off tests
-        // turn it off, and the next test turns it back on.
 
         if (cleanupError) {
             throw cleanupError;
@@ -195,8 +155,6 @@ async function openChannel(channelName: string) {
         // SIBLING_FIELD_NAME comment above.
         withEditableSibling?: boolean;
     } = {}) {
-        await enableChannelAttributes(siteOneUrl);
-
         // Created optional even when the test wants it required: the server enforces
         // required attributes at channel-creation time for whoever can set them, so a
         // required field created up front would block the plain apiCreateChannel call
@@ -492,8 +450,6 @@ async function openChannel(channelName: string) {
         // filters by role so an attribute the admin did not designate for the info
         // panel still has an editing affordance — hiding it would leave no way to
         // correct the value.
-        await enableChannelAttributes(siteOneUrl);
-
         const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
             fieldName: FIELD_NAME,
             options: FIELD_OPTIONS,
@@ -530,48 +486,10 @@ async function openChannel(channelName: string) {
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });
-
-    it('MM-T6324_1 - should not offer editing when the ChannelAttributes flag is off', async () => {
-        if (!canControlFlag) {
-            throw new Error('MM-T6324_1 requires a server where ChannelAttributes can be disabled');
-        }
-        if (!await disableChannelAttributes(siteOneUrl)) {
-            throw new Error('MM-T6324_1 could not disable ChannelAttributes');
-        }
-
-        const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
-            fieldName: FIELD_NAME,
-            options: FIELD_OPTIONS,
-            actions: DISPLAY_ACTIONS,
-            permissionValues: 'member',
-        });
-
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
-        if (!channel) {
-            throw new Error('MM-T6324_1 failed to create its channel');
-        }
-        testChannel = channel;
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, OPTION_IDS.medium);
-        await device.reloadReactNative();
-
-        await ChannelListScreen.toBeVisible();
-        await openChannel(channel.name);
-        await ChannelInfoScreen.open();
-
-        // * The whole section is absent, so there is nothing to edit.
-        await ChannelInfoAttributes.toNotBeVisible();
-
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-    });
 });
 
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Member view (read-only)', () => {
     const serverOneDisplayName = 'Server 1';
-    let lockOwner = '';
-    let lockAcquired = false;
-    let canControlFlag = false;
     let adminUser: any;
     let memberUser: any;
     let testTeam: any;
@@ -580,12 +498,8 @@ async function openChannel(channelName: string) {
     const MEMBER_FIELD_NAME = 'memberfield';
 
     beforeAll(async () => {
-        lockOwner = createClassificationLockOwner();
-        await acquireClassificationLock(siteOneUrl, lockOwner);
-        lockAcquired = true;
-
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
-        canControlFlag = await disableChannelAttributes(siteOneUrl);
+        await assertServerBaseline(siteOneUrl, ['FeatureFlags.ChannelAttributes']);
 
         const {team} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'mteam'});
         testTeam = team;
@@ -604,40 +518,17 @@ async function openChannel(channelName: string) {
     });
 
     afterAll(async () => {
-        if (!lockAcquired) {
-            return;
-        }
-
         let cleanupError: unknown;
         try {
-            try {
-                await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
-            } catch (error) {
-                cleanupError ??= error;
-            }
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
+        } catch (error) {
+            cleanupError ??= error;
+        }
 
-            if (canControlFlag) {
-                try {
-                    const disabled = await disableChannelAttributes(siteOneUrl);
-                    if (!disabled) {
-                        cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes member view afterAll cleanup');
-                    }
-                } catch (error) {
-                    cleanupError ??= error;
-                }
-            }
-
-            try {
-                await HomeScreen.logout();
-            } catch (error) {
-                cleanupError ??= error;
-            }
-        } finally {
-            try {
-                await releaseClassificationLock(siteOneUrl, lockOwner);
-            } catch (error) {
-                cleanupError ??= error;
-            }
+        try {
+            await HomeScreen.logout();
+        } catch (error) {
+            cleanupError ??= error;
         }
 
         if (cleanupError) {
@@ -650,10 +541,6 @@ async function openChannel(channelName: string) {
     });
 
     afterEach(async () => {
-        if (!lockAcquired) {
-            return;
-        }
-
         let cleanupError: unknown;
         if (testChannel) {
             const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
@@ -668,19 +555,12 @@ async function openChannel(channelName: string) {
             cleanupError ??= error;
         }
 
-        // The flag stays on between tests. Every write to FeatureFlags reads the whole
-        // set and writes it back, so a suite on another shard that reads while ours is
-        // briefly off writes "off" back over our next enable. Only the flag-off tests
-        // turn it off, and the next test turns it back on.
-
         if (cleanupError) {
             throw cleanupError;
         }
     });
 
     it('MM-T6326_1 - should show a valued attribute to a regular member but without an edit affordance', async () => {
-        await enableChannelAttributes(siteOneUrl);
-
         const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
             fieldName: MEMBER_FIELD_NAME,
             options: FIELD_OPTIONS,
@@ -723,8 +603,6 @@ async function openChannel(channelName: string) {
     // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
     // server-wide, so on the shared site it fails every other shard's POST /channels.
     it.skip('MM-T6326_2 - should hide an admin-tier required-unset attribute from a regular member', async () => {
-        await enableChannelAttributes(siteOneUrl);
-
         const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
             fieldName: MEMBER_FIELD_NAME,
             options: FIELD_OPTIONS,

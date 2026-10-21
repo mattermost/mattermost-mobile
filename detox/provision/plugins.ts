@@ -7,6 +7,7 @@ import https from 'node:https';
 import path from 'node:path';
 
 import {DEMO_PLUGIN_VERSION, ensureDemoPluginFixture} from '../shared/demo-plugin-fixture';
+import PREPACKAGED_PLUGINS from '../shared/prepackaged-plugins.json';
 
 import {
     AGENTS_PLUGIN_ID,
@@ -209,6 +210,26 @@ async function waitForDialogCommand(client: MattermostClient, token: string, tea
     /* eslint-enable no-await-in-loop */
 
     logInfo('/dialog command is registered.');
+}
+
+/**
+ * The demo plugin (v0.12.1) hands every config save back to the server when it has no settings entry,
+ * and that round trip resets settings it does not know, or that are false, to their defaults. Any entry,
+ * even an empty one, makes it leave the save alone.
+ */
+export async function ensureDemoPluginSettingsEntry(client: MattermostClient, token: string): Promise<void> {
+    const res = await client.request<{PluginSettings?: {Plugins?: Record<string, unknown>}}>('GET', '/api/v4/config', undefined, token);
+    if (res.status !== 200) {
+        throw new Error(`Could not read config to check the ${DEMO_PLUGIN_ID} settings entry (HTTP ${res.status})`);
+    }
+    if (res.data?.PluginSettings?.Plugins?.[DEMO_PLUGIN_ID]) {
+        return;
+    }
+    const patchRes = await client.request<ApiErrorBody>('PUT', '/api/v4/config/patch', {PluginSettings: {Plugins: {[DEMO_PLUGIN_ID]: {}}}}, token);
+    if (patchRes.status !== 200) {
+        throw new Error(`Could not add the ${DEMO_PLUGIN_ID} settings entry (HTTP ${patchRes.status})`);
+    }
+    logInfo(`Added an empty ${DEMO_PLUGIN_ID} settings entry so its config hook keeps other settings intact.`);
 }
 
 export async function ensureDemoPluginReady(client: MattermostClient, token: string): Promise<void> {
@@ -481,5 +502,53 @@ export async function installRequiredPlugin(
         logWarn(`Failed to enable ${pluginId} after install (HTTP ${postInstallEnableRes.status}): ${postInstallEnableRes.data.message || JSON.stringify(postInstallEnableRes.data)}`);
     } else {
         logInfo(`Plugin ${pluginId} installed and enabled from Marketplace.`);
+    }
+}
+
+/** Active plugins that are neither prepackaged nor provisioned for this server. */
+export function strayPluginIds(active: PluginListEntry[] | undefined, provisioned: readonly RequiredPlugin[]): string[] {
+    const keep = new Set<string>([...PREPACKAGED_PLUGINS, ...provisioned.map((plugin) => plugin.id)]);
+    return (active ?? []).map((plugin) => plugin.id).filter((id) => !keep.has(id));
+}
+
+/** Disables stray plugins once per run, so shards on read-only pool servers never have to. */
+export async function disableStrayPlugins(client: MattermostClient, token: string, provisioned: readonly RequiredPlugin[]): Promise<void> {
+    const res = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
+    if (res.status !== 200) {
+        logWarn(`Could not list plugins to disable stray ones (HTTP ${res.status})`);
+        return;
+    }
+    /* eslint-disable no-await-in-loop -- one plugin at a time for clear provisioning logs */
+    for (const id of strayPluginIds(res.data?.active, provisioned)) {
+        const disableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(id)}/disable`, {}, token);
+        if (disableRes.status === 200) {
+            logInfo(`Disabled stray plugin ${id}`);
+        } else {
+            logWarn(`Failed to disable stray plugin ${id} (HTTP ${disableRes.status}): ${disableRes.data?.message || ''}`);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+}
+
+/** A violation message when the demo plugin is active on a server that was not provisioned with it. */
+export function demoPluginViolation(active: PluginListEntry[] | undefined, demoPlugin: boolean): string | undefined {
+    if (demoPlugin || !active?.some((plugin) => plugin.id === DEMO_PLUGIN_ID)) {
+        return undefined;
+    }
+    return `${DEMO_PLUGIN_ID} is active on a server provisioned without it; provisioning cannot finish`;
+}
+
+/** Fails provisioning when a server without the demo plugin still runs it, since the baseline no longer covers it. */
+export async function assertDemoPluginAbsent(client: MattermostClient, token: string, demoPlugin: boolean): Promise<void> {
+    if (demoPlugin) {
+        return;
+    }
+    const res = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
+    if (res.status !== 200) {
+        throw new Error(`Could not list plugins to verify ${DEMO_PLUGIN_ID} is absent (HTTP ${res.status})`);
+    }
+    const violation = demoPluginViolation(res.data?.active, demoPlugin);
+    if (violation) {
+        throw new Error(violation);
     }
 }

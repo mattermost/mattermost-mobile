@@ -7,6 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -15,6 +16,7 @@ import {
     Team,
     User,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     serverSupportsPolicyAction,
@@ -27,15 +29,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
-
-const setDepartment = async (userId: string, fieldId: string, department: string) => {
-    const {error} = await AccessControl.apiSetUserPropertyValues(siteOneUrl, userId, {[fieldId]: department});
-    if (error) {
-        throw new Error(`Failed to set the Department attribute: ${JSON.stringify(error)}`);
-    }
-};
 
 // Skipped on servers without burn-on-read permission policies.
 const describeOrSkip = serverSupportsPolicyAction('create_burn_on_read_post') ? describe : describe.skip;
@@ -49,13 +44,7 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
     let deniedUser: any;
     let allowedUser: any;
     let permissionPolicyId: string | null = null;
-    let attributeFieldId: string | null = null; // field UUID — used as the property values key
-    let attributeFieldName: string | null = null; // field name  — used in CEL expressions
-    let attributeFieldCreated = false; // true if this run created the field (must clean up)
-
-    // Server settings this suite changes, restored as they were rather than to assumed defaults.
-    let originalSettings: Record<string, any> = {};
-    let originalFlags: Record<string, boolean> = {};
+    let departmentFieldId = '';
 
     beforeAll(async () => {
         await User.apiAdminLogin(siteOneUrl);
@@ -67,57 +56,11 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             throw new Error(`Burn-on-read permission tests need an Enterprise Advanced license, got ${license?.SkuShortName}`);
         }
 
-        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        originalFlags = {
-            AttributeBasedAccessControl: originalConfig?.FeatureFlags?.AttributeBasedAccessControl,
-            PermissionPolicies: originalConfig?.FeatureFlags?.PermissionPolicies,
-            BurnOnRead: originalConfig?.FeatureFlags?.BurnOnRead,
-        };
-        originalSettings = {
-            AccessControlSettings: {
-                EnableAttributeBasedAccessControl: originalConfig?.AccessControlSettings?.EnableAttributeBasedAccessControl,
-                EnableUserManagedAttributes: originalConfig?.AccessControlSettings?.EnableUserManagedAttributes,
-            },
-            ServiceSettings: {
-                EnableBurnOnRead: originalConfig?.ServiceSettings?.EnableBurnOnRead,
-                AllowCorsFrom: originalConfig?.ServiceSettings?.AllowCorsFrom,
-            },
-            PasswordSettings: {MinimumLength: originalConfig?.PasswordSettings?.MinimumLength},
-        };
-
-        // # Relax password policy for test users
-        await System.apiPatchConfig(siteOneUrl, {
-            PasswordSettings: {MinimumLength: 8},
-        });
-
-        // # Enable ABAC, PermissionPolicies and burn-on-read
-        // Through apiPatchFeatureFlags: a patch naming only some FeatureFlags sets every
-        // other flag to false, which turns off flags other shards' suites depend on.
-        await System.apiPatchFeatureFlags(siteOneUrl, {AttributeBasedAccessControl: true, PermissionPolicies: true, BurnOnRead: true});
-        const {error: abacError} = await AccessControl.apiEnableABAC(siteOneUrl);
-        if (abacError) {
-            throw new Error(`Failed to enable ABAC: ${JSON.stringify(abacError)}`);
-        }
-        await System.apiPatchConfig(siteOneUrl, {
-            ServiceSettings: {EnableBurnOnRead: true},
-        });
-
-        // # Enable user-managed attributes so CEL expressions can reference user.attributes.*
-        await System.apiPatchConfig(siteOneUrl, {
-            AccessControlSettings: {EnableUserManagedAttributes: true},
-        });
-
-        // # Reuse existing "Department" attribute field or create it if absent
-        const {field, created, error: fieldError} = await AccessControl.apiGetOrCreateCustomProfileAttributeField(
-            siteOneUrl,
-            'Department',
-        );
-        if (fieldError) {
-            throw new Error(`Failed to get/create attribute field: ${JSON.stringify(fieldError)}`);
-        }
-        attributeFieldId = field.id;
-        attributeFieldName = field.name;
-        attributeFieldCreated = created;
+        // # ABAC, burn-on-read and the Department attribute come from provisioning
+        await assertAbacBaseline(siteOneUrl);
+        await assertServerBaseline(siteOneUrl, ['FeatureFlags.BurnOnRead', 'ServiceSettings.EnableBurnOnRead']);
+        const department = await getProvisionedDepartmentField(siteOneUrl);
+        departmentFieldId = department.id;
 
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
@@ -133,26 +76,26 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         ({user: deniedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'denied'}));
         await Team.apiAddUserToTeam(siteOneUrl, deniedUser.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, testChannel.id);
-        await setDepartment(deniedUser.id, attributeFieldId as string, 'Sales');
+        await setDepartment(siteOneUrl, deniedUser.id, department.id, 'Sales');
 
         // # Create allowed user (Department: "Engineering") and add to team + channel
         ({user: allowedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'allowed'}));
         await Team.apiAddUserToTeam(siteOneUrl, allowedUser.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, testChannel.id);
-        await setDepartment(allowedUser.id, attributeFieldId as string, 'Engineering');
+        await setDepartment(siteOneUrl, allowedUser.id, department.id, 'Engineering');
 
         // # Wait for the server-side attribute view to pick up the values (30s refresh gate)
         await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
 
-        // # Create a permission policy: Engineering may compose burn-on-read posts, Sales may not.
-        // System permission policies are server-wide, so burn-on-read is restricted for users outside
-        // Engineering while this suite runs; afterAll deletes the policy first.
-        const {policy, error: policyError} = await AccessControl.apiCreatePermissionPolicy(
+        // # In this channel only, Engineering may compose burn-on-read posts and Sales may not
+        const {policy, error: policyError} = await AccessControl.apiCreateChannelPermissionPolicy(
             siteOneUrl,
-            `abac-bor-policy-${getRandomId()}`,
+            testChannel.id,
             [{
+                name: 'abac-bor',
+                role: 'channel_user',
                 actions: ['create_burn_on_read_post'],
-                expression: `user.attributes.${attributeFieldName} == "Engineering"`,
+                expression: `user.attributes.${department.name} == "Engineering"`,
             }],
         );
         if (policyError) {
@@ -165,22 +108,13 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             throw new Error(`Failed to activate permission policy: ${JSON.stringify(activateError)}`);
         }
 
-        // # Allow cross-origin WebSocket connections for the Android emulator
-        await System.apiPatchConfig(siteOneUrl, {
-            ServiceSettings: {AllowCorsFrom: '*'},
-        });
-
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
     });
 
     afterAll(async () => {
-        // # Clean up the server first: a failing UI step must not leave the deny policy active on a
-        // shared server. Then policy, attribute field (if created), team, users, and config.
+        // # Delete the policy first so a failing UI step cannot leave it active
         if (permissionPolicyId) {
             await AccessControl.apiDeletePermissionPolicy(siteOneUrl, permissionPolicyId);
-        }
-        if (attributeFieldCreated && attributeFieldId) {
-            await AccessControl.apiDeleteCustomProfileAttributeField(siteOneUrl, attributeFieldId);
         }
         if (testTeam?.id) {
             await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
@@ -191,8 +125,6 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         if (allowedUser?.id) {
             await User.apiDeactivateUser(siteOneUrl, allowedUser.id);
         }
-        await System.apiPatchConfig(siteOneUrl, originalSettings);
-        await System.apiPatchFeatureFlags(siteOneUrl, originalFlags);
     });
 
     afterEach(async () => {
@@ -233,7 +165,7 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await expect(ChannelScreen.borAction).not.toExist();
 
         // # Change the user's attribute so the policy now grants burn-on-read
-        await setDepartment(deniedUser.id, attributeFieldId as string, 'Engineering');
+        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
 
         // * The control appears on its own. The server's attribute view refreshes on a 30s gate,
         // which the app's delayed re-check is built to outlast.
@@ -242,6 +174,6 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             withTimeout(timeouts.ONE_MIN);
 
         // # Restore the attribute so the suite leaves the user as it found it
-        await setDepartment(deniedUser.id, attributeFieldId as string, 'Sales');
+        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
     });
 });
