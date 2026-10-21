@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {Alert, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {useAnimatedReaction} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN} from 'react-native-worklets';
 
 import RewritingIndicator from '@agents/components/rewriting_indicator';
 import {Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -18,7 +19,9 @@ import {usePersistentNotificationProps} from '@hooks/persistent_notification_pro
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {useCurrentScreen} from '@store/navigation_store';
+import {VOICE_NOTE_MAX_DURATION_MS} from '@utils/file/voice_note';
 import {persistentNotificationsConfirmation} from '@utils/post';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
@@ -26,6 +29,7 @@ import QuickActions from '../quick_actions';
 import SendAction from '../send_button';
 import Typing from '../typing';
 import Uploads from '../uploads';
+import VoiceRecorder from '../voice_recorder';
 
 import Header from './header';
 
@@ -151,6 +155,7 @@ function DraftInput({
     const isTablet = useIsTablet();
     const currentScreen = useCurrentScreen();
     const [layoutHeight, setLayoutHeight] = React.useState(0);
+    const [isRecordingVoiceNote, setIsRecordingVoiceNote] = useState(false);
     const {bottom} = useSafeAreaInsets();
     const {inputRef, stateContext, blurAndDismissKeyboard} = useKeyboardState();
 
@@ -181,6 +186,7 @@ function DraftInput({
     // Render
     const postInputTestID = `${testID}.post.input`;
     const quickActionsTestID = `${testID}.quick_actions`;
+    const voiceRecorderTestID = `${testID}.voice_recorder`;
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
@@ -210,6 +216,33 @@ function DraftInput({
         CallbackStore.setCallback<((schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>)>(handleSendMessage);
         navigateToScreen(Screens.SCHEDULED_POST_OPTIONS);
     }, [blurAndDismissKeyboard, handleSendMessage, scheduledPostsEnabled]);
+
+    const handleStartVoiceRecording = useCallback(() => {
+        setIsRecordingVoiceNote(true);
+    }, []);
+
+    const handleVoiceNoteCancel = useCallback(() => {
+        setIsRecordingVoiceNote(false);
+    }, []);
+
+    const handleVoiceNoteFinish = useCallback((file: ExtractedFileInfo, maxDurationReached: boolean) => {
+        setIsRecordingVoiceNote(false);
+        addFiles([file as FileInfo]);
+        if (maxDurationReached) {
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.VOICE_NOTE_MAX_DURATION,
+                messageValues: {minutes: VOICE_NOTE_MAX_DURATION_MS / 60000},
+            });
+        }
+    }, [addFiles]);
+
+    const handleVoiceNoteError = useCallback(() => {
+        setIsRecordingVoiceNote(false);
+        Alert.alert(
+            intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
+            intl.formatMessage({id: 'mobile.voice_note.record_failed', defaultMessage: 'Unable to record a voice note'}),
+        );
+    }, [intl]);
 
     const sendActionDisabled = !canSend || noMentionsError;
     useAnimatedReaction(
@@ -272,28 +305,40 @@ function DraftInput({
                         rootId={rootId}
                     />
                     <View style={style.actionsContainer}>
-                        <QuickActions
-                            testID={quickActionsTestID}
-                            channelId={channelId}
-                            fileCount={files.length}
-                            addFiles={addFiles}
-                            updateValue={updateValue}
-                            value={value}
-                            postPriority={postPriority}
-                            updatePostPriority={updatePostPriority}
-                            canShowPostPriority={canShowPostPriority}
-                            postBoRConfig={postBoRConfig}
-                            updatePostBoRStatus={updatePostBoRStatus}
-                            focus={focus}
-                            location={location}
-                        />
-                        <SendAction
-                            testID={sendActionTestID}
-                            disabled={sendActionDisabled}
-                            sendMessage={handleSendMessage}
-                            showScheduledPostOptions={handleShowScheduledPostOptions}
-                            scheduledPostEnabled={scheduledPostsEnabled}
-                        />
+                        {isRecordingVoiceNote ? (
+                            <VoiceRecorder
+                                testID={voiceRecorderTestID}
+                                onFinish={handleVoiceNoteFinish}
+                                onCancel={handleVoiceNoteCancel}
+                                onError={handleVoiceNoteError}
+                            />
+                        ) : (
+                            <>
+                                <QuickActions
+                                    testID={quickActionsTestID}
+                                    channelId={channelId}
+                                    fileCount={files.length}
+                                    addFiles={addFiles}
+                                    onStartVoiceRecording={handleStartVoiceRecording}
+                                    updateValue={updateValue}
+                                    value={value}
+                                    postPriority={postPriority}
+                                    updatePostPriority={updatePostPriority}
+                                    canShowPostPriority={canShowPostPriority}
+                                    postBoRConfig={postBoRConfig}
+                                    updatePostBoRStatus={updatePostBoRStatus}
+                                    focus={focus}
+                                    location={location}
+                                />
+                                <SendAction
+                                    testID={sendActionTestID}
+                                    disabled={sendActionDisabled}
+                                    sendMessage={handleSendMessage}
+                                    showScheduledPostOptions={handleShowScheduledPostOptions}
+                                    scheduledPostEnabled={scheduledPostsEnabled}
+                                />
+                            </>
+                        )}
                     </View>
                 </ScrollView>
             </SafeAreaView>

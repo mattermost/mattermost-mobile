@@ -20,6 +20,7 @@ describe('Quick Actions', () => {
         canUploadFiles: true,
         fileCount: 0,
         isAgentsEnabled: true,
+        isCallActive: false,
         isPostPriorityEnabled: true,
         canShowPostPriority: true,
         canShowSlashCommands: true,
@@ -27,6 +28,7 @@ describe('Quick Actions', () => {
         value: '',
         updateValue: jest.fn(),
         addFiles: jest.fn(),
+        onStartVoiceRecording: jest.fn(),
         postPriority: {
             priority: PostPriorityType.STANDARD,
         },
@@ -178,6 +180,42 @@ describe('Quick Actions', () => {
             const attachmentAction = getByTestId('test-quick-actions.attachment_action');
             expect(attachmentAction).not.toBeDisabled();
         });
+    });
+
+    describe('voice action', () => {
+        it('should enable the voice action when files can be uploaded and no call is active', () => {
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...baseProps}/>);
+            expect(getByTestId('test-quick-actions.voice_action')).not.toBeDisabled();
+        });
+
+        it('should disable the voice action when canUploadFiles is false', () => {
+            const props = {
+                ...baseProps,
+                canUploadFiles: false,
+            };
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(getByTestId('test-quick-actions.voice_action.disabled')).toBeDisabled();
+        });
+
+        it('should disable the voice action when the max file count is reached', () => {
+            const props = {
+                ...baseProps,
+                fileCount: 10,
+                maxFileCount: 10,
+            };
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(getByTestId('test-quick-actions.voice_action.disabled')).toBeDisabled();
+        });
+
+        it('should disable the voice action while a call is active', () => {
+            const props = {
+                ...baseProps,
+                isCallActive: true,
+            };
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(getByTestId('test-quick-actions.voice_action.disabled')).toBeDisabled();
+        });
+
     });
 
     describe('BoR quick action', () => {

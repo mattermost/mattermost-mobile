@@ -10,3 +10,9 @@ export interface QuickActionAttachmentProps {
     showAttachLogs?: boolean;
     testID?: string;
 }
+
+export interface QuickActionVoiceProps {
+    disabled: boolean;
+    onStartRecording: () => void;
+    testID?: string;
+}
