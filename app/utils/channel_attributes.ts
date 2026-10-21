@@ -114,7 +114,7 @@ export function isPropertyValueSet(raw: unknown): boolean {
  * so {value: null} reaches the server as an item with no value and is rejected.
  * The server reads "" and [] as unset just as it does null.
  */
-export function getEmptyPropertyValue(fieldType: PropertyFieldType): string | string[] {
+export function getEmptyPropertyValue(fieldType: string): string | string[] {
     return fieldType === 'multiselect' || fieldType === 'multiuser' ? [] : '';
 }
 
