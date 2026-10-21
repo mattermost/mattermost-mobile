@@ -4,7 +4,7 @@
 import {act, renderHook} from '@testing-library/react-native';
 import {AudioModule, setAudioModeAsync, setIsAudioActiveAsync, type RecordingStatus} from 'expo-audio';
 import {File} from 'expo-file-system';
-import {AppState, type AppStateStatus} from 'react-native';
+import {AppState, Platform, type AppStateStatus} from 'react-native';
 
 import {setCurrentCall} from '@calls/state';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
@@ -43,6 +43,23 @@ describe('useVoiceRecorder', () => {
         return files[files.length - 1].value;
     };
 
+    // The next recorder behaves like the central expo-audio mock except for the given methods.
+    const mockNextRecorder = (overrides: Partial<MockRecorder>) => {
+        const createDefault = MockAudioRecorder.getMockImplementation() as () => MockRecorder;
+        MockAudioRecorder.mockImplementationOnce(() => Object.assign(createDefault(), overrides));
+    };
+
+    // Holds prepareToRecordAsync until the returned resolver is called.
+    const mockPendingPrepare = () => {
+        let resolvePrepare: () => void = () => undefined;
+        mockNextRecorder({
+            prepareToRecordAsync: jest.fn(() => new Promise<void>((resolve) => {
+                resolvePrepare = resolve;
+            })),
+        });
+        return () => resolvePrepare();
+    };
+
     const renderRecorder = (maxDurationMs?: number) => {
         return renderHook(() => useVoiceRecorder({maxDurationMs, onFinish, onDiscard, onError}));
     };
@@ -73,7 +90,7 @@ describe('useVoiceRecorder', () => {
         disableFakeTimers();
     });
 
-    it('should start recording with the platform recording options and report the recorded time', async () => {
+    it('should start recording with the iOS recording options and report the recorded time', async () => {
         const {result} = renderRecorder();
 
         expect(result.current.isRecording).toBe(false);
@@ -102,6 +119,20 @@ describe('useVoiceRecorder', () => {
         expect(result.current.elapsedMs).toBe(3000);
     });
 
+    it('should record with the Android recording options on Android', async () => {
+        const select = jest.spyOn(Platform, 'select').mockImplementation(((spec: Record<string, unknown>) => spec.android ?? spec.default) as typeof Platform.select);
+
+        try {
+            await startRecording();
+        } finally {
+            select.mockRestore();
+        }
+
+        const {android, ios, web, ...common} = VOICE_NOTE_RECORDING_OPTIONS;
+        expect(MockAudioRecorder).toHaveBeenCalledTimes(1);
+        expect(MockAudioRecorder).toHaveBeenCalledWith({...common, ...android});
+    });
+
     it('should ignore a second start while already recording', async () => {
         const {result} = renderRecorder();
 
@@ -119,16 +150,8 @@ describe('useVoiceRecorder', () => {
 
         // The size reported for the attachment is the size of the recorded file on disk.
         const MockFile = jest.mocked(File);
-        MockFile.mockImplementationOnce((uri) => {
-            const recording = {
-                uri: String(uri),
-                size: 252000,
-                rename: jest.fn((newName: string) => {
-                    recording.uri = recording.uri.replace(/[^/]+$/, newName);
-                }),
-            };
-            return recording as unknown as File;
-        });
+        const createDefaultFile = MockFile.getMockImplementation() as (uri: string) => File;
+        MockFile.mockImplementationOnce((uri) => Object.assign(createDefaultFile(String(uri)), {size: 252000}));
 
         await act(async () => {
             await advanceTimers(42000);
@@ -346,18 +369,7 @@ describe('useVoiceRecorder', () => {
     });
 
     it('should clean up without recording when cancelled while start is pending', async () => {
-        let resolvePrepare: () => void = () => undefined;
-        MockAudioRecorder.mockImplementationOnce(() => ({
-            uri: 'file:///mock/recording.m4a',
-            prepareToRecordAsync: jest.fn(() => new Promise<void>((resolve) => {
-                resolvePrepare = resolve;
-            })),
-            record: jest.fn(),
-            stop: jest.fn(() => Promise.resolve()),
-            release: jest.fn(),
-            getStatus: jest.fn(),
-            addListener: jest.fn(),
-        }));
+        const resolvePrepare = mockPendingPrepare();
         const {result} = renderRecorder();
 
         let starting: Promise<void> = Promise.resolve();
@@ -387,18 +399,7 @@ describe('useVoiceRecorder', () => {
     });
 
     it('should clean up without recording when unmounted while start is pending', async () => {
-        let resolvePrepare: () => void = () => undefined;
-        MockAudioRecorder.mockImplementationOnce(() => ({
-            uri: 'file:///mock/recording.m4a',
-            prepareToRecordAsync: jest.fn(() => new Promise<void>((resolve) => {
-                resolvePrepare = resolve;
-            })),
-            record: jest.fn(),
-            stop: jest.fn(() => Promise.resolve()),
-            release: jest.fn(),
-            getStatus: jest.fn(),
-            addListener: jest.fn(),
-        }));
+        const resolvePrepare = mockPendingPrepare();
         const {result, unmount} = renderRecorder();
 
         let starting: Promise<void> = Promise.resolve();
@@ -440,13 +441,10 @@ describe('useVoiceRecorder', () => {
     });
 
     it('should report an error and release the recorder when recording fails to start', async () => {
-        MockAudioRecorder.mockImplementationOnce(() => ({
+        mockNextRecorder({
             uri: null,
             prepareToRecordAsync: jest.fn(() => Promise.reject(new Error('mic busy'))),
-            record: jest.fn(),
-            stop: jest.fn(() => Promise.resolve()),
-            release: jest.fn(),
-        }));
+        });
         const {result} = await startRecording();
 
         expect(onError).toHaveBeenCalledTimes(1);
