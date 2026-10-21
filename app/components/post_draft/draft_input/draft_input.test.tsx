@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import {AudioModule} from 'expo-audio';
 import {File} from 'expo-file-system';
@@ -39,6 +40,16 @@ jest.mock('@context/server', () => ({
 }));
 
 jest.mock('@screens/navigation');
+
+jest.mock('@mattermost/hardware-keyboard', () => ({
+    useHardwareKeyboardEvents: jest.fn(),
+}));
+
+// The hardware keyboard only sends from the composer of the screen being shown.
+jest.mock('@store/navigation_store', () => ({
+    ...jest.requireActual('@store/navigation_store'),
+    useCurrentScreen: jest.fn(() => 'channel'),
+}));
 
 jest.mock('@utils/post', () => ({
     persistentNotificationsConfirmation: jest.fn(),
@@ -268,6 +279,26 @@ describe('DraftInput', () => {
             expect(showSnackBar).toHaveBeenCalledTimes(1);
             expect(showSnackBar).toHaveBeenCalledWith(expect.objectContaining({barType: SNACK_BAR_TYPE.VOICE_NOTE_MAX_DURATION}));
             expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+        });
+
+        it('should not send the message from a hardware keyboard while recording', async () => {
+            const pressHardwareEnter = () => jest.mocked(useHardwareKeyboardEvents).mock.lastCall?.[0].onEnterPressed?.();
+            const {getByTestId} = render(
+                <DraftInput
+                    {...baseProps}
+                    value='message'
+                />,
+                {database},
+            );
+
+            pressHardwareEnter();
+            expect(baseProps.sendMessage).toHaveBeenCalledTimes(1);
+
+            await startRecording(getByTestId);
+            pressHardwareEnter();
+
+            expect(baseProps.sendMessage).toHaveBeenCalledTimes(1);
+            expect(getByTestId('draft_input.voice_recorder')).toBeVisible();
         });
 
         it('should alert and restore the quick actions when the recording fails', async () => {
