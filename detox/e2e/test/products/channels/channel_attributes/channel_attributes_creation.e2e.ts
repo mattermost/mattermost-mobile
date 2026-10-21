@@ -207,7 +207,10 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         return channel;
     }
 
-    it('MM-T6330_1 - should list a required, creator-settable attribute above Purpose and gate Create on it', async () => {
+    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
+    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
+    // server-wide, so on the shared site it fails every other shard's POST /channels.
+    it.skip('MM-T6330_1 - should list a required, creator-settable attribute above Purpose and gate Create on it', async () => {
         await enableChannelAttributes(siteOneUrl);
         const {channelFieldId} = await setupChannelAttributeField({
             fieldName: REQUIRED_FIELD_NAME,
@@ -311,7 +314,10 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         await CreateOrEditChannelScreen.close();
     });
 
-    it('MM-T6330_3 - should drop a required attribute the creator cannot set, and still allow creation', async () => {
+    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
+    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
+    // server-wide, so on the shared site it fails every other shard's POST /channels.
+    it.skip('MM-T6330_3 - should drop a required attribute the creator cannot set, and still allow creation', async () => {
         await enableChannelAttributes(siteOneUrl);
         const {channelFieldId} = await setupChannelAttributeField({
             fieldName: SYSADMIN_FIELD_NAME,
