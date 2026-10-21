@@ -70,6 +70,25 @@ describe('components/post_draft/draft_handler/DraftHandler', () => {
         expect(DraftEditPostUploadManager.prepareUpload).not.toHaveBeenCalled();
     });
 
+    it('should tell the composer whether the files were accepted, so a rejected recording can be deleted', () => {
+        renderWithIntl(<DraftHandler {...baseProps}/>);
+
+        let accepted: boolean | undefined;
+        act(() => {
+            accepted = getSendHandlerProps().addFiles([{clientId: 'client-id', name: 'file.png', size: 10} as FileInfo]);
+        });
+        expect(accepted).toBe(true);
+        expect(addFilesToDraft).toHaveBeenCalledTimes(1);
+
+        let rejected: boolean | undefined;
+        act(() => {
+            rejected = getSendHandlerProps().addFiles([{clientId: 'large-client-id', name: 'large.png', size: 2000} as FileInfo]);
+        });
+        expect(rejected).toBe(false);
+        expect(getSendHandlerProps().uploadFileError).toBe('Files must be less than 1000 B');
+        expect(addFilesToDraft).toHaveBeenCalledTimes(1);
+    });
+
     describe('voice notes', () => {
         const serverUrl = 'https://voice-notes.test.com';
         let database: Database;
