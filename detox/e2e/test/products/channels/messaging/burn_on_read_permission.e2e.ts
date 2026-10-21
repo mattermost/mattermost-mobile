@@ -55,6 +55,7 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
 
     // Server settings this suite changes, restored as they were rather than to assumed defaults.
     let originalSettings: Record<string, any> = {};
+    let originalFlags: Record<string, boolean> = {};
 
     beforeAll(async () => {
         await User.apiAdminLogin(siteOneUrl);
@@ -67,12 +68,12 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         }
 
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
+        originalFlags = {
+            AttributeBasedAccessControl: originalConfig?.FeatureFlags?.AttributeBasedAccessControl,
+            PermissionPolicies: originalConfig?.FeatureFlags?.PermissionPolicies,
+            BurnOnRead: originalConfig?.FeatureFlags?.BurnOnRead,
+        };
         originalSettings = {
-            FeatureFlags: {
-                AttributeBasedAccessControl: originalConfig?.FeatureFlags?.AttributeBasedAccessControl,
-                PermissionPolicies: originalConfig?.FeatureFlags?.PermissionPolicies,
-                BurnOnRead: originalConfig?.FeatureFlags?.BurnOnRead,
-            },
             AccessControlSettings: {
                 EnableAttributeBasedAccessControl: originalConfig?.AccessControlSettings?.EnableAttributeBasedAccessControl,
                 EnableUserManagedAttributes: originalConfig?.AccessControlSettings?.EnableUserManagedAttributes,
@@ -90,9 +91,9 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         });
 
         // # Enable ABAC, PermissionPolicies and burn-on-read
-        await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {AttributeBasedAccessControl: true, PermissionPolicies: true, BurnOnRead: true},
-        });
+        // Through apiPatchFeatureFlags: a patch naming only some FeatureFlags sets every
+        // other flag to false, which turns off flags other shards' suites depend on.
+        await System.apiPatchFeatureFlags(siteOneUrl, {AttributeBasedAccessControl: true, PermissionPolicies: true, BurnOnRead: true});
         const {error: abacError} = await AccessControl.apiEnableABAC(siteOneUrl);
         if (abacError) {
             throw new Error(`Failed to enable ABAC: ${JSON.stringify(abacError)}`);
@@ -191,6 +192,7 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             await User.apiDeactivateUser(siteOneUrl, allowedUser.id);
         }
         await System.apiPatchConfig(siteOneUrl, originalSettings);
+        await System.apiPatchFeatureFlags(siteOneUrl, originalFlags);
     });
 
     afterEach(async () => {

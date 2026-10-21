@@ -164,16 +164,11 @@ async function openChannel(channelName: string) {
         } catch (error) {
             cleanupError ??= error;
         }
-        if (canControlFlag) {
-            try {
-                const disabled = await disableChannelAttributes(siteOneUrl);
-                if (!disabled) {
-                    cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes editing cleanup');
-                }
-            } catch (error) {
-                cleanupError ??= error;
-            }
-        }
+
+        // The flag stays on between tests. Every write to FeatureFlags reads the whole
+        // set and writes it back, so a suite on another shard that reads while ours is
+        // briefly off writes "off" back over our next enable. Only the flag-off tests
+        // turn it off, and the next test turns it back on.
 
         if (cleanupError) {
             throw cleanupError;
@@ -443,7 +438,10 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    it('MM-T6322_1 - should not offer editing for a field whose permission tier the user cannot satisfy', async () => {
+    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
+    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
+    // server-wide, so on the shared site it fails every other shard's POST /channels.
+    it.skip('MM-T6322_1 - should not offer editing for a field whose permission tier the user cannot satisfy', async () => {
         await setupChannelWithAttribute({permissionValues: 'sysadmin', value: OPTION_IDS.medium, withEditableSibling: true});
 
         // * The value is shown, the row is not editable, and the reason is visible —
@@ -536,6 +534,9 @@ async function openChannel(channelName: string) {
     it('MM-T6324_1 - should not offer editing when the ChannelAttributes flag is off', async () => {
         if (!canControlFlag) {
             throw new Error('MM-T6324_1 requires a server where ChannelAttributes can be disabled');
+        }
+        if (!await disableChannelAttributes(siteOneUrl)) {
+            throw new Error('MM-T6324_1 could not disable ChannelAttributes');
         }
 
         const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
@@ -666,16 +667,11 @@ async function openChannel(channelName: string) {
         } catch (error) {
             cleanupError ??= error;
         }
-        if (canControlFlag) {
-            try {
-                const disabled = await disableChannelAttributes(siteOneUrl);
-                if (!disabled) {
-                    cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes member view cleanup');
-                }
-            } catch (error) {
-                cleanupError ??= error;
-            }
-        }
+
+        // The flag stays on between tests. Every write to FeatureFlags reads the whole
+        // set and writes it back, so a suite on another shard that reads while ours is
+        // briefly off writes "off" back over our next enable. Only the flag-off tests
+        // turn it off, and the next test turns it back on.
 
         if (cleanupError) {
             throw cleanupError;

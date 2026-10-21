@@ -98,30 +98,28 @@ describe('setChannelAttributeValue', () => {
         );
     });
 
-    it('should send an empty string, an empty list and null all as a clear', async () => {
-        mockClient.patchPropertyValues.mockResolvedValue([value({value: null})]);
+    it('should send a clear as the empty value it is given rather than null', async () => {
+        mockClient.patchPropertyValues.mockResolvedValue([value({value: ''})]);
 
-        await Promise.all([
-            setChannelAttributeValue(serverUrl, channelId, 'field-id-1', ''),
-            setChannelAttributeValue(serverUrl, channelId, 'field-id-1', []),
-            setChannelAttributeValue(serverUrl, channelId, 'field-id-1', null),
-        ]);
+        await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', '');
+        await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', []);
 
-        expect(mockClient.patchPropertyValues).toHaveBeenCalledTimes(3);
-        for (const call of mockClient.patchPropertyValues.mock.calls) {
-            expect(call[3]).toEqual([{field_id: 'field-id-1', value: null}]);
-        }
+        // null would be dropped from the body by the iOS native bridge, leaving an
+        // item with no value that the server rejects.
+        expect(mockClient.patchPropertyValues).toHaveBeenCalledTimes(2);
+        expect(mockClient.patchPropertyValues.mock.calls[0][3]).toEqual([{field_id: 'field-id-1', value: ''}]);
+        expect(mockClient.patchPropertyValues.mock.calls[1][3]).toEqual([{field_id: 'field-id-1', value: []}]);
     });
 
     it('should persist a cleared value as unset rather than leaving the old one behind', async () => {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyValues({values: [value({value: 'option-secret'})], prepareRecordsOnly: false});
 
-        // The server answers a clear with an upserted null-valued row, not a
+        // The server answers a clear with an upserted empty row, not a
         // delete event, so this is the shape the action has to cope with.
-        mockClient.patchPropertyValues.mockResolvedValueOnce([value({value: null, update_at: 2000})]);
+        mockClient.patchPropertyValues.mockResolvedValueOnce([value({value: '', update_at: 2000})]);
 
-        await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', null);
+        await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', '');
 
         // The row stays, carrying nothing. It is read back as undefined rather
         // than null because the column is JSON-decoded on read, which is why the

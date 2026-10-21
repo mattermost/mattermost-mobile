@@ -229,6 +229,13 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
     });
 
     describe('with the flag on', () => {
+        // Re-asserted per test, not only in beforeAll: a suite on another shard that
+        // patches FeatureFlags writes back the whole set it read, which can turn this
+        // flag off mid-suite. Cheap when it is already on.
+        beforeEach(async () => {
+            await enableChannelAttributes(siteOneUrl);
+        });
+
         it('MM-T6301_1 - should render an attribute chip in the channel header when a value is set and the flag is on', async () => {
             // # Create a header-designated attribute field.
             const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(

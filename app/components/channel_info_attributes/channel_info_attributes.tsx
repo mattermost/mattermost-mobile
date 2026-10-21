@@ -18,6 +18,7 @@ import {bottomSheet} from '@screens/navigation';
 import {
     canEditAttributeField,
     getAttributeEditability,
+    getEmptyPropertyValue,
     getPropertyFieldChangePolicy,
     isPropertyFieldRequired,
     isPropertyValueSet,
@@ -90,7 +91,7 @@ type Props = {
 
 type ValidatedSubmission = {
     valid: boolean;
-    value: ChannelAttributeValueInput;
+    value: string | string[];
 };
 
 function validateSubmission(attribute: ResolvedChannelAttribute, value: ChannelAttributeValueInput): ValidatedSubmission {
@@ -99,11 +100,11 @@ function validateSubmission(attribute: ResolvedChannelAttribute, value: ChannelA
     if (isClear) {
         const clearable = !isPropertyFieldRequired(field) &&
             (!isPropertyValueSet(rawValue) || getPropertyFieldChangePolicy(field) === 'any');
-        return {valid: clearable, value: null};
+        return {valid: clearable, value: getEmptyPropertyValue(field.type)};
     }
 
     if (field.type === 'text') {
-        return {valid: typeof value === 'string', value};
+        return {valid: typeof value === 'string', value: value ?? ''};
     }
 
     const reachableIds = new Set(reachableOptions(field, rawValue).map((option) => option.id));
@@ -117,7 +118,7 @@ function validateSubmission(attribute: ResolvedChannelAttribute, value: ChannelA
 
     return {
         valid: typeof value === 'string' && reachableIds.has(value),
-        value,
+        value: value ?? '',
     };
 }
 

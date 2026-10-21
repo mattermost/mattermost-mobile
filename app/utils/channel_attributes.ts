@@ -109,6 +109,16 @@ export function isPropertyValueSet(raw: unknown): boolean {
 }
 
 /**
+ * The value that clears a field: an empty list for list-valued types, an empty
+ * string otherwise. Never null — on iOS the native bridge drops null-valued keys,
+ * so {value: null} reaches the server as an item with no value and is rejected.
+ * The server reads "" and [] as unset just as it does null.
+ */
+export function getEmptyPropertyValue(fieldType: PropertyFieldType): string | string[] {
+    return fieldType === 'multiselect' || fieldType === 'multiuser' ? [] : '';
+}
+
+/**
  * Drops draft values a live field-list update has stranded: a field that no
  * longer appears at all, or a selected option id an administrator has since
  * removed from the field.

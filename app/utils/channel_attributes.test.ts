@@ -12,6 +12,7 @@ import {
     flattenChannelAttributesToChips,
     getAttributeEditability,
     getCreatableChannelAttributeFields,
+    getEmptyPropertyValue,
     getPropertyFieldChangePolicy,
     getPropertyFieldLabel,
     groupChannelAttributeChipsByField,
@@ -62,6 +63,14 @@ describe('isPropertyValueSet', () => {
     it('should treat a non-empty value as set', () => {
         expect(isPropertyValueSet('level-secret')).toBe(true);
         expect(isPropertyValueSet(['a'])).toBe(true);
+    });
+});
+
+describe('getEmptyPropertyValue', () => {
+    it('should clear list-valued types with an empty list and every other type with an empty string', () => {
+        expect(getEmptyPropertyValue('multiselect')).toEqual([]);
+        expect(getEmptyPropertyValue('multiuser')).toEqual([]);
+        expect(getEmptyPropertyValue('select')).toBe('');
     });
 });
 

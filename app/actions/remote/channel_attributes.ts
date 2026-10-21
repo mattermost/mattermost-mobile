@@ -25,37 +25,24 @@ export function channelAttributeWriteLockKey(serverUrl: string, channelId: strin
 export type ChannelAttributeValueInput = string | string[] | null;
 
 /**
- * Normalises a value the way the server does before it decides whether the write
- * is a clear: an empty string and an empty list are both "unset", and unset is
- * sent as null.
- */
-function normalizeValue(value: ChannelAttributeValueInput): string | string[] | null {
-    if (value === null || value === '') {
-        return null;
-    }
-    if (Array.isArray(value)) {
-        return value.length ? value : null;
-    }
-    return value;
-}
-
-/**
  * Sets or clears one channel attribute value.
  *
  * Not optimistic. A 403 is an ordinary outcome here — the field's change policy
  * or its permission tier can refuse the write — and a chip that flips back is
  * worse than one that takes a moment to settle.
  *
- * Clearing needs no special case: the server answers a clear with an upserted
- * null-valued row rather than a delete event, and a null value already reads as
- * unset everywhere downstream, so the row is persisted like any other. The webapp
- * has to synthesise a delete only because its reducer keys on presence.
+ * A clear is the field type's empty value (see getEmptyPropertyValue), never
+ * null: the iOS native bridge drops null-valued keys from the request body. The
+ * server answers a clear with an upserted empty row rather than a delete event,
+ * and an empty value already reads as unset everywhere downstream, so the row is
+ * persisted like any other. The webapp has to synthesise a delete only because
+ * its reducer keys on presence.
  */
 export async function setChannelAttributeValue(
     serverUrl: string,
     channelId: string,
     fieldId: string,
-    value: ChannelAttributeValueInput,
+    value: string | string[],
 ): Promise<{data?: Array<PropertyValue<unknown>>; error?: unknown}> {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -82,7 +69,7 @@ export async function setChannelAttributeValue(
                 ACCESS_CONTROL_GROUP_NAME,
                 CHANNEL_ATTRIBUTE_OBJECT_TYPE,
                 channelId,
-                [{field_id: fieldId, value: normalizeValue(value)}],
+                [{field_id: fieldId, value}],
             );
 
             // Deliberately no targetId: it makes the write authoritative for the

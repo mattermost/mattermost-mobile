@@ -445,6 +445,18 @@ describe('ChannelInfoAttributes', () => {
             expect(sheetProps().clearable).toBe(true);
         });
 
+        it('should send a clear as the field type\'s empty value rather than null', async () => {
+            const anyPolicy = field({attrs: {options: OPTIONS, actions: ['display_label_info'], change_policy: 'any'}});
+            const {getByTestId} = render([attribute({field: anyPolicy})]);
+
+            fireEvent.press(getByTestId('channel_info.attributes.classification.edit'));
+            await submitFromSheet('cf-1', null);
+
+            // null would be dropped from the request body by the iOS native bridge.
+            expect(mockedSetValue).toHaveBeenCalledTimes(1);
+            expect(mockedSetValue).toHaveBeenCalledWith(serverUrl, channelId, 'cf-1', '');
+        });
+
         it('should not offer a clear on a required field', () => {
             const required = field({attrs: {options: OPTIONS, actions: ['display_label_info'], required: true}});
             const {getByTestId} = render([attribute({field: required})]);
