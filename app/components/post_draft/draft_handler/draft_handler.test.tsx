@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent, waitFor} from '@testing-library/react-native';
+import {act, fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import {addFilesToDraft} from '@actions/local/draft';
@@ -35,6 +35,11 @@ jest.mock('@managers/draft_upload_manager', () => ({
 }));
 
 jest.mock('../send_handler', () => jest.fn(() => null));
+
+// Loaded once with the test file: requiring the whole composer inside a hook or test counts
+// towards its timeout and can take tens of seconds on a busy machine.
+const {default: ActualSendHandler} = jest.requireActual<{default: typeof SendHandler}>('../send_handler');
+const {addFilesToDraft: actualAddFilesToDraft} = jest.requireActual<typeof import('@actions/local/draft')>('@actions/local/draft');
 
 describe('components/post_draft/draft_handler/DraftHandler', () => {
     const baseProps: ComponentProps<typeof DraftHandler> = {
@@ -95,15 +100,19 @@ describe('components/post_draft/draft_handler/DraftHandler', () => {
 
         beforeEach(async () => {
             // Render the real composer and persist drafts for real; only the upload itself stays mocked.
-            const {default: ActualSendHandler} = jest.requireActual('../send_handler');
             jest.mocked(SendHandler).mockImplementation((props: ComponentProps<typeof SendHandler>) => <ActualSendHandler {...props}/>);
-            jest.mocked(addFilesToDraft).mockImplementation(jest.requireActual('@actions/local/draft').addFilesToDraft);
+            jest.mocked(addFilesToDraft).mockImplementation(actualAddFilesToDraft);
 
             const server = await TestHelper.setupServerDatabase(serverUrl);
             database = server.database;
+
+            // A fixed clock keeps the recording time, and so the file name, exact.
+            enableFakeTimers();
+            jest.setSystemTime(new Date(2026, 9, 20, 14, 35, 1));
         });
 
         afterEach(async () => {
+            disableFakeTimers();
             jest.mocked(SendHandler).mockImplementation(() => null);
             jest.mocked(addFilesToDraft).mockReset();
             await TestHelper.tearDown(serverUrl);
@@ -122,31 +131,23 @@ describe('components/post_draft/draft_handler/DraftHandler', () => {
 
             await act(async () => {
                 fireEvent.press(getByTestId('post_draft.quick_actions.voice_action'));
+                await advanceTimers(0);
             });
-            await waitFor(() => {
-                expect(getByTestId('post_draft.voice_recorder')).toBeVisible();
-            });
+            expect(getByTestId('post_draft.voice_recorder')).toBeVisible();
 
             // Record for a couple of seconds; anything under a second is discarded.
-            enableFakeTimers();
-            try {
-                await act(async () => {
-                    await advanceTimers(2000);
-                    fireEvent.press(getByTestId('post_draft.voice_recorder.done'));
-                    await advanceTimers(0);
-                });
-            } finally {
-                disableFakeTimers();
-            }
-
-            let draftFiles: FileInfo[] = [];
-            await waitFor(async () => {
-                const draft = await getDraft(database, baseProps.channelId, '');
-                draftFiles = draft?.files ?? [];
-                expect(draftFiles).toHaveLength(1);
+            await act(async () => {
+                await advanceTimers(2000);
+                fireEvent.press(getByTestId('post_draft.voice_recorder.done'));
+                await advanceTimers(0);
             });
+
+            const draft = await getDraft(database, baseProps.channelId, '');
+            const draftFiles = draft?.files ?? [];
+            expect(draftFiles).toHaveLength(1);
             expect(draftFiles[0]).toEqual(expect.objectContaining({
-                name: expect.stringMatching(/^voice-note-\d{8}-\d{6}-\d+m\d{2}s\.m4a$/),
+                name: 'voice-note-20261020-143501-0m02s.m4a',
+                localPath: 'file:///mock/voice-note-20261020-143501-0m02s.m4a',
                 mime_type: 'audio/mp4',
                 extension: 'm4a',
             }));
