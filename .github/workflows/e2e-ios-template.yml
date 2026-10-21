@@ -708,11 +708,14 @@ jobs:
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
           # the existing detox/artifacts/ upload.
-          if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
-          else
-            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
-          fi
+          run_specs() {
+            if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
+              npm run e2e:ios-ipad-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
+            else
+              npm run e2e:ios-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
+            fi
+          }
+          run_specs "${SPECS[@]}"
           DETOX_EXIT_CODE=$?
           if [ ! -f artifacts/jest-results.json ]; then
             if [ -f artifacts/jest-stare/ios-data.json ]; then
@@ -725,6 +728,30 @@ jobs:
                 --output artifacts/jest-results.json \
                 --job-name "machine-${{ matrix.runId }}" \
                 --reason "Detox exited ${DETOX_EXIT_CODE} before writing jest-results.json (specs: ${MATRIX_SPECS})"
+            fi
+          fi
+
+          # The runner can lose its route for ~2 s (every host flow, DNS included, -1009). Re-run once
+          # only the files whose every failure shows that in its own device.log; the rest stay red.
+          if [ "$DETOX_EXIT_CODE" -ne 0 ] && [ -f artifacts/jest-results.json ]; then
+            OUTAGE_SPECS=()
+            while IFS= read -r spec; do
+              [ -n "$spec" ] && OUTAGE_SPECS+=("$spec")
+            done < <(node utils/network-outage-specs.js --results artifacts/jest-results.json --artifacts artifacts)
+            if [ "${#OUTAGE_SPECS[@]}" -gt 0 ]; then
+              echo "::warning::Runner lost its network route during ${#OUTAGE_SPECS[@]} spec(s); re-running only those: ${OUTAGE_SPECS[*]}"
+              mv artifacts/jest-results.json artifacts/jest-results-attempt1.json
+              run_specs "${OUTAGE_SPECS[@]}"
+              RERUN_EXIT_CODE=$?
+              node utils/failed-jest-specs.js \
+                --attempt1 artifacts/jest-results-attempt1.json \
+                --attempt2 artifacts/jest-results.json \
+                --output artifacts/jest-results.json
+              MERGE_EXIT_CODE=$?
+              if [ "$RERUN_EXIT_CODE" -eq 0 ] && [ "$MERGE_EXIT_CODE" -eq 0 ] &&
+                node -e 'process.exit(require("./artifacts/jest-results.json").success ? 0 : 1)'; then
+                DETOX_EXIT_CODE=0
+              fi
             fi
           fi
           exit "${DETOX_EXIT_CODE:-1}"

@@ -189,6 +189,15 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
     }, {idempotent: true, label: 'apiUpdateConfig'});
 };
 
+const patchConfigOnce = async (baseUrl: string, patch: any): Promise<any> => {
+    try {
+        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patch);
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 /**
  * Replace server configuration with a complete config object.
  *
@@ -216,14 +225,34 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
     // Idempotent for the same reason as apiUpdateConfig above.
+    return withTransportRetry(() => patchConfigOnce(baseUrl, patchConfig), {idempotent: true, label: 'apiPatchConfig'});
+};
+
+const getFeatureFlags = (baseUrl: string): Promise<any> => {
     return withTransportRetry(async () => {
-        try {
-            const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
-            return {config: response.data};
-        } catch (err) {
-            return getResponseFromError(err);
+        const {config, error, status} = await apiGetConfig(baseUrl);
+        if (error || !config) {
+            return {error: error ?? {message: 'getFeatureFlags: empty config response'}, status};
         }
-    }, {idempotent: true, label: 'apiPatchConfig'});
+        return {config, flags: config.FeatureFlags ?? {}};
+    }, {idempotent: true, label: 'getFeatureFlags'});
+};
+
+/**
+ * Patch feature flags without resetting flags omitted from the requested changes.
+ * @param {string} baseUrl - the base server URL
+ * @param {Record<string, boolean>} flags - feature flags to update
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiPatchFeatureFlags = async (baseUrl: string, flags: Record<string, boolean>): Promise<any> => {
+    return withTransportRetry(async () => {
+        const {flags: current, error, status} = await getFeatureFlags(baseUrl);
+        if (error) {
+            return {error, status};
+        }
+
+        return patchConfigOnce(baseUrl, {FeatureFlags: {...current, ...flags}});
+    }, {idempotent: true, label: 'apiPatchFeatureFlags'});
 };
 
 /**
@@ -239,12 +268,11 @@ export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
-    const {config, error, status} = await apiGetConfig(baseUrl);
+    const {config, flags: current, error, status} = await getFeatureFlags(baseUrl);
     if (error) {
         return {error, status};
     }
 
-    const current = config.FeatureFlags ?? {};
     const toEnable = names.filter((name) => name in current && current[name] !== true);
     if (!toEnable.length) {
         return {config};
@@ -562,8 +590,9 @@ export const System = {
     apiGetClientLicense,
     apiGetConfig,
     apiGetRemoteClusters,
-    apiPatchConfig,
     apiEnableFeatureFlags,
+    apiPatchConfig,
+    apiPatchFeatureFlags,
     apiPingServerStatus,
     apiReplaceConfig,
     waitForClientConfigFlag,
