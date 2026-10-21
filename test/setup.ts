@@ -75,6 +75,32 @@ jest.mock('expo-file-system', () => {
     };
 });
 
+jest.mock('expo-audio', () => {
+    function makeRecorderInstance() {
+        return {
+            uri: 'file:///mock/recording.m4a',
+            isRecording: false,
+            currentTime: 0,
+            prepareToRecordAsync: jest.fn().mockResolvedValue(undefined),
+            record: jest.fn(),
+            stop: jest.fn().mockResolvedValue(undefined),
+            pause: jest.fn(),
+            release: jest.fn(),
+            getStatus: jest.fn().mockReturnValue({canRecord: true, isRecording: false, durationMillis: 0, mediaServicesDidReset: false, url: null}),
+        };
+    }
+
+    return {
+        AudioModule: {AudioRecorder: jest.fn().mockImplementation(makeRecorderInstance)},
+        AudioQuality: {MIN: 0, LOW: 32, MEDIUM: 64, HIGH: 96, MAX: 127},
+        IOSOutputFormat: {MPEG4AAC: 'aac '},
+        RecordingPresets: {HIGH_QUALITY: {}, LOW_QUALITY: {}},
+        setAudioModeAsync: jest.fn().mockResolvedValue(undefined),
+        getRecordingPermissionsAsync: jest.fn().mockResolvedValue({granted: true, status: 'granted'}),
+        requestRecordingPermissionsAsync: jest.fn().mockResolvedValue({granted: true, status: 'granted'}),
+    };
+});
+
 jest.mock('expo-web-browser', () => ({
     openAuthSessionAsync: jest.fn().mockResolvedValue(({
         type: 'success',
