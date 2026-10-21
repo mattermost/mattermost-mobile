@@ -44,6 +44,9 @@ expected="$5"
 # Bound every request so a stalled connection cannot hang the script past its retry path.
 CONNECT_TIMEOUT_SECS="${CONFIG_CONNECT_TIMEOUT_SECS:-5}"
 MAX_TIME_SECS="${CONFIG_MAX_TIME_SECS:-30}"
+# A patch the client timed out on is usually still applied: config saves run one at a time and can
+# take ~90 s on a busy server. Resending only queues another save behind it, so wait this long first.
+TIMED_OUT_WRITE_SETTLE_SECS="${CONFIG_TIMED_OUT_WRITE_SETTLE_SECS:-240}"
 
 read_key() {
     local response
@@ -137,19 +140,25 @@ fi
 
 actual=""
 for attempt in 1 2 3; do
-    if ! curl -f -sS --show-error -X PUT \
+    rc=0
+    curl -f -sS --show-error -X PUT \
         --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
         -H "Content-Type: application/json" \
         -d "$patch_json" \
-        "${site_url}/api/v4/config/patch" > /dev/null; then
+        "${site_url}/api/v4/config/patch" > /dev/null || rc=$?
+    settle_secs=10
+    if (( rc == 28 )); then
+        echo "==> config/patch timed out on attempt ${attempt}; waiting up to ${TIMED_OUT_WRITE_SETTLE_SECS}s for it to land" >&2
+        settle_secs="${TIMED_OUT_WRITE_SETTLE_SECS}"
+    elif (( rc != 0 )); then
         echo "==> config/patch call failed on attempt ${attempt}" >&2
         actual="<config/patch call failed>"
         continue
     fi
 
     # Poll rather than read once: a clustered installation propagates a patch asynchronously.
-    deadline=$(( SECONDS + 10 ))
+    deadline=$(( SECONDS + settle_secs ))
     while :; do
         actual="$(read_key)"
         if [[ "$actual" == "$expected" ]]; then
