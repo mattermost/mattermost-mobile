@@ -95,6 +95,14 @@ async function prepareRestoredChannels(serverUrl: string, database: Database, ch
 async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId: string): Promise<Model[]> {
     const {database} = operator;
     const client = NetworkManager.getClient(serverUrl);
+
+    // Read before the request: a channel joined or left while it is in flight would otherwise be
+    // compared against a list that predates it, and wrongly purged or restored.
+    const [teamChannelIds, allChannelIds] = await Promise.all([
+        queryMyChannelsByTeam(database, teamId).fetchIds(),
+        queryAllMyChannel(database).fetchIds(),
+    ]);
+
     let channels: Channel[];
     try {
         channels = await client.getMyChannels(teamId);
@@ -106,7 +114,7 @@ async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId
     // An empty list means every stored team channel was denied: a user with no memberships at all
     // gets a 404 instead, and DMs and GMs, which the policy never denies, would be listed.
     const listed = new Set(channels.map((c) => c.id));
-    const deniedIds = (await queryMyChannelsByTeam(database, teamId).fetchIds()).filter((id) => !listed.has(id));
+    const deniedIds = teamChannelIds.filter((id) => !listed.has(id));
 
     if (deniedIds.length) {
         const currentChannelId = await getCurrentChannelId(database);
@@ -134,7 +142,7 @@ async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId
     }
 
     const models: Model[] = [];
-    const storedIds = new Set(await queryAllMyChannel(database).fetchIds());
+    const storedIds = new Set(allChannelIds);
     const regained = channels.filter((c) => !storedIds.has(c.id) && isRestorable(c));
     if (regained.length) {
         try {

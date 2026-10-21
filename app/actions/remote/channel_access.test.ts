@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removeCurrentUserFromChannel} from '@actions/local/channel';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -244,6 +245,33 @@ describe('channel access', () => {
             await reconcileChannelAccess(serverUrl);
 
             expect(await storedChannelIds()).toEqual([]);
+            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
+        });
+
+        it('should keep a channel joined while the channel list request is in flight', async () => {
+            await enableFeature();
+            await seed([channel('channel1')]);
+            mockClient.getMyChannels.mockImplementationOnce(async () => {
+                await seed([channel('joined')]);
+                return [channel('channel1')];
+            });
+
+            await reconcileChannelAccess(serverUrl);
+
+            expect(await storedChannelIds()).toEqual(['channel1', 'joined']);
+        });
+
+        it('should not restore a channel left while the channel list request is in flight', async () => {
+            await enableFeature();
+            await seed([channel('channel1'), channel('left')]);
+            mockClient.getMyChannels.mockImplementationOnce(async () => {
+                await removeCurrentUserFromChannel(serverUrl, 'left');
+                return [channel('channel1'), channel('left')];
+            });
+
+            await reconcileChannelAccess(serverUrl);
+
+            expect(await storedChannelIds()).toEqual(['channel1']);
             expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
         });
 

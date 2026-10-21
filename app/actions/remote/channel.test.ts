@@ -732,6 +732,20 @@ describe('app/actions/remote/channel', () => {
             expect(await getCurrentChannelId(operator.database)).toBe('');
         });
 
+        it.each([
+            ['channel', 'channelid2', 'channelid2'],
+            ['Threads', Screens.GLOBAL_THREADS, ''],
+            ['Drafts', Screens.GLOBAL_DRAFTS, ''],
+        ])('should set the current channel from a %s fallback on a tablet when the server is not active', async (_, fallbackId, expectedChannelId) => {
+            mockIsTablet.mockImplementationOnce(() => true);
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            await operator.handleTeamChannelHistory({teamChannelHistories: [{id: teamId, channel_ids: [channelId, fallbackId, 'channelid3']}], prepareRecordsOnly: false});
+
+            await handleKickFromChannel(serverUrl, channelId);
+
+            expect(await getCurrentChannelId(operator.database)).toBe(expectedChannelId);
+        });
+
     });
 
     describe('handleChannelAccessDenied', () => {

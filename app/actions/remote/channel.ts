@@ -1498,7 +1498,9 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
                         await switchToChannelById(serverUrl, newChannelId, teamId, true);
                     }
                 } else {
-                    await setCurrentTeamAndChannelId(operator, teamId, channelId);
+                    // Threads and Drafts are screens, not channels: as when switching to them, no channel is current.
+                    const isGlobalScreen = newChannelId === Screens.GLOBAL_THREADS || newChannelId === Screens.GLOBAL_DRAFTS;
+                    await setCurrentTeamAndChannelId(operator, teamId, isGlobalScreen ? '' : newChannelId);
                 }
             } else if (currentServer?.url === serverUrl && await getIsCRTEnabled(database)) {
                 // Nothing left in the team to fall back to: show Threads, as the tablet does for a team
