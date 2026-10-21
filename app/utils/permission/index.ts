@@ -3,7 +3,7 @@
 
 import {applicationName} from 'expo-application';
 import {Alert, Platform} from 'react-native';
-import Permissions from 'react-native-permissions';
+import Permissions, {type PermissionStatus} from 'react-native-permissions';
 
 import type {IntlShape} from 'react-intl';
 
@@ -12,15 +12,12 @@ const getMicrophonePermission = () => Platform.select({
     default: Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO,
 });
 
-export const hasMicrophonePermission = async () => {
-    const microphone = getMicrophonePermission();
-
-    const hasMicrophone = await Permissions.check(microphone);
-
-    switch (hasMicrophone) {
+// Asks for the permission while the system can still prompt for it.
+const resolveMicrophonePermission = async (status: PermissionStatus) => {
+    switch (status) {
         case Permissions.RESULTS.DENIED:
         case Permissions.RESULTS.UNAVAILABLE: {
-            const permissionRequest = await Permissions.request(microphone);
+            const permissionRequest = await Permissions.request(getMicrophonePermission());
             return permissionRequest === Permissions.RESULTS.GRANTED;
         }
         case Permissions.RESULTS.BLOCKED:
@@ -30,20 +27,21 @@ export const hasMicrophonePermission = async () => {
     }
 };
 
+export const hasMicrophonePermission = async () => {
+    const status = await Permissions.check(getMicrophonePermission());
+    return resolveMicrophonePermission(status);
+};
+
 /**
  * Checks (and requests if needed) the microphone permission. When the permission
- * has been permanently blocked by the user, an alert pointing to the app settings
- * is shown, mirroring the camera and photo library permission flows.
+ * has been permanently blocked by the user, so the system can no longer prompt for it,
+ * an alert pointing to the app settings is shown, mirroring the camera and photo library
+ * permission flows.
  */
 export const requestMicrophonePermission = async (intl: IntlShape) => {
-    const granted = await hasMicrophonePermission();
-    if (granted) {
-        return true;
-    }
-
     const status = await Permissions.check(getMicrophonePermission());
     if (status !== Permissions.RESULTS.BLOCKED) {
-        return false;
+        return resolveMicrophonePermission(status);
     }
 
     Alert.alert(

@@ -7,6 +7,7 @@ import {StyleSheet, View} from 'react-native';
 import AIRewriteAction from '@agents/components/ai_rewrite_action';
 import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
 import {Screens} from '@constants';
+import {QUICK_ACTIONS_HEIGHT} from '@constants/post_draft';
 
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
@@ -42,8 +43,6 @@ type Props = {
     updatePostBoRStatus?: (config: PostBoRConfig) => void;
     focus: () => void;
 }
-
-export const QUICK_ACTIONS_HEIGHT = 44;
 
 const style = StyleSheet.create({
     quickActionsContainer: {

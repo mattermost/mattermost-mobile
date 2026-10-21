@@ -102,6 +102,8 @@ describe('microphone permission', () => {
             const result = await requestMicrophonePermission(intl);
 
             expect(result).toBe(false);
+            expect(Permissions.check).toHaveBeenCalledTimes(1);
+            expect(Permissions.request).not.toHaveBeenCalled();
             expect(alertSpy).toHaveBeenCalledTimes(1);
 
             const buttons = alertSpy.mock.calls[0][2]!;

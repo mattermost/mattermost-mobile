@@ -61,7 +61,7 @@ describe('VoiceQuickAction', () => {
     });
 
     it('should not start recording when the user declines the microphone permission', async () => {
-        jest.mocked(Permissions.check).mockResolvedValueOnce(Permissions.RESULTS.DENIED).mockResolvedValueOnce(Permissions.RESULTS.DENIED);
+        jest.mocked(Permissions.check).mockResolvedValueOnce(Permissions.RESULTS.DENIED);
         jest.mocked(Permissions.request).mockResolvedValueOnce(Permissions.RESULTS.DENIED);
         const {getByTestId} = renderWithIntlAndTheme(<VoiceQuickAction {...baseProps}/>);
 
@@ -76,7 +76,7 @@ describe('VoiceQuickAction', () => {
     });
 
     it('should point to the app settings instead of recording when the microphone permission is blocked', async () => {
-        jest.mocked(Permissions.check).mockResolvedValueOnce(Permissions.RESULTS.BLOCKED).mockResolvedValueOnce(Permissions.RESULTS.BLOCKED);
+        jest.mocked(Permissions.check).mockResolvedValueOnce(Permissions.RESULTS.BLOCKED);
         const {getByTestId} = renderWithIntlAndTheme(<VoiceQuickAction {...baseProps}/>);
 
         fireEvent.press(getByTestId('test-voice'));

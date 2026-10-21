@@ -224,7 +224,7 @@ const AttachmentOptions: React.FC<Props> = ({
                     leftIcon='microphone-outline'
                     onPress={onRecordVoiceNotePressed}
                     testID='file_attachment.voice_note'
-                    text={intl.formatMessage({id: 'mobile.file_upload.voice_note', defaultMessage: 'Record a voice message'})}
+                    text={intl.formatMessage({id: 'mobile.file_upload.voice_note', defaultMessage: 'Record a voice note'})}
                 />
             )}
             {showAttachLogs && (

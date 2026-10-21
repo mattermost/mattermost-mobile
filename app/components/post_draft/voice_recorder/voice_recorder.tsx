@@ -8,7 +8,7 @@ import {AccessibilityInfo, Pressable, type PressableStateCallbackType, type Styl
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
-import {ICON_SIZE} from '@constants/post_draft';
+import {ICON_SIZE, QUICK_ACTIONS_HEIGHT} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
@@ -17,8 +17,6 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {formatVoiceNoteDuration, VOICE_NOTE_MAX_DURATION_MS} from '@utils/file/voice_note';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import {QUICK_ACTIONS_HEIGHT} from '../quick_actions/quick_actions';
 
 const PULSE_DURATION_MS = 800;
 const PRESSED_OPACITY = 0.72;

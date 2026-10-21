@@ -149,7 +149,7 @@ const messages = defineMessages({
     },
     VOICE_NOTE_MAX_DURATION: {
         id: 'snack.bar.voice_note.max_duration',
-        defaultMessage: 'Recording stopped at the {minutes} minute limit',
+        defaultMessage: 'Recording stopped at the {minutes, plural, one {# minute} other {# minutes}} limit',
     },
     PLAYBOOK_ERROR: {
         id: 'snack.bar.playbook.error',
