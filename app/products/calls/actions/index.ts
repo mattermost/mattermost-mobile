@@ -32,4 +32,4 @@ export {
     getEndCallMessage,
 } from './calls';
 
-export {hasMicrophonePermission} from './permissions';
+export {hasMicrophonePermission} from '@utils/permission';
