@@ -54,7 +54,11 @@ jest.mock('expo-file-system', () => {
     const mockInfo = {exists: true, uri: 'file:///mock', size: 0, modificationTime: 0};
 
     function makeFileInstance(uri: string) {
-        return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), move: jest.fn(), copy: jest.fn(), create: jest.fn(), write: jest.fn(), text: jest.fn(() => Promise.resolve(''))};
+        const file = {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), move: jest.fn(), copy: jest.fn(), create: jest.fn(), write: jest.fn(), text: jest.fn(() => Promise.resolve('')), rename: jest.fn()};
+        file.rename.mockImplementation((newName: string) => {
+            file.uri = file.uri.slice(0, file.uri.lastIndexOf('/') + 1) + newName;
+        });
+        return file;
     }
     function makeDirectoryInstance(uri: string) {
         return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), create: jest.fn(), list: jest.fn(() => []), move: jest.fn(), copy: jest.fn()};
