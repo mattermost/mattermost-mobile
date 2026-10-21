@@ -212,6 +212,26 @@ async function waitForDialogCommand(client: MattermostClient, token: string, tea
     logInfo('/dialog command is registered.');
 }
 
+/**
+ * The demo plugin (v0.12.1) hands every config save back to the server when it has no settings entry,
+ * and that round trip resets settings it does not know, or that are false, to their defaults. Any entry,
+ * even an empty one, makes it leave the save alone.
+ */
+export async function ensureDemoPluginSettingsEntry(client: MattermostClient, token: string): Promise<void> {
+    const res = await client.request<{PluginSettings?: {Plugins?: Record<string, unknown>}}>('GET', '/api/v4/config', undefined, token);
+    if (res.status !== 200) {
+        throw new Error(`Could not read config to check the ${DEMO_PLUGIN_ID} settings entry (HTTP ${res.status})`);
+    }
+    if (res.data?.PluginSettings?.Plugins?.[DEMO_PLUGIN_ID]) {
+        return;
+    }
+    const patchRes = await client.request<ApiErrorBody>('PUT', '/api/v4/config/patch', {PluginSettings: {Plugins: {[DEMO_PLUGIN_ID]: {}}}}, token);
+    if (patchRes.status !== 200) {
+        throw new Error(`Could not add the ${DEMO_PLUGIN_ID} settings entry (HTTP ${patchRes.status})`);
+    }
+    logInfo(`Added an empty ${DEMO_PLUGIN_ID} settings entry so its config hook keeps other settings intact.`);
+}
+
 export async function ensureDemoPluginReady(client: MattermostClient, token: string): Promise<void> {
     await waitForDemoPluginRunning(client, token);
     const teamId = await getCommandVerificationTeamId(client, token);

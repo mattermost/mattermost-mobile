@@ -6,7 +6,7 @@ import {ensureCustomProfileAttributeFields} from './custom-profile-attributes';
 import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
 import {logInfo, logWarn} from './log';
-import {assertDemoPluginAbsent, disableStrayPlugins, ensureAgentsPlugin, ensureDemoPluginReady, installRequiredPlugin} from './plugins';
+import {assertDemoPluginAbsent, disableStrayPlugins, ensureAgentsPlugin, ensureDemoPluginReady, ensureDemoPluginSettingsEntry, installRequiredPlugin} from './plugins';
 import {applyProvisionBaseline, getServerMmVersion, verifyProvisionBaseline} from './server-config';
 
 import type {MattermostClient, ProvisionCredentials} from './types';
@@ -36,6 +36,12 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
     // Before the baseline so its writes do not fan out through a stray or unwanted demo plugin. An
     // active demo plugin on B is left alone here; the install loop below replaces a wrong version.
     await disableStrayPlugins(client, token, provisioned);
+
+    // Before any further config write: a demo plugin already running on a reused server would otherwise
+    // reset settings the baseline and specs write.
+    if (demoPlugin) {
+        await ensureDemoPluginSettingsEntry(client, token);
+    }
 
     await applyProvisionBaseline(client, token, serverUrl, serverMmVersion);
 
