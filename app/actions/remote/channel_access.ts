@@ -5,17 +5,16 @@ import {chunk} from 'lodash';
 
 import {storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, storeAllMyChannels} from '@actions/local/channel';
-import {isRedactionEnforced} from '@actions/local/redaction';
-import {License} from '@constants';
 import {CHANNEL_READ_ACCESS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryAllMyChannel, queryMyChannelsByChannelIds, queryMyChannelsByTeam} from '@queries/servers/channel';
-import {getConfigValue, getCurrentChannelId, getCurrentTeamId, getLicense} from '@queries/servers/system';
+import {isChannelAccessEnforced} from '@queries/servers/render_permissions';
+import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
-import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
 import {fetchCategories} from './category';
@@ -37,11 +36,6 @@ type PendingChecks = {
 // events costs at most two passes and two passes never restore the same channel concurrently.
 const pending = new Map<string, PendingChecks>();
 const running = new Set<string>();
-
-const isChannelReadAccessEnforced = async (database: Database) => {
-    const [enforced, license] = await Promise.all([isRedactionEnforced(database), getLicense(database)]);
-    return enforced && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
-};
 
 // DMs and GMs are exempt from the policy, and an archived channel is not brought back by it.
 const isRestorable = (channel: Channel) => !isDMorGM(channel) && channel.delete_at === 0;
@@ -171,7 +165,7 @@ async function checkChannels(serverUrl: string, database: Database, channelIds: 
 async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChecks) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (!(await isChannelReadAccessEnforced(database))) {
+        if (!(await isChannelAccessEnforced(database))) {
             return;
         }
 

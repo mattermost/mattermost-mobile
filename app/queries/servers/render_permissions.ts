@@ -4,14 +4,14 @@
 import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, shareReplay, switchMap} from 'rxjs/operators';
 
-import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {isRedactionEnforced, observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
 import {License} from '@constants';
 import {RENDER_PERMISSIONS_VERSION} from '@constants/versions';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
 
-import {observeConfigValue, observeLicense} from './system';
+import {getLicense, observeConfigValue, observeLicense} from './system';
 
 import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';
@@ -53,6 +53,16 @@ export const observeRenderPermission = (
     );
 };
 
+// The server only enforces channel access actions on Enterprise Advanced.
+const isChannelAccessLicensed = (enforced: boolean, license?: ClientLicense) => {
+    return enforced && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+};
+
+export const isChannelAccessEnforced = async (database: Database) => {
+    const [enforced, license] = await Promise.all([isRedactionEnforced(database), getLicense(database)]);
+    return isChannelAccessLicensed(enforced, license);
+};
+
 // Shared per database like observeRedactionEnforced: the write check of every post row reads it.
 const channelAccessEnforcedStreams = new WeakMap<Database, Observable<boolean>>();
 
@@ -66,7 +76,7 @@ const observeChannelAccessEnforced = (database: Database): Observable<boolean> =
         observeRedactionEnforced(database),
         observeLicense(database),
     ]).pipe(
-        map(([enforced, license]) => enforced && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced)),
+        map(([enforced, license]) => isChannelAccessLicensed(enforced, license)),
         distinctUntilChanged(),
         shareReplay({bufferSize: 1, refCount: true}),
     );
