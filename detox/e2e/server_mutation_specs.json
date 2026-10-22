@@ -7,6 +7,8 @@
     {"spec": "detox/e2e/test/products/channels/server_login/login_mfa.e2e.ts", "target": "B"},
     {"spec": "detox/e2e/test/products/channels/server_login/custom_terms_of_service.e2e.ts", "target": "B"},
     {"spec": "detox/e2e/test/products/channels/channel_attributes/channel_attributes_flag_off.e2e.ts", "target": "B"},
+    {"spec": "detox/e2e/test/products/channels/channel_attributes/channel_attributes_creation.e2e.ts", "target": "B"},
+    {"spec": "detox/e2e/test/products/channels/channel_attributes/channel_attributes_editing.e2e.ts", "target": "B"},
     {"spec": "detox/e2e/test/products/channels/channel_settings/share_with_connected_workspaces.e2e.ts", "target": "B", "iosTarget": "site3"},
     {"spec": "detox/e2e/test/products/channels/messaging/file_upload_max_size.e2e.ts", "target": "B", "iosTarget": "site3"},
     {"spec": "detox/e2e/test/products/channels/interactive_dialog/interactive_dialog_plugin.e2e.ts", "target": "B"},

@@ -7,8 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {disableChannelAttributes, enableChannelAttributes, setChannelAttributesRequired} from '@support/channel_attributes_test_helper';
 import {Channel, Properties, Team, User} from '@support/server_api';
 import {assertServerBaseline} from '@support/server_baseline';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeForm, ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, CreateOrEditChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -47,6 +49,8 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
     }
 }
 
+// Creates required attributes, which are server-wide, so this runs alone on the mutation server
+// (detox/e2e/server_mutation_specs.json).
 // FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
 // so the server baseline cannot turn it on.
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Setting values at channel creation', () => {
@@ -56,10 +60,13 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
     let testChannel: any = null;
 
     beforeAll(async () => {
+        requireMutationServer('channel_attributes_creation');
+
         // A prior interrupted run may have left a required field behind, which would
         // block channel creation before any of these tests got started.
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
         await assertServerBaseline(siteOneUrl, ['FeatureFlags.ChannelAttributes']);
+        await setChannelAttributesRequired(siteOneUrl, true);
 
         const {team} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'team'});
         testTeam = team;
@@ -77,6 +84,15 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
             await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
         } catch (error) {
             cleanupError ??= error;
+        }
+
+        if (canMutateServer) {
+            try {
+                // Hand the server back at baseline for the next spec on it.
+                await setChannelAttributesRequired(siteOneUrl, false);
+            } catch (error) {
+                cleanupError ??= error;
+            }
         }
 
         try {
@@ -165,10 +181,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         return channel;
     }
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6330_1 - should list a required, creator-settable attribute above Purpose and gate Create on it', async () => {
+    it('MM-T6330_1 - should list a required, creator-settable attribute above Purpose and gate Create on it', async () => {
         const {channelFieldId} = await setupChannelAttributeField({
             fieldName: REQUIRED_FIELD_NAME,
             options: FIELD_OPTIONS,
@@ -225,9 +238,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         await ChannelScreen.back();
     });
 
-    // Skipped: needs a required field and the flag off, both server-wide. Re-enable it in
-    // channel_attributes_flag_off.e2e.ts, which runs alone on server B.
-    it.skip('MM-T6330_4 - should not offer any attribute when the feature is disabled', async () => {
+    it('MM-T6330_4 - should not offer any attribute when the feature is disabled', async () => {
         // The field exists server-side, same as it would the moment after an
         // administrator disables the feature with configured attributes already
         // in place — only the client-side gate is under test here.
@@ -239,12 +250,23 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
             required: true,
         });
 
-        await CreateOrEditChannelScreen.openCreateChannel();
+        // Off for this test only; the finally hands the next test the flag back on.
+        if (!await disableChannelAttributes(siteOneUrl)) {
+            throw new Error('MM-T6330_4 could not disable ChannelAttributes');
+        }
+        try {
+            await device.reloadReactNative();
+            await ChannelListScreen.toBeVisible();
+            await CreateOrEditChannelScreen.openCreateChannel();
 
-        await ChannelAttributeForm.toNotBeVisible();
-        await expect(CreateOrEditChannelScreen.purposeInput).toBeVisible();
+            await ChannelAttributeForm.toNotBeVisible();
+            await expect(CreateOrEditChannelScreen.purposeInput).toBeVisible();
 
-        await CreateOrEditChannelScreen.close();
+            await CreateOrEditChannelScreen.close();
+        } finally {
+            await enableChannelAttributes(siteOneUrl);
+            await device.reloadReactNative();
+        }
     });
 
     it('MM-T6330_2 - should not offer an optional attribute at creation', async () => {
@@ -268,10 +290,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         await CreateOrEditChannelScreen.close();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6330_3 - should drop a required attribute the creator cannot set, and still allow creation', async () => {
+    it('MM-T6330_3 - should drop a required attribute the creator cannot set, and still allow creation', async () => {
         const {channelFieldId} = await setupChannelAttributeField({
             fieldName: SYSADMIN_FIELD_NAME,
             options: FIELD_OPTIONS,

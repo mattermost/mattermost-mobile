@@ -7,8 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {setChannelAttributesRequired} from '@support/channel_attributes_test_helper';
 import {Channel, Properties, Team, User} from '@support/server_api';
 import {assertServerBaseline} from '@support/server_baseline';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -71,6 +73,8 @@ async function openChannel(channelName: string) {
     await ChannelScreen.open('channels', channelName);
 }
 
+// Creates required attributes, which are server-wide, so this runs alone on the mutation server
+// (detox/e2e/server_mutation_specs.json).
 // FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
 // so the server baseline cannot turn it on.
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Setting values from Channel Info', () => {
@@ -80,10 +84,13 @@ async function openChannel(channelName: string) {
     let testChannel: any = null;
 
     beforeAll(async () => {
+        requireMutationServer('channel_attributes_editing');
+
         // A prior interrupted run may have left a required field behind, which would
         // block channel creation before any of these tests got started.
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
         await assertServerBaseline(siteOneUrl, ['FeatureFlags.ChannelAttributes']);
+        await setChannelAttributesRequired(siteOneUrl, true);
 
         const {team} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'team'});
         testTeam = team;
@@ -101,6 +108,15 @@ async function openChannel(channelName: string) {
             await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
         } catch (error) {
             cleanupError ??= error;
+        }
+
+        if (canMutateServer) {
+            try {
+                // Hand the server back at baseline for the next spec on it.
+                await setChannelAttributesRequired(siteOneUrl, false);
+            } catch (error) {
+                cleanupError ??= error;
+            }
         }
 
         try {
@@ -219,10 +235,7 @@ async function openChannel(channelName: string) {
         return {channelFieldId, channel};
     }
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6320_1 - should set a value from the Set attribute sheet and persist it to the server', async () => {
+    it('MM-T6320_1 - should set a value from the Set attribute sheet and persist it to the server', async () => {
         const {channelFieldId, channel} = await setupChannelWithAttribute({changePolicy: 'any', required: true});
 
         // * The attribute starts unset.
@@ -243,10 +256,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6320_2 - should show the new value on the channel header chip as well as the Channel Info row', async () => {
+    it('MM-T6320_2 - should show the new value on the channel header chip as well as the Channel Info row', async () => {
         // required: true so the unset row is visible before the edit; an optional
         // unset attribute only appears via Add Attribute (a later story).
         await setupChannelWithAttribute({changePolicy: 'any', required: true});
@@ -266,10 +276,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6320_3 - should keep the value across a restart, having written it to the database', async () => {
+    it('MM-T6320_3 - should keep the value across a restart, having written it to the database', async () => {
         // required: true — same reason as MM-T6320_2.
         const {channel} = await setupChannelWithAttribute({changePolicy: 'any', required: true});
 
@@ -318,10 +325,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6320_5 - should not offer clearing for a required attribute', async () => {
+    it('MM-T6320_5 - should not offer clearing for a required attribute', async () => {
         const {channelFieldId, channel} = await setupChannelWithAttribute({changePolicy: 'any', value: OPTION_IDS.medium, required: true});
 
         // # Open the required attribute's editor.
@@ -376,10 +380,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6321_3 - should lock a set value under a never policy but allow the first write', async () => {
+    it('MM-T6321_3 - should lock a set value under a never policy but allow the first write', async () => {
         // # A never policy with nothing set: the server exempts the first write, so a
         // # required attribute is not stranded as Not set forever.
         await setupChannelWithAttribute({changePolicy: 'never', required: true});
@@ -399,10 +400,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6322_1 - should not offer editing for a field whose permission tier the user cannot satisfy', async () => {
+    it('MM-T6322_1 - should not offer editing for a field whose permission tier the user cannot satisfy', async () => {
         await setupChannelWithAttribute({permissionValues: 'sysadmin', value: OPTION_IDS.medium, withEditableSibling: true});
 
         // * The value is shown, the row is not editable, and the reason is visible —
@@ -416,10 +414,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6322_2 - should never offer editing for a none-tier field', async () => {
+    it('MM-T6322_2 - should never offer editing for a none-tier field', async () => {
         // A none-tier field's value can never be set through the ordinary API, by
         // design — the server refuses even a sysadmin session, unconditionally.
         // Required-but-unset fields are shown only when the viewer can fill them,
@@ -501,8 +496,11 @@ async function openChannel(channelName: string) {
     const MEMBER_FIELD_NAME = `memberfield_${FIELD_SUFFIX}`;
 
     beforeAll(async () => {
+        requireMutationServer('channel_attributes_editing');
+
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
         await assertServerBaseline(siteOneUrl, ['FeatureFlags.ChannelAttributes']);
+        await setChannelAttributesRequired(siteOneUrl, true);
 
         const {team} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'mteam'});
         testTeam = team;
@@ -526,6 +524,15 @@ async function openChannel(channelName: string) {
             await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
         } catch (error) {
             cleanupError ??= error;
+        }
+
+        if (canMutateServer) {
+            try {
+                // Hand the server back at baseline for the next spec on it.
+                await setChannelAttributesRequired(siteOneUrl, false);
+            } catch (error) {
+                cleanupError ??= error;
+            }
         }
 
         try {
@@ -602,10 +609,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
     });
 
-    // Skipped until the required-attribute tests move to SITE_3 behind siteThreeLock
-    // (follow-up PR, see MM-T6306_1 in channel_attributes.e2e.ts): a required field is
-    // server-wide, so on the shared site it fails every other shard's POST /channels.
-    it.skip('MM-T6326_2 - should hide an admin-tier required-unset attribute from a regular member', async () => {
+    it('MM-T6326_2 - should hide an admin-tier required-unset attribute from a regular member', async () => {
         const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
             fieldName: MEMBER_FIELD_NAME,
             options: FIELD_OPTIONS,

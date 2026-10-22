@@ -13,9 +13,9 @@ import {
     requireOption,
     TEST_FIELD_OPTIONS,
 } from '@support/channel_attributes_fixtures';
-import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
+import {disableChannelAttributes, enableChannelAttributes, setChannelAttributesRequired} from '@support/channel_attributes_test_helper';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Channel, Properties, System, Team, User} from '@support/server_api';
+import {Channel, Properties, Team, User} from '@support/server_api';
 import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
@@ -89,35 +89,15 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
     });
 
     describe('with a required attribute', () => {
-        // The server refuses to create a required channel attribute unless this flag is on (off by default).
-        // Read back after each write: a lost or env-pinned write still returns success.
-        const setRequiredAttributes = async (enabled: boolean) => {
-            let actual: unknown;
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                // eslint-disable-next-line no-await-in-loop -- each attempt checks the previous write
-                const {error} = await System.apiPatchFeatureFlags(siteOneUrl, {ChannelAttributesRequired: enabled});
-                if (error) {
-                    throw new Error(`Failed to set FeatureFlags.ChannelAttributesRequired=${enabled}: ${JSON.stringify(error)}`);
-                }
-                // eslint-disable-next-line no-await-in-loop -- read-back of this attempt's write
-                const {config} = await System.apiGetConfig(siteOneUrl);
-                actual = config?.FeatureFlags?.ChannelAttributesRequired;
-                if (actual === enabled) {
-                    return;
-                }
-            }
-            throw new Error(`FeatureFlags.ChannelAttributesRequired stayed ${String(actual)} after 3 writes of ${enabled}`);
-        };
-
         beforeAll(async () => {
             if (canMutateServer) {
-                await setRequiredAttributes(true);
+                await setChannelAttributesRequired(siteOneUrl, true);
             }
         });
 
         afterAll(async () => {
             if (canMutateServer) {
-                await setRequiredAttributes(false);
+                await setChannelAttributesRequired(siteOneUrl, false);
             }
         });
 

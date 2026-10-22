@@ -64,10 +64,6 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
 /**
  * Attempt to enable the ChannelAttributes feature flag.
  *
- * Leaves ChannelAttributesRequired off on purpose: with it on, a required field fails
- * every other shard's POST /channels on the shared site. The required-attribute tests are
- * skipped until they move to SITE_3 behind siteThreeLock in a follow-up PR.
- *
  * Throws when the server license, Split, or
  * `MM_FEATUREFLAGS_CHANNELATTRIBUTES` keeps it off.
  */
@@ -107,4 +103,28 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<void> =>
         `Last observed server=${String(lastObserved.server)} client=${String(lastObserved.client)}. ` +
         'Cloud Spinwick installations may need MM_FEATUREFLAGS_CHANNELATTRIBUTES=true in Matterwick PriorityEnv.',
     );
+};
+
+/**
+ * Set FeatureFlags.ChannelAttributesRequired; the server refuses required attributes while it is off.
+ * Mutation server only. Reads the value back: a lost or env-pinned write still returns success.
+ */
+export const setChannelAttributesRequired = async (baseUrl: string, enabled: boolean): Promise<void> => {
+    let actual: unknown;
+
+    /* eslint-disable no-await-in-loop -- each attempt checks the previous write */
+    for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
+        const {error} = await System.apiPatchFeatureFlags(baseUrl, {ChannelAttributesRequired: enabled});
+        if (error) {
+            throw new Error(`Failed to set FeatureFlags.ChannelAttributesRequired=${enabled}: ${JSON.stringify(error)}`);
+        }
+        const {config} = await System.apiGetConfig(baseUrl);
+        actual = config?.FeatureFlags?.ChannelAttributesRequired;
+        if (actual === enabled) {
+            return;
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    throw new Error(`FeatureFlags.ChannelAttributesRequired stayed ${String(actual)} after ${FLAG_PATCH_ATTEMPTS} writes of ${enabled}`);
 };
