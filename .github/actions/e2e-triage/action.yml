@@ -56,7 +56,7 @@ runs:
     # A triage failure must never change the outcome of the E2E run itself.
     - name: e2e/triage
       continue-on-error: true
-      uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-triage@24bf2087f0f6725460a5e2f35c96e0055c7cc795 # actions/e2e-test-triage
+      uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-triage@419b0a9a4b3149659160fb214507e71116ebefe2 # actions/e2e-test-triage
       with:
         composite-identity: ${{ inputs.composite-identity }}
         status-context: ${{ inputs.status-context }}
