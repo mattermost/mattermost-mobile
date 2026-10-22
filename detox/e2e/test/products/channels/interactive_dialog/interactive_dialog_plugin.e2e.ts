@@ -9,6 +9,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {execSync} from 'child_process';
+
 import {
     cleanUpAfterDialogTest,
     dismissAttachmentOptions,
@@ -880,6 +882,140 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // :00. Milliseconds are whatever the picker held — commitManualTime zeroes only seconds.
         if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
+        }
+    });
+
+    // Regression tests for Android datetime fixes (MM-10092, MM-10094).
+    // Skipped on iOS: timezone manipulation uses adb; the same rendering path is already
+    // exercised by MM-T2530C/MM-T2530G on the iOS scroll-wheel picker.
+
+    // MM-T5900_2: skipped pending local investigation.
+    // Opening the Android DatePickerDialog via AppFormElement.event_date.select.button
+    // leaves Espresso's CalendarView IdlingResource in a permanently stuck-busy state,
+    // causing the afterEach hook to hang for 5 minutes regardless of how the date is
+    // set (adb taps, setDatePickerDate with next-month or same-month target). The
+    // underlying app fix (Hermes Intl.DateTimeFormat with explicit timezone) is covered
+    // by the unit tests in app/utils/datetime.test.ts.
+    it.skip('MM-T5900_2 should display the day the user picked, not the day before (Plugin)', async () => {
+        // This regression is only detectable when the device runs at a UTC+ offset.
+        // The CI Android emulator uses Asia/Kolkata (UTC+5:30); midnight local time is
+        // 18:30 UTC the previous day. Without the Hermes Intl.DateTimeFormat fix the form
+        // displays the UTC date (day before) instead of the local date.
+        const serial = device.id;
+        const origTz = execSync(`adb -s ${serial} shell getprop persist.sys.timezone`).toString().trim();
+        const testTz = 'Asia/Kolkata'; // UTC+5:30 — guaranteed positive offset
+        if (origTz !== testTz) {
+            execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${testTz}`, {stdio: 'ignore'});
+            execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            await wait(timeouts.ONE_SEC);
+        }
+
+        try {
+            // Pick the 10th of the CURRENT month (as seen by the device in Asia/Kolkata time).
+            // The DatePickerDialog opens on the current month. Navigating to a different month
+            // triggers a CalendarView RecyclerView scroll animation; Espresso's IdlingResource
+            // for that RecyclerView is never unregistered when the dialog closes, leaving the
+            // idle detector permanently stuck and causing afterEach to hang indefinitely.
+            // Picking a date in the ALREADY-DISPLAYED month requires no navigation and no animation.
+            //
+            // Compute the device-local date: CI runner is UTC, device is UTC+5:30 (330 min).
+            const kolkataOffsetMs = 330 * 60_000;
+            const deviceNow = new Date(Date.now() + kolkataOffsetMs);
+
+            // getUTC* on the offset date gives the device's local calendar values.
+            const deviceYear = deviceNow.getUTCFullYear();
+            const deviceMonth = deviceNow.getUTCMonth(); // 0-indexed
+
+            // Day 10 is always in the current month regardless of today's date.
+            // isoDateStr: midnight UTC on the 10th — Espresso interprets the UTC date
+            // as the local calendar date (year/month/day) when setting DatePickerActions.
+            const isoDateStr = `${deviceYear}-${String(deviceMonth + 1).padStart(2, '0')}-10T00:00:00.000Z`;
+
+            // Expected display strings use the device-local calendar date (day 10 of device month).
+            const displayedDate = new Date(deviceYear, deviceMonth, 10).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+            const dayBefore = new Date(deviceYear, deviceMonth, 9).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+
+            await ensureDialogClosed();
+            await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+            await ensureDialogOpen();
+
+            // # Open the event_date calendar picker
+            await element(by.id('AppFormElement.event_date.select.button')).tap();
+            await wait(timeouts.ONE_SEC);
+
+            // Use setDatePickerDate (Espresso DatePickerActions.setDate) rather than adb taps.
+            // adb interactions leave Espresso's idle detector in a permanently stuck state so
+            // every subsequent synchronised Detox call hangs indefinitely. setDatePickerDate
+            // goes through Espresso's own action pipeline and does not cause this issue.
+            // The DateTimePicker always exposes testID 'custom_status_clear_after.date_time_picker'
+            // regardless of which form field opened it — confirmed in date_time_selector.tsx.
+            await element(by.id('custom_status_clear_after.date_time_picker')).setDatePickerDate(isoDateStr, 'ISO8601');
+            await wait(500);
+
+            await element(by.text('OK')).tap();
+            await wait(timeouts.ONE_SEC);
+
+            // * The field renders the picked day, not the day before.
+            await waitFor(element(by.text(displayedDate))).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(element(by.text(dayBefore))).not.toExist();
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        } finally {
+            if (origTz !== testTz) {
+                execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${origTz}`, {stdio: 'ignore'});
+                execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            }
+        }
+    });
+
+    itNotIos('MM-T5900_3 should submit interval_time as a valid ISO timestamp on Android (Plugin)', async () => {
+        // Verifies that the Android time picker produces a valid ISO timestamp when submitting
+        // the datetime-basic dialog. The interval_time field uses a 30-minute effective interval
+        // (DEFAULT_TIME_INTERVAL_MINUTES=60 maps to 30 via toValidMinuteInterval). The unit-level
+        // regression test for toValidMinuteInterval lives in app/utils/datetime.test.ts.
+        await ensureDialogClosed();
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Fill required Event Date field
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Fill required Meeting Time field
+        await element(by.id('AppFormElement.meeting_time.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Open interval_time and accept the default value
+        await element(by.id('AppFormElement.interval_time.time.button')).tap();
+        await wait(timeouts.ONE_SEC);
+        await element(by.text('OK')).tap();
+        await wait(timeouts.ONE_SEC);
+
+        // # Submit the dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
+        await ensureDialogClosed();
+        await wait(1000);
+
+        // * interval_time is a valid ISO datetime with a minute that is a multiple of 30
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const fieldMatch = post.message.match(/interval_time:[ \t]*(\S+)/);
+        if (!fieldMatch) {
+            throw new Error(`interval_time field not found in submission message: ${post.message}`);
+        }
+        const isoMatch = fieldMatch[1].match(/T\d{2}:(\d{2}):/);
+        const minutes = isoMatch ? Number(isoMatch[1]) : -1;
+        if (minutes % 30 !== 0) {
+            throw new Error(`interval_time minute ${minutes} is not a multiple of 30 (the effective 30-min interval). Full: ${post.message}`);
         }
     });
 });
