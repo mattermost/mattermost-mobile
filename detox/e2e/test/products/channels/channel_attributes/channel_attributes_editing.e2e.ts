@@ -12,7 +12,7 @@ import {assertServerBaseline} from '@support/server_baseline';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
@@ -32,7 +32,10 @@ const FIELD_OPTIONS = [
     {id: OPTION_IDS.high, name: 'HIGH', color: '#FF0000', rank: 3},
 ];
 
-const FIELD_NAME = 'editable';
+// Suite-unique suffix: on the shared servers only optional fields named <name>_<6 hex> may be
+// created (detox/e2e/support/server_api/pool_guard.ts), so runs never touch each other's fields.
+const FIELD_SUFFIX = getRandomId(6);
+const FIELD_NAME = `editable_${FIELD_SUFFIX}`;
 
 // A member-tier, always-editable field with no name of its own worth asserting
 // on. It exists only so a permission-tier denial (MM-T6322_1, MM-T6322_2) has
@@ -42,7 +45,7 @@ const FIELD_NAME = 'editable';
 // channel with nothing else editable is the common member view and the denial
 // would be noise there, so the app does not explain it (see
 // channel_info_attributes.tsx).
-const SIBLING_FIELD_NAME = 'sibling';
+const SIBLING_FIELD_NAME = `sibling_${FIELD_SUFFIX}`;
 const ALL_FIELD_NAMES = [FIELD_NAME, SIBLING_FIELD_NAME];
 
 // Both display surfaces, so one edit can be asserted in Channel Info and in the header.
@@ -495,7 +498,7 @@ async function openChannel(channelName: string) {
     let testTeam: any;
     let testChannel: any = null;
 
-    const MEMBER_FIELD_NAME = 'memberfield';
+    const MEMBER_FIELD_NAME = `memberfield_${FIELD_SUFFIX}`;
 
     beforeAll(async () => {
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);

@@ -12,7 +12,7 @@ import {assertServerBaseline} from '@support/server_baseline';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeForm, ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, CreateOrEditChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
@@ -31,9 +31,12 @@ const FIELD_OPTIONS = [
 // One required, member-settable field; one required, sysadmin-only field; one
 // optional field. All three ever created by this suite, so cleanup can target
 // them by name regardless of which test created which.
-const REQUIRED_FIELD_NAME = 'createrequired';
-const SYSADMIN_FIELD_NAME = 'createsysadmin';
-const OPTIONAL_FIELD_NAME = 'createoptional';
+// Suite-unique suffix: on the shared servers only optional fields named <name>_<6 hex> may be
+// created (detox/e2e/support/server_api/pool_guard.ts), so runs never touch each other's fields.
+const FIELD_SUFFIX = getRandomId(6);
+const REQUIRED_FIELD_NAME = `createrequired_${FIELD_SUFFIX}`;
+const SYSADMIN_FIELD_NAME = `createsysadmin_${FIELD_SUFFIX}`;
+const OPTIONAL_FIELD_NAME = `createoptional_${FIELD_SUFFIX}`;
 const ALL_FIELD_NAMES = [REQUIRED_FIELD_NAME, SYSADMIN_FIELD_NAME, OPTIONAL_FIELD_NAME];
 
 const DISPLAY_ACTIONS = ['display_label_info', 'display_label_header'];
