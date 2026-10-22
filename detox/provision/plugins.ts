@@ -213,23 +213,40 @@ async function waitForDialogCommand(client: MattermostClient, token: string, tea
 }
 
 /**
- * The demo plugin (v0.12.1) hands every config save back to the server when it has no settings entry,
- * and that round trip resets settings it does not know, or that are false, to their defaults. Any entry,
- * even an empty one, makes it leave the save alone.
+ * The demo plugin settings entry to write so DialogOnlyMode is on, or null when it already is. Setting
+ * keys are matched case-insensitively, so any spelling of DialogOnlyMode is replaced; other settings are kept.
+ */
+export function demoPluginSettingsPatch(entry: Record<string, unknown>): Record<string, unknown> | null {
+    const isDialogOnlyModeKey = (key: string) => key.toLowerCase() === 'dialogonlymode';
+    const values = Object.entries(entry).filter(([key]) => isDialogOnlyModeKey(key)).map(([, value]) => value);
+    if (values.length > 0 && values.every((value) => value === true)) {
+        return null;
+    }
+    const otherSettings = Object.fromEntries(Object.entries(entry).filter(([key]) => !isDialogOnlyModeKey(key)));
+    return {...otherSettings, DialogOnlyMode: true};
+}
+
+/**
+ * Sets DialogOnlyMode in the demo plugin's settings entry before the plugin is installed, so it starts
+ * without the demo user, the demo channels and the posts for every server event, keeping only /dialog
+ * (demo plugin v0.12.2+). The entry also keeps an older build still running on a reused server (v0.12.1)
+ * out of config saves: without an entry it hands every save back to the server, and that round trip
+ * resets settings it does not know, or that are false, to their defaults.
  */
 export async function ensureDemoPluginSettingsEntry(client: MattermostClient, token: string): Promise<void> {
-    const res = await client.request<{PluginSettings?: {Plugins?: Record<string, unknown>}}>('GET', '/api/v4/config', undefined, token);
+    const res = await client.request<{PluginSettings?: {Plugins?: Record<string, Record<string, unknown> | undefined>}}>('GET', '/api/v4/config', undefined, token);
     if (res.status !== 200) {
         throw new Error(`Could not read config to check the ${DEMO_PLUGIN_ID} settings entry (HTTP ${res.status})`);
     }
-    if (res.data?.PluginSettings?.Plugins?.[DEMO_PLUGIN_ID]) {
+    const settings = demoPluginSettingsPatch(res.data?.PluginSettings?.Plugins?.[DEMO_PLUGIN_ID] ?? {});
+    if (!settings) {
         return;
     }
-    const patchRes = await client.request<ApiErrorBody>('PUT', '/api/v4/config/patch', {PluginSettings: {Plugins: {[DEMO_PLUGIN_ID]: {}}}}, token);
+    const patchRes = await client.request<ApiErrorBody>('PUT', '/api/v4/config/patch', {PluginSettings: {Plugins: {[DEMO_PLUGIN_ID]: settings}}}, token);
     if (patchRes.status !== 200) {
-        throw new Error(`Could not add the ${DEMO_PLUGIN_ID} settings entry (HTTP ${patchRes.status})`);
+        throw new Error(`Could not set DialogOnlyMode in the ${DEMO_PLUGIN_ID} settings entry (HTTP ${patchRes.status})`);
     }
-    logInfo(`Added an empty ${DEMO_PLUGIN_ID} settings entry so its config hook keeps other settings intact.`);
+    logInfo(`Set DialogOnlyMode in the ${DEMO_PLUGIN_ID} settings entry so it posts nothing and its config hook keeps other settings intact.`);
 }
 
 export async function ensureDemoPluginReady(client: MattermostClient, token: string): Promise<void> {
