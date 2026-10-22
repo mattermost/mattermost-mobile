@@ -3,10 +3,11 @@
 
 /* eslint-disable max-lines */
 
-import {ActionType} from '@constants';
+import {ActionType, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -156,6 +157,25 @@ describe('reactions crud', () => {
         expect(result.error).toBeUndefined();
         expect(result.reaction).toBeDefined();
         expect(result.reaction?.create_at).toBe(0);
+    });
+
+    it('addReaction - should expire the decisions of the post channel when a channel policy denies it', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.addReaction.mockImplementationOnce(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.CHANNEL_WRITE_ACCESS_DENIED, status_code: 403};
+        });
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await addReaction(serverUrl, post1.id, '+1');
+        expect(result.error).toBeDefined();
+        expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
     });
 
     it('removeReaction - handle error', async () => {

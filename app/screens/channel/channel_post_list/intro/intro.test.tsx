@@ -50,6 +50,7 @@ describe('Intro', () => {
             <>
                 <Intro
                     channel={channel}
+                    managementDenied={false}
                     roles={[]}
                 />
                 <StopLoadingBeforeSubscribe/>
@@ -69,6 +70,7 @@ describe('Intro', () => {
         const {queryByTestId, UNSAFE_root} = renderWithIntlAndTheme(
             <Intro
                 channel={channel}
+                managementDenied={false}
                 roles={[]}
             />,
         );

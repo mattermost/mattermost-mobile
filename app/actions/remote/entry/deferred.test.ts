@@ -46,6 +46,9 @@ describe('actions/remote/entry/deferred', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
 
+        // The automock returns undefined, which the real action never does.
+        jest.mocked(fetchMyChannelsForTeam).mockResolvedValue({channels: [], memberships: []});
+
         DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({
             database: {},
             operator: mockOperator,
@@ -153,7 +156,7 @@ describe('actions/remote/entry/deferred', () => {
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalled();
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
-            expect(processEntryModelsForDeletion).toHaveBeenCalledWith({serverUrl, operator: mockOperator, teamData: defaultTeamData, chData: defaultChData});
+            expect(processEntryModelsForDeletion).toHaveBeenCalledWith({serverUrl, operator: mockOperator, teamData: defaultTeamData, chData: defaultChData, channelsFetchComplete: true});
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
             expect(fetchGroupsForMember).toHaveBeenCalledWith(serverUrl, currentUserId, false, undefined);
             expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, initialTeamId, true, undefined);

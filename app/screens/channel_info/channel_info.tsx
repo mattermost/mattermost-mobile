@@ -12,6 +12,7 @@ import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useFetchRenderPermissions} from '@hooks/render_permissions';
 import {navigateBack} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -88,6 +89,7 @@ const ChannelInfo = ({
     }, []);
 
     useAndroidHardwareBackHandler(Screens.CHANNEL_INFO, onPressed);
+    useFetchRenderPermissions(channelId);
 
     return (
         <View style={styles.flex}>
