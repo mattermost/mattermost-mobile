@@ -18,7 +18,8 @@ export type RenderPermissionsEntry = {
 
 // Websocket delivery is not guaranteed, so no entry is trusted indefinitely. Revalidation is also
 // triggered by any redaction epoch raise (see @actions/websocket/access_control), a network change
-// (expireServer from WebsocketManager), the server refusing an upload the entry allowed, and the entry
+// (expireServer from WebsocketManager), a permission policy update (expireServer from
+// handlePermissionPolicyUpdatedEvent), the server refusing an action the entry allowed, and the entry
 // is dropped on logout or server removal.
 export const RENDER_PERMISSIONS_TTL_MS = 5 * 60 * 1000;
 

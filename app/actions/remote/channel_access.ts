@@ -238,6 +238,8 @@ function schedule(serverUrl: string, {teamId, channelId}: {teamId?: string; chan
     return drain(serverUrl);
 }
 
+// Only the current team, so a policy edit costs each client one request: other teams' denied channels
+// are dropped by the next sync, or when opened (the view call is refused).
 export async function reconcileChannelAccess(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
