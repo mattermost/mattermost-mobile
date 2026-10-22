@@ -5,6 +5,7 @@ import {
     TranscribeAPI,
     type CallJobState,
     type CallPostProps,
+    type CallState,
     type CallsConfig,
     type EmojiData,
     type UserReactionData,
@@ -27,6 +28,16 @@ export const CallPostStatus = {
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
 export type CallPostStatus = typeof CallPostStatus[keyof typeof CallPostStatus];
+
+// The media transport a server's calls plugin uses. Selected at runtime per server,
+// since mobile ships independently of the server.
+export const CallsTransport = {
+    Rtcd: 'rtcd',
+    LiveKit: 'livekit',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type CallsTransport = typeof CallsTransport[keyof typeof CallsTransport];
 
 // CallPostProps comes from calls-common, which has no knowledge of call_status yet.
 export type CallsPostProps = CallPostProps & {
@@ -132,6 +143,7 @@ export type CurrentCall = Call & {
     serverUrl: string;
     myUserId: string;
     mySessionId: string;
+    transport: CallsTransport;
     screenShareURL: string;
     audioDeviceInfo: AudioRoute;
     voiceOn: Dictionary<boolean>;
@@ -151,6 +163,7 @@ export const DefaultCurrentCall: CurrentCall = {
     serverUrl: '',
     myUserId: '',
     mySessionId: '',
+    transport: CallsTransport.Rtcd,
     screenShareURL: '',
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
@@ -175,12 +188,19 @@ export type ChannelsWithCalls = Dictionary<boolean>;
 export {AudioDevice};
 export type {AudioDeviceType, AudioRoute};
 
+// Response from the plugin's livekit-token endpoint: the server-minted session, the room URL
+// and the JWT granting access to it, and the call as it stood when the session was created.
+export type LiveKitSessionResponse = {
+    session_id: string;
+    token: string;
+    url: string;
+    call_state: CallState;
+}
+
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
-
-    // Returns false when there was no voice track to enable, so the unmute never left the device.
-    unmute: () => boolean;
+    unmute: () => void;
     waitForPeerConnection: () => Promise<string>;
     raiseHand: () => void;
     unraiseHand: () => void;
