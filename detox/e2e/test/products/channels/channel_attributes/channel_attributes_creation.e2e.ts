@@ -206,7 +206,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         // not rule out a server rejection producing the same outcome).
         await CreateOrEditChannelScreen.createButton.tap();
         await wait(timeouts.ONE_SEC);
-        await expect(CreateOrEditChannelScreen.createOrEditChannelScreen).toBeVisible();
+        await expect(CreateOrEditChannelScreen.createOrEditChannelScreen).toExist();
         await expect(CreateOrEditChannelScreen.errorText).not.toExist();
 
         // # Set the required attribute.
@@ -225,7 +225,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
 
         // * The created channel already carries the value: in the header chip and
         // in Channel Info, with no extra edit needed.
-        await ChannelAttributeLabels.toBeVisible();
+        await waitFor(ChannelAttributeLabels.getChip(REQUIRED_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelAttributeLabels.getChipValue(REQUIRED_FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.open();

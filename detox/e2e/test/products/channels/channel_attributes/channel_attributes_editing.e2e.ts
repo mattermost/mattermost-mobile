@@ -270,7 +270,7 @@ async function openChannel(channelName: string) {
         await ChannelInfoScreen.close();
 
         // * The header chip reflects the same value: both surfaces read one query.
-        await ChannelAttributeLabels.toBeVisible();
+        await waitFor(ChannelAttributeLabels.getChip(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelAttributeLabels.getChipValue(FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
 
         await ChannelScreen.back();
