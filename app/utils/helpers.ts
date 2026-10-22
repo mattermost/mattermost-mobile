@@ -192,6 +192,15 @@ export function isTablet() {
     return result.isTablet && !result.isSplit;
 }
 
+// Tablets can rotate freely, even when running in split view, so only phones are locked to portrait.
+export function lockPortraitOnPhones() {
+    if (RNUtils.isRunningInSplitView()?.isTablet) {
+        RNUtils.unlockOrientation();
+        return;
+    }
+    RNUtils.lockPortrait();
+}
+
 export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));
 
 export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number) {

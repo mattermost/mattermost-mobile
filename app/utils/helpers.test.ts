@@ -19,6 +19,7 @@ import {
     toTitleCase,
     getRoundedTime,
     isTablet,
+    lockPortraitOnPhones,
     pluckUnique,
     bottomSheetSnapPoint,
     hasTrailingSpaces,
@@ -262,6 +263,29 @@ describe('Helpers', () => {
             NativeModules.RNUtils.isRunningInSplitView = jest.fn().mockReturnValue({isSplit: true, isTablet: true});
             expect(isTablet()).toBe(false);
             NativeModules.RNUtils.isRunningInSplitView = prevSplitViewModule; // Restore original value
+        });
+    });
+
+    describe('lockPortraitOnPhones', () => {
+        const prevSplitViewModule = NativeModules.RNUtils.isRunningInSplitView;
+
+        afterEach(() => {
+            NativeModules.RNUtils.isRunningInSplitView = prevSplitViewModule;
+            jest.clearAllMocks();
+        });
+
+        it('should lock phones to portrait', () => {
+            NativeModules.RNUtils.isRunningInSplitView = jest.fn().mockReturnValue({isSplit: false, isTablet: false});
+            lockPortraitOnPhones();
+            expect(NativeModules.RNUtils.lockPortrait).toHaveBeenCalledTimes(1);
+            expect(NativeModules.RNUtils.unlockOrientation).not.toHaveBeenCalled();
+        });
+
+        it('should leave tablets free to rotate, including in split view', () => {
+            NativeModules.RNUtils.isRunningInSplitView = jest.fn().mockReturnValue({isSplit: true, isTablet: true});
+            lockPortraitOnPhones();
+            expect(NativeModules.RNUtils.unlockOrientation).toHaveBeenCalledTimes(1);
+            expect(NativeModules.RNUtils.lockPortrait).not.toHaveBeenCalled();
         });
     });
 
