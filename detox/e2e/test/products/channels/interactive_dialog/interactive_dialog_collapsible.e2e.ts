@@ -289,8 +289,9 @@ describe('Interactive Dialog - Collapsible Sections (Plugin)', () => {
     // Driven by the demo plugin's `/dialog collapsible` sample, which nests fields 1, 2,
     // and 3 levels deep. Level 1 starts expanded; levels 2 and 3 start collapsed. A field
     // inside a collapsed section is unmounted, so its input's existence proxies open state.
-    // NOTE: MM-T56xx are placeholders pending the real Zephyr IDs.
-    it('MM-T5601 should show expanded section fields and hide collapsed ones (Plugin)', async () => {
+    // NOTE: MM-T<collapsible>-N are placeholders. Per QA (Zephyr Scale in JIRA), real IDs
+    // may be dropped as a step; swap these if/when QA assigns them.
+    it('MM-T<collapsible>-1 should show expanded section fields and hide collapsed ones (Plugin)', async () => {
         await ensureDialogClosed();
         await postSlashCommandDirect('/dialog collapsible');
         await ensureDialogOpen();
@@ -307,7 +308,7 @@ describe('Interactive Dialog - Collapsible Sections (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    it('MM-T5602 should reveal nested fields when expanding sections (Plugin)', async () => {
+    it('MM-T<collapsible>-2 should reveal nested fields when expanding sections (Plugin)', async () => {
         await ensureDialogClosed();
         await postSlashCommandDirect('/dialog collapsible');
         await ensureDialogOpen();
@@ -333,7 +334,7 @@ describe('Interactive Dialog - Collapsible Sections (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    it('MM-T5603 should fill fields across sections and submit (Plugin)', async () => {
+    it('MM-T<collapsible>-3 should fill fields across sections and submit (Plugin)', async () => {
         await ensureDialogClosed();
         await postSlashCommandDirect('/dialog collapsible');
         await ensureDialogOpen();
@@ -353,6 +354,39 @@ describe('Interactive Dialog - Collapsible Sections (Plugin)', () => {
         // # Submit and verify via the server post (a post only appears once every required
         // field is accepted), not the rendered UI, which flakes on the just-created post.
         await InteractiveDialogScreen.submit();
+        await ensureDialogClosed();
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        if (!post?.message?.includes('Dialog Submitted:')) {
+            throw new Error(`Expected a "Dialog Submitted:" post, got: ${post?.message}`);
+        }
+    });
+
+    it('MM-T<collapsible>-4 should auto-expand a collapsed section when its field errors, then submit (Plugin)', async () => {
+        await ensureDialogClosed();
+        await postSlashCommandDirect('/dialog collapsible');
+        await ensureDialogOpen();
+
+        // # Fill the level-1 required fields but leave level 2 collapsed, so its required
+        // `email` stays empty and unmounted.
+        await InteractiveDialogScreen.fillTextElement('first_name', 'Ada');
+        await InteractiveDialogScreen.fillTextElement('last_name', 'Lovelace');
+
+        // * email isn't mounted while its section is collapsed
+        await InteractiveDialogScreen.expectFieldVisible('email', false);
+
+        // # Submit with the required email still empty
+        await InteractiveDialogScreen.submit();
+
+        // * Client-side validation fails and auto-expands level 2, mounting the errored
+        // email field without ever tapping its toggle. The dialog stays open (no post).
+        await InteractiveDialogScreen.expectFieldVisible('email', true);
+
+        // # Fill the now-revealed email and resubmit. Let the section settle first, as in -3.
+        await wait(timeouts.ONE_SEC);
+        await InteractiveDialogScreen.fillTextElement('email', 'ada@example.com');
+        await InteractiveDialogScreen.submit();
+
+        // * A post only appears once every required field is accepted.
         await ensureDialogClosed();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         if (!post?.message?.includes('Dialog Submitted:')) {
