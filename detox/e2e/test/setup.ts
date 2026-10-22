@@ -6,6 +6,9 @@ import {execSync} from 'child_process';
 import {existsSync} from 'fs';
 
 import {System, User} from '@support/server_api';
+import {drainPoolGuardViolations} from '@support/server_api/pool_guard';
+import {applyServerBaseline} from '@support/server_baseline';
+import {serverRole} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
 import {safeEnableSynchronization} from '@support/utils';
 
@@ -354,4 +357,17 @@ beforeAll(async () => {
     console.info('✅ App launched');
 
     await loginAdmin();
+
+    // The mutation shard runs specs that change server-wide state; start each one from the baseline.
+    if (serverRole === 'mutation') {
+        await applyServerBaseline(siteOneUrl);
+    }
 }, 360_000);
+
+// API helpers return errors instead of throwing, so a blocked write would otherwise pass unnoticed.
+afterAll(() => {
+    const violations = drainPoolGuardViolations();
+    if (violations.length) {
+        throw new Error(`Server-wide writes from a pool shard (move the spec to detox/e2e/server_mutation_specs.json):\n${violations.join('\n')}`);
+    }
+});
