@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import moment from 'moment-timezone';
-import {NativeModules, Platform} from 'react-native';
+import {Dimensions, NativeModules, Platform} from 'react-native';
 
 import {License} from '@constants';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
@@ -271,19 +271,36 @@ describe('Helpers', () => {
 
         afterEach(() => {
             NativeModules.RNUtils.isRunningInSplitView = prevSplitViewModule;
+            jest.restoreAllMocks();
             jest.clearAllMocks();
         });
 
         it('should lock phones to portrait', () => {
             NativeModules.RNUtils.isRunningInSplitView = jest.fn().mockReturnValue({isSplit: false, isTablet: false});
+            jest.spyOn(Dimensions, 'get').mockReturnValue({width: 411, height: 891, scale: 2.625, fontScale: 1});
+
             lockPortraitOnPhones();
+
             expect(NativeModules.RNUtils.lockPortrait).toHaveBeenCalledTimes(1);
             expect(NativeModules.RNUtils.unlockOrientation).not.toHaveBeenCalled();
         });
 
         it('should leave tablets free to rotate, including in split view', () => {
             NativeModules.RNUtils.isRunningInSplitView = jest.fn().mockReturnValue({isSplit: true, isTablet: true});
+            jest.spyOn(Dimensions, 'get').mockReturnValue({width: 824, height: 1318, scale: 2.125, fontScale: 1});
+
             lockPortraitOnPhones();
+
+            expect(NativeModules.RNUtils.unlockOrientation).toHaveBeenCalledTimes(1);
+            expect(NativeModules.RNUtils.lockPortrait).not.toHaveBeenCalled();
+        });
+
+        it('should leave a tablet free to rotate when a narrow split reports it as a phone', () => {
+            NativeModules.RNUtils.isRunningInSplitView = jest.fn().mockReturnValue({isSplit: true, isTablet: false});
+            jest.spyOn(Dimensions, 'get').mockReturnValue({width: 824, height: 1318, scale: 2, fontScale: 2});
+
+            lockPortraitOnPhones();
+
             expect(NativeModules.RNUtils.unlockOrientation).toHaveBeenCalledTimes(1);
             expect(NativeModules.RNUtils.lockPortrait).not.toHaveBeenCalled();
         });
