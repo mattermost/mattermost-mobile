@@ -1,0 +1,16 @@
+[
+    "antivirus",
+    "mattermost-autolink",
+    "com.mattermost.aws-sns",
+    "com.mattermost.plugin-channel-export",
+    "com.mattermost.custom-attributes",
+    "github",
+    "com.github.manland.mattermost-plugin-gitlab",
+    "com.mattermost.plugin-incident-management",
+    "jenkins",
+    "jira",
+    "com.mattermost.calls",
+    "com.mattermost.nps",
+    "com.mattermost.welcomebot",
+    "zoom"
+]

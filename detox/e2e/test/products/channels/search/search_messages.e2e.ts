@@ -11,9 +11,9 @@ import {
     Channel,
     Post,
     Setup,
-    System,
     Team,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -37,8 +37,6 @@ describe('Search - Search Messages', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
-    let previousCollapsedThreads: string | undefined;
-    let previousThreadAutoFollow: boolean | undefined;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
@@ -46,19 +44,11 @@ describe('Search - Search Messages', () => {
         testTeam = team;
         testUser = user;
 
-        // Capture the current values so afterAll can put them back: these are global
-        // server settings, so leaving them flipped changes thread behaviour for every
-        // suite that runs after this one on the same server.
-        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        previousCollapsedThreads = originalConfig?.ServiceSettings?.CollapsedThreads;
-        previousThreadAutoFollow = originalConfig?.ServiceSettings?.ThreadAutoFollow;
-
-        await System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'always_on',
-                ThreadAutoFollow: true,
-            },
-        });
+        // # Assert server baseline (CRT always_on, ThreadAutoFollow) for thread UI.
+        await assertServerBaseline(siteOneUrl, [
+            'ServiceSettings.CollapsedThreads',
+            'ServiceSettings.ThreadAutoFollow',
+        ]);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -87,16 +77,6 @@ describe('Search - Search Messages', () => {
     });
 
     afterAll(async () => {
-        // # Restore the thread settings this suite changed
-        if (previousCollapsedThreads !== undefined || previousThreadAutoFollow !== undefined) {
-            await System.apiUpdateConfig(siteOneUrl, {
-                ServiceSettings: {
-                    CollapsedThreads: previousCollapsedThreads,
-                    ThreadAutoFollow: previousThreadAutoFollow,
-                },
-            });
-        }
-
         // # Log out
         await HomeScreen.logout();
     });

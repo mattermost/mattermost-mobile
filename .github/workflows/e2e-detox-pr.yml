@@ -717,9 +717,20 @@ jobs:
           IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
           SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
         run: |
+          # Site 2 is mutation server B, the only server that gets the demo plugin; a repeated URL would put it on a pool server.
+          DUPES=$(printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL" | sort | uniq -d)
+          if [ -n "$DUPES" ]; then
+            echo "::error::PR test server URLs must be distinct; the demo plugin would land on a pool server if a site 2 URL repeats another server:"
+            printf '%s\n' "$DUPES"
+            exit 1
+          fi
           {
             echo "list<<EOF"
             printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"
+            echo "EOF"
+            # Site 2 is mutation server B, the only server that gets the demo plugin.
+            echo "demo<<EOF"
+            printf '%s\n' "$ANDROID_SITE_2_URL" "$IOS_SITE_2_URL"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -730,6 +741,7 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
         with:
           server-urls: ${{ steps.urls.outputs.list }}
+          demo-plugin-server-urls: ${{ steps.urls.outputs.demo }}
 
   # iOS and Android Detox jobs are separate so each platform starts as soon as its
   # own build finishes — Android does not wait for build-ios-simulator.
