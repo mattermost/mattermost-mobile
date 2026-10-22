@@ -13,6 +13,7 @@ import NetworkManager from '@managers/network_manager';
 import {queryAllMyChannel, queryMyChannelsByChannelIds, queryMyChannelsByTeam} from '@queries/servers/channel';
 import {getConfigValue, getCurrentChannelId, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore, {type PendingChannelAccessChecks} from '@store/ephemeral_store';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
@@ -28,14 +29,8 @@ import type {Database, Model} from '@nozbe/watermelondb';
 
 const BATCH_SIZE = 10;
 
-type PendingChecks = {
-    teamIds: Set<string>;
-    channelIds: Set<string>;
-};
-
 // One run at a time per server: work arriving mid-run is picked up by its next pass, so a burst of
 // events costs at most two passes and two passes never restore the same channel concurrently.
-const pending = new Map<string, PendingChecks>();
 const running = new Set<string>();
 
 const isChannelReadAccessEnforced = async (database: Database) => {
@@ -176,7 +171,7 @@ async function checkChannels(serverUrl: string, database: Database, channelIds: 
     return prepareRestoredChannels(serverUrl, database, regained, fetched.map(([, membership]) => membership));
 }
 
-async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChecks) {
+async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChannelAccessChecks) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isChannelReadAccessEnforced(database))) {
@@ -216,8 +211,7 @@ async function drain(serverUrl: string) {
 
     running.add(serverUrl);
     try {
-        for (let work = pending.get(serverUrl); work; work = pending.get(serverUrl)) {
-            pending.delete(serverUrl);
+        for (let work = EphemeralStore.takePendingChannelAccessChecks(serverUrl); work; work = EphemeralStore.takePendingChannelAccessChecks(serverUrl)) {
             // eslint-disable-next-line no-await-in-loop
             await runChecks(serverUrl, work);
         }
@@ -226,15 +220,8 @@ async function drain(serverUrl: string) {
     }
 }
 
-function schedule(serverUrl: string, {teamId, channelId}: {teamId?: string; channelId?: string}) {
-    const work = pending.get(serverUrl) ?? {teamIds: new Set<string>(), channelIds: new Set<string>()};
-    if (teamId) {
-        work.teamIds.add(teamId);
-    }
-    if (channelId) {
-        work.channelIds.add(channelId);
-    }
-    pending.set(serverUrl, work);
+function schedule(serverUrl: string, check: {teamId?: string; channelId?: string}) {
+    EphemeralStore.addPendingChannelAccessCheck(serverUrl, check);
     return drain(serverUrl);
 }
 
@@ -256,8 +243,4 @@ export async function reconcileChannelAccess(serverUrl: string): Promise<{error?
 
 export function checkChannelAccess(serverUrl: string, channelId: string) {
     return schedule(serverUrl, {channelId});
-}
-
-export function clearChannelAccessState(serverUrl: string) {
-    pending.delete(serverUrl);
 }

@@ -12,6 +12,11 @@ import {toMilliseconds} from '@utils/datetime';
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 const TIME_TO_CLEAR_RECENTLY_UNSAVED_SAVED_POSTS = toMilliseconds({minutes: 2});
 
+export type PendingChannelAccessChecks = {
+    teamIds: Set<string>;
+    channelIds: Set<string>;
+};
+
 class EphemeralStoreSingleton {
     private themeSubject = new BehaviorSubject<Theme>(getDefaultThemeByAppearance());
     creatingChannel = false;
@@ -79,6 +84,10 @@ class EphemeralStoreSingleton {
     // keys embed the redaction epoch, which restarts from the same values once the database is
     // recreated, so a previous session's entry could block a fetch for the next one.
     private linkedPostFetchAttempts: {[serverUrl: string]: Set<string>} = {};
+
+    // Channel access checks waiting for the server's next run (see @actions/remote/channel_access).
+    // Cleared on logout, so a previous session's checks are not run for the next one.
+    private pendingChannelAccessChecks: {[serverUrl: string]: PendingChannelAccessChecks} = {};
 
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
@@ -564,6 +573,30 @@ class EphemeralStoreSingleton {
 
     clearLinkedPostFetchAttempts = (serverUrl: string) => {
         delete this.linkedPostFetchAttempts[serverUrl];
+    };
+
+    addPendingChannelAccessCheck = (serverUrl: string, {teamId, channelId}: {teamId?: string; channelId?: string}) => {
+        if (!this.pendingChannelAccessChecks[serverUrl]) {
+            this.pendingChannelAccessChecks[serverUrl] = {teamIds: new Set(), channelIds: new Set()};
+        }
+        const checks = this.pendingChannelAccessChecks[serverUrl];
+        if (teamId) {
+            checks.teamIds.add(teamId);
+        }
+        if (channelId) {
+            checks.channelIds.add(channelId);
+        }
+    };
+
+    // Returns the server's pending checks and removes them, so checks added meanwhile wait for the next run.
+    takePendingChannelAccessChecks = (serverUrl: string): PendingChannelAccessChecks | undefined => {
+        const checks = this.pendingChannelAccessChecks[serverUrl];
+        delete this.pendingChannelAccessChecks[serverUrl];
+        return checks;
+    };
+
+    clearPendingChannelAccessChecks = (serverUrl: string) => {
+        delete this.pendingChannelAccessChecks[serverUrl];
     };
 
     // Ephemeral control for rejected files

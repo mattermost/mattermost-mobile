@@ -5,10 +5,11 @@ import {removeCurrentUserFromChannel} from '@actions/local/channel';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {fetchCategories} from './category';
 import {handleChannelAccessDenied} from './channel';
-import {checkChannelAccess, clearChannelAccessState, reconcileChannelAccess} from './channel_access';
+import {checkChannelAccess, reconcileChannelAccess} from './channel_access';
 import {fetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -131,7 +132,7 @@ describe('channel access', () => {
     });
 
     afterEach(async () => {
-        clearChannelAccessState(serverUrl);
+        EphemeralStore.clearPendingChannelAccessChecks(serverUrl);
         Object.values(mockClient).forEach((fn) => fn.mockReset());
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
