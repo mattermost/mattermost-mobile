@@ -26,10 +26,10 @@ export const CALLS_PLUGIN_URL = 'https://github.com/mattermost/mattermost-plugin
 export const REQUIRED_PLUGINS: RequiredPlugin[] = [
     {id: AGENTS_PLUGIN_ID, url: null, fixture: null},
     {id: 'com.mattermost.calls', url: CALLS_PLUGIN_URL, fixture: null},
-
-    // url is null on purpose: origin-side install_from_url 524s behind Cloudflare.
-    {id: DEMO_PLUGIN_ID, url: null, fixture: DEMO_PLUGIN_FIXTURE_FILENAME},
 ];
+
+// Only servers provisioned with --demo-plugin (mutation server B). url is null on purpose: origin-side install_from_url 524s behind Cloudflare.
+export const DEMO_PLUGIN_REQUIREMENT: RequiredPlugin = {id: DEMO_PLUGIN_ID, url: null, fixture: DEMO_PLUGIN_FIXTURE_FILENAME};
 
 export const ALLOWED_DOMAIN_PATTERNS = [
     /\.cloud\.mattermost\.com$/,

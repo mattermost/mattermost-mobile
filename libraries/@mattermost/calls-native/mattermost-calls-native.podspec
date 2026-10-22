@@ -21,12 +21,12 @@ Pod::Spec.new do |s|
 
   s.frameworks   = "PushKit", "CallKit", "AVFoundation"
 
-  # Match the WebRTC framework version that react-native-webrtc pulls in.
+  # Match the WebRTC framework that @livekit/react-native-webrtc pulls in.
   # We call RTCAudioSession.sharedInstance().audioSessionDidActivate(_:)
-  # directly from our CallKit delegate — this is the integration point
-  # officially documented by react-native-webrtc, and the underlying
-  # framework is shared with the host app's react-native-webrtc install.
-  s.dependency 'JitsiWebRTC', '~> 124.0.0'
+  # directly from our CallKit delegate, so the framework must be the same
+  # binary the host app links — two WebRTC modules will not coexist.
+  # LiveKit pins this pod exactly, so it has to track the fork on every bump.
+  s.dependency 'WebRTC-SDK', '= 144.7559.10'
 
   s.dependency 'Gekidou'
 

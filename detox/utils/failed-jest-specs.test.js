@@ -10,6 +10,7 @@ const {describe, it} = require('node:test');
 const {
     specKey,
     listRetrySpecs,
+    listUnrunSpecs,
     mergeJestResultsPreferLater,
 } = require('./failed-jest-specs');
 
@@ -57,6 +58,37 @@ describe('failed-jest-specs', () => {
         assert.deepEqual(retry, [
             'detox/e2e/test/fail.e2e.ts',
             'detox/e2e/test/never-ran.e2e.ts',
+        ]);
+        fs.rmSync(dir, {recursive: true, force: true});
+    });
+
+    it('should list only the files a killed Jest never started, not the ones that failed', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'unrun-specs-'));
+        const results = path.join(dir, 'ios-data.json');
+
+        // jest-stare shape: suites carry testFilePath and per-test testResults
+        fs.writeFileSync(results, JSON.stringify({
+            testResults: [
+                {
+                    testFilePath: '/repo/detox/e2e/test/pass.e2e.ts',
+                    testResults: [{status: 'passed', title: 'ok'}],
+                },
+                {
+                    testFilePath: '/repo/detox/e2e/test/fail.e2e.ts',
+                    numFailingTests: 1,
+                    testResults: [{status: 'failed', title: 'nope'}],
+                },
+            ],
+        }));
+
+        assert.deepEqual(listUnrunSpecs(results, [
+            'detox/e2e/test/pass.e2e.ts',
+            'detox/e2e/test/fail.e2e.ts',
+            'detox/e2e/test/never-ran-1.e2e.ts',
+            'detox/e2e/test/never-ran-2.e2e.ts',
+        ]), [
+            'detox/e2e/test/never-ran-1.e2e.ts',
+            'detox/e2e/test/never-ran-2.e2e.ts',
         ]);
         fs.rmSync(dir, {recursive: true, force: true});
     });

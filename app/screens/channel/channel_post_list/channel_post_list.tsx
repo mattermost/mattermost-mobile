@@ -62,16 +62,13 @@ const ChannelPostList = ({
 
     const onEndReached = useDebounce(handleEndReached, 500);
 
-    useDidUpdate(() => {
-        setFetchingPosts(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
-    }, [serverUrl, channelId]);
-
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
             if (eventServerUrl === serverUrl && eventChannelId === channelId) {
                 setFetchingPosts(value);
             }
         });
+        setFetchingPosts(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
 
         return () => listener.remove();
     }, [serverUrl, channelId]);
