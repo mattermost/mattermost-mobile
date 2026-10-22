@@ -498,6 +498,7 @@ describe('dialog_conversion', () => {
                 label: 'Textarea Field',
                 description: 'Enter multiple lines',
                 position: 0,
+                subtype: 'textarea',
                 min_length: 10,
                 max_length: 500,
             });
