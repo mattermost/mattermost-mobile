@@ -9,6 +9,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
+import {setVisiblePlaybookRun} from '@playbooks/actions/local/task_activity';
 import {ensurePlaybookRunActivityFresh} from '@playbooks/actions/remote/runs';
 import PlaybookRunScreen from '@playbooks/screens/playbook_run';
 
@@ -25,8 +26,11 @@ export default function PlaybookRunRoute() {
 
     useFocusEffect(useCallback(() => {
         if (props.playbookRunId && !props.playbookRun) {
+            setVisiblePlaybookRun(serverUrl, props.playbookRunId);
             ensurePlaybookRunActivityFresh(serverUrl, props.playbookRunId);
+            return () => setVisiblePlaybookRun(serverUrl, null);
         }
+        return undefined;
     }, [props.playbookRunId, props.playbookRun, serverUrl]));
 
     useNavigationHeader({
