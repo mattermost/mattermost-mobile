@@ -8,12 +8,13 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns, setOwner as localSetOwner, updatePlaybookRun as localUpdatePlaybookRun} from '@playbooks/actions/local/run';
-import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
+import {observeTaskActivityRevision} from '@playbooks/actions/local/task_activity';
+import {getLastPlaybookRunsFetchAt, getPlaybookRunById} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import {fetchPlaybookRunPropertyFields} from './property_fields';
-import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, updatePlaybookRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from './runs';
+import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, updatePlaybookRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate, ensurePlaybookRunActivityFresh} from './runs';
 
 const serverUrl = 'baseHandler.test.com';
 const channelId = 'channel-id-1';
@@ -288,6 +289,30 @@ describe('fetchPlaybookRun', () => {
         expect((await older).error).toBeDefined();
         expect(handlePlaybookRuns).toHaveBeenCalledTimes(1);
         expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [newRun], false, true, true);
+    });
+
+    it('follows up once when the first response trails an observed revision', async () => {
+        const firstRun = TestHelper.fakePlaybookRun({id: runId});
+        const secondRun = TestHelper.fakePlaybookRun({id: runId});
+        let resolveFirst!: (run: PlaybookRun) => void;
+        mockClient.fetchPlaybookRun.mockImplementationOnce(() => new Promise<PlaybookRun>((resolve) => {
+            resolveFirst = resolve;
+        })).mockResolvedValueOnce(secondRun);
+        jest.mocked(getPlaybookRunById).mockResolvedValueOnce(undefined).mockResolvedValueOnce({
+            taskActivityEpoch: 'epoch-a',
+            taskActivityRevision: '42',
+        } as Awaited<ReturnType<typeof getPlaybookRunById>>).mockResolvedValueOnce(undefined);
+
+        const refresh = ensurePlaybookRunActivityFresh(serverUrl, runId);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledTimes(1);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        observeTaskActivityRevision(database, runId, 'epoch-a', '43');
+        resolveFirst(firstRun);
+
+        expect((await refresh).error).toBeUndefined();
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledTimes(2);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [secondRun], false, true, true);
     });
 
     it('should handle fetchOnly mode without storing in DB', async () => {
