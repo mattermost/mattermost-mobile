@@ -129,6 +129,17 @@ export const removePreauthSecret = async (serverUrl: string) => {
 };
 
 export const getPreauthSecret = async (serverUrl: string): Promise<string | undefined> => {
+    if (Platform.OS === 'android') {
+        try {
+            const hasPreauthSecret = await KeyChain.hasGenericPassword({server: serverUrl});
+            if (!hasPreauthSecret) {
+                return undefined;
+            }
+        } catch {
+            // Fall back to the secure read when metadata cannot prove the secret is absent.
+        }
+    }
+
     try {
         const preauthCredentials = await KeyChain.getGenericPassword({
             server: serverUrl,
@@ -173,16 +184,7 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
         }
 
         // Get preauth secret separately
-        let preauthSecret: string | undefined;
-        try {
-            const preauthCredentials = await KeyChain.getGenericPassword({
-                server: serverUrl,
-            });
-            preauthSecret = preauthCredentials ? preauthCredentials.password : undefined;
-        } catch (e) {
-            // Preauth secret is optional, so ignore errors
-            preauthSecret = undefined;
-        }
+        const preauthSecret = await getPreauthSecret(serverUrl);
 
         return {
             serverUrl,
