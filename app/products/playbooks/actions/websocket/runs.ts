@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, type Model} from '@nozbe/watermelondb';
+import {Q, type Database, type Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
@@ -10,10 +10,11 @@ import {ensurePlaybookRunActivityFresh} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {isConsumedTimelineEvent, prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
-import {compareTaskActivityRevisions, parseTaskActivitySync} from '@playbooks/utils/task_activity_sync';
+import {compareTaskActivityRevisions, isValidCertifiedTaskLink, parseTaskActivitySync} from '@playbooks/utils/task_activity_sync';
 import EphemeralStore from '@store/ephemeral_store';
 import {safeParseJSON} from '@utils/helpers';
 
+import type PlaybookTimelineEventModel from '@playbooks/database/models/playbook_timeline_event';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 
@@ -137,6 +138,9 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
     if (data.checklist_deletes?.some((id) => checklistUpdates.some((checklist) => checklist.id === id))) {
         return true;
     }
+    if (sync && !await hasValidDeltaLinks(database, data)) {
+        return true;
+    }
     const touched = {
         checklistIds: checklistUpdates.map((checklist) => checklist.id),
         itemIds: checklistUpdates.flatMap((checklist) => [
@@ -220,6 +224,46 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
         restore();
         return true;
     }
+};
+
+const hasValidDeltaLinks = async (database: Database, data: PlaybookRunUpdate) => {
+    const changedItems = (data.changed_fields.checklists ?? []).flatMap((checklist) => [
+        ...(checklist.item_inserts ?? []).map((item) => ({id: item.id, fields: item})),
+        ...(checklist.item_updates ?? []).map((item) => ({id: item.id, fields: item.fields})),
+    ]).filter(({fields}) => 'state_event_id' in fields);
+    if (!changedItems.length) {
+        return true;
+    }
+    const existingItems = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).query(
+        Q.where('id', Q.oneOf(changedItems.map(({id}) => id))),
+    ).fetch();
+    const items = new Map(existingItems.map((item) => [item.id, item]));
+    const incoming = Array.isArray(data.changed_fields.timeline_events) ? data.changed_fields.timeline_events : [];
+    const events = new Map(incoming.filter((event) => event && !event.delete_at).map((event) => [event.id, event]));
+    const deleted = new Set([
+        ...(data.timeline_event_deletes ?? []),
+        ...incoming.filter((event) => event?.delete_at).map((event) => event.id),
+    ]);
+    const linkedIds = changedItems.map(({fields}) => fields.state_event_id).filter((id): id is string => typeof id === 'string' && !events.has(id) && !deleted.has(id));
+    if (linkedIds.length) {
+        const storedEvents = await database.get<PlaybookTimelineEventModel>(PLAYBOOK_TABLES.PLAYBOOK_TIMELINE_EVENT).query(
+            Q.where('id', Q.oneOf(linkedIds)),
+        ).fetch();
+        for (const event of storedEvents) {
+            events.set(event.id, event.toTimelineEvent());
+        }
+    }
+    return changedItems.every(({id, fields}) => {
+        const previous = items.get(id);
+        const item = {
+            id,
+            state: fields.state ?? previous?.state,
+            state_modified: fields.state_modified ?? previous?.stateModified,
+            state_event_id: fields.state_event_id,
+        } as PlaybookChecklistItem;
+        return item.state_event_id === null || (typeof item.state_event_id === 'string' && item.state_event_id.length > 0 && !deleted.has(item.state_event_id) &&
+            isValidCertifiedTaskLink(item, events.get(item.state_event_id), data.id));
+    });
 };
 
 const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate: PlaybookChecklistUpdate, runId: string) => {

@@ -3,8 +3,9 @@
 
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
+import {ensurePlaybookRunActivityFresh} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {queryPlaybookTimelineEventsForRun} from '@playbooks/database/queries/timeline_event';
 import EphemeralStore from '@store/ephemeral_store';
@@ -29,6 +30,7 @@ const playbookRunId = mockPlaybookRun.id;
 const checklistItemId = mockPlaybookRun.checklists[0].items[0].id;
 
 jest.mock('@playbooks/actions/local/run');
+jest.mock('@playbooks/actions/remote/runs');
 jest.mock('@store/ephemeral_store');
 
 let operator: ServerDataOperator;
@@ -480,6 +482,38 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(checklists).toHaveLength(0);
         expect(items).toHaveLength(0);
         expect((await getPlaybookRunById(operator.database, playbookRunId))?.taskActivityRevision).toBe('43');
+    });
+
+    it('keeps the certificate when a task links to the wrong event', async () => {
+        const run = {
+            ...mockPlaybookRun,
+            task_activity_sync: {version: 1, epoch: 'epoch-a', revision: '42', complete: true},
+        };
+        await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+        const linked = event('wrong-event', 25);
+        linked.details = JSON.stringify({action: 'skip', item_id: 'another-item'});
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: mockPlaybookRun.update_at,
+            task_activity_sync: {version: 1, epoch: 'epoch-a', base_revision: '42', revision: '43', complete: false},
+            changed_fields: {
+                timeline_events: [linked],
+                checklists: [{
+                    id: mockPlaybookRun.checklists[0].id,
+                    checklist_updated_at: mockPlaybookRun.update_at,
+                    item_updates: [{
+                        id: checklistItemId,
+                        checklist_item_updated_at: mockPlaybookRun.update_at,
+                        fields: {state: 'skipped', state_modified: 25, state_event_id: linked.id},
+                    }],
+                }],
+            },
+        });
+
+        expect((await getPlaybookRunById(operator.database, playbookRunId))?.taskActivityRevision).toBe('42');
+        expect(await storedEventIds()).toEqual([]);
+        expect(ensurePlaybookRunActivityFresh).toHaveBeenCalledWith(serverUrl, playbookRunId);
     });
 
     // The delta used to be assigned straight onto the run, so one unrelated task change wiped every
