@@ -4,6 +4,7 @@
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
+import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {queryPlaybookTimelineEventsForRun} from '@playbooks/database/queries/timeline_event';
 import EphemeralStore from '@store/ephemeral_store';
@@ -457,6 +458,28 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(await storedEventIds()).toEqual([]);
         const stored = await getPlaybookRunById(operator.database, playbookRunId);
         expect(stored?.taskActivityRevision).toBe('43');
+    });
+
+    it('removes a checklist and its items in a certified deletion', async () => {
+        const run = {
+            ...mockPlaybookRun,
+            task_activity_sync: {version: 1, epoch: 'epoch-a', revision: '42', complete: true},
+        };
+        await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: mockPlaybookRun.update_at,
+            changed_fields: {},
+            checklist_deletes: [mockPlaybookRun.checklists[0].id],
+            task_activity_sync: {version: 1, epoch: 'epoch-a', base_revision: '42', revision: '43', complete: false},
+        });
+
+        const checklists = await operator.database.get(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).query().fetch();
+        const items = await operator.database.get(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).query().fetch();
+        expect(checklists).toHaveLength(0);
+        expect(items).toHaveLength(0);
+        expect((await getPlaybookRunById(operator.database, playbookRunId))?.taskActivityRevision).toBe('43');
     });
 
     // The delta used to be assigned straight onto the run, so one unrelated task change wiped every

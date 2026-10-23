@@ -5,7 +5,7 @@ import {Q, type Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {captureRunActivityState, serializeRunActivity} from '@playbooks/actions/local/task_activity';
+import {captureRunActivityState, observeTaskActivityRevision, serializeRunActivity} from '@playbooks/actions/local/task_activity';
 import {ensurePlaybookRunActivityFresh} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {isConsumedTimelineEvent, prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
@@ -111,6 +111,7 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
         return true;
     }
     if (sync) {
+        observeTaskActivityRevision(database, data.id, sync.epoch, sync.revision);
         if (!run.taskActivityEpoch || !run.taskActivityRevision || run.taskActivityEpoch !== sync.epoch) {
             return true;
         }
@@ -128,12 +129,15 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
             checklist.item_updates?.some((item) => ('state' in item.fields || 'state_modified' in item.fields) && !('state_event_id' in item.fields)))) {
             return true;
         }
-    } else if (run.taskActivityEpoch && ('timeline_events' in data.changed_fields || data.changed_fields.checklists || data.timeline_event_deletes?.length)) {
+    } else if (run.taskActivityEpoch && ('timeline_events' in data.changed_fields || data.changed_fields.checklists || data.timeline_event_deletes?.length || data.checklist_deletes?.length)) {
         return true;
     }
 
     const checklistUpdates = data.changed_fields.checklists ?? [];
-    const restore = await captureRunActivityState(database, data.id, {
+    if (data.checklist_deletes?.some((id) => checklistUpdates.some((checklist) => checklist.id === id))) {
+        return true;
+    }
+    const touched = {
         checklistIds: checklistUpdates.map((checklist) => checklist.id),
         itemIds: checklistUpdates.flatMap((checklist) => [
             ...(checklist.item_inserts?.map((item) => item.id) ?? []),
@@ -144,7 +148,8 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
             ...(Array.isArray(data.changed_fields.timeline_events) ? data.changed_fields.timeline_events.map((event) => event.id) : []),
             ...(data.timeline_event_deletes ?? []),
         ].filter((id): id is string => typeof id === 'string' && id.length > 0),
-    });
+    };
+    const restore = await captureRunActivityState(database, data.id, data.checklist_deletes?.length ? undefined : touched);
     try {
         const models: Model[] = [];
 
@@ -193,6 +198,18 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
             }
             const checklistModels = await Promise.all(promises);
             models.push(...checklistModels.flat());
+        }
+
+        if (data.checklist_deletes?.length) {
+            const deleted = await database.get<PlaybookChecklistModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).query(
+                Q.where('id', Q.oneOf(data.checklist_deletes)),
+            ).fetch();
+            if (deleted.some((checklist) => checklist.runId !== data.id)) {
+                restore();
+                return true;
+            }
+            const deletedModels = await Promise.all(deleted.map((checklist) => checklist.prepareDestroyWithRelations()));
+            models.push(...deletedModels.flat());
         }
 
         if (models.length > 0) {
