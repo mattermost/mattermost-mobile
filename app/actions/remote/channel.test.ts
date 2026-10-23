@@ -6,10 +6,11 @@
 import {createIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, DeepLink, Events} from '@constants';
+import {ActionType, DeepLink, Events, Navigation, Screens, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getCurrentChannelId} from '@queries/servers/system';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -58,6 +59,7 @@ import {
     unarchiveChannel,
     convertChannelToPrivate,
     handleKickFromChannel,
+    handleChannelAccessDenied,
     fetchGroupMessageMembersCommonTeams,
     convertGroupMessageToPrivateChannel,
     setChannelAutotranslation,
@@ -698,6 +700,143 @@ describe('app/actions/remote/channel', () => {
             const result = await handleKickFromChannel(serverUrl, channelId);
             expect(result).toBeDefined();
             expect(result).not.toHaveProperty('error');
+        });
+
+        it('should switch a tablet to Threads when CRT is on and nothing is left to fall back to', async () => {
+            mockIsTablet.mockReturnValue(true);
+            mockGetActiveServer.mockImplementationOnce(() => ({url: serverUrl}));
+            await operator.handleConfigs({
+                configs: [{id: 'CollapsedThreads', value: 'always_on'}, {id: 'Version', value: '7.6.0'}],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            const onNavigate = jest.fn();
+            const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, onNavigate);
+
+            await handleKickFromChannel(serverUrl, channelId);
+
+            listener.remove();
+            mockIsTablet.mockReturnValue(false);
+            expect(await getCurrentChannelId(operator.database)).toBe('');
+            expect(onNavigate).toHaveBeenCalledWith(Screens.GLOBAL_THREADS);
+        });
+
+        it('should clear the current channel on a tablet when CRT is off and nothing is left to fall back to', async () => {
+            mockIsTablet.mockImplementationOnce(() => true);
+            mockGetActiveServer.mockImplementationOnce(() => ({url: serverUrl}));
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+            await handleKickFromChannel(serverUrl, channelId);
+
+            expect(await getCurrentChannelId(operator.database)).toBe('');
+        });
+
+        it.each([
+            ['channel', 'channelid2', 'channelid2'],
+            ['Threads', Screens.GLOBAL_THREADS, ''],
+            ['Drafts', Screens.GLOBAL_DRAFTS, ''],
+        ])('should set the current channel from a %s fallback on a tablet when the server is not active', async (_, fallbackId, expectedChannelId) => {
+            mockIsTablet.mockImplementationOnce(() => true);
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            await operator.handleTeamChannelHistory({teamChannelHistories: [{id: teamId, channel_ids: [channelId, fallbackId, 'channelid3']}], prepareRecordsOnly: false});
+
+            await handleKickFromChannel(serverUrl, channelId);
+
+            expect(await getCurrentChannelId(operator.database)).toBe(expectedChannelId);
+        });
+
+    });
+
+    describe('handleChannelAccessDenied', () => {
+        it('should return an error when the server database is missing', async () => {
+            const {error} = await handleChannelAccessDenied('foo', channelId);
+            expect(error).toBeDefined();
+        });
+
+        it('should do nothing when there is no membership for the channel', async () => {
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
+
+            const result = await handleChannelAccessDenied(serverUrl, channelId);
+            expect(result).toEqual({});
+            const channels = await operator.database.get('Channel').query().fetch();
+            expect(channels).toHaveLength(1);
+        });
+
+        it('should purge the channel when it is not the current one', async () => {
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [{id: channelId, team_id: teamId} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
+
+            await handleChannelAccessDenied(serverUrl, channelId);
+
+            const channels = await operator.database.get('Channel').query().fetch();
+            expect(channels).toHaveLength(0);
+        });
+
+        it('should kick before purging when it is the current channel', async () => {
+            mockGetActiveServer.mockImplementation(() => ({url: serverUrl}));
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [{id: channelId, team_id: teamId} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+            const displayNames: string[] = [];
+            const subscription = DeviceEventEmitter.addListener(Events.CHANNEL_ACCESS_REVOKED, (displayName: string) => displayNames.push(displayName));
+
+            await handleChannelAccessDenied(serverUrl, channelId);
+            subscription.remove();
+            mockGetActiveServer.mockImplementation(() => false);
+
+            expect(displayNames).toEqual(['Channel 1']);
+            const channels = await operator.database.get('Channel').query().fetch();
+            expect(channels).toHaveLength(0);
+        });
+
+        it('should kick once when the same denial is reported concurrently', async () => {
+            mockGetActiveServer.mockImplementation(() => ({url: serverUrl}));
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [{id: channelId, team_id: teamId} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+            const displayNames: string[] = [];
+            const subscription = DeviceEventEmitter.addListener(Events.CHANNEL_ACCESS_REVOKED, (displayName: string) => displayNames.push(displayName));
+
+            await Promise.all([handleChannelAccessDenied(serverUrl, channelId), handleChannelAccessDenied(serverUrl, channelId)]);
+            subscription.remove();
+            mockGetActiveServer.mockImplementation(() => false);
+
+            expect(displayNames).toEqual(['Channel 1']);
+        });
+    });
+
+    describe('markChannelAsRead access denial', () => {
+        const denial = Object.assign(new Error('denied'), {server_error_id: ServerErrors.CHANNEL_ACCESS_DENIED, status_code: 403});
+
+        it('should purge the channel when the view call is denied by policy', async () => {
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [{id: channelId, team_id: teamId} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
+            mockClient.viewMyChannel.mockImplementationOnce(() => {
+                throw denial;
+            });
+
+            const {error} = await markChannelAsRead(serverUrl, channelId);
+            expect(error).toBe(denial);
+
+            const channels = await operator.database.get('Channel').query().fetch();
+            expect(channels).toHaveLength(0);
+        });
+
+        it('should leave the channel alone for an unrelated 403', async () => {
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [{id: channelId, team_id: teamId} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
+            mockClient.viewMyChannel.mockImplementationOnce(() => {
+                throw Object.assign(new Error('forbidden'), {server_error_id: 'api.context.permissions.app_error', status_code: 403});
+            });
+
+            const {error} = await markChannelAsRead(serverUrl, channelId);
+            expect(error).toBeDefined();
+
+            const channels = await operator.database.get('Channel').query().fetch();
+            expect(channels).toHaveLength(1);
         });
     });
 

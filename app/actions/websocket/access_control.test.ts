@@ -4,11 +4,14 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {getRedactionEpochState, getRequiredRedactionEpoch} from '@actions/local/redaction';
+import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
 import {refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
+import {DOWNLOAD_FILE_ATTACHMENT_ACTION, RenderPermissionAction} from '@constants/access_control';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import {
@@ -27,6 +30,11 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 jest.mock('@actions/remote/post', () => ({
     refetchPostsForRedaction: jest.fn(() => Promise.resolve({})),
     fetchPostThread: jest.fn(() => Promise.resolve({posts: []})),
+}));
+
+jest.mock('@actions/remote/channel_access', () => ({
+    checkChannelAccess: jest.fn(),
+    reconcileChannelAccess: jest.fn(),
 }));
 
 const serverUrl = 'access-control.test.com';
@@ -69,6 +77,12 @@ const flushAttributeViewRetry = async () => {
     await advanceTimers(0);
 };
 
+// No actions is what a server that predates the action list sends.
+const permissionPolicyUpdated = (actions?: string[]) => ({
+    event: WebsocketEvents.PERMISSION_POLICY_UPDATED,
+    data: actions ? {actions} : {},
+} as unknown as WebSocketMessage);
+
 const COALESCE_WINDOW_MS = 250;
 const ATTRIBUTE_VIEW_RETRY_MS = 32000;
 const ATTRIBUTE_VIEW_RETRY_JITTER_MS = 3000;
@@ -89,6 +103,7 @@ afterEach(async () => {
     jest.restoreAllMocks();
     clearRedactionInvalidations(serverUrl);
     clearRedactionInvalidations(otherServerUrl);
+    RenderPermissionsStore.removeServer(serverUrl);
     await DatabaseManager.destroyServerDatabase(serverUrl);
     disableFakeTimers();
 });
@@ -101,14 +116,14 @@ describe('redaction invalidation triggers', () => {
             prepareRecordsOnly: false,
         });
 
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
         expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
     });
 
     it('should raise the global epoch for a permission policy change', async () => {
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
@@ -136,6 +151,32 @@ describe('redaction invalidation triggers', () => {
         await flushCoalescer();
 
         expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBeGreaterThan(1);
+    });
+
+    it('should check the current team on a permission policy change and only the named channel on a channel policy change', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        await flushCoalescer();
+
+        expect(reconcileChannelAccess).toHaveBeenCalledTimes(1);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(checkChannelAccess).toHaveBeenCalledTimes(1);
+        expect(checkChannelAccess).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should revoke decision requests in flight before checking access, for the named channel or every channel', async () => {
+        const channelClaim = RenderPermissionsStore.startFetch(serverUrl, channelId);
+        const otherClaim = RenderPermissionsStore.startFetch(serverUrl, otherChannelId);
+
+        // Asserted synchronously: the access check starts right after, inside the coalescing window.
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, channelId, channelClaim as object)).toBe(false);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, otherChannelId, otherClaim as object)).toBe(true);
+
+        const claim = RenderPermissionsStore.startFetch(serverUrl, otherChannelId);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        expect(RenderPermissionsStore.finishFetch(serverUrl, otherChannelId, claim as object)).toBe(false);
+        await flushCoalescer();
     });
 
     it('should collapse the duplicate events one CPA write emits into a single generation', async () => {
@@ -288,7 +329,7 @@ describe('redaction invalidation triggers', () => {
         const listener = jest.fn();
         const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, listener);
 
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
         subscription.remove();
 
@@ -309,7 +350,7 @@ describe('redaction invalidation triggers', () => {
         jest.spyOn(EphemeralStore, 'getCurrentFileViewerPostId').mockReturnValue('viewed-post');
         const activeServer = jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('some.other.server');
 
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
         activeServer.mockResolvedValue(serverUrl);
         handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
@@ -342,7 +383,7 @@ describe('redaction invalidation triggers', () => {
         });
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
 
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
         expect(refetchPostsForRedaction).toHaveBeenCalledWith(serverUrl, channelId);
@@ -355,7 +396,7 @@ describe('redaction invalidation triggers', () => {
         });
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('some.other.server');
 
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
         expect(refetchPostsForRedaction).not.toHaveBeenCalled();
@@ -402,13 +443,69 @@ describe('redaction invalidation triggers', () => {
     });
 });
 
+describe('permission policy changed actions', () => {
+    const seedDecisions = () => {
+        RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {}}, 60000);
+    };
+
+    it('should raise the global epoch and reconcile the channel list when the server names no actions', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+
+        expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should raise the global epoch without reconciling the channel list when download_file_attachment changed', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([DOWNLOAD_FILE_ATTACHMENT_ACTION]));
+        await flushCoalescer();
+
+        expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+    });
+
+    it('should expire the decisions and reconcile the channel list without raising the epoch when channel_read_access changed', async () => {
+        seedDecisions();
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([RenderPermissionAction.ChannelReadAccess]));
+        await flushCoalescer();
+
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBe(true);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
+        expect(refetchPostsForRedaction).not.toHaveBeenCalled();
+    });
+
+    it('should only expire the decisions when an action without a channel list or post effect changed', async () => {
+        seedDecisions();
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([RenderPermissionAction.UploadFileAttachment]));
+        await flushCoalescer();
+
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBe(true);
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+        expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
+    });
+
+    it('should do nothing when the change touched no action, as an auto-add toggle does', async () => {
+        seedDecisions();
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([]));
+        await flushCoalescer();
+
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBeUndefined();
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+        expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
+    });
+});
+
 describe('epoch write failure', () => {
     it('should retry an invalidation whose epoch write failed instead of dropping it', async () => {
         // A dropped write would leave every cached decision trusted.
         const redaction = jest.requireActual<typeof import('@actions/local/redaction')>('@actions/local/redaction');
         const spy = jest.spyOn(redaction, 'invalidateRedactionGlobally').mockResolvedValueOnce(undefined);
 
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
         expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
 
@@ -438,7 +535,7 @@ describe('attribute view convergence retry', () => {
         await flushCoalescer();
 
         // Evaluated against the same stale attribute view, so it cannot stand in for the retry.
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
         const beforeRetry = (await getRedactionEpochState(operator.database)).global;
 
@@ -470,7 +567,7 @@ describe('EphemeralStore interaction', () => {
         jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('rootpostid');
 
         const {fetchPostThread} = require('@actions/remote/post');
-        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
         // No pagination options: an incremental thread fetch cannot re-deliver a cached reply whose
