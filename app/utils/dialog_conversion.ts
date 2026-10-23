@@ -150,7 +150,9 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     if (element.type === DialogElementTypes.TEXT || element.type === DialogElementTypes.TEXTAREA) {
         appField.max_length = element.max_length;
         appField.min_length = element.min_length;
-        if (element.type !== DialogElementTypes.TEXTAREA && element.subtype) {
+        if (element.type === DialogElementTypes.TEXTAREA) {
+            appField.subtype = 'textarea';
+        } else if (element.subtype) {
             appField.subtype = element.subtype;
         }
     }
