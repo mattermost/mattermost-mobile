@@ -81,6 +81,11 @@ export function convertAppFormValuesToDialogSubmission(
             return;
         }
 
+        // Action buttons have no value to submit - skip them entirely
+        if (element.type === DialogElementTypes.ACTION_BUTTON) {
+            return;
+        }
+
         // Convert based on field type
         switch (element.type) {
             case DialogElementTypes.TEXT:
@@ -191,6 +196,14 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     // The server should specify which fields trigger form refresh
     appField.refresh = element.refresh;
 
+    // Preserve action button configuration
+    if (element.type === DialogElementTypes.ACTION_BUTTON && element.action_button) {
+        appField.action_button_url = element.action_button.url;
+        if (element.action_button.context) {
+            appField.action_button_context = element.action_button.context;
+        }
+    }
+
     return appField;
 }
 
@@ -211,7 +224,7 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
         title: config.dialog.title,
         header: config.dialog.introduction_text || undefined,
         fields: convertedFields,
-        submit_buttons: undefined,
+        submit_buttons: config.dialog.submit_buttons || undefined,
 
         // Pass through submit label from dialog config
         submit_label: config.dialog.submit_label || undefined,

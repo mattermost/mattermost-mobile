@@ -38,6 +38,7 @@ export default keyMirror({
     ACTIVE_SCREEN: null,
     ACTIVE_SERVER_CHANGED: null,
     FILE_ADD_REMOVED: null,
+    INTERACTIVE_DIALOG_CLOSED: null,
     POST_DELETED_FOR_CHANNEL: null,
     BLUR_AND_DISMISS_KEYBOARD: null,
     KEYBOARD_STATE_CHANGED: null,

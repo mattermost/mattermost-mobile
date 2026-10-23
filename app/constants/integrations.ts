@@ -3,6 +3,9 @@
 
 export const VALID_TYPES = new Set(['input', 'textarea', 'number', 'email', 'tel', 'url', 'password']);
 
+export const MAX_OPEN_DIALOGS = 3;
+
 export default {
     VALID_TYPES,
+    MAX_OPEN_DIALOGS,
 };

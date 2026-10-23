@@ -15,6 +15,7 @@ import {
     createAppField,
     supportsOptions,
     supportsDataSource,
+    keepUserValue,
 } from './dialog_utils';
 
 describe('dialog_utils', () => {
@@ -63,6 +64,10 @@ describe('dialog_utils', () => {
             expect(mapDialogTypeToAppFieldType(DialogElementTypes.DATETIME)).toBe('datetime');
         });
 
+        it('should map action_button type correctly', () => {
+            expect(mapDialogTypeToAppFieldType(DialogElementTypes.ACTION_BUTTON)).toBe('action_button');
+        });
+
         it('should default to text for unknown types', () => {
             expect(mapDialogTypeToAppFieldType('unknown_type' as any)).toBe('text');
         });
@@ -88,6 +93,10 @@ describe('dialog_utils', () => {
         it('should map date and datetime types correctly', () => {
             expect(mapAppFieldTypeToDialogType('date')).toBe(DialogElementTypes.DATE);
             expect(mapAppFieldTypeToDialogType('datetime')).toBe(DialogElementTypes.DATETIME);
+        });
+
+        it('should map action_button type correctly', () => {
+            expect(mapAppFieldTypeToDialogType('action_button')).toBe(DialogElementTypes.ACTION_BUTTON);
         });
 
         it('should default to text for unknown types', () => {
@@ -284,5 +293,32 @@ describe('dialog_utils', () => {
             expect(DialogTextSubtypes.TEXTAREA).toBe('textarea');
         });
 
+    });
+
+    describe('keepUserValue', () => {
+        const select = {name: 'pick', type: AppFieldTypes.STATIC_SELECT, options: [{label: 'A', value: 'a'}]} as AppField;
+
+        it('should drop the value when the field changed type', () => {
+            const previous = {name: 'pick', type: AppFieldTypes.TEXT} as AppField;
+
+            expect(keepUserValue(select, previous, 'a')).toBeUndefined();
+        });
+
+        it('should drop a picked option that the refreshed field no longer offers', () => {
+            expect(keepUserValue(select, select, {label: 'B', value: 'b'})).toBeUndefined();
+            expect(keepUserValue(select, select, {label: 'A', value: 'a'})).toEqual({label: 'A', value: 'a'});
+        });
+
+        it('should keep only the picks that still exist for a multiselect value', () => {
+            const value = [{label: 'A', value: 'a'}, {label: 'B', value: 'b'}];
+
+            expect(keepUserValue(select, select, value)).toEqual([{label: 'A', value: 'a'}]);
+        });
+
+        it('should keep values of fields without options', () => {
+            const text = {name: 'notes', type: AppFieldTypes.TEXT} as AppField;
+
+            expect(keepUserValue(text, text, 'my notes')).toBe('my notes');
+        });
     });
 });

@@ -12,6 +12,7 @@ class InteractiveDialogScreen {
         closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
         integrationSelector: 'integration_selector',
+        integrationSelectorCancel: 'integration_selector.cancel.button',
     };
 
     interactiveDialogScreen = element(by.id(this.testID.interactiveDialogScreen));
@@ -22,6 +23,12 @@ class InteractiveDialogScreen {
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
     appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
+    integrationSelectorCancel = element(by.id(this.testID.integrationSelectorCancel));
+
+    // One button per option of the dialog's submit_buttons select (apps_form_component.tsx).
+    getSubmitOptionButton = (optionValue: string) => element(by.id(`interactive_dialog.submit_button.${optionValue}`));
+
+    getTextInput = (elementName: string) => element(by.id(`AppFormElement.${elementName}.input`));
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
     setDialogInputText = async (input: Detox.NativeElement, value: string) => {
