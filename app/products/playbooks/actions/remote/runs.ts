@@ -7,8 +7,10 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns, setOwner as localSetOwner, updatePlaybookRun as localUpdatePlaybookRun} from '@playbooks/actions/local/run';
+import {getObservedTaskActivityRevision} from '@playbooks/actions/local/task_activity';
 import {getLastPlaybookRunsFetchAt, getPlaybookRunById} from '@playbooks/database/queries/run';
 import {getMaxRunUpdateAt} from '@playbooks/utils/run';
+import {compareTaskActivityRevisions} from '@playbooks/utils/task_activity_sync';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -101,10 +103,13 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
         const client = NetworkManager.getClient(serverUrl);
         const initialDatabase = DatabaseManager.serverDatabases[serverUrl]?.database;
         const cachedAtStart = initialDatabase && await getPlaybookRunById(initialDatabase, runId);
+        const requests = !fetchOnly && initialDatabase ? getRunRequests(initialDatabase) : undefined;
+        const request = requests && (requests.set(runId, (requests.get(runId) ?? 0) + 1), requests.get(runId));
         const run = await client.fetchPlaybookRun(runId);
 
         if (!fetchOnly) {
             if (!initialDatabase || DatabaseManager.serverDatabases[serverUrl]?.database !== initialDatabase ||
+                requests?.get(runId) !== request ||
                 (cachedAtStart && !await getPlaybookRunById(initialDatabase, runId))) {
                 return {error: new Error('Playbook run cache changed during refresh')};
             }
@@ -131,6 +136,16 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
     }
 };
 
+const runRequests = new WeakMap<object, Map<string, number>>();
+const getRunRequests = (database: object) => {
+    let requests = runRequests.get(database);
+    if (!requests) {
+        requests = new Map();
+        runRequests.set(database, requests);
+    }
+    return requests;
+};
+
 const activityRefreshes = new Map<string, Promise<Awaited<ReturnType<typeof fetchPlaybookRun>>>>();
 
 export const ensurePlaybookRunActivityFresh = (serverUrl: string, runId: string) => {
@@ -139,7 +154,22 @@ export const ensurePlaybookRunActivityFresh = (serverUrl: string, runId: string)
     if (inFlight) {
         return inFlight;
     }
-    const refresh = fetchPlaybookRun(serverUrl, runId);
+    const refresh = (async () => {
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        const first = await fetchPlaybookRun(serverUrl, runId);
+        if (first.error || !database || DatabaseManager.serverDatabases[serverUrl]?.database !== database) {
+            return first;
+        }
+        const observed = getObservedTaskActivityRevision(database, runId);
+        const persisted = await getPlaybookRunById(database, runId);
+        if (observed && persisted && (
+            (observed.epoch === persisted.taskActivityEpoch && persisted.taskActivityRevision && compareTaskActivityRevisions(observed.revision, persisted.taskActivityRevision) > 0) ||
+            observed.epoch !== persisted.taskActivityEpoch
+        )) {
+            return fetchPlaybookRun(serverUrl, runId);
+        }
+        return first;
+    })();
     activityRefreshes.set(key, refresh);
     refresh.finally(() => {
         if (activityRefreshes.get(key) === refresh) {

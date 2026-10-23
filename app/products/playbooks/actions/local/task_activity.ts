@@ -5,9 +5,26 @@ import {Q, type Database, type Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {compareTaskActivityRevisions} from '@playbooks/utils/task_activity_sync';
 
 const queues = new WeakMap<Database, Map<string, Promise<void>>>();
 const visibleRuns = new Map<string, {database: Database; runId: string}>();
+const observedRevisions = new WeakMap<Database, Map<string, {epoch: string; revision: string}>>();
+
+export const observeTaskActivityRevision = (database: Database, runId: string, epoch: string, revision: string) => {
+    let runs = observedRevisions.get(database);
+    if (!runs) {
+        runs = new Map();
+        observedRevisions.set(database, runs);
+    }
+    const previous = runs.get(runId);
+    if (previous?.epoch === epoch && compareTaskActivityRevisions(previous.revision, revision) >= 0) {
+        return;
+    }
+    runs.set(runId, {epoch, revision});
+};
+
+export const getObservedTaskActivityRevision = (database: Database, runId: string) => observedRevisions.get(database)?.get(runId);
 
 export const setVisiblePlaybookRun = (serverUrl: string, runId: string | null) => {
     if (runId) {

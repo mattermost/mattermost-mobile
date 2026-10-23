@@ -265,6 +265,31 @@ describe('fetchPlaybookRun', () => {
         expect(fetchPlaybookRunPropertyFields).toHaveBeenCalledWith(serverUrl, runId, false);
     });
 
+    it('discards an older full response after a newer request starts', async () => {
+        const oldRun = TestHelper.fakePlaybookRun({id: runId, name: 'old'});
+        const newRun = TestHelper.fakePlaybookRun({id: runId, name: 'new'});
+        let resolveOld!: (run: PlaybookRun) => void;
+        let resolveNew!: (run: PlaybookRun) => void;
+        mockClient.fetchPlaybookRun.mockImplementationOnce(() => new Promise<PlaybookRun>((resolve) => {
+            resolveOld = resolve;
+        })).mockImplementationOnce(() => new Promise<PlaybookRun>((resolve) => {
+            resolveNew = resolve;
+        }));
+
+        const older = fetchPlaybookRun(serverUrl, runId);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledTimes(1);
+        const newer = fetchPlaybookRun(serverUrl, runId);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledTimes(2);
+        resolveNew(newRun);
+        expect((await newer).error).toBeUndefined();
+        resolveOld(oldRun);
+        expect((await older).error).toBeDefined();
+        expect(handlePlaybookRuns).toHaveBeenCalledTimes(1);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [newRun], false, true, true);
+    });
+
     it('should handle fetchOnly mode without storing in DB', async () => {
         const mockRun = TestHelper.fakePlaybookRun({id: runId});
         mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
