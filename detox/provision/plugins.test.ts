@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import {DEMO_PLUGIN_REQUIREMENT, REQUIRED_PLUGINS} from './constants';
-import {demoPluginViolation, strayPluginIds} from './plugins';
+import {demoPluginSettingsPatch, demoPluginViolation, strayPluginIds} from './plugins';
 
 describe('strayPluginIds', () => {
     it('should keep prepackaged and provisioned plugins and return the rest', () => {
@@ -36,5 +36,24 @@ describe('demoPluginViolation', () => {
         assert.equal(demoPluginViolation(active, true), undefined);
         assert.equal(demoPluginViolation([{id: 'com.mattermost.calls'}], false), undefined);
         assert.equal(demoPluginViolation(undefined, false), undefined);
+    });
+});
+
+describe('demoPluginSettingsPatch', () => {
+    it('should turn DialogOnlyMode on for a missing or empty entry', () => {
+        assert.deepEqual(demoPluginSettingsPatch({}), {DialogOnlyMode: true});
+    });
+
+    it('should keep other settings and replace any spelling of DialogOnlyMode', () => {
+        assert.deepEqual(demoPluginSettingsPatch({username: 'demo', dialogonlymode: false}), {username: 'demo', DialogOnlyMode: true});
+    });
+
+    it('should leave an entry that already has DialogOnlyMode on', () => {
+        assert.equal(demoPluginSettingsPatch({DialogOnlyMode: true}), null);
+        assert.equal(demoPluginSettingsPatch({dialogonlymode: true, username: 'demo'}), null);
+    });
+
+    it('should not treat a string "true" as on', () => {
+        assert.deepEqual(demoPluginSettingsPatch({dialogonlymode: 'true'}), {DialogOnlyMode: true});
     });
 });

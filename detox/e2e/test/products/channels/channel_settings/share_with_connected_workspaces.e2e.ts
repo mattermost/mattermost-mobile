@@ -28,9 +28,9 @@ import {expect, device, element, by, waitFor} from 'detox';
 // beforeAll: apiInit + config + login under CI load — 6min hook timeout.
 jest.setTimeout(360000);
 
-(hasSharedChannels ? describe : describe.skip)('Share with connected workspaces', () => {
-    // Runs only where the license and remote-cluster service support it (probed in global_setup.js), alone
-    // on the mutation server because it turns shared channels off and deletes remote clusters.
+// CI servers boot with Shared Channels running, so on CI a missing service fails the suite instead of skipping it.
+(hasSharedChannels || process.env.CI === 'true' ? describe : describe.skip)('Share with connected workspaces', () => {
+    // Runs alone on the mutation server because it turns shared channels off and deletes remote clusters.
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
@@ -69,6 +69,9 @@ jest.setTimeout(360000);
 
     beforeAll(async () => {
         requireMutationServer('share_with_connected_workspaces');
+        if (!hasSharedChannels) {
+            throw new Error('Shared Channels is not running on this server: GET /api/v4/remotecluster did not return 200 (see "[globalSetup] Shared Channels available" in the shard log)');
+        }
 
         const {user, channel, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
