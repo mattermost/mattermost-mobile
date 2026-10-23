@@ -5,7 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
-import {createCallAndAddToIds} from '@calls/actions/calls';
+import {createCallAndAddToIds} from '@calls/convert_call';
 import {hostRemovedErr} from '@calls/errors';
 import {endNativeCall, getNativeCallMapping, getNativeCallUUIDForCall, setNativeCallMapping} from '@calls/native_call';
 import {
@@ -14,6 +14,7 @@ import {
     getCallsState,
     getChannelIdFromCallId,
     getCurrentCall,
+    isLiveKitCurrentCall,
     receivedCaption,
     removeIncomingCall,
     setCallForChannel,
@@ -34,6 +35,7 @@ import {WebsocketEvents} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
+import {logDebug} from '@utils/log';
 
 import type {HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
@@ -55,13 +57,16 @@ import type {
 } from '@mattermost/calls/lib/types';
 
 export const handleCallUserJoined = (serverUrl: string, msg: WebSocketMessage<UserJoinedData>) => {
-    // Load user model async (if needed).
-    fetchUsersByIds(serverUrl, [msg.data.user_id]);
-
     const channelId = msg.broadcast.channel_id;
     const userId = msg.data.user_id;
     const sessionId = msg.data.session_id;
-    userJoinedCall(serverUrl, channelId, userId, sessionId);
+
+    // A LiveKit room owns the roster of the call we're in.
+    if (!isLiveKitCurrentCall(serverUrl, channelId)) {
+        // Load user model async (if needed).
+        fetchUsersByIds(serverUrl, [userId]);
+        userJoinedCall(serverUrl, channelId, userId, sessionId);
+    }
 
     // Answered-elsewhere: same user joined this call on another session
     // (different device), and we still have a native ring/registered overlay
@@ -73,13 +78,21 @@ export const handleCallUserJoined = (serverUrl: string, msg: WebSocketMessage<Us
     if (!getNativeCallUUIDForCall(serverUrl, channelId)) {
         return;
     }
-    if (getCurrentCall()?.mySessionId === sessionId) {
+
+    // In or joining this call here, the native call is ours: our own join can land before we know our session.
+    const currentCall = getCurrentCall();
+    if (currentCall?.serverUrl === serverUrl && currentCall.channelId === channelId) {
         return;
     }
     endNativeCall(serverUrl, channelId, 'answeredElsewhere');
 };
 
 export const handleCallUserLeft = (serverUrl: string, msg: WebSocketMessage<UserLeftData>) => {
+    if (isLiveKitCurrentCall(serverUrl, msg.broadcast.channel_id)) {
+        logDebug('calls: handleCallUserLeft skipped, the LiveKit room owns the roster');
+        return;
+    }
+
     userLeftCall(serverUrl, msg.broadcast.channel_id, msg.data.session_id);
 };
 
