@@ -257,12 +257,44 @@ function disablePasswordAutofill(udid) {
 
 }
 
+// The Settings toggle at Apps > Passwords > AutoFill Passwords and Passkeys writes
+// com.apple.WebUI, which is what actually suppresses the iOS 18+ "Save Password?" modal.
+// The restriction keys above only cover the keyboard toolbar, and com.apple.Passwords
+// (seeded in CI) has no effect on it either. Verified on a freshly erased iOS 26.5
+// simulator: with this key the modal never appears, without it it does.
+function disableCredentialSavePrompt(udid) {
+    console.log('\nDisabling credential save prompt (com.apple.WebUI)...');
+
+    const result = shell.exec(
+        `xcrun simctl spawn ${udid} defaults write com.apple.WebUI AutoFillPasswords -bool NO`,
+        {silent: true},
+    );
+
+    if (result.code !== 0) {
+        console.error('⚠️  Failed to write com.apple.WebUI AutoFillPasswords');
+        console.error(result.stderr);
+        return false;
+    }
+
+    const check = shell.exec(
+        `xcrun simctl spawn ${udid} defaults read com.apple.WebUI AutoFillPasswords`,
+        {silent: true},
+    );
+
+    if (check.code === 0 && check.stdout.trim() === '0') {
+        console.log('  ✓ com.apple.WebUI AutoFillPasswords = 0');
+        return true;
+    }
+
+    console.error(`⚠️  com.apple.WebUI AutoFillPasswords did not verify (got "${check.stdout.trim()}")`);
+    return false;
+}
+
 async function main() {
     console.log('iOS Simulator - Disable Password Autofill\n');
-    console.log('This tool sets MDM restriction keys in UserSettings.plist to disable');
-    console.log('the AutoFill keyboard toolbar on iOS simulators.');
-    console.log('NOTE: This does NOT prevent the "Save Password?" modal on iOS 18+.');
-    console.log('That modal is handled via xcrun simctl spawn defaults write in CI.\n');
+    console.log('Sets MDM restriction keys in UserSettings.plist to disable the AutoFill');
+    console.log('keyboard toolbar, and com.apple.WebUI to suppress the iOS 18+');
+    console.log('"Save Password?" modal.\n');
 
     // Check if running on macOS
     if (process.platform !== 'darwin') {
@@ -326,10 +358,18 @@ async function main() {
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     }
 
-    // Apply the setting
-    const success = disablePasswordAutofill(selectedSimulator.udid);
+    // Both layers matter: the restriction keys cover the AutoFill keyboard toolbar, the
+    // WebUI key covers the credential-save modal. Only the first works while shut down,
+    // which is the state this script is invoked in, so only the first can gate the exit.
+    const autofillDisabled = disablePasswordAutofill(selectedSimulator.udid);
 
-    process.exit(success ? 0 : 1);
+    if (selectedSimulator.state === 'Booted') {
+        disableCredentialSavePrompt(selectedSimulator.udid);
+    } else {
+        console.log('\nSkipping com.apple.WebUI write: simulator is not booted.');
+    }
+
+    process.exit(autofillDisabled ? 0 : 1);
 }
 
 main();

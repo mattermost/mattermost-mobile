@@ -78,7 +78,10 @@ const BottomControls: React.FC<BottomControlsProps> = ({
             style={[styles.bottomControls, animatedStyle]}
         >
             <View style={[styles.container, styles.row, {paddingBottom}]}>
-                <Text style={styles.time}>
+                <Text
+                    testID='gallery.video.current_time'
+                    style={styles.time}
+                >
                     {formatTime(currentTimeValue)}
                 </Text>
 
@@ -88,7 +91,10 @@ const BottomControls: React.FC<BottomControlsProps> = ({
                     onSeek={onSeekHandler}
                 />
 
-                <Text style={styles.time}>
+                <Text
+                    testID='gallery.video.duration'
+                    style={styles.time}
+                >
                     {Platform.OS === 'ios' ? `-${formatTime(duration - currentTimeValue)}` : formatTime(duration)
                     }
                 </Text>

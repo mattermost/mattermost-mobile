@@ -293,17 +293,18 @@ export const apiUploadFileToChannel = async (
 };
 
 /**
- * Upload a fixture image and create a post with that image attached.
+ * Upload a fixture file and create a post with that file attached.
  * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to post in
+ * @param {string} fixtureName - File name under e2e/support/fixtures (e.g. 'image.png')
  * @param {string} rootId - (optional) root post ID for thread replies
  * @return {Object} returns {post, fileId} on success. Throws after transport retries if upload or create fails.
  */
-export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
-    const absFilePath = path.resolve(__dirname, '../../support/fixtures/image.png');
+export const apiCreatePostWithAttachment = async (baseUrl: string, channelId: string, fixtureName: string, rootId = ''): Promise<any> => {
+    const absFilePath = path.resolve(__dirname, `../../support/fixtures/${fixtureName}`);
     const {fileId, error: uploadError} = await apiUploadFileToChannel(baseUrl, channelId, absFilePath);
     if (uploadError || !fileId) {
-        throw new Error(`apiCreatePostWithImageAttachment: upload failed: ${JSON.stringify(uploadError)}`);
+        throw new Error(`apiCreatePostWithAttachment(${fixtureName}): upload failed: ${JSON.stringify(uploadError)}`);
     }
 
     const {post, error: postError} = await apiCreatePost(baseUrl, {
@@ -313,12 +314,36 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
         fileIds: [fileId],
     });
     if (postError || !post?.id) {
-        throw new Error(`apiCreatePostWithImageAttachment: create post failed: ${JSON.stringify(postError)}`);
+        throw new Error(`apiCreatePostWithAttachment(${fixtureName}): create post failed: ${JSON.stringify(postError)}`);
     }
     if (!post.file_ids || !post.file_ids.includes(fileId)) {
-        throw new Error(`apiCreatePostWithImageAttachment: server did not attach file. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`);
+        throw new Error(`apiCreatePostWithAttachment(${fixtureName}): server did not attach file. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`);
     }
     return {post, fileId};
+};
+
+/**
+ * Upload a fixture image and create a post with that image attached.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - The channel ID to post in
+ * @param {string} rootId - (optional) root post ID for thread replies
+ * @return {Object} returns {post, fileId} on success. Throws after transport retries if upload or create fails.
+ */
+export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
+    return apiCreatePostWithAttachment(baseUrl, channelId, 'image.png', rootId);
+};
+
+/**
+ * Upload a fixture video and create a post with that video attached.
+ * The fixture is 38s of H.264/AAC, long enough for the player's 10-second seek step
+ * to apply (under 10s the seek controls are not rendered at all).
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - The channel ID to post in
+ * @param {string} rootId - (optional) root post ID for thread replies
+ * @return {Object} returns {post, fileId} on success. Throws after transport retries if upload or create fails.
+ */
+export const apiCreatePostWithVideoAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
+    return apiCreatePostWithAttachment(baseUrl, channelId, 'video.mp4', rootId);
 };
 
 /**
@@ -509,7 +534,9 @@ export const Post = {
     apiCreatePost,
     apiCreatePostEphemeral,
     apiCreateIncomingWebhook,
+    apiCreatePostWithAttachment,
     apiCreatePostWithImageAttachment,
+    apiCreatePostWithVideoAttachment,
     apiFindPostInChannelByMessage,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
