@@ -7,6 +7,7 @@ import timezones from 'timezones.json';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 import {logDebug} from '@utils/log';
+import {getSupportedDeviceTimezone} from '@utils/timezone';
 
 import FormattedDate, {type FormattedDateFormat} from './index';
 
@@ -15,6 +16,10 @@ jest.mock('@utils/log', () => ({
     logError: jest.fn(),
     logInfo: jest.fn(),
     logWarning: jest.fn(),
+}));
+
+jest.mock('@utils/timezone', () => ({
+    getSupportedDeviceTimezone: jest.fn(),
 }));
 
 const DATE = new Date('2024-10-26T10:01:04.653Z');
@@ -139,5 +144,51 @@ describe('<FormattedDate/>', () => {
         );
         expect(wrapper.queryByText('Unknown')).toBeTruthy();
         expect(logDebug).toHaveBeenCalledTimes(2);
+    });
+
+    describe('device-timezone fallback', () => {
+        // A UTC+5 zone: 00:30 on Oct 26 local time is Oct 25 19:30 UTC.
+        // Without the fallback, Hermes formats in UTC and renders the previous day.
+        const NEAR_MIDNIGHT_LOCAL = new Date('2024-10-26T00:30:00+05:00'); // 2024-10-25T19:30:00Z
+
+        it('should render in device timezone when no timezone prop is provided', () => {
+            jest.mocked(getSupportedDeviceTimezone).mockReturnValue('Asia/Yekaterinburg'); // UTC+5
+            const wrapper = renderWithIntl(
+                <FormattedDate
+                    value={NEAR_MIDNIGHT_LOCAL}
+                    format={{dateStyle: 'medium'}}
+                />,
+            );
+
+            // In Asia/Yekaterinburg the date is Oct 26; in UTC it would be Oct 25.
+            expect(wrapper.getByText('Oct 26, 2024')).toBeTruthy();
+        });
+
+        it('should not use the device timezone when an explicit timezone prop is provided', () => {
+            jest.mocked(getSupportedDeviceTimezone).mockReturnValue('Asia/Yekaterinburg');
+            const wrapper = renderWithIntl(
+                <FormattedDate
+                    value={NEAR_MIDNIGHT_LOCAL}
+                    timezone='UTC'
+                    format={{dateStyle: 'medium'}}
+                />,
+            );
+
+            // Explicit UTC prop must win over device fallback.
+            expect(wrapper.getByText('Oct 25, 2024')).toBeTruthy();
+        });
+
+        it('should fall back gracefully when getSupportedDeviceTimezone returns undefined', () => {
+            jest.mocked(getSupportedDeviceTimezone).mockReturnValue(undefined);
+            const wrapper = renderWithIntl(
+                <FormattedDate
+                    value={DATE}
+                    format={{dateStyle: 'medium'}}
+                />,
+            );
+
+            // Should not throw or render 'Unknown' — Intl without a timezone still works.
+            expect(wrapper.queryByText('Unknown')).not.toBeTruthy();
+        });
     });
 });

@@ -8,7 +8,7 @@ import {View, Text} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import DateTimeSelector from '@components/date_time_selector';
-import FormattedDate from '@components/formatted_date';
+import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
@@ -29,6 +29,7 @@ import AppsFormFileField from '../apps_form_file_field';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
+const DATE_DISPLAY_FORMAT: FormattedDateFormat = {dateStyle: 'medium'};
 
 export type Props = {
     field: AppField;
@@ -363,14 +364,16 @@ const AppsFormFieldComponent = React.memo(({
                                 {field.type === AppFieldTypes.DATE ? (
                                     <FormattedDate
                                         value={selectedDate.toDate()}
-                                        format={{dateStyle: 'medium'}}
+                                        format={DATE_DISPLAY_FORMAT}
+                                        timezone={displayTimezone || undefined}
                                         style={dateTimeStyles.dateTimeText}
                                     />
                                 ) : (
                                     <Text style={dateTimeStyles.dateTimeText}>
                                         <FormattedDate
                                             value={selectedDate.toDate()}
-                                            format={{dateStyle: 'medium'}}
+                                            format={DATE_DISPLAY_FORMAT}
+                                            timezone={displayTimezone || undefined}
                                         />
                                         {` ${intl.formatMessage({id: 'date_time_selector.at', defaultMessage: 'at'})} `}
                                         <FormattedTime
