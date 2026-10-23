@@ -231,6 +231,24 @@ const hasValidDeltaLinks = async (database: Database, data: PlaybookRunUpdate) =
         ...(checklist.item_inserts ?? []).map((item) => ({id: item.id, fields: item})),
         ...(checklist.item_updates ?? []).map((item) => ({id: item.id, fields: item.fields})),
     ]).filter(({fields}) => 'state_event_id' in fields);
+    const incoming = Array.isArray(data.changed_fields.timeline_events) ? data.changed_fields.timeline_events : [];
+    const events = new Map(incoming.filter((event) => event && !event.delete_at).map((event) => [event.id, event]));
+    const deleted = new Set([
+        ...(data.timeline_event_deletes ?? []),
+        ...incoming.filter((event) => event?.delete_at).map((event) => event.id),
+    ]);
+    if (deleted.size) {
+        const linkedItems = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).query(
+            Q.where('state_event_id', Q.oneOf([...deleted])),
+        ).fetch();
+        const removedItems = new Set((data.changed_fields.checklists ?? []).flatMap((checklist) => checklist.item_deletes ?? []));
+        const removedChecklists = new Set(data.checklist_deletes ?? []);
+        if (linkedItems.some((item) => !removedItems.has(item.id) && !removedChecklists.has(item.checklistId) &&
+            !changedItems.some((change) => change.id === item.id && 'state_event_id' in change.fields &&
+                change.fields.state_event_id !== item.stateEventId))) {
+            return false;
+        }
+    }
     if (!changedItems.length) {
         return true;
     }
@@ -238,12 +256,6 @@ const hasValidDeltaLinks = async (database: Database, data: PlaybookRunUpdate) =
         Q.where('id', Q.oneOf(changedItems.map(({id}) => id))),
     ).fetch();
     const items = new Map(existingItems.map((item) => [item.id, item]));
-    const incoming = Array.isArray(data.changed_fields.timeline_events) ? data.changed_fields.timeline_events : [];
-    const events = new Map(incoming.filter((event) => event && !event.delete_at).map((event) => [event.id, event]));
-    const deleted = new Set([
-        ...(data.timeline_event_deletes ?? []),
-        ...incoming.filter((event) => event?.delete_at).map((event) => event.id),
-    ]);
     const linkedIds = changedItems.map(({fields}) => fields.state_event_id).filter((id): id is string => typeof id === 'string' && !events.has(id) && !deleted.has(id));
     if (linkedIds.length) {
         const storedEvents = await database.get<PlaybookTimelineEventModel>(PLAYBOOK_TABLES.PLAYBOOK_TIMELINE_EVENT).query(

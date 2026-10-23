@@ -516,6 +516,33 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(ensurePlaybookRunActivityFresh).toHaveBeenCalledWith(serverUrl, playbookRunId);
     });
 
+    it('rejects an event deletion that leaves a task linked to the deleted event', async () => {
+        const checklist = mockPlaybookRun.checklists[0];
+        const run = {
+            ...mockPlaybookRun,
+            checklists: [{
+                ...checklist,
+                items: [{...checklist.items[0], state: 'skipped' as ChecklistItemState, state_modified: 1, state_event_id: 'a'}],
+            }],
+            task_activity_sync: {version: 1, epoch: 'epoch-a', revision: '42', complete: true},
+        };
+        await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+        const prepared = await prepareTimelineEvents(operator.database, playbookRunId, [event('a', 1)], [], true);
+        await operator.batchRecords(prepared, 'seed linked event');
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: mockPlaybookRun.update_at,
+            changed_fields: {},
+            timeline_event_deletes: ['a'],
+            task_activity_sync: {version: 1, epoch: 'epoch-a', base_revision: '42', revision: '43', complete: false},
+        });
+
+        expect((await getPlaybookRunById(operator.database, playbookRunId))?.taskActivityRevision).toBe('42');
+        expect(await storedEventIds()).toEqual(['a']);
+        expect(ensurePlaybookRunActivityFresh).toHaveBeenCalledWith(serverUrl, playbookRunId);
+    });
+
     // The delta used to be assigned straight onto the run, so one unrelated task change wiped every
     // other task's activity chip — and it stayed wiped, because the run screen reads the cached record.
     it('preserves previously synced events when an update delivers only a delta', async () => {
