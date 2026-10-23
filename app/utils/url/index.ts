@@ -45,9 +45,14 @@ export function isParsableUrl(url: string): boolean {
     }
 }
 
+export function isSecureUrl(url: string) {
+    return /^(https|wss):\/\//i.test(url);
+}
+
+// useHttp never downgrades a URL that explicitly uses https.
 export function sanitizeUrl(url: string, useHttp = false) {
     let preUrl = urlParse(url, true);
-    let protocol = useHttp ? 'http:' : preUrl.protocol;
+    let protocol = useHttp && preUrl.protocol !== 'https:' ? 'http:' : preUrl.protocol;
 
     if (!preUrl.host || preUrl.protocol === 'file:') {
         preUrl = urlParse('https://' + stripTrailingSlashes(url), true);
@@ -80,7 +85,7 @@ export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = fal
     let url = sanitizeUrl(serverUrl, useHttp);
 
     const headers = {
-        ...(preauthSecret) ? {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret} : {},
+        ...(preauthSecret && isSecureUrl(url)) ? {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret} : {},
     };
 
     try {

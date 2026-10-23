@@ -120,7 +120,11 @@ const EditServer = ({server, theme}: ServerProps) => {
             const trimmedSecret = preauthSecret.trim();
             const secretForValidation = trimmedSecret || undefined;
 
-            const headRequest = await getServerUrlAfterRedirect(server.url, true, secretForValidation);
+            // HTTPS first, then HTTP; the secret is only sent over HTTPS
+            let headRequest = await getServerUrlAfterRedirect(server.url, false, secretForValidation);
+            if (!headRequest.url) {
+                headRequest = await getServerUrlAfterRedirect(server.url.replace('https:', 'http:'), true, secretForValidation);
+            }
             if (!headRequest.url) {
                 setPreauthSecretError(getErrorMessage(headRequest.error, intl));
                 setShowAdvancedOptions(true);
