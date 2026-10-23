@@ -15,13 +15,23 @@ import {
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 import {applyPlaybookRunDelta} from '@playbooks/actions/websocket/runs';
+import {parseTaskActivitySync} from '@playbooks/utils/task_activity_sync';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-const applyTaskMutationResponse = async (serverUrl: string, runId: string, response: PlaybookRunUpdate | void) => {
-    if (response && response.id === runId && response.task_activity_sync && response.changed_fields) {
-        await applyPlaybookRunDelta(serverUrl, response, true);
-        return;
+const applyTaskMutationResponse = async (serverUrl: string, runId: string, response: PlaybookRunUpdate | PlaybookRun | void) => {
+    if (response?.id === runId) {
+        if (parseTaskActivitySync(response.task_activity_sync, false) && 'changed_fields' in response && response.changed_fields) {
+            await applyPlaybookRunDelta(serverUrl, response as PlaybookRunUpdate, true);
+            return;
+        }
+        if (parseTaskActivitySync(response.task_activity_sync, true) && 'checklists' in response && Array.isArray(response.checklists) &&
+            'timeline_events' in response && Array.isArray(response.timeline_events)) {
+            const result = await handlePlaybookRuns(serverUrl, [response as PlaybookRun], false, true, true);
+            if (!result.error) {
+                return;
+            }
+        }
     }
     const result = await fetchPlaybookRun(serverUrl, runId);
     if (result.error) {
