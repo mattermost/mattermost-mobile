@@ -10,6 +10,7 @@ import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 const MAX_WEBSOCKET_FAILS = 7;
@@ -179,6 +180,8 @@ export default class WebSocketClient {
             this.conn?.invalidate();
             this.conn = client;
         } catch (error) {
+            const errorMessage = getFullErrorMessage(error).replace(this.url, '<redacted websocket URL>');
+            logError('WebSocketClient.initialize: failed to create WebSocket client', 'server', this.serverUrl, errorMessage);
             return;
         }
 
