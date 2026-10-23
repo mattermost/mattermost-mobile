@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type PlaybookChecklistModel from './playbook_checklist';
+import type PlaybookTimelineEventModel from './playbook_timeline_event';
 import type {Query, Relation, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 import type {SyncStatus} from '@typings/database/database';
@@ -62,8 +63,10 @@ declare class PlaybookRunModel extends Model {
     // An array of user IDs that participate in the run
     participantIds: string[];
 
-    // Timeline events associated with the run
-    timelineEvents: TimelineEvent[];
+    timelineEventsSyncedAt: number | null;
+    taskActivityEpoch: string | null;
+    taskActivityRevision: string | null;
+    taskActivityProtocolVersion: number | null;
 
     // Summary of the playbook run
     summary: string;
@@ -112,6 +115,7 @@ declare class PlaybookRunModel extends Model {
 
     /** checklists : The CHECKLISTS associated with this Playbook Run */
     checklists: Query<PlaybookChecklistModel>;
+    timelineEvents: Query<PlaybookTimelineEventModel>;
 
     /** prepareDestroyWithRelations : Prepare the model for deletion with its relations */
     prepareDestroyWithRelations: () => Promise<Model[]>;

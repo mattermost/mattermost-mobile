@@ -5,7 +5,7 @@ import {BoardViewSchema} from '@boards/database/schema';
 import {type AppSchema, appSchema} from '@nozbe/watermelondb';
 
 import {AiBotSchema, AiThreadSchema} from '@agents/database/schema';
-import {PlaybookRunSchema, PlaybookChecklistSchema, PlaybookChecklistItemSchema, PlaybookRunAttributeSchema, PlaybookRunAttributeValueSchema} from '@playbooks/database/schema';
+import {PlaybookRunSchema, PlaybookChecklistSchema, PlaybookChecklistItemSchema, PlaybookTimelineEventSchema, PlaybookRunAttributeSchema, PlaybookRunAttributeValueSchema} from '@playbooks/database/schema';
 
 import {
     CategorySchema,
@@ -75,6 +75,7 @@ export const serverSchema: AppSchema = appSchema({
         PlaybookRunSchema,
         PlaybookChecklistSchema,
         PlaybookChecklistItemSchema,
+        PlaybookTimelineEventSchema,
         PlaybookRunAttributeSchema,
         PlaybookRunAttributeValueSchema,
         PostInThreadSchema,

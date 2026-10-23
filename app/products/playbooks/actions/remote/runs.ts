@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns, setOwner as localSetOwner, updatePlaybookRun as localUpdatePlaybookRun} from '@playbooks/actions/local/run';
-import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
+import {getLastPlaybookRunsFetchAt, getPlaybookRunById} from '@playbooks/database/queries/run';
 import {getMaxRunUpdateAt} from '@playbooks/utils/run';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -60,7 +60,12 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
         }
 
-        updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
+        if (!fetchOnly) {
+            const watermark = await updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
+            if (watermark.error) {
+                throw watermark.error;
+            }
+        }
 
         return {runs: allRuns};
     } catch (error) {
@@ -94,10 +99,16 @@ export const fetchFinishedRunsForChannel = async (serverUrl: string, channelId: 
 export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOnly = false) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
+        const initialDatabase = DatabaseManager.serverDatabases[serverUrl]?.database;
+        const cachedAtStart = initialDatabase && await getPlaybookRunById(initialDatabase, runId);
         const run = await client.fetchPlaybookRun(runId);
 
         if (!fetchOnly) {
-            const result = await handlePlaybookRuns(serverUrl, [run], false, true);
+            if (!initialDatabase || DatabaseManager.serverDatabases[serverUrl]?.database !== initialDatabase ||
+                (cachedAtStart && !await getPlaybookRunById(initialDatabase, runId))) {
+                return {error: new Error('Playbook run cache changed during refresh')};
+            }
+            const result = await handlePlaybookRuns(serverUrl, [run], false, true, true);
             if (result.error) {
                 logDebug('error on handlePlaybookRuns', getFullErrorMessage(result.error));
                 return {error: result.error};
@@ -118,6 +129,24 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
+};
+
+const activityRefreshes = new Map<string, Promise<Awaited<ReturnType<typeof fetchPlaybookRun>>>>();
+
+export const ensurePlaybookRunActivityFresh = (serverUrl: string, runId: string) => {
+    const key = `${serverUrl}\0${runId}`;
+    const inFlight = activityRefreshes.get(key);
+    if (inFlight) {
+        return inFlight;
+    }
+    const refresh = fetchPlaybookRun(serverUrl, runId);
+    activityRefreshes.set(key, refresh);
+    refresh.finally(() => {
+        if (activityRefreshes.get(key) === refresh) {
+            activityRefreshes.delete(key);
+        }
+    });
+    return refresh;
 };
 
 export const fetchPlaybookRunMetadata = async (serverUrl: string, runId: string) => {

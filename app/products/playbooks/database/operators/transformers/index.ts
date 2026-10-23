@@ -48,7 +48,22 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
         run.activeStage = raw.active_stage ?? record?.activeStage ?? 0;
         run.activeStageTitle = raw.active_stage_title ?? record?.activeStageTitle ?? '';
         run.participantIds = raw.participant_ids ?? record?.participantIds ?? [];
-        run.timelineEvents = raw.timeline_events ?? record?.timelineEvents ?? [];
+        if ('task_activity_clear_certificate' in raw && raw.task_activity_clear_certificate) {
+            run.taskActivityEpoch = null;
+            run.taskActivityRevision = null;
+            run.taskActivityProtocolVersion = null;
+        } else if (raw.task_activity_sync?.complete) {
+            run.timelineEventsSyncedAt = Date.now();
+            run.taskActivityEpoch = raw.task_activity_sync.epoch;
+            run.taskActivityRevision = raw.task_activity_sync.revision;
+            run.taskActivityProtocolVersion = raw.task_activity_sync.version;
+        } else if (raw.task_activity_sync) {
+            run.taskActivityEpoch = raw.task_activity_sync.epoch;
+            run.taskActivityRevision = raw.task_activity_sync.revision;
+            run.taskActivityProtocolVersion = raw.task_activity_sync.version;
+        } else if ('timeline_events_synced_at' in raw && typeof raw.timeline_events_synced_at === 'number') {
+            run.timelineEventsSyncedAt = raw.timeline_events_synced_at;
+        }
         run.summary = raw.summary ?? record?.summary ?? '';
         run.currentStatus = raw.current_status ?? record?.currentStatus ?? 'InProgress';
         run.lastStatusUpdateAt = raw.last_status_update_at ?? record?.lastStatusUpdateAt ?? 0;
@@ -124,6 +139,16 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
         item.title = raw.title ?? record?.title ?? '';
         item.state = raw.state ?? record?.state ?? '';
         item.stateModified = raw.state_modified ?? record?.stateModified ?? 0;
+        if (raw && 'state_event_link_known' in raw && raw.state_event_link_known === false) {
+            item.stateEventId = null;
+            item.stateEventLinkKnown = false;
+        } else if (raw && 'state_event_id' in raw) {
+            item.stateEventId = raw.state_event_id ?? null;
+            item.stateEventLinkKnown = true;
+        } else if (isCreateAction) {
+            item.stateEventId = null;
+            item.stateEventLinkKnown = false;
+        }
         item.assigneeId = raw.assignee_id ?? record?.assigneeId ?? null;
         item.assigneeModified = raw.assignee_modified ?? record?.assigneeModified ?? 0;
         item.command = raw.command ?? record?.command ?? null;

@@ -14,6 +14,8 @@ export default tableSchema({
         {name: 'title', type: 'string'},
         {name: 'state', type: 'string', isIndexed: true},
         {name: 'state_modified', type: 'number'},
+        {name: 'state_event_id', type: 'string', isOptional: true},
+        {name: 'state_event_link_known', type: 'boolean'},
         {name: 'assignee_id', type: 'string', isOptional: true},
         {name: 'assignee_modified', type: 'number'},
         {name: 'command', type: 'string', isOptional: true},

@@ -26,11 +26,13 @@ type HandlePlaybookRunArgs = {
 type HandlePlaybookChecklistArgs = {
     prepareRecordsOnly: boolean;
     processChildren?: boolean;
+    force?: boolean;
     checklists?: PartialChecklist[];
 }
 
 type HandlePlaybookChecklistItemArgs = {
     prepareRecordsOnly: boolean;
+    force?: boolean;
     items?: PartialChecklistItem[];
 }
 
@@ -155,7 +157,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
                 return res;
             }, []);
 
-            const childRecords = await this.handlePlaybookChecklist({checklists, prepareRecordsOnly: true, processChildren});
+            const childRecords = await this.handlePlaybookChecklist({checklists, prepareRecordsOnly: true, processChildren, force: uniqueRaws.some((run) => run.task_activity_sync?.complete || 'task_activity_clear_certificate' in run)});
             batchRecords.push(...childRecords);
 
             // Process property_fields and property_values
@@ -205,7 +207,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
      * @param {PlaybookChecklistWithRun[]} [args.checklists] - The playbook checklist records to handle.
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled playbook checklist records.
      */
-    handlePlaybookChecklist = async ({checklists, prepareRecordsOnly, processChildren = false}: HandlePlaybookChecklistArgs): Promise<Model[]> => {
+    handlePlaybookChecklist = async ({checklists, prepareRecordsOnly, processChildren = false, force = false}: HandlePlaybookChecklistArgs): Promise<Model[]> => {
         if (!checklists?.length) {
             logWarning(
                 'An empty or undefined "checklists" array has been passed to the handlePlaybookChecklist method',
@@ -224,7 +226,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
                 res.push(raw);
-            } else if (shouldHandlePlaybookChecklistRecord(existingRecord, raw)) {
+            } else if (force || shouldHandlePlaybookChecklistRecord(existingRecord, raw)) {
                 res.push(raw);
             }
 
@@ -256,7 +258,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
                 }
                 return res;
             }, []);
-            const childRecords = await this.handlePlaybookChecklistItem({items, prepareRecordsOnly: true});
+            const childRecords = await this.handlePlaybookChecklistItem({items, prepareRecordsOnly: true, force});
             batchRecords.push(...childRecords);
         }
 
@@ -274,7 +276,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
      * @param {PlaybookChecklistItemWithChecklist[]} [args.items] - The playbook checklist item records to handle.
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled playbook checklist item records.
      */
-    handlePlaybookChecklistItem = async ({items, prepareRecordsOnly}: HandlePlaybookChecklistItemArgs): Promise<PlaybookChecklistItemModel[]> => {
+    handlePlaybookChecklistItem = async ({items, prepareRecordsOnly, force = false}: HandlePlaybookChecklistItemArgs): Promise<PlaybookChecklistItemModel[]> => {
         if (!items?.length) {
             logWarning(
                 'An empty or undefined "items" array has been passed to the handlePlaybookChecklistItem method',
@@ -292,7 +294,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
                 res.push(raw);
-            } else if (shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)) {
+            } else if (force || shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)) {
                 res.push(raw);
             }
 

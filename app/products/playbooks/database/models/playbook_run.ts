@@ -12,6 +12,7 @@ import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookRunModelInterface from '@playbooks//types/database/models/playbook_run';
 import type {PlaybookRunType} from '@playbooks/constants/playbook_run';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type PlaybookTimelineEventModel from '@playbooks/types/database/models/playbook_timeline_event';
 import type {SyncStatus} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -25,41 +26,7 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
-const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
-
-// Timeline events are JSON objects. The shared string-array sanitizer is used by
-// the run's ID arrays, but would intentionally discard these object values. Validate
-// the fields the task-activity resolver relies on so malformed entries are dropped
-// rather than surfacing as a false TimelineEvent to consumers. `id` is checked even
-// though the resolver never reads it: the incremental merge keys events by id, so an
-// id-less event would collapse onto a shared key that timeline_event_deletes can never name.
-const isTimelineEvent = (value: unknown): value is TimelineEvent => {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-        return false;
-    }
-
-    const event = value as Partial<TimelineEvent>;
-    return typeof event.id === 'string' &&
-        typeof event.event_type === 'string' &&
-        typeof event.event_at === 'number' &&
-        typeof event.details === 'string' &&
-        typeof event.subject_user_id === 'string';
-};
-
-// Only task_state_modified events are read (by getTaskActivity), but a run's timeline also carries
-// status updates, participant changes and property changes. Since the whole array lives in one JSON
-// column that is rewritten on every incremental update and handed to every checklist row, keeping
-// events nothing consumes makes the blob grow without bound for no benefit. Widen this if another
-// consumer appears — and rename the column if it stops meaning "task state changes".
-const CONSUMED_EVENT_TYPES = new Set<string>(['task_state_modified']);
-
-export const safeParseTimelineEvents = (value: unknown): TimelineEvent[] => {
-    if (!Array.isArray(value)) {
-        return [];
-    }
-
-    return value.filter((event) => isTimelineEvent(event) && CONSUMED_EVENT_TYPES.has(event.event_type));
-};
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_TIMELINE_EVENT} = PLAYBOOK_TABLES;
 
 /**
  * The PlaybookRun model represents a playbook run in the Mattermost app.
@@ -84,6 +51,7 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
         [USER]: {type: 'belongs_to', key: 'owner_user_id'},
 
         [PLAYBOOK_CHECKLIST]: {type: 'has_many', foreignKey: 'run_id'},
+        [PLAYBOOK_TIMELINE_EVENT]: {type: 'has_many', foreignKey: 'run_id'},
     };
 
     /** playbook_id : The id of the playbook this run belongs to (empty string if it is a channel checklist) */
@@ -128,16 +96,10 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** participant_ids : An array of user IDs that participate in the run */
     @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
 
-    /**
-     * timeline_events : The run's task state change events. Other timeline event types are dropped on
-     * the way in, so this is not the full server-side timeline.
-     *
-     * Memoized on the stored JSON string: the events are handed to `withObservables` as a trigger
-     * prop by the checklist items, so a fresh array on every read would tear down and recreate every
-     * item's observables on every render of the run screen. The cache key is the raw column value,
-     * so a refreshed run still yields a new array and keeps the consumers reactive.
-     */
-    @json('timeline_events', safeParseTimelineEvents, {memo: true}) timelineEvents!: TimelineEvent[];
+    @field('timeline_events_synced_at') timelineEventsSyncedAt!: number | null;
+    @field('task_activity_epoch') taskActivityEpoch!: string | null;
+    @field('task_activity_revision') taskActivityRevision!: string | null;
+    @field('task_activity_protocol_version') taskActivityProtocolVersion!: number | null;
 
     /** summary : Summary of the playbook run */
     @field('summary') summary!: string;
@@ -185,6 +147,7 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     @immutableRelation(USER, 'owner_user_id') owner!: Relation<UserModel>;
 
     @children(PLAYBOOK_CHECKLIST) checklists!: Query<PlaybookChecklistModel>;
+    @children(PLAYBOOK_TIMELINE_EVENT) timelineEvents!: Query<PlaybookTimelineEventModel>;
 
     prepareDestroyWithRelations = async (): Promise<Model[]> => {
         const preparedModels: Model[] = [this.prepareDestroyPermanently()];
@@ -196,6 +159,9 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
                 preparedModels.push(...preparedChecklist);
             }
         }
+
+        const events = await this.timelineEvents.fetch();
+        preparedModels.push(...events.map((event) => event.prepareDestroyPermanently()));
 
         return preparedModels;
     };

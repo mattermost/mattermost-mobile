@@ -14,7 +14,7 @@ import {
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
+import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 
 import {
     updateChecklistItem,
@@ -55,7 +55,7 @@ const mockClient = {
 
 jest.mock('@playbooks/actions/local/checklist');
 jest.mock('@playbooks/actions/local/run');
-jest.mock('@playbooks/database/queries/item');
+jest.mock('@playbooks/actions/remote/runs');
 
 const throwFunc = () => {
     throw Error('error');
@@ -70,6 +70,7 @@ beforeEach(async () => {
     jest.clearAllMocks();
     jest.mocked(localUpdateChecklistItem).mockResolvedValue({data: true});
     await DatabaseManager.init([serverUrl]);
+    jest.mocked(fetchPlaybookRun).mockResolvedValue({run: {id: playbookRunId} as PlaybookRun});
 });
 
 afterEach(async () => {
@@ -95,60 +96,16 @@ describe('checklist', () => {
             expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
             expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'closed', undefined);
-            expect(localUpdateChecklistItem).toHaveBeenCalledWith(serverUrl, itemId, 'closed', undefined);
+            expect(fetchPlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId);
         });
 
-        it('should update local requirements when saving requirement values', async () => {
+        it('should send requirement values to the server', async () => {
             const requirementValues = {req1: 'https://example.com'};
-            const existingRequirements = [
-                {id: 'req1', label: 'Ticket URL', value: ''},
-                {id: 'req2', label: 'Notes', value: 'keep'},
-            ];
-            mockClient.setChecklistItemState.mockResolvedValueOnce({});
-            jest.mocked(getPlaybookChecklistItemById).mockResolvedValueOnce({
-                requirements: existingRequirements,
-            } as never);
 
-            const result = await updateChecklistItem(
-                serverUrl,
-                playbookRunId,
-                itemId,
-                checklistNumber,
-                itemNumber,
-                '',
-                requirementValues,
-            );
+            const result = await updateChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, '', requirementValues);
 
             expect(result).toEqual({data: true});
-            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(
-                playbookRunId,
-                checklistNumber,
-                itemNumber,
-                '',
-                requirementValues,
-            );
-            expect(mockClient.fetchPlaybookRun).not.toHaveBeenCalled();
-            expect(handlePlaybookRuns).not.toHaveBeenCalled();
-            expect(localUpdateChecklistItem).toHaveBeenCalledWith(
-                serverUrl,
-                itemId,
-                '',
-                [
-                    {id: 'req1', label: 'Ticket URL', value: 'https://example.com'},
-                    {id: 'req2', label: 'Notes', value: 'keep'},
-                ],
-            );
-        });
-
-        it('should return local update errors after a successful server update', async () => {
-            const localError = new Error('local write failed');
-            mockClient.setChecklistItemState.mockResolvedValueOnce({});
-            jest.mocked(localUpdateChecklistItem).mockResolvedValueOnce({error: localError});
-
-            const result = await updateChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'closed');
-
-            expect(result).toEqual({error: localError});
-            expect(result.data).toBeUndefined();
+            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, '', requirementValues);
         });
     });
 
@@ -235,7 +192,7 @@ describe('checklist', () => {
             expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
             expect(mockClient.skipChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
-            expect(localUpdateChecklistItem).toHaveBeenCalledWith(serverUrl, itemId, 'skipped');
+            expect(fetchPlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId);
         });
     });
 
@@ -264,7 +221,7 @@ describe('checklist', () => {
             expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
             expect(mockClient.restoreChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
-            expect(localUpdateChecklistItem).toHaveBeenCalledWith(serverUrl, itemId, '');
+            expect(fetchPlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId);
         });
     });
 
@@ -486,7 +443,7 @@ describe('checklist', () => {
             expect('data' in result && result.data).toBe(true);
             expect(mockClient.addChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, {title});
             expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(playbookRunId);
-            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true, true);
         });
 
         it('should add checklist item with empty title', async () => {
@@ -502,7 +459,7 @@ describe('checklist', () => {
             expect('data' in result && result.data).toBe(true);
             expect(mockClient.addChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, {title: emptyTitle});
             expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(playbookRunId);
-            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true, true);
         });
     });
 

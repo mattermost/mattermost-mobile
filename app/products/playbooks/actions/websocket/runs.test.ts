@@ -3,7 +3,9 @@
 
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
+import {queryPlaybookTimelineEventsForRun} from '@playbooks/database/queries/timeline_event';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
@@ -11,7 +13,6 @@ import {
     handlePlaybookRunCreated,
     handlePlaybookRunUpdated,
     handlePlaybookRunUpdatedIncremental,
-    mergeTimelineEvents,
 } from './runs';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -397,79 +398,6 @@ describe('handlePlaybookRunUpdatedIncremental', () => {
     });
 });
 
-describe('mergeTimelineEvents', () => {
-    const event = (id: string, eventAt: number, deleteAt = 0): TimelineEvent => ({
-        id,
-        playbook_run_id: playbookRunId,
-        create_at: eventAt,
-        delete_at: deleteAt,
-        event_at: eventAt,
-        event_type: 'task_state_modified',
-        summary: '',
-        details: JSON.stringify({action: 'skip', item_id: 'item_1'}),
-        post_id: '',
-        subject_user_id: 'user_1',
-        creator_user_id: '',
-    });
-
-    const ids = (events: TimelineEvent[]) => events.map((e) => e.id);
-
-    it('keeps stored events the delta does not mention', () => {
-        const merged = mergeTimelineEvents([event('a', 1), event('b', 2)], [event('c', 3)], undefined);
-
-        expect(ids(merged)).toEqual(['a', 'b', 'c']);
-    });
-
-    it('replaces a stored event that the delta resends under the same id', () => {
-        const merged = mergeTimelineEvents([event('a', 1)], [{...event('a', 1), summary: 'resent'}], undefined);
-
-        expect(merged).toHaveLength(1);
-        expect(merged[0].summary).toBe('resent');
-    });
-
-    it('drops an event the delta soft-deletes', () => {
-        const merged = mergeTimelineEvents([event('a', 1), event('b', 2)], [event('a', 1, 500)], undefined);
-
-        expect(ids(merged)).toEqual(['b']);
-    });
-
-    it('drops an event named in timeline_event_deletes', () => {
-        const merged = mergeTimelineEvents([event('a', 1), event('b', 2)], undefined, ['a']);
-
-        expect(ids(merged)).toEqual(['b']);
-    });
-
-    it('orders by event_at, so a merged list and a freshly fetched one agree', () => {
-        const merged = mergeTimelineEvents([event('late', 30)], [event('early', 10), event('mid', 20)], undefined);
-
-        expect(ids(merged)).toEqual(['early', 'mid', 'late']);
-    });
-
-    it('treats a missing delete_at as not deleted', () => {
-        const {delete_at: _unused, ...withoutDeleteAt} = event('a', 1);
-
-        expect(ids(mergeTimelineEvents([], [withoutDeleteAt], undefined))).toEqual(['a']);
-    });
-
-    // Without this every id-less event collapses onto the same undefined map key, so two distinct
-    // events become one — and timeline_event_deletes could never name it to undo the damage.
-    it('drops delta events that carry no id rather than collapsing them together', () => {
-        const {id: _unused, ...withoutId} = event('a', 1);
-        const delta = [withoutId, {...withoutId, event_at: 2}] as TimelineEvent[];
-
-        expect(ids(mergeTimelineEvents([event('kept', 5)], delta, undefined))).toEqual(['kept']);
-    });
-
-    it('drops delta events whose shape or type would not survive a read back', () => {
-        const delta = [
-            {...event('no_subject', 1), subject_user_id: undefined},
-            {...event('status', 2), event_type: 'status_updated'},
-        ] as TimelineEvent[];
-
-        expect(ids(mergeTimelineEvents([event('kept', 5)], delta, undefined))).toEqual(['kept']);
-    });
-});
-
 describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
     const event = (id: string, eventAt: number, deleteAt = 0): TimelineEvent => ({
         id,
@@ -491,6 +419,8 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
             runs: [{...mockPlaybookRun, timeline_events: events}],
             processChildren: true,
         });
+        const prepared = await prepareTimelineEvents(operator.database, playbookRunId, events, [], true);
+        await operator.batchRecords(prepared, 'seedRunWithEvents');
     };
 
     const dispatch = async (update: PlaybookRunUpdate) => {
@@ -501,9 +431,33 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
     };
 
     const storedEventIds = async () => {
-        const storedRun = await getPlaybookRunById(operator.database, playbookRunId);
-        return storedRun!.timelineEvents.map((e) => e.id);
+        const events = await queryPlaybookTimelineEventsForRun(operator.database, playbookRunId).fetch();
+        return events.map((record) => record.id);
     };
+
+    it('should apply a certified deletion-only transition once', async () => {
+        const run = {
+            ...mockPlaybookRun,
+            task_activity_sync: {version: 1, epoch: 'epoch-a', revision: '42', complete: true},
+        };
+        await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: false});
+        const prepared = await prepareTimelineEvents(operator.database, playbookRunId, [event('a', 1)], [], true);
+        await operator.batchRecords(prepared, 'seed certified event');
+
+        const update: PlaybookRunUpdate = {
+            id: playbookRunId,
+            playbook_run_updated_at: mockPlaybookRun.update_at,
+            changed_fields: {},
+            timeline_event_deletes: ['a'],
+            task_activity_sync: {version: 1, epoch: 'epoch-a', base_revision: '42', revision: '43', complete: false},
+        };
+        await dispatch(update);
+        await dispatch(update);
+
+        expect(await storedEventIds()).toEqual([]);
+        const stored = await getPlaybookRunById(operator.database, playbookRunId);
+        expect(stored?.taskActivityRevision).toBe('43');
+    });
 
     // The delta used to be assigned straight onto the run, so one unrelated task change wiped every
     // other task's activity chip — and it stayed wiped, because the run screen reads the cached record.
@@ -532,8 +486,6 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(await storedEventIds()).toEqual(['b']);
     });
 
-    // Fails without serializePerRun: both applications read the pre-commit event list and the later
-    // write drops the earlier one's event for good.
     it('keeps both events when two updates for the same run interleave', async () => {
         await seedRunWithEvents([event('a', 1)]);
 

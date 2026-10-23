@@ -27,6 +27,7 @@ import type PlaybookChecklistItemModel from '@playbooks/types/database/models/pl
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type PlaybookRunAttributeModel from '@playbooks/types/database/models/playbook_run_attribute';
 import type PlaybookRunAttributeValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
+import type PlaybookTimelineEventModel from '@playbooks/types/database/models/playbook_timeline_event';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -1400,7 +1401,10 @@ class TestHelperSingleton {
             activeStage: 1,
             activeStageTitle: 'activeStageTitle',
             participantIds: [],
-            timelineEvents: [],
+            timelineEventsSyncedAt: null,
+            taskActivityEpoch: null,
+            taskActivityRevision: null,
+            taskActivityProtocolVersion: null,
             summary: 'summary',
             currentStatus: 'InProgress',
             lastStatusUpdateAt: 0,
@@ -1414,10 +1418,29 @@ class TestHelperSingleton {
             channel: this.fakeRelation(),
             owner: this.fakeRelation(),
             checklists: this.fakeQuery([]),
+            timelineEvents: this.fakeQuery([]),
             prepareDestroyWithRelations: jest.fn().mockResolvedValue([]),
             previousReminder: 0,
             itemsOrder: [],
             updateAt: 0,
+            ...overwrite,
+        };
+    };
+
+    fakePlaybookTimelineEventModel = (overwrite: Partial<PlaybookTimelineEventModel> = {}): PlaybookTimelineEventModel => {
+        const runId = this.generateId();
+        return {
+            ...this.fakeModel(),
+            runId,
+            eventAt: 0,
+            eventType: 'task_state_modified',
+            details: '',
+            subjectUserId: '',
+            createAt: 0,
+            summary: '',
+            postId: '',
+            creatorUserId: '',
+            toTimelineEvent: jest.fn(),
             ...overwrite,
         };
     };
@@ -1446,6 +1469,8 @@ class TestHelperSingleton {
             title: 'title',
             state: '',
             stateModified: 0,
+            stateEventId: null,
+            stateEventLinkKnown: false,
             assigneeId: null,
             assigneeModified: 0,
             command: null,

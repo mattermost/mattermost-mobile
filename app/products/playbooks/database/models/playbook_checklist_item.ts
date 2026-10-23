@@ -70,6 +70,8 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
 
     /** state_modified : The timestamp when the checklist item was modified */
     @field('state_modified') stateModified!: number;
+    @field('state_event_id') stateEventId!: string | null;
+    @field('state_event_link_known') stateEventLinkKnown!: boolean;
 
     /** assignee_id: The id of the user who is assigned to the checklist item */
     @field('assignee_id') assigneeId!: string | null;

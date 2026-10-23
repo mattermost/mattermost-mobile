@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
+import {getVisiblePlaybookRun} from '@playbooks/actions/local/task_activity';
+import {ensurePlaybookRunActivityFresh, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {updatePlaybooksVersion} from '@playbooks/actions/remote/version';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {getCurrentChannelId} from '@queries/servers/system';
@@ -30,12 +31,24 @@ export async function handlePlaybookReconnect(serverUrl: string) {
 
     const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
     const isTabletDevice = isTablet();
-    if (!isChannelScreenMounted && !isTabletDevice) {
+    const visibleRunId = getVisiblePlaybookRun(serverUrl);
+    if (!isChannelScreenMounted && !isTabletDevice && !visibleRunId) {
         return;
     }
 
     const isPlaybooksEnabled = await fetchIsPlaybooksEnabled(database);
     if (!isPlaybooksEnabled) {
+        return;
+    }
+
+    if (visibleRunId) {
+        const refresh = await ensurePlaybookRunActivityFresh(serverUrl, visibleRunId);
+        if (refresh.error) {
+            logDebug('Error refreshing visible playbook run on reconnect', refresh.error);
+        }
+    }
+
+    if (!isChannelScreenMounted && !isTabletDevice) {
         return;
     }
 

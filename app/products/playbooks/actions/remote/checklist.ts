@@ -2,12 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import DatabaseManager from '@database/manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {
     setChecklistItemCommand as localSetChecklistItemCommand,
-    updateChecklistItem as localUpdateChecklistItem,
     setAssignee as localSetAssignee,
     setDueDate as localSetDueDate,
     renameChecklist as localRenameChecklist,
@@ -15,14 +13,26 @@ import {
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
+import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
+import {applyPlaybookRunDelta} from '@playbooks/actions/websocket/runs';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
+
+const applyTaskMutationResponse = async (serverUrl: string, runId: string, response: PlaybookRunUpdate | void) => {
+    if (response && response.id === runId && response.task_activity_sync && response.changed_fields) {
+        await applyPlaybookRunDelta(serverUrl, response, true);
+        return;
+    }
+    const result = await fetchPlaybookRun(serverUrl, runId);
+    if (result.error) {
+        throw result.error;
+    }
+};
 
 export const updateChecklistItem = async (
     serverUrl: string,
     playbookRunId: string,
-    itemId: string,
+    _itemId: string,
     checklistNumber: number,
     itemNumber: number,
     state: ChecklistItemState,
@@ -31,26 +41,12 @@ export const updateChecklistItem = async (
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state, requirementValues);
-
-        let requirements: TaskRequirement[] | undefined;
-        if (requirementValues) {
-            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const item = await getPlaybookChecklistItemById(database, itemId);
-            requirements = item?.requirements.map((req) => ({
-                id: req.id,
-                label: req.label,
-                value: requirementValues[req.id] ?? req.value,
-            }));
-        }
-
-        const localResult = await localUpdateChecklistItem(serverUrl, itemId, state, requirements);
-        if (localResult.error) {
-            return {error: localResult.error};
-        }
+        const response = await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state, requirementValues);
+        await applyTaskMutationResponse(serverUrl, playbookRunId, response);
         return {data: true};
     } catch (error) {
         logDebug('error on updateChecklistItem', getFullErrorMessage(error));
+        await fetchPlaybookRun(serverUrl, playbookRunId);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -79,18 +75,18 @@ export const runChecklistItem = async (
 export const skipChecklistItem = async (
     serverUrl: string,
     playbookRunId: string,
-    itemId: string,
+    _itemId: string,
     checklistNumber: number,
     itemNumber: number,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.skipChecklistItem(playbookRunId, checklistNumber, itemNumber);
-
-        await localUpdateChecklistItem(serverUrl, itemId, 'skipped');
+        const response = await client.skipChecklistItem(playbookRunId, checklistNumber, itemNumber);
+        await applyTaskMutationResponse(serverUrl, playbookRunId, response);
         return {data: true};
     } catch (error) {
         logDebug('error on skipChecklistItem', getFullErrorMessage(error));
+        await fetchPlaybookRun(serverUrl, playbookRunId);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -99,18 +95,18 @@ export const skipChecklistItem = async (
 export const restoreChecklistItem = async (
     serverUrl: string,
     playbookRunId: string,
-    itemId: string,
+    _itemId: string,
     checklistNumber: number,
     itemNumber: number,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.restoreChecklistItem(playbookRunId, checklistNumber, itemNumber);
-
-        await localUpdateChecklistItem(serverUrl, itemId, '');
+        const response = await client.restoreChecklistItem(playbookRunId, checklistNumber, itemNumber);
+        await applyTaskMutationResponse(serverUrl, playbookRunId, response);
         return {data: true};
     } catch (error) {
         logDebug('error on restoreChecklistItem', getFullErrorMessage(error));
+        await fetchPlaybookRun(serverUrl, playbookRunId);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -214,7 +210,7 @@ export const addChecklistItem = async (
 
         // Fetch and sync the entire run to get the created item with server-generated ID
         const run = await client.fetchPlaybookRun(playbookRunId);
-        const result = await handlePlaybookRuns(serverUrl, [run], false, true);
+        const result = await handlePlaybookRuns(serverUrl, [run], false, true, true);
         return result.error ? result : {data: true};
     } catch (error) {
         logDebug('error on addChecklistItem', getFullErrorMessage(error));

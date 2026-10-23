@@ -205,7 +205,10 @@ is_active boolean
 active_stage number
 active_stage_title string
 participant_ids string # stringified array of user IDs
-timeline_events string NULL # stringified array of task_state_modified timeline events; other event types are not stored
+timeline_events_synced_at number NULL # client time of the last complete activity snapshot
+task_activity_epoch string NULL # certification epoch; absent for legacy runs
+task_activity_revision string NULL # decimal aggregate revision in the epoch
+task_activity_protocol_version number NULL # version of the certified projection
 summary string
 current_status string # (valid values InProgres, Finished)
 owner_user_id string INDEX FK >- User.id
@@ -239,6 +242,8 @@ title string
 description string
 state string # e.g., 'open', 'closed'
 state_modified number
+state_event_id string NULL # event for the current state transition
+state_event_link_known boolean # false when the legacy payload omitted the link
 assignee_id string INDEX FK >- User.id
 assignee_modified number
 command string
@@ -252,6 +257,19 @@ order number
 completed_at number
 synced string NULL INDEX # optional field for sync status
 last_sync_at number NULL # optional field for last sync timestamp
+
+PlaybookTimelineEvent
+-
+id PK string # server timeline event ID
+run_id string INDEX FK >- PlaybookRun.id
+event_at number INDEX # state transition timestamp
+event_type string # only task_state_modified is cached initially
+details string # server event details JSON
+subject_user_id string # actor of the task state change
+create_at number
+summary string
+post_id string
+creator_user_id string
 
 PlaybookRunAttribute
 -

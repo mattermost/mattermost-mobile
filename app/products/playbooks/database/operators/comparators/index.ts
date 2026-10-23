@@ -6,7 +6,7 @@ import type PlaybookChecklistItemModel from '@playbooks/types/database/models/pl
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 export const shouldUpdatePlaybookRunRecord = (existingRecord: PlaybookRunModel, raw: PartialPlaybookRun): boolean => {
-    return Boolean(existingRecord.updateAt !== raw.update_at);
+    return Boolean(existingRecord.updateAt !== raw.update_at || raw.task_activity_sync || 'timeline_events_synced_at' in raw || 'task_activity_clear_certificate' in raw);
 };
 
 export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChecklistModel, raw: PartialChecklist): boolean => {
@@ -14,5 +14,5 @@ export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChec
 };
 
 export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: PlaybookChecklistItemModel, raw: PartialChecklistItem): boolean => {
-    return Boolean(existingRecord.updateAt !== raw.update_at);
+    return Boolean(existingRecord.updateAt !== raw.update_at || (raw && 'state_event_id' in raw && (!existingRecord.stateEventLinkKnown || existingRecord.stateEventId !== raw.state_event_id)));
 };

@@ -33,7 +33,7 @@ const timelineEvent: TimelineEvent = {
 
 describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
     it('=> transformPlaybookRunRecord: should return a record of type PlaybookRun for CREATE action', async () => {
-        expect.assertions(4);
+        expect.assertions(3);
 
         const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
         expect(database).toBeTruthy();
@@ -91,7 +91,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
 
         expect(preparedRecord).toBeTruthy();
         expect(preparedRecord!.collection.table).toBe(PLAYBOOK_RUN);
-        expect(preparedRecord!.timelineEvents).toEqual([timelineEvent]);
     });
 
     it('=> transformPlaybookRunRecord: should return a record of type PlaybookRun for UPDATE action', async () => {
@@ -118,7 +117,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.activeStage = 1;
                 record.activeStageTitle = 'Stage 1';
                 record.participantIds = ['user_2', 'user_3'];
-                record.timelineEvents = [timelineEvent];
                 record.summary = 'Existing summary';
                 record.currentStatus = 'InProgress';
                 record.lastStatusUpdateAt = 1620000001000;
@@ -271,7 +269,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.activeStage = 1;
                 record.activeStageTitle = 'Stage 1';
                 record.participantIds = ['user_2', 'user_3'];
-                record.timelineEvents = [timelineEvent];
                 record.summary = 'Existing summary';
                 record.currentStatus = 'InProgress';
                 record.lastStatusUpdateAt = 1620000001000;
@@ -316,7 +313,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         expect(preparedRecord.activeStage).toBe(1);
         expect(preparedRecord.activeStageTitle).toBe('Stage 1');
         expect(preparedRecord.participantIds).toEqual(['user_2', 'user_3']);
-        expect(preparedRecord.timelineEvents).toEqual([timelineEvent]);
         expect(preparedRecord.summary).toBe('Existing summary');
         expect(preparedRecord.currentStatus).toBe('InProgress');
         expect(preparedRecord.lastStatusUpdateAt).toBe(1620000001000);
@@ -328,40 +324,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         // Changing values
         expect(preparedRecord.updateAt).toBe(1620000004000);
         expect(preparedRecord.lastSyncAt).toBeGreaterThan(lastSyncAt);
-    });
-
-    // A full run payload carries the complete event list, so replacing is correct here. Incremental
-    // websocket updates send a delta instead and must merge before reaching this transformer — see
-    // mergeTimelineEvents. Moving the merge down into this layer would silently break resync.
-    it('=> transformPlaybookRunRecord: should replace stored timeline events when the payload supplies its own', async () => {
-        const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
-
-        let existingRecord: PlaybookRunModel | undefined;
-        await database!.write(async () => {
-            existingRecord = await database!.get<PlaybookRunModel>(PLAYBOOK_RUN).create((record) => {
-                record._raw.id = 'playbook_run_timeline_replace';
-                record.timelineEvents = [timelineEvent];
-            });
-        });
-
-        const replacement: TimelineEvent = {...timelineEvent, id: 'event_2'};
-        const preparedRecord = await transformPlaybookRunRecord({
-            action: OperationType.UPDATE,
-            database: database!,
-            value: {
-                record: existingRecord,
-                raw: {
-                    id: 'playbook_run_timeline_replace',
-                    timeline_events: [replacement],
-                } as PlaybookRun,
-            },
-        });
-
-        await database!.write(async () => {
-            await database!.batch(preparedRecord);
-        });
-
-        expect(preparedRecord.timelineEvents).toEqual([replacement]);
     });
 
     it('=> transformPlaybookRunRecord: should set default type to PlaybookType when playbookId is present', async () => {

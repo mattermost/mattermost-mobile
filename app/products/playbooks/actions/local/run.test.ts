@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {queryPlaybookTimelineEventsForRun} from '@playbooks/database/queries/timeline_event';
 import TestHelper from '@test/test_helper';
 
 import {handlePlaybookRuns, setOwner, updatePlaybookRun} from './run';
@@ -21,6 +22,29 @@ afterEach(async () => {
 });
 
 describe('handlePlaybookRuns', () => {
+    const event = (runId: string, id: string): TimelineEvent => ({
+        id,
+        playbook_run_id: runId,
+        create_at: 1,
+        event_at: 1000,
+        event_type: 'task_state_modified',
+        summary: '',
+        details: '{"action":"check"}',
+        post_id: '',
+        subject_user_id: 'user-1',
+        creator_user_id: 'user-1',
+    });
+
+    const certified = (run: PlaybookRun, revision: string, events: TimelineEvent[]): PlaybookRun => ({
+        ...run,
+        timeline_events: events,
+        checklists: run.checklists.map((checklist) => ({
+            ...checklist,
+            items: checklist.items.map((item) => ({...item, state_event_id: null})),
+        })),
+        task_activity_sync: {version: 1, epoch: 'epoch-a', revision, complete: true},
+    });
+
     it('should handle not found database', async () => {
         const {error} = await handlePlaybookRuns('foo', []);
         expect(error).toBeDefined();
@@ -47,6 +71,64 @@ describe('handlePlaybookRuns', () => {
         expect(data![1]._preparedState).toBe('create');
         expect(data![2].id).toBe(runs[0].checklists[0].items[0].id);
         expect(data![2]._preparedState).toBe('create');
+    });
+
+    it('should reconcile events at an unchanged run timestamp and reject an older revision', async () => {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const run = TestHelper.createPlaybookRuns(1, 1, 1, true)[0];
+        const first = certified(run, '42', [event(run.id, 'event-a')]);
+        const newer = certified(run, '43', [event(run.id, 'event-b')]);
+
+        expect((await handlePlaybookRuns(serverUrl, [first], false, true)).error).toBeUndefined();
+        expect((await handlePlaybookRuns(serverUrl, [newer], false, true)).error).toBeUndefined();
+        expect((await handlePlaybookRuns(serverUrl, [first], false, true)).error).toBeUndefined();
+
+        const events = await queryPlaybookTimelineEventsForRun(database, run.id).fetch();
+        const stored = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(run.id);
+        expect(events.map((record) => record.id)).toEqual(['event-b']);
+        expect(stored.taskActivityRevision).toBe('43');
+    });
+
+    it('should preserve a certified projection when a malformed snapshot arrives', async () => {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const run = TestHelper.createPlaybookRuns(1, 1, 1, true)[0];
+        const initial = certified(run, '42', [event(run.id, 'event-a')]);
+        await handlePlaybookRuns(serverUrl, [initial], false, true);
+        const malformed = certified(run, '43', [{...event(run.id, 'event-b'), details: 1 as unknown as string}]);
+
+        expect((await handlePlaybookRuns(serverUrl, [malformed], false, true)).error).toBeDefined();
+        const events = await queryPlaybookTimelineEventsForRun(database, run.id).fetch();
+        const stored = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(run.id);
+        expect(events.map((record) => record.id)).toEqual(['event-a']);
+        expect(stored.taskActivityRevision).toBe('42');
+    });
+
+    it('should reject an event ID already owned by another run', async () => {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const [first, second] = TestHelper.createPlaybookRuns(2, 0, 0, true);
+        await handlePlaybookRuns(serverUrl, [certified(first, '1', [event(first.id, 'shared-id')])], false, true);
+
+        expect((await handlePlaybookRuns(serverUrl, [certified(second, '1', [event(second.id, 'shared-id')])], false, true)).error).toBeDefined();
+        const firstEvents = await queryPlaybookTimelineEventsForRun(database, first.id).fetch();
+        const secondEvents = await queryPlaybookTimelineEventsForRun(database, second.id).fetch();
+        expect(firstEvents.map((record) => record.id)).toEqual(['shared-id']);
+        expect(secondEvents).toHaveLength(0);
+    });
+
+    it('should retain the prior certificate after a failed batch and accept the next operation', async () => {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const run = TestHelper.createPlaybookRuns(1, 0, 0, true)[0];
+        await handlePlaybookRuns(serverUrl, [certified(run, '42', [event(run.id, 'event-a')])], false, true);
+        jest.spyOn(operator, 'batchRecords').mockRejectedValueOnce(new Error('write failed'));
+
+        const next = certified(run, '43', [event(run.id, 'event-b')]);
+        expect((await handlePlaybookRuns(serverUrl, [next], false, true)).error).toBeDefined();
+        expect((await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(run.id)).taskActivityRevision).toBe('42');
+        expect((await queryPlaybookTimelineEventsForRun(database, run.id).fetch()).map((record) => record.id)).toEqual(['event-a']);
+
+        expect((await handlePlaybookRuns(serverUrl, [next], false, true)).error).toBeUndefined();
+        expect((await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(run.id)).taskActivityRevision).toBe('43');
+        expect((await queryPlaybookTimelineEventsForRun(database, run.id).fetch()).map((record) => record.id)).toEqual(['event-b']);
     });
 });
 

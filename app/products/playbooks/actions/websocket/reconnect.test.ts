@@ -3,7 +3,8 @@
 
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
+import {setVisiblePlaybookRun} from '@playbooks/actions/local/task_activity';
+import {ensurePlaybookRunActivityFresh, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {updatePlaybooksVersion} from '@playbooks/actions/remote/version';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {getCurrentChannelId} from '@queries/servers/system';
@@ -34,10 +35,12 @@ describe('handlePlaybookReconnect', () => {
         jest.mocked(fetchIsPlaybooksEnabled).mockResolvedValue(false);
         jest.mocked(getCurrentChannelId).mockResolvedValue(mockCurrentChannelId);
         jest.mocked(fetchPlaybookRunsForChannel).mockResolvedValue({runs: []});
+        jest.mocked(ensurePlaybookRunActivityFresh).mockResolvedValue({error: undefined});
         jest.mocked(isTablet).mockReturnValue(false);
     });
 
     afterEach(async () => {
+        setVisiblePlaybookRun(serverUrl, null);
         await DatabaseManager.deleteServerDatabase(serverUrl);
     });
 
@@ -70,6 +73,17 @@ describe('handlePlaybookReconnect', () => {
     });
 
     describe('on phone device', () => {
+        it('should refresh a visible run even when its channel is not active', async () => {
+            jest.spyOn(NavigationStore, 'getScreensInStack').mockReturnValue([Screens.HOME]);
+            jest.mocked(fetchIsPlaybooksEnabled).mockResolvedValue(true);
+            setVisiblePlaybookRun(serverUrl, 'run-in-other-channel');
+
+            await handlePlaybookReconnect(serverUrl);
+
+            expect(ensurePlaybookRunActivityFresh).toHaveBeenCalledWith(serverUrl, 'run-in-other-channel');
+            expect(fetchPlaybookRunsForChannel).not.toHaveBeenCalled();
+        });
+
         it('should not fetch playbook runs when not on channel screen', async () => {
             const getScreensSpy = jest.spyOn(NavigationStore, 'getScreensInStack').mockReturnValue([Screens.HOME, Screens.THREAD]);
 

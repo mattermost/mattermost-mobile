@@ -1,51 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Model} from '@nozbe/watermelondb';
+
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {safeParseTimelineEvents} from '@playbooks/database/models/playbook_run';
+import {captureRunActivityState, serializeRunActivity} from '@playbooks/actions/local/task_activity';
+import {ensurePlaybookRunActivityFresh} from '@playbooks/actions/remote/runs';
+import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {isConsumedTimelineEvent, prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
+import {compareTaskActivityRevisions, parseTaskActivitySync} from '@playbooks/utils/task_activity_sync';
 import EphemeralStore from '@store/ephemeral_store';
 import {safeParseJSON} from '@utils/helpers';
 
-import type {Model} from '@nozbe/watermelondb';
+import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 
 const isValidEvent = (data: unknown) => {
     if (!data || typeof data !== 'object') {
         return false;
     }
     return true;
-};
-
-// Unlike every other run field in changed_fields, timeline_events is a delta: the server sends only the
-// events it just created or soft-deleted, so assigning it would drop the rest of the run's history.
-// Deletions arrive two ways and both have to leave, because a full run fetch selects on DeleteAt = 0 —
-// anything kept past that point can never be corrected by a resync. A soft delete comes through as an
-// update carrying a non-zero delete_at; timeline events are otherwise immutable.
-export const mergeTimelineEvents = (
-    stored: TimelineEvent[],
-    delta: TimelineEvent[] | undefined,
-    hardDeletes: string[] | undefined,
-): TimelineEvent[] => {
-    // `stored` has already been through safeParseTimelineEvents on its way out of the JSON column.
-    const byId = new Map(stored.map((event) => [event.id, event]));
-
-    // Guard the shapes rather than trusting them: these come straight off the wire, and a non-array
-    // here would throw inside a fire-and-forget handler where nothing would report it. Sanitizing the
-    // delta with the same predicate the column is read through keeps what is stored to exactly what
-    // can be read back, and drops id-less events before they collapse onto one another's map key.
-    for (const event of safeParseTimelineEvents(delta)) {
-        byId.set(event.id, event);
-    }
-
-    for (const id of Array.isArray(hardDeletes) ? hardDeletes : []) {
-        byId.delete(id);
-    }
-
-    // Matches the server's ORDER BY EventAt ASC, so a merged list and a freshly fetched one agree.
-    return Array.from(byId.values()).
-        filter((event) => !event.delete_at).
-        sort((a, b) => a.event_at - b.event_at);
 };
 
 export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocketMessage) => {
@@ -65,7 +41,10 @@ export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocket
         return;
     }
 
-    await handlePlaybookRuns(serverUrl, [playbookRun], false, true);
+    const result = await handlePlaybookRuns(serverUrl, [playbookRun], false, true);
+    if (result?.error) {
+        await ensurePlaybookRunActivityFresh(serverUrl, playbookRun.id);
+    }
 };
 
 export const handlePlaybookRunUpdated = async (serverUrl: string, msg: WebSocketMessage) => {
@@ -86,35 +65,10 @@ export const handlePlaybookRunUpdated = async (serverUrl: string, msg: WebSocket
         return;
     }
 
-    await handlePlaybookRuns(serverUrl, [playbookRun], false, true);
-};
-
-const runUpdateQueues = new Map<string, Promise<void>>();
-
-// Incremental updates are dispatched fire-and-forget — neither app/actions/websocket/event.ts nor
-// ./events.ts awaits the handler — so two payloads for the same run can be in flight at once.
-// Applying one is a read-merge-write spanning several awaits: the stored timeline events are read when
-// handlePlaybookRun is called, but nothing is committed until batchRecords. Overlapping applications
-// would therefore both read the pre-commit list, and the later write would drop the earlier one's
-// event for good, since a full run fetch is gated on lastFetchAt and never brings it back. Queueing
-// per run id keeps one application atomic with respect to the others for that run.
-const serializePerRun = <T>(runId: string, apply: () => Promise<T>): Promise<T> => {
-    const previous = runUpdateQueues.get(runId) ?? Promise.resolve();
-
-    // Proceed whether or not the previous application settled cleanly: one failed payload must not
-    // wedge every later update for this run.
-    const applied = previous.then(apply, apply);
-    const settled = applied.then(() => undefined, () => undefined);
-    runUpdateQueues.set(runId, settled);
-
-    settled.then(() => {
-        // Only drop the entry while still the tail, so the map does not retain every run seen.
-        if (runUpdateQueues.get(runId) === settled) {
-            runUpdateQueues.delete(runId);
-        }
-    });
-
-    return applied;
+    const result = await handlePlaybookRuns(serverUrl, [playbookRun], false, true);
+    if (result?.error) {
+        await ensurePlaybookRunActivityFresh(serverUrl, playbookRun.id);
+    }
 };
 
 export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg: WebSocketMessage) => {
@@ -126,68 +80,149 @@ export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg
         return;
     }
 
-    await serializePerRun(data.id, () => applyRunUpdatedIncremental(serverUrl, data));
+    await applyPlaybookRunDelta(serverUrl, data);
 };
 
-const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUpdate) => {
+export const applyPlaybookRunDelta = async (serverUrl: string, data: PlaybookRunUpdate, allowUnsynced = false) => {
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const needsRecovery = await serializeRunActivity(database, data.id, () => applyRunUpdatedIncremental(serverUrl, data, allowUnsynced));
+    if (needsRecovery) {
+        await ensurePlaybookRunActivityFresh(serverUrl, data.id);
+    }
+};
+
+const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUpdate, allowUnsynced: boolean) => {
     const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
     const run = await getPlaybookRunById(database, data.id);
     if (!run) {
         // Do not handle any data if the run is not in the database
-        return;
+        return allowUnsynced;
     }
 
     const isSynced = EphemeralStore.getChannelPlaybooksSynced(serverUrl, run.channelId);
-    if (!isSynced) {
+    if (!isSynced && !allowUnsynced) {
         // We don't update the run because any information we currently have may be outdated
-        return;
+        return false;
     }
 
-    const models: Model[] = [];
-
-    // Hard deletes travel outside changed_fields, so they can be the only thing a payload carries.
-    const touchesTimeline = 'timeline_events' in data.changed_fields || Boolean(data.timeline_event_deletes?.length);
-
-    const hasRunChangedFields = Object.keys(data.changed_fields).filter((key) => key !== 'checklists').length > 0;
-    if (hasRunChangedFields || touchesTimeline) {
-        const runModels = await operator.handlePlaybookRun({
-            runs: [{
-                ...data.changed_fields,
-                ...(touchesTimeline ? {
-                    timeline_events: mergeTimelineEvents(
-                        run.timelineEvents,
-                        data.changed_fields.timeline_events,
-                        data.timeline_event_deletes,
-                    ),
-                } : {}),
-                checklists: undefined, // Remove the checklists from the update
-                id: data.id,
-                update_at: data.playbook_run_updated_at,
-            }],
-            prepareRecordsOnly: true,
-            processChildren: false,
-        });
-
-        models.push(...runModels);
+    const sync = parseTaskActivitySync(data.task_activity_sync, false);
+    if (data.task_activity_sync && !sync) {
+        return true;
     }
-
-    if (data.changed_fields.checklists) {
-        const promises = [];
-        for (const checklist of data.changed_fields.checklists) {
-            promises.push(handlePlaybookChecklistUpdated(serverUrl, checklist, data.id));
+    if (sync) {
+        if (!run.taskActivityEpoch || !run.taskActivityRevision || run.taskActivityEpoch !== sync.epoch) {
+            return true;
         }
-        const checklistModels = await Promise.all(promises);
-        models.push(...checklistModels.flat());
+        if (compareTaskActivityRevisions(sync.revision, run.taskActivityRevision) <= 0) {
+            return false;
+        }
+        if (sync.base_revision !== run.taskActivityRevision) {
+            return true;
+        }
+        if ('timeline_events' in data.changed_fields && !Array.isArray(data.changed_fields.timeline_events)) {
+            return true;
+        }
+        if (data.changed_fields.checklists?.some((checklist) =>
+            checklist.item_inserts?.some((item) => !('state_event_id' in item)) ||
+            checklist.item_updates?.some((item) => ('state' in item.fields || 'state_modified' in item.fields) && !('state_event_id' in item.fields)))) {
+            return true;
+        }
+    } else if (run.taskActivityEpoch && ('timeline_events' in data.changed_fields || data.changed_fields.checklists || data.timeline_event_deletes?.length)) {
+        return true;
     }
 
-    if (models.length > 0) {
-        await operator.batchRecords(models, 'handlePlaybookRunUpdatedIncremental');
+    const checklistUpdates = data.changed_fields.checklists ?? [];
+    const restore = await captureRunActivityState(database, data.id, {
+        checklistIds: checklistUpdates.map((checklist) => checklist.id),
+        itemIds: checklistUpdates.flatMap((checklist) => [
+            ...(checklist.item_inserts?.map((item) => item.id) ?? []),
+            ...(checklist.item_updates?.map((item) => item.id) ?? []),
+            ...(checklist.item_deletes ?? []),
+        ]),
+        eventIds: [
+            ...(Array.isArray(data.changed_fields.timeline_events) ? data.changed_fields.timeline_events.map((event) => event.id) : []),
+            ...(data.timeline_event_deletes ?? []),
+        ].filter((id): id is string => typeof id === 'string' && id.length > 0),
+    });
+    try {
+        const models: Model[] = [];
+
+        // Hard deletes travel outside changed_fields, so they can be the only thing a payload carries.
+        const touchesTimeline = 'timeline_events' in data.changed_fields || Boolean(data.timeline_event_deletes?.length);
+
+        const hasRunChangedFields = Object.keys(data.changed_fields).filter((key) => key !== 'checklists' && key !== 'timeline_events').length > 0;
+        if (hasRunChangedFields || touchesTimeline || sync) {
+            const runModels = await operator.handlePlaybookRun({
+                runs: [{
+                    ...data.changed_fields,
+                    ...(sync ? {task_activity_sync: sync} : {}),
+                    checklists: undefined, // Remove the checklists from the update
+                    id: data.id,
+                    update_at: data.playbook_run_updated_at,
+                }],
+                prepareRecordsOnly: true,
+                processChildren: false,
+            });
+
+            models.push(...runModels);
+        }
+
+        if (touchesTimeline) {
+            const incoming = Array.isArray(data.changed_fields.timeline_events) ? data.changed_fields.timeline_events : [];
+            if (sync && incoming.some((event) => !event || typeof event !== 'object' ||
+                (!event.delete_at && (!event.event_type || (event.event_type === 'task_state_modified' && !isConsumedTimelineEvent(event)))) ||
+                (event.delete_at && (typeof event.id !== 'string' || !event.id)))) {
+                restore();
+                return true;
+            }
+            const deletedIds = [...(data.timeline_event_deletes ?? [])];
+            for (const event of incoming) {
+                if (event?.delete_at && typeof event.id === 'string') {
+                    deletedIds.push(event.id);
+                }
+            }
+            const consumed = incoming.filter((event) => !event?.delete_at && isConsumedTimelineEvent(event));
+            models.push(...await prepareTimelineEvents(database, data.id, consumed, deletedIds, false));
+        }
+
+        if (data.changed_fields.checklists) {
+            const promises = [];
+            for (const checklist of data.changed_fields.checklists) {
+                promises.push(handlePlaybookChecklistUpdated(serverUrl, checklist, data.id));
+            }
+            const checklistModels = await Promise.all(promises);
+            models.push(...checklistModels.flat());
+        }
+
+        if (models.length > 0) {
+            await operator.batchRecords(models, 'handlePlaybookRunUpdatedIncremental');
+        }
+        return false;
+    } catch {
+        restore();
+        return true;
     }
 };
 
 const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate: PlaybookChecklistUpdate, runId: string) => {
-    const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+    const existingChecklist = await database.get<PlaybookChecklistModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).query(Q.where('id', checklistUpdate.id)).fetch();
+    if (existingChecklist.some((checklist) => checklist.runId !== runId)) {
+        throw new Error('Checklist belongs to another run');
+    }
+    const addressedItemIds = [
+        ...(checklistUpdate.item_inserts?.map((item) => item.id) ?? []),
+        ...(checklistUpdate.item_updates?.map((item) => item.id) ?? []),
+        ...(checklistUpdate.item_deletes ?? []),
+    ];
+    if (addressedItemIds.length) {
+        const existingItems = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).query(Q.where('id', Q.oneOf(addressedItemIds))).fetch();
+        if (existingItems.some((item) => item.checklistId !== checklistUpdate.id)) {
+            throw new Error('Task belongs to another checklist');
+        }
+    }
 
     const models: Model[] = [];
     const fields = checklistUpdate.fields || {};
@@ -209,9 +244,10 @@ const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate
         models.push(...checklistModels);
     }
 
+    const deletedItems = new Set(checklistUpdate.item_deletes ?? []);
     if (checklistUpdate.item_inserts) {
         const promises = [];
-        for (const item of checklistUpdate.item_inserts) {
+        for (const item of checklistUpdate.item_inserts.filter((value) => !deletedItems.has(value.id))) {
             promises.push(operator.handlePlaybookChecklistItem({
                 items: [{...item, checklist_id: checklistUpdate.id, update_at: checklistUpdate.checklist_updated_at}],
                 prepareRecordsOnly: true,
@@ -223,11 +259,19 @@ const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate
 
     if (checklistUpdate.item_updates) {
         const promises = [];
-        for (const item of checklistUpdate.item_updates) {
+        for (const item of checklistUpdate.item_updates.filter((value) => !deletedItems.has(value.id))) {
             promises.push(handlePlaybookChecklistItemUpdated(serverUrl, item, checklistUpdate.id));
         }
         const checklistItemModels = await Promise.all(promises);
         models.push(...checklistItemModels.flat());
+    }
+
+    if (deletedItems.size) {
+        const existing = await database.get(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).query(
+            Q.where('checklist_id', checklistUpdate.id),
+            Q.where('id', Q.oneOf([...deletedItems])),
+        ).fetch();
+        models.push(...existing.map((item) => item.prepareDestroyPermanently()));
     }
 
     return models;

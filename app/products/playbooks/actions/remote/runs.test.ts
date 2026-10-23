@@ -59,6 +59,7 @@ describe('fetchPlaybookRunsForChannel', () => {
 
     beforeEach(() => {
         jest.mocked(handlePlaybookRuns).mockResolvedValue({data: []});
+        jest.mocked(updateLastPlaybookRunsFetchAt).mockResolvedValue({data: true});
     });
 
     it('should handle client error', async () => {
@@ -260,7 +261,7 @@ describe('fetchPlaybookRun', () => {
         expect(result.error).toBeUndefined();
         expect(result.run).toEqual(mockRun);
         expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
-        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true, true);
         expect(fetchPlaybookRunPropertyFields).toHaveBeenCalledWith(serverUrl, runId, false);
     });
 
@@ -336,7 +337,7 @@ describe('fetchPlaybookRun', () => {
         expect(result.error).toBeDefined();
         expect(result.run).toBeUndefined();
         expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
-        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true, true);
         expect(fetchPlaybookRunPropertyFields).not.toHaveBeenCalled();
     });
 });
@@ -664,7 +665,7 @@ describe('fetchPlaybookRun', () => {
         expect(result.error).toBeUndefined();
         expect(result.run).toEqual(mockRun);
         expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
-        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true, true);
     });
 
     it('should fetch playbook run successfully with fetchOnly mode', async () => {
@@ -711,7 +712,7 @@ describe('fetchPlaybookRun', () => {
         expect(result.error).toEqual(handleError);
         expect(result.run).toBeUndefined();
         expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
-        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true, true);
     });
 
     it('should handle network manager error', async () => {

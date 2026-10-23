@@ -147,7 +147,7 @@ describe('setChecklistItemState', () => {
         const checklistNum = 1;
         const itemNum = 2;
         const newState: ChecklistItemState = 'closed';
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/state`;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/state?task_activity_sync=1`;
         const expectedOptions = {method: 'put', body: {new_state: newState}};
         const mockResponse = {success: true};
 
@@ -174,7 +174,7 @@ describe('setChecklistItemState', () => {
         const checklistNum = 0;
         const itemNum = 0;
         const newState: ChecklistItemState = '';
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/state`;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/state?task_activity_sync=1`;
         const expectedOptions = {method: 'put', body: {new_state: newState}};
         const mockResponse = {success: true};
 
@@ -190,7 +190,7 @@ describe('setChecklistItemState', () => {
         const checklistNum = 2;
         const itemNum = 3;
         const newState: ChecklistItemState = 'skipped';
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/state`;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/state?task_activity_sync=1`;
         const expectedOptions = {method: 'put', body: {new_state: newState}};
         const mockResponse = {success: true};
 
@@ -249,7 +249,7 @@ describe('skipChecklistItem', () => {
         const playbookRunID = 'run123';
         const checklistNum = 1;
         const itemNum = 2;
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/skip`;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/skip?task_activity_sync=1`;
         const expectedOptions = {method: 'put', body: ''};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
@@ -263,7 +263,7 @@ describe('skipChecklistItem', () => {
         const playbookRunID = 'run123';
         const checklistNum = 0;
         const itemNum = 0;
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/skip`;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/skip?task_activity_sync=1`;
         const expectedOptions = {method: 'put', body: ''};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
@@ -289,7 +289,7 @@ describe('restoreChecklistItem', () => {
         const playbookRunID = 'run123';
         const checklistNum = 1;
         const itemNum = 2;
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/restore`;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/restore?task_activity_sync=1`;
         const expectedOptions = {method: 'put', body: ''};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
@@ -303,7 +303,7 @@ describe('restoreChecklistItem', () => {
         const playbookRunID = 'run123';
         const checklistNum = 0;
         const itemNum = 0;
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/restore`;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/restore?task_activity_sync=1`;
         const expectedOptions = {method: 'put', body: ''};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);

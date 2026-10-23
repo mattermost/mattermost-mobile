@@ -23,9 +23,9 @@ export interface ClientPlaybooksMix {
     postStatusUpdate: (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => Promise<void>;
 
     // Checklist Management
-    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState, requirementValues?: Record<string, string>) => Promise<void>;
-    skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
-    restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
+    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState, requirementValues?: Record<string, string>) => Promise<PlaybookRunUpdate | void>;
+    skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<PlaybookRunUpdate | void>;
+    restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<PlaybookRunUpdate | void>;
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
     setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
     addChecklistItem: (playbookRunId: string, checklistNum: number, item: ChecklistItemInput) => Promise<void>;
@@ -179,8 +179,8 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         newState: ChecklistItemState,
         requirementValues?: Record<string, string>,
     ) => {
-        await this.doFetch(
-            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/state`,
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/state?task_activity_sync=1`,
             {
                 method: 'put',
                 body: {
@@ -192,15 +192,15 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
-        await this.doFetch(
-            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip`,
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip?task_activity_sync=1`,
             {method: 'put', body: ''},
         );
     };
 
     restoreChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
-        await this.doFetch(
-            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/restore`,
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/restore?task_activity_sync=1`,
             {method: 'put', body: ''},
         );
     };

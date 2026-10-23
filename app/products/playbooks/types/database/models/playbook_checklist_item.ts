@@ -28,6 +28,8 @@ declare class PlaybookChecklistItemModel extends Model {
 
     // timestamp when the checklist item was modified
     stateModified: number;
+    stateEventId: string | null;
+    stateEventLinkKnown: boolean;
 
     // ID of the user who is assigned to the checklist item (nullable)
     assigneeId: string | null;

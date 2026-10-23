@@ -34,6 +34,7 @@ type PlaybookChecklistItem = {
     description: string;
     state: ChecklistItemState;
     state_modified: number;
+    state_event_id?: string | null;
     assignee_id: string;
     assignee_modified: number;
     command: string;
@@ -92,6 +93,14 @@ type TimelineEvent = {
     post_id: string;
     subject_user_id: string;
     creator_user_id: string;
+}
+
+type TaskActivitySync = {
+    version: number;
+    epoch: string;
+    revision: string;
+    complete: boolean;
+    base_revision?: string;
 }
 
 type PlaybookRunStatusType = typeof PlaybookRunStatus[keyof typeof PlaybookRunStatus];
@@ -160,6 +169,7 @@ type PlaybookRun = {
     invited_user_ids: string[];
     invited_group_ids: string[];
     timeline_events: TimelineEvent[];
+    task_activity_sync?: TaskActivitySync;
     participant_ids: string[];
     broadcast_channel_ids: string[];
     webhook_on_creation_urls: string[];

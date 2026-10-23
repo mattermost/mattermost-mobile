@@ -55,7 +55,7 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
-const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_TIMELINE_EVENT, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
@@ -514,7 +514,10 @@ describe('*** Test schema for SERVER database ***', () => {
                         active_stage: {name: 'active_stage', type: 'number'},
                         active_stage_title: {name: 'active_stage_title', type: 'string'},
                         participant_ids: {name: 'participant_ids', type: 'string'}, // JSON string
-                        timeline_events: {name: 'timeline_events', type: 'string', isOptional: true}, // JSON string
+                        timeline_events_synced_at: {name: 'timeline_events_synced_at', type: 'number', isOptional: true},
+                        task_activity_epoch: {name: 'task_activity_epoch', type: 'string', isOptional: true},
+                        task_activity_revision: {name: 'task_activity_revision', type: 'string', isOptional: true},
+                        task_activity_protocol_version: {name: 'task_activity_protocol_version', type: 'number', isOptional: true},
                         summary: {name: 'summary', type: 'string'},
                         current_status: {name: 'current_status', type: 'string', isIndexed: true},
                         last_status_update_at: {name: 'last_status_update_at', type: 'number'},
@@ -542,7 +545,10 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'active_stage', type: 'number'},
                         {name: 'active_stage_title', type: 'string'},
                         {name: 'participant_ids', type: 'string'}, // JSON string
-                        {name: 'timeline_events', type: 'string', isOptional: true}, // JSON string
+                        {name: 'timeline_events_synced_at', type: 'number', isOptional: true},
+                        {name: 'task_activity_epoch', type: 'string', isOptional: true},
+                        {name: 'task_activity_revision', type: 'string', isOptional: true},
+                        {name: 'task_activity_protocol_version', type: 'number', isOptional: true},
                         {name: 'summary', type: 'string'},
                         {name: 'current_status', type: 'string', isIndexed: true},
                         {name: 'last_status_update_at', type: 'number'},
@@ -585,6 +591,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         title: {name: 'title', type: 'string'},
                         state: {name: 'state', type: 'string', isIndexed: true},
                         state_modified: {name: 'state_modified', type: 'number'},
+                        state_event_id: {name: 'state_event_id', type: 'string', isOptional: true},
+                        state_event_link_known: {name: 'state_event_link_known', type: 'boolean'},
                         assignee_id: {name: 'assignee_id', type: 'string', isOptional: true},
                         assignee_modified: {name: 'assignee_modified', type: 'number'},
                         command: {name: 'command', type: 'string', isOptional: true},
@@ -605,6 +613,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'title', type: 'string'},
                         {name: 'state', type: 'string', isIndexed: true},
                         {name: 'state_modified', type: 'number'},
+                        {name: 'state_event_id', type: 'string', isOptional: true},
+                        {name: 'state_event_link_known', type: 'boolean'},
                         {name: 'assignee_id', type: 'string', isOptional: true},
                         {name: 'assignee_modified', type: 'number'},
                         {name: 'command', type: 'string', isOptional: true},
@@ -619,6 +629,32 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         {name: 'last_sync_at', type: 'number', isOptional: true},
                         {name: 'update_at', type: 'number'},
+                    ],
+                },
+                [PLAYBOOK_TIMELINE_EVENT]: {
+                    name: PLAYBOOK_TIMELINE_EVENT,
+                    unsafeSql: undefined,
+                    columns: {
+                        run_id: {name: 'run_id', type: 'string', isIndexed: true},
+                        event_at: {name: 'event_at', type: 'number', isIndexed: true},
+                        event_type: {name: 'event_type', type: 'string'},
+                        details: {name: 'details', type: 'string'},
+                        subject_user_id: {name: 'subject_user_id', type: 'string'},
+                        create_at: {name: 'create_at', type: 'number'},
+                        summary: {name: 'summary', type: 'string'},
+                        post_id: {name: 'post_id', type: 'string'},
+                        creator_user_id: {name: 'creator_user_id', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'run_id', type: 'string', isIndexed: true},
+                        {name: 'event_at', type: 'number', isIndexed: true},
+                        {name: 'event_type', type: 'string'},
+                        {name: 'details', type: 'string'},
+                        {name: 'subject_user_id', type: 'string'},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'summary', type: 'string'},
+                        {name: 'post_id', type: 'string'},
+                        {name: 'creator_user_id', type: 'string'},
                     ],
                 },
                 [PLAYBOOK_RUN_ATTRIBUTE]: {

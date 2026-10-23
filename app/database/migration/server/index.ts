@@ -26,7 +26,7 @@ const {
     SCHEDULED_POST,
 } = MM_TABLES.SERVER;
 
-const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_TIMELINE_EVENT, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
 const {BOARD_VIEW} = BOARDS_TABLES;
 
@@ -37,7 +37,31 @@ export default schemaMigrations({migrations: [
             addColumns({
                 table: PLAYBOOK_RUN,
                 columns: [
-                    {name: 'timeline_events', type: 'string', isOptional: true}, // JSON string
+                    {name: 'timeline_events_synced_at', type: 'number', isOptional: true},
+                    {name: 'task_activity_epoch', type: 'string', isOptional: true},
+                    {name: 'task_activity_revision', type: 'string', isOptional: true},
+                    {name: 'task_activity_protocol_version', type: 'number', isOptional: true},
+                ],
+            }),
+            addColumns({
+                table: PLAYBOOK_CHECKLIST_ITEM,
+                columns: [
+                    {name: 'state_event_id', type: 'string', isOptional: true},
+                    {name: 'state_event_link_known', type: 'boolean'},
+                ],
+            }),
+            createTable({
+                name: PLAYBOOK_TIMELINE_EVENT,
+                columns: [
+                    {name: 'run_id', type: 'string', isIndexed: true},
+                    {name: 'event_at', type: 'number', isIndexed: true},
+                    {name: 'event_type', type: 'string'},
+                    {name: 'details', type: 'string'},
+                    {name: 'subject_user_id', type: 'string'},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'summary', type: 'string'},
+                    {name: 'post_id', type: 'string'},
+                    {name: 'creator_user_id', type: 'string'},
                 ],
             }),
         ],

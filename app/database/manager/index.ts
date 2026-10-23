@@ -28,7 +28,7 @@ import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {beforeUpgrade} from '@helpers/database/upgrade';
 import {removePreauthSecret} from '@init/credentials';
-import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel} from '@playbooks/database/models';
+import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookTimelineEventModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel} from '@playbooks/database/models';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
 import {deleteFile} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
@@ -58,7 +58,7 @@ class DatabaseManagerSingleton {
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel, BoardViewModel,
-            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
+            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookTimelineEventModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
         ];
 
         this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${Paths.document.uri}/databases/`;
