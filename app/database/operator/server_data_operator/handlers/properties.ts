@@ -32,9 +32,11 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
      * handlePropertyFields: Syncs the PropertyField table from a list of fields. Each field's
      * `delete_at` decides whether it is upserted (0) or deleted (non-zero); deleting a field also
      * removes its property values. When `groupId` is provided the list is treated as the
-     * authoritative set for that group, so stored fields missing from it are pruned as well.
+     * authoritative set for that group, so stored fields missing from it are pruned as well —
+     * scoped to `objectTypes` when given, since a group can be shared with object types the
+     * caller's fetch never requested.
      */
-    handlePropertyFields = async ({fields: rawFields, groupId, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
+    handlePropertyFields = async ({fields: rawFields, groupId, objectTypes, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
         const fields = safeArrayCast<PropertyField>(rawFields);
         if (!fields.length && !groupId) {
             logWarning('handlePropertyFields was called without any fields to sync or a groupId to prune');
@@ -46,7 +48,11 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
         const deleteIds = new Set(fields.filter((f) => f.delete_at !== 0).map((f) => f.id));
 
         if (groupId) {
-            const existing = await this.database.collections.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('group_id', groupId)).fetch();
+            const clauses = [Q.where('group_id', groupId)];
+            if (objectTypes?.length) {
+                clauses.push(Q.where('object_type', Q.oneOf(objectTypes)));
+            }
+            const existing = await this.database.collections.get<PropertyFieldModel>(PROPERTY_FIELD).query(...clauses).fetch();
             for (const record of existing) {
                 if (!activeIds.has(record.id)) {
                     deleteIds.add(record.id);
@@ -90,9 +96,9 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
      * handlePropertyValues: Syncs the PropertyValue table from a list of values. Each value's
      * `delete_at` decides whether it is upserted (0) or deleted (non-zero). When `targetId` is
      * provided the list is treated as the authoritative set for that target, so stored values
-     * missing from it are pruned as well.
+     * missing from it are pruned as well, scoped to `groupId` when provided.
      */
-    handlePropertyValues = async ({values: rawValues, targetId, prepareRecordsOnly = true}: HandlePropertyValuesArgs): Promise<Model[]> => {
+    handlePropertyValues = async ({values: rawValues, targetId, groupId, prepareRecordsOnly = true}: HandlePropertyValuesArgs): Promise<Model[]> => {
         const values = safeArrayCast<PropertyValue>(rawValues);
         if (!values.length && !targetId) {
             logWarning('handlePropertyValues was called without any values to sync or a targetId to prune');
@@ -104,7 +110,11 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
         const deleteIds = new Set(values.filter((v) => v.delete_at !== 0).map((v) => v.id));
 
         if (targetId) {
-            const existing = await this.database.collections.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('target_id', targetId)).fetch();
+            const clauses = [Q.where('target_id', targetId)];
+            if (groupId) {
+                clauses.push(Q.where('group_id', groupId));
+            }
+            const existing = await this.database.collections.get<PropertyValueModel>(PROPERTY_VALUE).query(...clauses).fetch();
             for (const record of existing) {
                 if (!activeIds.has(record.id)) {
                     deleteIds.add(record.id);
