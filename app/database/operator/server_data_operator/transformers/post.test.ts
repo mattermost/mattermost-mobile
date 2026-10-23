@@ -11,7 +11,32 @@ import {
 } from '@database/operator/server_data_operator/transformers/post';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+
+const persistScheduledPost = async (database: Database, raw: ScheduledPost): Promise<ScheduledPostModel> => {
+    const record = await transformSchedulePostsRecord({
+        action: OperationType.CREATE,
+        database,
+        value: {record: undefined, raw},
+    });
+
+    await database.write(() => database.batch(record));
+
+    return record;
+};
+
+const applyScheduledPostUpdate = async (database: Database, record: ScheduledPostModel, raw: ScheduledPost): Promise<ScheduledPostModel> => {
+    const updated = await transformSchedulePostsRecord({
+        action: OperationType.UPDATE,
+        database,
+        value: {record, raw},
+    });
+
+    await database.write(() => database.batch(updated));
+
+    return updated;
+};
 
 describe('***  POST Prepare Records Test ***', () => {
     it('=> transformPostRecord: should return an array of type Post', async () => {
@@ -174,6 +199,8 @@ describe('transformSchedulePostsRecord', () => {
             error_code: 'some_error',
             priority: undefined,
             file_ids: ['file_1', 'file_2'],
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
         } as ScheduledPost;
 
         const preparedRecord = await transformSchedulePostsRecord({
@@ -192,6 +219,8 @@ describe('transformSchedulePostsRecord', () => {
         expect(preparedRecord.createAt).toBe(rawPost.create_at);
         expect(preparedRecord.errorCode).toBe(rawPost.error_code);
         expect(preparedRecord.metadata?.priority).toBe(rawPost.priority);
+        expect(preparedRecord.repeatType).toBe(rawPost.repeat_type);
+        expect(preparedRecord.repeatTimezone).toBe(rawPost.repeat_timezone);
     });
 
     it('should set default values for missing fields', async () => {
@@ -218,36 +247,80 @@ describe('transformSchedulePostsRecord', () => {
         expect(preparedRecord.updateAt).toBeGreaterThan(0);
         expect(preparedRecord.processedAt).toBe(0);
         expect(preparedRecord.errorCode).toBe('');
+        expect(preparedRecord.repeatType).toBe('');
+        expect(preparedRecord.repeatTimezone).toBe('');
     });
 
-    it('should not overwrite local errorCode if remote does not provide one', async () => {
+    it('should clear a stale local errorCode when the remote no longer reports one', async () => {
         const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        const localErrorCode = 'local_error';
-        const existingRecord = {
-            errorCode: localErrorCode,
-            prepareUpdate: jest.fn().mockReturnValue({
-                errorCode: localErrorCode,
-            }),
-        } as unknown as ScheduledPostModel;
-
-        const rawPost = {
-            id: 'schedule_post_id',
+        const existingRecord = await persistScheduledPost(database!, {
+            id: 'sticky_error_post_id',
             channel_id: 'channel_id',
             user_id: 'user_id',
             create_at: 4000,
+            update_at: 4000,
             scheduled_at: 2000,
             message: 'schedule post message',
-        } as ScheduledPost;
+            error_code: 'unable_to_send',
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
+        } as ScheduledPost);
 
-        const preparedRecord = await transformSchedulePostsRecord({
-            action: OperationType.UPDATE,
-            database: database!,
-            value: {record: existingRecord, raw: rawPost},
-        });
+        expect(existingRecord.errorCode).toBe('unable_to_send');
 
-        expect(preparedRecord.errorCode).toBe(localErrorCode);
+        const updatedRecord = await applyScheduledPostUpdate(database!, existingRecord, {
+            id: 'sticky_error_post_id',
+            channel_id: 'channel_id',
+            user_id: 'user_id',
+            create_at: 4000,
+            update_at: 5000,
+            scheduled_at: 9000,
+            message: 'schedule post message',
+            error_code: '',
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
+        } as ScheduledPost);
+
+        expect(updatedRecord.errorCode).toBe('');
+        expect(updatedRecord.repeatType).toBe('weekly');
+    });
+
+    it('should convert a recurring post back to one-time when the remote clears the repeat fields', async () => {
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        const existingRecord = await persistScheduledPost(database!, {
+            id: 'recurring_to_one_time_post_id',
+            channel_id: 'channel_id',
+            user_id: 'user_id',
+            create_at: 4000,
+            update_at: 4000,
+            scheduled_at: 2000,
+            message: 'schedule post message',
+            error_code: '',
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
+        } as ScheduledPost);
+
+        expect(existingRecord.repeatType).toBe('weekly');
+
+        const updatedRecord = await applyScheduledPostUpdate(database!, existingRecord, {
+            id: 'recurring_to_one_time_post_id',
+            channel_id: 'channel_id',
+            user_id: 'user_id',
+            create_at: 4000,
+            update_at: 5000,
+            scheduled_at: 2000,
+            message: 'schedule post message',
+            error_code: '',
+            repeat_type: '',
+            repeat_timezone: '',
+        } as ScheduledPost);
+
+        expect(updatedRecord.repeatType).toBe('');
+        expect(updatedRecord.repeatTimezone).toBe('');
     });
 
     it('=> should return error if message and files are empty', async () => {

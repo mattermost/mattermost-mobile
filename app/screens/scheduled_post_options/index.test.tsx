@@ -48,7 +48,7 @@ describe('EnhancedRescheduledDraft', () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: {useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}})], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedScheduledPostPicker/>,
+            <EnhancedScheduledPostPicker hasFiles={false}/>,
             {database},
         );
 
@@ -64,11 +64,22 @@ describe('EnhancedRescheduledDraft', () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: undefined})], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedScheduledPostPicker/>,
+            <EnhancedScheduledPostPicker hasFiles={false}/>,
             {database},
         );
 
         expect(getByTestId('scheduled-post-options')).toBeTruthy();
         expect(getByTestId('scheduled-post-options').props.currentUserTimezone).toBeUndefined();
+    });
+
+    it('should enable recurrence from the feature flag', async () => {
+        await operator.handleConfigs({configs: [{id: 'FeatureFlagRecurringScheduledPosts', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+
+        const {getByTestId} = renderWithEverything(
+            <EnhancedScheduledPostPicker hasFiles={false}/>,
+            {database},
+        );
+
+        expect(getByTestId('scheduled-post-options').props.isRecurringEnabled).toBe(true);
     });
 });

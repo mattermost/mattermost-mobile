@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, waitFor, type RenderAPI} from '@testing-library/react-native';
 import moment from 'moment-timezone';
 import React, {type ComponentProps} from 'react';
 
@@ -76,6 +76,8 @@ describe('RescheduledDraft', () => {
 
     const mockDraft = {
         scheduledAt: moment().add(1, 'day').valueOf(),
+        repeatType: '',
+        files: [],
         toApi: jest.fn().mockResolvedValue({
             scheduled_at: moment().add(1, 'day').valueOf(),
         }),
@@ -89,8 +91,14 @@ describe('RescheduledDraft', () => {
                 manualTimezone: '',
             },
             draft: mockDraft,
+            isRecurringEnabled: false,
         };
     }
+
+    const getSaveButton = () => {
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        return setOptionsCall.headerRight() as React.ReactElement<{disabled: boolean; onPress: () => void}>;
+    };
 
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase();
@@ -182,7 +190,7 @@ describe('RescheduledDraft', () => {
             expect(updateScheduledPost).toHaveBeenCalledWith(
                 SERVER_URL,
                 mockDraft,
-                newDate.valueOf(),
+                {scheduled_at: newDate.valueOf()},
             );
             expect(navigateBack).toHaveBeenCalled();
         });
@@ -421,6 +429,148 @@ describe('RescheduledDraft', () => {
 
         await waitFor(() => {
             expect(navigateBack).toHaveBeenCalled();
+        });
+    });
+
+    describe('repeat weekly', () => {
+        const repeatWeeklyTestID = 'reschedule_draft.repeat_weekly';
+
+        const renderWithRecurrence = (repeatType: string, files: FileInfo[] = []) => {
+            const props = getBaseProps();
+            props.isRecurringEnabled = true;
+            props.draft = {...mockDraft, repeatType, files} as unknown as ScheduledPostModel;
+
+            return renderWithEverything(<RescheduledDraft {...props}/>, {database});
+        };
+
+        const toggleRepeatWeekly = async (getByTestId: RenderAPI['getByTestId'], from: boolean) => {
+            await act(async () => {
+                fireEvent(getByTestId(`${repeatWeeklyTestID}.toggled.${from}.button`), 'valueChange', !from);
+            });
+        };
+
+        const save = async () => {
+            await act(async () => {
+                getSaveButton().props.onPress();
+            });
+        };
+
+        it('should not render the toggle when the feature flag is off', () => {
+            const props = getBaseProps();
+            const {queryByTestId} = renderWithEverything(<RescheduledDraft {...props}/>, {database});
+
+            expect(queryByTestId(repeatWeeklyTestID)).toBeNull();
+        });
+
+        // A file belongs to the first post it is sent with, so the server rejects a recurring post
+        // that has attachments.
+        it('should not render the toggle when the post has attachments', () => {
+            const {queryByTestId} = renderWithRecurrence('', [TestHelper.fakeFileInfo({id: 'file1'})]);
+
+            expect(queryByTestId(repeatWeeklyTestID)).toBeNull();
+        });
+
+        it('should omit the recurrence from the save payload when the toggle is not offered', async () => {
+            const {getByTestId} = renderWithRecurrence('', [TestHelper.fakeFileInfo({id: 'file1'})]);
+            const newDate = moment().add(2, 'days');
+
+            await act(async () => {
+                getByTestId('custom_date_time_picker').props.handleChange(newDate);
+            });
+            await save();
+
+            await waitFor(() => {
+                expect(updateScheduledPost).toHaveBeenCalledWith(
+                    SERVER_URL,
+                    expect.anything(),
+                    {scheduled_at: newDate.valueOf()},
+                );
+            });
+        });
+
+        it('should pre-check the toggle for a weekly post', () => {
+            const {getByTestId} = renderWithRecurrence('weekly');
+
+            expect(getByTestId(`${repeatWeeklyTestID}.toggled.true.button`)).toBeTruthy();
+        });
+
+        it('should enable save when only the recurrence changes', async () => {
+            const {getByTestId} = renderWithRecurrence('');
+
+            expect(getSaveButton().props.disabled).toBe(true);
+
+            await toggleRepeatWeekly(getByTestId, false);
+
+            expect(getSaveButton().props.disabled).toBe(false);
+        });
+
+        it('should disable save again when the recurrence is toggled back', async () => {
+            const {getByTestId} = renderWithRecurrence('');
+
+            await toggleRepeatWeekly(getByTestId, false);
+            await toggleRepeatWeekly(getByTestId, true);
+
+            expect(getSaveButton().props.disabled).toBe(true);
+        });
+
+        it('should save a one-time post as weekly in the current user timezone', async () => {
+            const {getByTestId} = renderWithRecurrence('');
+
+            await toggleRepeatWeekly(getByTestId, false);
+            await save();
+
+            await waitFor(() => {
+                expect(updateScheduledPost).toHaveBeenCalledWith(
+                    SERVER_URL,
+                    expect.anything(),
+                    {
+                        scheduled_at: mockDraft.scheduledAt,
+                        repeat_type: 'weekly',
+                        repeat_timezone: 'America/New_York',
+                    },
+                );
+            });
+        });
+
+        it('should convert a weekly post to one-time when the toggle is turned off', async () => {
+            const {getByTestId} = renderWithRecurrence('weekly');
+
+            await toggleRepeatWeekly(getByTestId, true);
+            await save();
+
+            await waitFor(() => {
+                expect(updateScheduledPost).toHaveBeenCalledWith(
+                    SERVER_URL,
+                    expect.anything(),
+                    {
+                        scheduled_at: mockDraft.scheduledAt,
+                        repeat_type: '',
+                        repeat_timezone: '',
+                    },
+                );
+            });
+        });
+
+        it('should keep a weekly post recurring when only the time changes', async () => {
+            const {getByTestId} = renderWithRecurrence('weekly');
+            const newDate = moment().add(2, 'days');
+
+            await act(async () => {
+                getByTestId('custom_date_time_picker').props.handleChange(newDate);
+            });
+            await save();
+
+            await waitFor(() => {
+                expect(updateScheduledPost).toHaveBeenCalledWith(
+                    SERVER_URL,
+                    expect.anything(),
+                    {
+                        scheduled_at: newDate.valueOf(),
+                        repeat_type: 'weekly',
+                        repeat_timezone: 'America/New_York',
+                    },
+                );
+            });
         });
     });
 });

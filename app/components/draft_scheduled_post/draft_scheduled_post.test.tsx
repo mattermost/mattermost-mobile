@@ -37,7 +37,14 @@ jest.mock('@context/server', () => ({
     ),
 }));
 
-jest.mock('@components/draft_scheduled_post_header', () => () => null);
+const mockHeaderProps = jest.fn();
+jest.mock('@components/draft_scheduled_post_header', () => {
+    const MockDraftAndScheduledPostHeader = (props: Record<string, unknown>) => {
+        mockHeaderProps(props);
+        return null;
+    };
+    return MockDraftAndScheduledPostHeader;
+});
 
 jest.mock('./draft_scheduled_post_container', () => () => null);
 
@@ -108,6 +115,42 @@ describe('DraftAndScheduledPost', () => {
         renderWithIntlAndTheme(<DraftAndScheduledPost {...baseProps}/>);
 
         expect(screen.queryByTestId('draft_post.error_line')).toBeNull();
+    });
+
+    it('should flag weekly scheduled posts as recurring in the header', () => {
+        const props = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            post: TestHelper.fakeScheduledPostModel({
+                rootId: '',
+                updateAt: 1234567890,
+                metadata: {},
+                files: [] as FileInfo[],
+                scheduledAt: 1234567890,
+                repeatType: 'weekly',
+            }),
+        };
+        renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
+
+        expect(mockHeaderProps).toHaveBeenCalledWith(expect.objectContaining({isRecurring: true}));
+    });
+
+    it('should not flag one-time scheduled posts as recurring in the header', () => {
+        const props = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            post: TestHelper.fakeScheduledPostModel({
+                rootId: '',
+                updateAt: 1234567890,
+                metadata: {},
+                files: [] as FileInfo[],
+                scheduledAt: 1234567890,
+                repeatType: '',
+            }),
+        };
+        renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
+
+        expect(mockHeaderProps).toHaveBeenCalledWith(expect.objectContaining({isRecurring: false}));
     });
 
     it('renders post priority when enabled and present', () => {
