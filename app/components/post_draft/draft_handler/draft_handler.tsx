@@ -77,30 +77,30 @@ export default function DraftHandler(props: Props) {
 
     const addFiles = useCallback((newFiles: FileInfo[]) => {
         if (!newFiles.length) {
-            return;
+            return false;
         }
 
         if (!canUploadFiles) {
             newUploadError(uploadDisabledWarning(intl));
-            return;
+            return false;
         }
 
         if (!canUploadFilesByPolicy) {
             newUploadError(uploadDisabledByPolicyWarning(intl));
-            return;
+            return false;
         }
 
         const currentFileCount = files?.length || 0;
         const availableCount = maxFileCount - currentFileCount;
         if (newFiles.length > availableCount) {
             newUploadError(fileMaxWarning(intl, maxFileCount));
-            return;
+            return false;
         }
 
         const largeFile = newFiles.find((file) => file.size > maxFileSize);
         if (largeFile) {
             newUploadError(fileSizeWarning(intl, maxFileSize));
-            return;
+            return false;
         }
 
         addFilesToDraft(serverUrl, channelId, rootId, newFiles);
@@ -111,6 +111,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
+        return true;
     }, [canUploadFiles, canUploadFilesByPolicy, files?.length, maxFileCount, serverUrl, channelId, rootId, newUploadError, intl, maxFileSize, handleUploadError]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and

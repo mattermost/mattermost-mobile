@@ -7,11 +7,13 @@ import {StyleSheet, View} from 'react-native';
 import AIRewriteAction from '@agents/components/ai_rewrite_action';
 import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
 import {Screens} from '@constants';
+import {QUICK_ACTIONS_HEIGHT} from '@constants/post_draft';
 
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
+import VoiceAction from './voice_quick_action';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -20,6 +22,7 @@ type Props = {
     canUploadFiles: boolean;
     fileCount: number;
     isAgentsEnabled: boolean;
+    isCallActive: boolean;
     isPostPriorityEnabled: boolean;
     isBoREnabled: boolean;
     canShowPostPriority?: boolean;
@@ -33,14 +36,13 @@ type Props = {
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
+    onStartVoiceRecording: () => void;
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
     postBoRConfig?: PostBoRConfig;
     updatePostBoRStatus?: (config: PostBoRConfig) => void;
     focus: () => void;
 }
-
-export const QUICK_ACTIONS_HEIGHT = 44;
 
 const style = StyleSheet.create({
     quickActionsContainer: {
@@ -57,6 +59,7 @@ export default function QuickActions({
     value,
     fileCount,
     isAgentsEnabled,
+    isCallActive,
     isPostPriorityEnabled,
     isBoREnabled,
     canShowSlashCommands = true,
@@ -66,6 +69,7 @@ export default function QuickActions({
     showAttachLogs,
     updateValue,
     addFiles,
+    onStartVoiceRecording,
     postPriority,
     updatePostPriority,
     focus,
@@ -76,11 +80,16 @@ export default function QuickActions({
     const atDisabled = value.endsWith('@');
     const slashDisabled = value.length > 0;
     const showBoRAction = isBoREnabled && updatePostBoRStatus && location === Screens.CHANNEL;
+    const maxFilesReached = fileCount >= maxFileCount;
+
+    // The microphone is busy while in a call, so voice notes are not available then.
+    const voiceDisabled = !canUploadFiles || maxFilesReached || isCallActive;
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
     const emojiActionTestID = `${testID}.emoji_action`;
     const attachmentActionTestID = `${testID}.attachment_action`;
+    const voiceActionTestID = `${testID}.voice_action`;
     const aiRewriteActionTestID = `${testID}.ai_rewrite_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
     const borPriorityActionTestID = `${testID}.bor_action`;
@@ -89,8 +98,9 @@ export default function QuickActions({
         disabled: !canUploadFiles,
         fileCount,
         maxFileCount,
-        maxFilesReached: fileCount >= maxFileCount,
+        maxFilesReached,
         onUploadFiles: addFiles,
+        onRecordVoiceNote: voiceDisabled ? undefined : onStartVoiceRecording,
         showAttachLogs,
     };
 
@@ -102,6 +112,11 @@ export default function QuickActions({
             <AttachmentAction
                 testID={attachmentActionTestID}
                 {...uploadProps}
+            />
+            <VoiceAction
+                testID={voiceActionTestID}
+                disabled={voiceDisabled}
+                onStartRecording={onStartVoiceRecording}
             />
             <InputAction
                 testID={atInputActionTestID}

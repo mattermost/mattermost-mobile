@@ -54,7 +54,11 @@ jest.mock('expo-file-system', () => {
     const mockInfo = {exists: true, uri: 'file:///mock', size: 0, modificationTime: 0};
 
     function makeFileInstance(uri: string) {
-        return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), move: jest.fn(), copy: jest.fn(), create: jest.fn(), write: jest.fn(), text: jest.fn(() => Promise.resolve(''))};
+        const file = {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), move: jest.fn(), copy: jest.fn(), create: jest.fn(), write: jest.fn(), text: jest.fn(() => Promise.resolve('')), rename: jest.fn()};
+        file.rename.mockImplementation((newName: string) => {
+            file.uri = file.uri.slice(0, file.uri.lastIndexOf('/') + 1) + newName;
+        });
+        return file;
     }
     function makeDirectoryInstance(uri: string) {
         return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), create: jest.fn(), list: jest.fn(() => []), move: jest.fn(), copy: jest.fn()};
@@ -72,6 +76,54 @@ jest.mock('expo-file-system', () => {
             cache: makeDirectoryInstance('file://test-cache-directory/'),
             document: makeDirectoryInstance('file:///test-directory/'),
         },
+    };
+});
+
+jest.mock('expo-audio', () => {
+    // Mirrors the native recorder closely enough for timers: the recorded duration follows
+    // the (fake) clock while recording and freezes once paused, e.g. by the system.
+    function makeRecorderInstance() {
+        const state = {isRecording: false, startedAt: 0, recordedMs: 0};
+        return {
+            uri: 'file:///mock/recording.m4a' as string | null,
+            get isRecording() {
+                return state.isRecording;
+            },
+            currentTime: 0,
+            prepareToRecordAsync: jest.fn().mockResolvedValue(undefined),
+            record: jest.fn(() => {
+                state.isRecording = true;
+                state.startedAt = Date.now();
+            }),
+            pause: jest.fn(() => {
+                state.recordedMs += Date.now() - state.startedAt;
+                state.isRecording = false;
+            }),
+            stop: jest.fn(() => {
+                state.isRecording = false;
+                return Promise.resolve();
+            }),
+            release: jest.fn(),
+            getStatus: jest.fn(() => ({
+                canRecord: true,
+                isRecording: state.isRecording,
+                durationMillis: state.recordedMs + (state.isRecording ? Date.now() - state.startedAt : 0),
+                mediaServicesDidReset: false,
+                url: null,
+            })),
+            addListener: jest.fn(() => ({remove: jest.fn()})),
+        };
+    }
+
+    return {
+        AudioModule: {AudioRecorder: jest.fn().mockImplementation(makeRecorderInstance)},
+        AudioQuality: {MIN: 0, LOW: 32, MEDIUM: 64, HIGH: 96, MAX: 127},
+        IOSOutputFormat: {MPEG4AAC: 'aac '},
+        RecordingPresets: {HIGH_QUALITY: {}, LOW_QUALITY: {}},
+        setAudioModeAsync: jest.fn().mockResolvedValue(undefined),
+        setIsAudioActiveAsync: jest.fn().mockResolvedValue(undefined),
+        getRecordingPermissionsAsync: jest.fn().mockResolvedValue({granted: true, status: 'granted'}),
+        requestRecordingPermissionsAsync: jest.fn().mockResolvedValue({granted: true, status: 'granted'}),
     };
 });
 
@@ -111,6 +163,7 @@ jest.mock('expo-router', () => ({
         getState: jest.fn(() => ({})),
         addListener: jest.fn(() => jest.fn()),
     }),
+    useIsFocused: jest.fn(() => true),
     useSegments: () => [],
     usePathname: () => '/',
     useLocalSearchParams: () => ({}),
