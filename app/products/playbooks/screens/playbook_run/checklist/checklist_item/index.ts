@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {combineLatest, of as of$, shareReplay, switchMap} from 'rxjs';
+import {of as of$, shareReplay, switchMap} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
-import {observePlaybookRunById} from '@playbooks/database/queries/run';
 import {observeIsTaskRequirementsEnabled} from '@playbooks/database/queries/settings';
+import {observeTaskActivity} from '@playbooks/database/queries/timeline_event';
 import {observeChannel} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUserId} from '@queries/servers/system';
@@ -16,23 +16,24 @@ import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@quer
 import {getTimezone} from '@utils/user';
 
 import ChecklistItem from './checklist_item';
-import {getTaskActivity} from './task_activity';
+import {getTaskActivity, type TaskActivity} from './task_activity';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
-    timelineEvents: TimelineEvent[] | undefined;
+    apiActivity?: TaskActivity;
     channelId: string;
     playbookRunId: string;
 } & WithDatabaseArgs;
 
-// timelineEvents is a trigger so a row re-derives when it changes, which is only safe because it
-// never churns for a persisted run. On a trigger change withObservables resets to
-// `{isFetching: true, values: {}}` and renders null until every observable below re-emits, so a value
-// that did churn here would blank and re-subscribe every row in the checklist on each task change.
-const enhanced = withObservables(['item', 'channelId', 'playbookRunId', 'timelineEvents'], ({item, timelineEvents, database, channelId, playbookRunId}: OwnProps) => {
+const observeItemActivity = (database: WithDatabaseArgs['database'], runId: string, item: PlaybookChecklistItemModel) =>
+    observeTaskActivity(database, runId, item).pipe(
+        map((events) => getTaskActivity(item, events, runId)),
+    );
+
+const enhanced = withObservables(['item', 'channelId', 'playbookRunId', 'apiActivity'], ({item, apiActivity, database, channelId, playbookRunId}: OwnProps) => {
     const teammateNameDisplay = observeTeammateNameDisplay(database);
     const currentUserId = observeCurrentUserId(database);
     const timezone = observeCurrentUser(database).pipe(map((u) => getTimezone(u?.timezone)));
@@ -49,14 +50,8 @@ const enhanced = withObservables(['item', 'channelId', 'playbookRunId', 'timelin
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
-        const run = observePlaybookRunById(database, playbookRunId).pipe(
-            shareReplay({bufferSize: 1, refCount: true}),
-        );
-
-        // Shared because it is both handed to the component and piped into activityActor below;
-        // without it the item would be observed twice and the activity resolved twice per change.
-        const activity = combineLatest([observedItem, run]).pipe(
-            map(([i, r]) => getTaskActivity(i, r?.timelineEvents ?? timelineEvents)),
+        const activity = observedItem.pipe(
+            switchMap((i) => observeItemActivity(database, playbookRunId, i)),
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
@@ -89,7 +84,7 @@ const enhanced = withObservables(['item', 'channelId', 'playbookRunId', 'timelin
     }
 
     const assignee = observeUser(database, item.assignee_id);
-    const activity = getTaskActivity(item, timelineEvents);
+    const activity = apiActivity;
 
     return {
         item: of$(item),

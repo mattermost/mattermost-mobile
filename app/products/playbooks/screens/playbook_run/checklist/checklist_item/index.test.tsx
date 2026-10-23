@@ -6,6 +6,7 @@ import React, {act, type ComponentProps} from 'react';
 import {General, Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -47,7 +48,7 @@ describe('ChecklistItem', () => {
         it('should set the correct teammate name display', async () => {
             const props = {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
-                timelineEvents: [],
+                apiActivity: undefined,
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -80,7 +81,7 @@ describe('ChecklistItem', () => {
         it('should resolve the military time display preference', async () => {
             const props = {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
-                timelineEvents: [],
+                apiActivity: undefined,
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -113,7 +114,7 @@ describe('ChecklistItem', () => {
         it('should resolve the current user timezone', async () => {
             const props = {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
-                timelineEvents: [],
+                apiActivity: undefined,
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -147,7 +148,7 @@ describe('ChecklistItem', () => {
         it('should set the correct channel type', async () => {
             const props = {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
-                timelineEvents: [],
+                apiActivity: undefined,
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -207,7 +208,7 @@ describe('ChecklistItem', () => {
         function getBaseProps(): ComponentProps<typeof ChecklistItem> {
             return {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
-                timelineEvents: [],
+                apiActivity: undefined,
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -257,7 +258,7 @@ describe('ChecklistItem', () => {
             expect(checklistItem.props.assignee).toBeUndefined();
         });
 
-        it('should resolve and refresh the task activity actor from timeline events', async () => {
+        it('should resolve and refresh the API task activity actor', async () => {
             const actorId = 'activity-actor-id';
             await operator.handleUsers({
                 prepareRecordsOnly: false,
@@ -273,21 +274,10 @@ describe('ChecklistItem', () => {
 
             const {getByTestId, rerender} = renderWithEverything(<ChecklistItem {...props}/>, {database});
             const checklistItem = getByTestId('checklist-item');
-            expect(checklistItem.props.activity).toEqual({action: 'check', timestamp: 1000, actorUserId: undefined});
+            expect(checklistItem.props.activity).toBeUndefined();
             expect(checklistItem.props.activityActor).toBeUndefined();
 
-            props.timelineEvents = [{
-                id: 'event-id',
-                playbook_run_id: 'run-id',
-                create_at: 1000,
-                event_at: 1000,
-                event_type: 'task_state_modified',
-                summary: '',
-                details: JSON.stringify({action: 'check', task: 'Task title'}),
-                post_id: '',
-                subject_user_id: actorId,
-                creator_user_id: actorId,
-            }];
+            props.apiActivity = {action: 'check', actorUserId: actorId, timestamp: 1000};
             rerender(<ChecklistItem {...props}/>);
 
             await waitFor(() => {
@@ -305,7 +295,7 @@ describe('ChecklistItem', () => {
             });
             return {
                 item: model[0],
-                timelineEvents: [],
+                apiActivity: undefined,
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -313,6 +303,44 @@ describe('ChecklistItem', () => {
                 isDisabled: false,
             };
         }
+
+        it('should update one persisted row when its task event changes', async () => {
+            const [item] = await operator.handlePlaybookChecklistItem({
+                prepareRecordsOnly: false,
+                items: [TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId, state: 'closed', state_modified: 1000})],
+            });
+            const event: TimelineEvent = {
+                id: 'event-1',
+                playbook_run_id: 'run-id',
+                create_at: 1000,
+                event_at: 1000,
+                event_type: 'task_state_modified',
+                details: JSON.stringify({action: 'check', item_id: itemId}),
+                summary: '',
+                post_id: '',
+                subject_user_id: 'actor-1',
+                creator_user_id: '',
+            };
+            await operator.handleUsers({prepareRecordsOnly: false, users: [TestHelper.fakeUser({id: 'actor-1'}), TestHelper.fakeUser({id: 'actor-2'})]});
+            await operator.batchRecords(await prepareTimelineEvents(database, 'run-id', [event], [], true), 'seed task event');
+
+            const props = {
+                item,
+                channelId: 'channel-id',
+                checklistNumber: 0,
+                itemNumber: 0,
+                playbookRunId: 'run-id',
+                isDisabled: false,
+            };
+            const {getByTestId} = renderWithEverything(<ChecklistItem {...props}/>, {database});
+            const row = getByTestId('checklist-item');
+            await waitFor(() => expect(row.props.activityActor.id).toBe('actor-1'));
+
+            await act(async () => {
+                await operator.batchRecords(await prepareTimelineEvents(database, 'run-id', [{...event, subject_user_id: 'actor-2'}], [], false), 'change task actor');
+            });
+            await waitFor(() => expect(row.props.activityActor.id).toBe('actor-2'));
+        });
 
         it('should render correctly without data', async () => {
             const props = await getBaseProps();

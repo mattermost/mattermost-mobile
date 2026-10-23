@@ -34,6 +34,33 @@ const makeEvent = (overrides: Partial<TimelineEvent> = {}): TimelineEvent => ({
 });
 
 describe('getTaskActivity', () => {
+    it('should not choose an arbitrary actor for duplicate events naming the same task', () => {
+        const first = makeEvent({details: JSON.stringify({action: 'check', item_id: 'item-1'})});
+        const second = makeEvent({id: 'event-2', subject_user_id: 'user-2', details: JSON.stringify({action: 'check', item_id: 'item-1'})});
+
+        expect(getTaskActivity(makeItem(), [first, second])?.actorUserId).toBeUndefined();
+        expect(getTaskActivity(makeItem(), [second, first])?.actorUserId).toBeUndefined();
+    });
+
+    it('should use only the linked event for repeated transitions at the same timestamp', () => {
+        const first = makeEvent({details: JSON.stringify({action: 'check', item_id: 'item-1'})});
+        const final = makeEvent({id: 'event-2', subject_user_id: 'user-2', details: JSON.stringify({action: 'check', item_id: 'item-1'})});
+
+        expect(getTaskActivity(makeItem({state_event_id: final.id}), [first, final], 'run-1')?.actorUserId).toBe('user-2');
+        expect(getTaskActivity(makeItem({state_event_id: final.id}), [first, {...final, playbook_run_id: 'other-run'}], 'run-1')?.actorUserId).toBeUndefined();
+    });
+
+    it('should not search older events when the state event link is explicitly null', () => {
+        const older = makeEvent({details: JSON.stringify({action: 'check', item_id: 'item-1'})});
+
+        expect(getTaskActivity(makeItem({state_event_id: null}), [older], 'run-1')).toEqual({
+            action: 'check',
+            actorUserId: undefined,
+            timestamp: 1000,
+        });
+        expect(getTaskActivity(makeItem({state: 'skipped', state_event_id: null}), [makeEvent({details: JSON.stringify({action: 'skip', item_id: 'item-1'})})], 'run-1')).toBeUndefined();
+    });
+
     // A run absent from the database has its events read straight off the API response, where the
     // plugin's nil timeline slice can serialize to null. A default parameter only covers undefined.
     it('should treat a null event list as no events, since the API can send null for an empty timeline', () => {

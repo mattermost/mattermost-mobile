@@ -86,11 +86,7 @@ describe('updateChecklistItem', () => {
         expect(updated!.requirements).toEqual(nextRequirements);
     });
 
-    // The task activity chip reads state_modified for its timestamp and matches timeline events on it.
-    // Leaving it at the previous state change made a freshly skipped or restored task report the time of
-    // an older one, and — because no event carries that older timestamp for the new resting state — fall
-    // back to the wrong verb as well.
-    it('should stamp state_modified so the task activity does not report an older change', async () => {
+    it('should preserve the authoritative state timestamp while changing local state', async () => {
         const checklistId = 'checklistid';
         const item = TestHelper.createPlaybookItem(checklistId, 0);
         await operator.handlePlaybookChecklistItem({
@@ -98,13 +94,12 @@ describe('updateChecklistItem', () => {
             prepareRecordsOnly: false,
         });
 
-        const before = Date.now();
         const {error} = await updateChecklistItem(serverUrl, item.id, '');
         expect(error).toBeUndefined();
 
         const updated = await getPlaybookChecklistItemById(operator.database, item.id);
         expect(updated!.state).toBe('');
-        expect(updated!.stateModified).toBeGreaterThanOrEqual(before);
+        expect(updated!.stateModified).toBe(1000);
     });
 });
 

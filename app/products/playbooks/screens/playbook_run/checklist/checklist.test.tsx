@@ -90,7 +90,7 @@ describe('Checklist', () => {
             checklist: mockChecklist,
             checklistNumber: 0,
             items: mockItems,
-            timelineEvents: [],
+            apiActivityByItemId: {},
             channelId: 'channel-id-1',
             playbookRunId: 'run-id-1',
             playbookRunName: 'Test Run',

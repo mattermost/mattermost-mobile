@@ -6,6 +6,7 @@ import React, {type ComponentProps} from 'react';
 import {General, Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {prepareTimelineEvents} from '@playbooks/database/operators/handlers/timeline_event';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -48,7 +49,7 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
         return {
             item: TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1'}),
             runId: 'run-1',
-            timelineEvents: [],
+            apiActivity: undefined,
             checklistNumber: 1,
             itemNumber: 1,
             channelId: 'channel-1',
@@ -154,12 +155,13 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             });
         });
 
-        it('should resolve the task activity from the run and follow the item while open', async () => {
+        it('should follow persisted task events and item changes while open', async () => {
             const rawItem = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', state: 'closed', state_modified: 1000});
-            const rawRun = TestHelper.fakePlaybookRun({id: 'run-1', timeline_events: [timelineEvent]});
+            const rawRun = TestHelper.fakePlaybookRun({id: 'run-1'});
             await addRunToDatabase(rawRun);
             await addItemToDatabase(rawItem);
             await addUserToDatabase(TestHelper.fakeUser({id: 'activity-actor'}));
+            await operator.batchRecords(await prepareTimelineEvents(database, rawRun.id, [timelineEvent], [], true), 'seed task activity');
 
             const item = await getPlaybookChecklistItemById(database, rawItem.id);
 
@@ -282,12 +284,12 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toHaveProp('participantIds', []);
         });
 
-        it('should resolve the task activity from the given timeline events', async () => {
+        it('should resolve the given API task activity', async () => {
             await addUserToDatabase(TestHelper.fakeUser({id: 'activity-actor'}));
 
             const props = getBaseProps();
             props.item = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', state: 'closed', state_modified: 1000});
-            props.timelineEvents = [timelineEvent];
+            props.apiActivity = {action: 'check', actorUserId: 'activity-actor', timestamp: 1000};
 
             const {getByTestId} = renderWithEverything(<ChecklistItemBottomSheet {...props}/>, {database});
 

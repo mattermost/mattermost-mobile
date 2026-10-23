@@ -31,6 +31,7 @@ import {typography} from '@utils/typography';
 
 import {goToEditPlaybookRun, goToSelectUser} from '../navigation';
 
+import {getTaskActivity, type TaskActivity} from './checklist/checklist_item/task_activity';
 import ChecklistList from './checklist_list';
 import {PropertyFieldsList} from './components';
 import ErrorState from './error_state';
@@ -240,6 +241,19 @@ export default function PlaybookRun({
 
     const [filters, setFilters] = useState<TaskFilters>(DEFAULT_TASK_FILTERS);
     const [expandedById, setExpandedById] = useState<Record<string, boolean>>({});
+    const apiActivityByItemId = useMemo(() => {
+        if (!playbookRun || 'observe' in playbookRun) {
+            return undefined;
+        }
+
+        const activities: Record<string, TaskActivity | undefined> = {};
+        for (const checklist of playbookRun.checklists) {
+            for (const item of checklist.items) {
+                activities[item.id] = getTaskActivity(item, playbookRun.timeline_events, playbookRun.id);
+            }
+        }
+        return activities;
+    }, [playbookRun]);
 
     const filtersActive = !areDefaultTaskFilters(filters);
 
@@ -548,12 +562,7 @@ export default function PlaybookRun({
                         </View>
                         <ChecklistList
                             checklists={checklists}
-
-                            // Only for a run that is not in the database, where these are the sole
-                            // source of task activity. A persisted run's rows observe it directly, and
-                            // passing the events here as well would churn a `withObservables` trigger
-                            // prop on every task change and blank every row in the checklist.
-                            timelineEvents={'timelineEvents' in playbookRun ? undefined : playbookRun.timeline_events}
+                            apiActivityByItemId={apiActivityByItemId}
                             channelId={channelId}
                             playbookRunId={playbookRun.id}
                             playbookRunName={playbookRun.name}

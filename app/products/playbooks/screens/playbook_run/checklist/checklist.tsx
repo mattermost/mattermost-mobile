@@ -24,6 +24,7 @@ import {typography} from '@utils/typography';
 
 import ChecklistItem from './checklist_item';
 
+import type {TaskActivity} from './checklist_item/task_activity';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 
@@ -129,7 +130,7 @@ type Props = {
     checklist: PlaybookChecklistModel | PlaybookChecklist;
     checklistNumber: number;
     items: Array<PlaybookChecklistItemModel | PlaybookChecklistItem>;
-    timelineEvents: TimelineEvent[] | undefined;
+    apiActivityByItemId?: Record<string, TaskActivity | undefined>;
     channelId: string;
     playbookRunId: string;
     playbookRunName: string;
@@ -147,7 +148,7 @@ const Checklist = ({
     checklist,
     checklistNumber,
     items,
-    timelineEvents,
+    apiActivityByItemId,
     channelId,
     playbookRunId,
     playbookRunName,
@@ -298,7 +299,7 @@ const Checklist = ({
                         <ChecklistItem
                             key={item.id}
                             item={item}
-                            timelineEvents={timelineEvents}
+                            apiActivity={apiActivityByItemId?.[item.id]}
                             channelId={channelId}
                             checklistNumber={checklistNumber}
                             itemNumber={itemNumber}
@@ -340,7 +341,7 @@ const Checklist = ({
                         <ChecklistItem
                             key={`calc-${item.id}`}
                             item={item}
-                            timelineEvents={timelineEvents}
+                            apiActivity={apiActivityByItemId?.[item.id]}
                             channelId={channelId}
                             checklistNumber={checklistNumber}
                             itemNumber={itemNumber}

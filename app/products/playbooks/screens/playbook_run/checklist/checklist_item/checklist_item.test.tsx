@@ -62,7 +62,7 @@ describe('ChecklistItem', () => {
     function getBaseProps(): ComponentProps<typeof ChecklistItem> {
         return {
             item: mockItem,
-            timelineEvents: [],
+            apiActivity: undefined,
             assignee: mockAssignee,
             teammateNameDisplay: 'username',
             timezone: '',
@@ -471,18 +471,7 @@ describe('ChecklistItem', () => {
         const props = getBaseProps();
         props.activity = {action: 'check', actorUserId: mockAssignee.id, timestamp: Date.now()};
         props.activityActor = mockAssignee;
-        props.timelineEvents = [{
-            id: 'event-1',
-            playbook_run_id: props.playbookRunId,
-            create_at: 1000,
-            event_at: 1000,
-            event_type: 'task_state_modified',
-            summary: '',
-            details: '{"action":"check"}',
-            post_id: '',
-            subject_user_id: mockAssignee.id,
-            creator_user_id: mockAssignee.id,
-        }];
+        props.apiActivity = props.activity;
 
         const {getByTestId, getByText} = renderWithIntl(<ChecklistItem {...props}/>);
         expect(getByTestId('playbook_run.checklist_item.task_activity')).toBeVisible();
@@ -491,11 +480,10 @@ describe('ChecklistItem', () => {
         const args = jest.mocked(bottomSheet).mock.calls[0] as Parameters<typeof bottomSheet>;
         expect(args[1]).toEqual([1, 455, '80%']);
 
-        // The sheet resolves its own activity, so it only needs the events to resolve it from.
         const BottomSheetComponent = args[0];
         const {getByTestId: getByTestIdInSheet} = renderWithIntl(<BottomSheetComponent/>);
         const bottomSheetComponent = getByTestIdInSheet('checklist-item-bottom-sheet-component');
-        expect(bottomSheetComponent.props.timelineEvents).toBe(props.timelineEvents);
+        expect(bottomSheetComponent.props.apiActivity).toBe(props.apiActivity);
         expect(bottomSheetComponent.props.activity).toBeUndefined();
     });
 

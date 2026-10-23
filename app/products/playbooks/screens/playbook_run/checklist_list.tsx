@@ -6,12 +6,13 @@ import {StyleSheet, View} from 'react-native';
 
 import Checklist from './checklist';
 
+import type {TaskActivity} from './checklist/checklist_item/task_activity';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type {TaskFilters} from '@playbooks/utils/task_filters';
 
 type Props = {
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
-    timelineEvents: TimelineEvent[] | undefined;
+    apiActivityByItemId?: Record<string, TaskActivity | undefined>;
     channelId: string;
     playbookRunId: string;
     playbookRunName: string;
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
 
 const ChecklistList = ({
     checklists,
-    timelineEvents,
+    apiActivityByItemId,
     channelId,
     playbookRunId,
     playbookRunName,
@@ -50,7 +51,7 @@ const ChecklistList = ({
                 <ChecklistRow
                     key={checklist.id}
                     checklist={checklist}
-                    timelineEvents={timelineEvents}
+                    apiActivityByItemId={apiActivityByItemId}
                     channelId={channelId}
                     playbookRunId={playbookRunId}
                     playbookRunName={playbookRunName}
@@ -77,7 +78,7 @@ type ChecklistRowProps = Omit<Props, 'checklists' | 'expandedById'> & {
 // Local row so each checklist can take a stable onToggleExpanded without an inline arrow in the map.
 function ChecklistRow({
     checklist,
-    timelineEvents,
+    apiActivityByItemId,
     channelId,
     playbookRunId,
     playbookRunName,
@@ -97,7 +98,7 @@ function ChecklistRow({
     return (
         <Checklist
             checklist={checklist}
-            timelineEvents={timelineEvents}
+            apiActivityByItemId={apiActivityByItemId}
             channelId={channelId}
             playbookRunId={playbookRunId}
             playbookRunName={playbookRunName}

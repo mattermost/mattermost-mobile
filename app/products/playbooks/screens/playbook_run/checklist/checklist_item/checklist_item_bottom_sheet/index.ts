@@ -2,15 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {combineLatest, map, of as of$, shareReplay, switchMap} from 'rxjs';
+import {map, of as of$, shareReplay, switchMap} from 'rxjs';
 
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeParticipantsIdsFromPlaybookModel, observePlaybookRunById} from '@playbooks/database/queries/run';
+import {observeTaskActivity} from '@playbooks/database/queries/timeline_event';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
 
-import {getTaskActivity} from '../task_activity';
+import {getTaskActivity, type TaskActivity} from '../task_activity';
 
 import ChecklistItemBottomSheet, {BOTTOM_SHEET_HEIGHT} from './checklist_item_bottom_sheet';
 
@@ -20,13 +21,15 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 type OwnProps = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     runId: string;
-    timelineEvents: TimelineEvent[] | undefined;
+    apiActivity?: TaskActivity;
 } & WithDatabaseArgs;
 
-// timelineEvents is a trigger, which is only safe because it never churns for a persisted run: a
-// trigger change makes withObservables render null until every observable re-emits, emptying the
-// sheet while the user is reading it.
-const enhanced = withObservables(['item', 'runId', 'timelineEvents'], ({item, runId, timelineEvents, database}: OwnProps) => {
+const observeItemActivity = (database: WithDatabaseArgs['database'], runId: string, item: PlaybookChecklistItemModel) =>
+    observeTaskActivity(database, runId, item).pipe(
+        map((events) => getTaskActivity(item, events, runId)),
+    );
+
+const enhanced = withObservables(['item', 'runId', 'apiActivity'], ({item, runId, apiActivity, database}: OwnProps) => {
     const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
     const isMilitaryTime = queryDisplayNamePreferences(database).observeWithColumns(['value']).pipe(
         switchMap((preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME))),
@@ -39,15 +42,15 @@ const enhanced = withObservables(['item', 'runId', 'timelineEvents'], ({item, ru
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
-        // Shared because the run feeds the participants, the name and the timeline events below.
+        // Shared because the run feeds the participants and name below.
         const run = observePlaybookRunById(database, runId).pipe(
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
         // Resolved here rather than received from the checklist item row so that an open sheet keeps
         // up with the task being checked, skipped or restored elsewhere.
-        const activity = combineLatest([observedItem, run]).pipe(
-            map(([i, r]) => getTaskActivity(i, r?.timelineEvents ?? timelineEvents)),
+        const activity = observedItem.pipe(
+            switchMap((i) => observeItemActivity(database, runId, i)),
             shareReplay({bufferSize: 1, refCount: true}),
         );
         const activityActor = activity.pipe(
@@ -80,7 +83,7 @@ const enhanced = withObservables(['item', 'runId', 'timelineEvents'], ({item, ru
     }
 
     const assignee = observeUser(database, item.assignee_id);
-    const activity = getTaskActivity(item, timelineEvents);
+    const activity = apiActivity;
 
     return {
         item: of$(item),

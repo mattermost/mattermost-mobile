@@ -28,12 +28,6 @@ export async function updateChecklistItem(
                 if (requirements) {
                     i.requirements = requirements;
                 }
-
-                // Stamp the change locally too. The task activity chip takes its timestamp from here and
-                // matches timeline events on it, so leaving the previous value would report the time of an
-                // older state change and, with no event at that time for the new state, the wrong verb
-                // with it. The server's own timestamp arrives with the websocket update and replaces this.
-                i.stateModified = Date.now();
             });
         });
 

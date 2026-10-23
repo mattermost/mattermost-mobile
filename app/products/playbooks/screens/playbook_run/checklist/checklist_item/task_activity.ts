@@ -14,6 +14,8 @@ type TaskActivityItem = PlaybookChecklistItem | {
     state: ChecklistItemState;
     stateModified: number;
     title: string;
+    stateEventId?: string | null;
+    stateEventLinkKnown?: boolean;
 };
 
 type TaskStateDetails = {
@@ -68,7 +70,7 @@ const getDetailsAction = (details: TaskStateDetails): TaskActivityAction | undef
     return typeof action === 'string' && KNOWN_ACTIONS.has(action) ? action as TaskActivityAction : undefined;
 };
 
-export const getTaskActivity = (item: TaskActivityItem, timelineEvents?: TimelineEvent[]): TaskActivity | undefined => {
+export const getTaskActivity = (item: TaskActivityItem, timelineEvents?: TimelineEvent[], runId?: string): TaskActivity | undefined => {
     const timestamp = 'stateModified' in item ? item.stateModified : item.state_modified;
     const candidates = getCandidateActions(item.state);
     if (!timestamp || !candidates.length) {
@@ -83,7 +85,7 @@ export const getTaskActivity = (item: TaskActivityItem, timelineEvents?: Timelin
     // Restricting candidates by the resting state also keeps a stale or contradictory event from
     // matching, e.g. a check event against an open task.
     const matches = events.flatMap<ActionMatch>((event) => {
-        if (event.event_at !== timestamp) {
+        if (event.event_at !== timestamp || (runId && event.playbook_run_id !== runId)) {
             return [];
         }
 
@@ -96,12 +98,30 @@ export const getTaskActivity = (item: TaskActivityItem, timelineEvents?: Timelin
         return action && candidates.includes(action) ? [{action, details, event}] : [];
     });
 
-    // Stable id join, preferred: events from current servers carry details.item_id, which links an
-    // event to exactly one task. That is unambiguous, so it needs no title tiebreak and is immune to
-    // same-millisecond collisions and duplicate titles.
-    let matched = matches.find(({details}) => details.item_id === item.id);
+    const linkKnown = 'stateEventLinkKnown' in item ? item.stateEventLinkKnown : 'state_event_id' in item;
+    let linkedId: string | null | undefined;
+    if ('stateEventId' in item) {
+        linkedId = item.stateEventId;
+    } else if ('state_event_id' in item) {
+        linkedId = item.state_event_id as string | null;
+    }
+    let matched: ActionMatch | undefined;
 
-    if (!matched) {
+    if (linkKnown) {
+        if (linkedId) {
+            const linked = matches.filter(({event, details}) => event.id === linkedId && details.item_id === item.id);
+            if (linked.length === 1) {
+                matched = linked[0];
+            }
+        }
+    } else {
+        const idMatches = matches.filter(({details}) => details.item_id === item.id);
+        if (idMatches.length === 1) {
+            matched = idMatches[0];
+        }
+    }
+
+    if (!linkKnown && !matched && !matches.some(({details}) => details.item_id === item.id)) {
         // Legacy fallback for events predating details.item_id. Never consider an event that names a
         // different item — an id-carrying event belongs to whichever task it names, so it isn't ours.
         //
