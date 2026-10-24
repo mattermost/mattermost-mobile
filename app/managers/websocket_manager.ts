@@ -129,9 +129,44 @@ class WebsocketManagerSingleton {
         }
     };
 
+    // verifyOrResetAll triggers a ping on open sockets, helping decide quickly if they survived a network switch.
+    // Sockets in any other state are closed immediately to allow reopening faster.
+    private verifyOrResetAll = () => {
+        for (const [url, client] of Object.entries(this.clients)) {
+            if (!client.isConnected()) {
+                logDebug('WebSocketManager: resetting connection that was not open, network switched', url);
+                client.close(true);
+                this.getConnectedSubject(url).next('not_connected');
+                continue;
+            }
+
+            this.verifyClient(url);
+        }
+    };
+
+    // A failed verification closes the socket, but its onClose arrives later. Report 'not_connected' now so a caller
+    // chaining on this, like the render-permissions revalidation, waits for the reconnect.
+    private verifyClient = async (url: string) => {
+        const client = this.clients[url];
+        const alive = await client.verifyConnection();
+
+        // Skip if the client changed since we started verifying.
+        if (this.clients[url] !== client) {
+            return;
+        }
+
+        if (!alive) {
+            this.getConnectedSubject(url).next('not_connected');
+        }
+    };
+
     public openAll = async (groupLabel?: BaseRequestGroupLabel) => {
         let queued = 0;
         for await (const clientUrl of Object.keys(this.clients)) {
+            if (this.isConnected(clientUrl)) {
+                continue;
+            }
+
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             if (clientUrl === activeServerUrl) {
                 this.initializeClient(clientUrl, groupLabel);
@@ -261,9 +296,6 @@ class WebsocketManagerSingleton {
     private onNetStateChange = (netState: NetInfoState) => {
         const newState = Boolean(netState.isConnected);
         this.handleStateChange(newState, netState.type, this.previousActiveState);
-
-        // After handleStateChange so a network type switch has already closed the sockets: the
-        // revalidation then waits for the reconnect instead of going out mid-switch.
         this.expireNetworkBoundDecisions(netState);
     };
 
@@ -284,9 +316,19 @@ class WebsocketManagerSingleton {
         if (identity !== this.networkIdentity) {
             this.networkIdentity = identity;
 
-            // Only servers that collect session attributes evaluate the device's network.
+            // Only servers that collect session attributes evaluate the device's network. An open socket keeps reporting
+            // 'connected' through a switch, which would let the revalidation out mid-switch, so expire the server's
+            // decisions only once its verification settles. On a type switch this shares handleStateChange's ping.
             for (const serverUrl of SessionAttributesManager.getEnabledServers()) {
-                RenderPermissionsStore.expireServer(serverUrl);
+                const expire = () => {
+                    logDebug('WebSocketManager: expiring render permissions, network changed', serverUrl);
+                    RenderPermissionsStore.expireServer(serverUrl);
+                };
+                if (this.isConnected(serverUrl)) {
+                    this.verifyClient(serverUrl).then(expire);
+                } else {
+                    expire();
+                }
             }
         }
     };
@@ -313,11 +355,10 @@ class WebsocketManagerSingleton {
         }
 
         if (switchedNetworks) {
-            // Close all connections when we switch from (for example) vpn to wifi
-            // to ensure we are using the right network and doesn't get stuck on
-            // retries.
-            logDebug('WebSocketManager: closing all connections, network switched', 'from', previousNetType, 'to', currentNetType);
-            this.closeAll();
+            // Sockets that were not open are closed with stop set, so only openAll reopens them: below if the app is
+            // active, otherwise when it next becomes active.
+            logDebug('WebSocketManager: verifying or resetting all connections, network switched', 'from', previousNetType, 'to', currentNetType);
+            this.verifyOrResetAll();
         }
 
         if (currentIsActive) {

@@ -17,6 +17,7 @@ const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
 const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
 const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 const PING_INTERVAL = toMilliseconds({seconds: 30});
+const VERIFY_CONNECTION_TIMEOUT = toMilliseconds({seconds: 5});
 const WAIT_FOR_CLOSE_TIMEOUT = 500;
 const DEFAULT_OPTIONS = {
     forceConnection: true,
@@ -37,6 +38,13 @@ export default class WebSocketClient {
     private pingInterval: NodeJS.Timeout | undefined;
     private waitingForPong: boolean = false;
     private pendingCloseResolver?: () => void;
+    private pendingVerification?: {
+        promise: Promise<boolean>;
+        resolve: (alive: boolean) => void;
+        seq: number;
+        startedAt: number;
+        timeout: NodeJS.Timeout;
+    };
 
     // The first time we connect to a server (on init or login)
     // we do the sync out of the websocket lifecycle.
@@ -244,6 +252,7 @@ export default class WebSocketClient {
 
             this.conn = undefined;
             this.responseSequence = 1;
+            this.settleVerification(false);
 
             if (this.pendingCloseResolver) {
                 this.pendingCloseResolver();
@@ -319,6 +328,9 @@ export default class WebSocketClient {
                 }
                 if (msg.data?.text === WebsocketEvents.PONG) {
                     this.waitingForPong = false;
+                    if (msg.seq_reply === this.pendingVerification?.seq) {
+                        this.settleVerification(true);
+                    }
                 }
             } else if (this.eventCallback) {
                 if (reliableWebSockets) {
@@ -407,7 +419,48 @@ export default class WebSocketClient {
         this.responseSequence = 1;
         clearTimeout(this.connectionTimeout);
         clearInterval(this.pingInterval);
+        this.settleVerification(false);
         this.conn?.close();
+    }
+
+    /**
+     * Pings an open socket to check it still reaches the server, e.g. after a network switch. Resolves false if the
+     * socket isn't open, closes before the pong, or misses VERIFY_CONNECTION_TIMEOUT; on a timeout the socket is also
+     * closed so it reconnects. Concurrent calls share one ping.
+     */
+    public verifyConnection(): Promise<boolean> {
+        if (this.pendingVerification) {
+            return this.pendingVerification.promise;
+        }
+
+        if (!this.isConnected()) {
+            return Promise.resolve(false);
+        }
+
+        let resolve!: (alive: boolean) => void;
+        const promise = new Promise<boolean>((r) => {
+            resolve = r;
+        });
+        const timeout = setTimeout(() => {
+            logInfo('websocket did not answer a ping, reconnecting', this.url);
+            this.close(false);
+        }, VERIFY_CONNECTION_TIMEOUT);
+        this.waitingForPong = true;
+        const seq = this.ping();
+        this.pendingVerification = {promise, resolve, seq, startedAt: Date.now(), timeout};
+
+        return promise;
+    }
+
+    private settleVerification(alive: boolean) {
+        if (!this.pendingVerification) {
+            return;
+        }
+
+        logInfo('websocket verification', alive ? 'answered' : 'failed', 'server', this.serverUrl, 'after', Date.now() - this.pendingVerification.startedAt, 'ms');
+        clearTimeout(this.pendingVerification.timeout);
+        this.pendingVerification.resolve(alive);
+        this.pendingVerification = undefined;
     }
 
     public waitForClose(): Promise<void> {
@@ -431,6 +484,7 @@ export default class WebSocketClient {
     public invalidate() {
         clearTimeout(this.connectionTimeout);
         clearInterval(this.pingInterval);
+        this.settleVerification(false);
         this.conn?.invalidate();
         this.conn = undefined;
     }
@@ -444,6 +498,8 @@ export default class WebSocketClient {
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.send(JSON.stringify(msg));
         }
+
+        return msg.seq;
     }
 
     private sendMessage(action: string, data: any) {
