@@ -11,7 +11,7 @@ import {
 } from '@mattermost/react-native-network-client';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {modelName, osName, osVersion} from 'expo-device';
-import {defineMessages} from 'react-intl';
+import {defineMessage, defineMessages} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 import urlParse from 'url-parse';
 
@@ -113,10 +113,10 @@ class NetworkManagerSingleton {
         } catch (error) {
             throw new ClientError(serverUrl, {
                 message: 'Can’t find this server. Check spelling and URL format.',
-                intl: {
+                intl: defineMessage({
                     id: 'apps.error.network.no_server',
                     defaultMessage: 'Can’t find this server. Check spelling and URL format.',
-                },
+                }),
                 url: serverUrl,
                 details: error,
             });
