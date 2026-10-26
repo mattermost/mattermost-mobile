@@ -234,7 +234,7 @@ const JUDGEMENTS = {
 const TIMING_ERROR_PATTERNS = [
     /timed out while waiting|timeout expired/i,
     /TOEXIST|TOBEVISIBLE|to be visible|not visible/i,
-    /doesn't match the selected view|Failed expectation/i,
+    /Failed expectation/i,
 ];
 
 // A direct assertion on content or state (expected X, got Y) is the kind of
@@ -332,7 +332,9 @@ function formatFailureJudgement(failures) {
         if (!jobsByTitle.has(title)) {
             jobsByTitle.set(title, new Set());
         }
-        jobsByTitle.get(title).add(failure.job || '');
+        if (failure.job) {
+            jobsByTitle.get(title).add(failure.job);
+        }
     }
     const judged = (failures || []).map((failure) => {
         const enriched = {
@@ -586,10 +588,16 @@ function failuresFromConsolidated(consol, compositeIdentity, groupDetail) {
 
     for (const spec of consol?.specs || []) {
         const history = spec.history || [];
-        const isCurrent = (entry) =>
+        const isCurrentAttempt = (entry) =>
             entry.commit_sha === commitSha &&
             Number.parseInt(entry.run_attempt || '0', 10) === attempt;
-        const current = history.filter(isCurrent);
+
+        // The payload is scoped to this GitHub run (gh_run_id + commit), so an
+        // entry for this commit at any attempt belongs to this run — including
+        // an earlier re-run attempt. Those are not "earlier history": a pass in
+        // attempt 1 must not corroborate an app-bug call in attempt 2.
+        const isCurrentRun = (entry) => entry.commit_sha === commitSha;
+        const current = history.filter(isCurrentAttempt);
         const failedHere = current.find((entry) => entry.status === 'failed');
         if (!failedHere) {
             continue;
@@ -598,7 +606,7 @@ function failuresFromConsolidated(consol, compositeIdentity, groupDetail) {
             job: idToJob[failedHere.report_id] || '',
             title: spec.full_title || '',
             error: failedHere.error_message || '',
-            previousStatuses: history.filter((entry) => !isCurrent(entry)).map((entry) => entry.status || 'failed'),
+            previousStatuses: history.filter((entry) => !isCurrentRun(entry)).map((entry) => entry.status || 'failed'),
             passedOnRetry: current.some((entry) => entry.status === 'flaky'),
         });
     }
@@ -614,8 +622,11 @@ async function fetchConsolidated(baseUrl, compositeIdentity) {
         name: compositeIdentity.run_group || compositeIdentity.name,
         gh_run_id: String(compositeIdentity.gh_run_id),
     });
+
+    // The endpoint's attempt filter is run_attempt (gh_run_attempt is ignored
+    // server-side — verified against the consolidated API).
     if (compositeIdentity.gh_run_attempt) {
-        params.set('gh_run_attempt', String(compositeIdentity.gh_run_attempt));
+        params.set('run_attempt', String(compositeIdentity.gh_run_attempt));
     }
     return fetchWithTimeout(
         `${baseUrl}/api/v1/reports/consolidated?${params}`,

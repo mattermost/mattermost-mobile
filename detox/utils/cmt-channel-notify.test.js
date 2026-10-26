@@ -15,6 +15,7 @@ const {
     notifyCmtChannel,
     classifyFailure,
     failuresFromConsolidated,
+    fetchFailuresFromConsolidated,
 } = require('./cmt-channel-notify');
 
 describe('cmt-channel-notify', () => {
@@ -293,6 +294,10 @@ describe('cmt-channel-notify', () => {
             assert.equal(classifyFailure({title: 'MM-T3', error: "expected element toHaveText 'HIGH'", previousStatuses: [], alsoFailedElsewhere: true}).category, 'app-bug');
         });
 
+        it('does not treat a selected-view mismatch carrying a direct assertion as timing', () => {
+            assert.equal(classifyFailure({title: 'MM-T8', error: "'HIGH' doesn't match the selected view (toHaveText)", previousStatuses: ['passed']}).category, 'app-bug');
+        });
+
         it('does not call a timing wait or a single uncorroborated assertion an app bug', () => {
             assert.equal(classifyFailure({title: 'MM-T4', error: 'Timed out while waiting for expectation: TOBEVISIBLE TIMEOUT(10s)', previousStatuses: []}).category, 'investigate');
             assert.equal(classifyFailure({title: 'MM-T5', error: "expected element toHaveText 'HIGH'", previousStatuses: []}).category, 'investigate');
@@ -322,6 +327,47 @@ describe('cmt-channel-notify', () => {
                 previousStatuses: ['passed'],
                 passedOnRetry: false,
             }]);
+        });
+
+        it('excludes other attempts of the same run from previous statuses', () => {
+            const identity = {commit_sha: 'sha1', gh_run_attempt: '2'};
+            const detail = {reports: [{id: 'r1', gh_job_name: 'detox-ios-Server_12.1.0-rc1'}]};
+            const consol = {specs: [
+                {full_title: 'Suite MM-T1 - case',
+                    history: [
+                        {report_id: 'r1', commit_sha: 'sha0', run_attempt: 1, status: 'failed'},
+                        {report_id: 'r1', commit_sha: 'sha1', run_attempt: 1, status: 'passed'},
+                        {report_id: 'r1', commit_sha: 'sha1', run_attempt: 2, status: 'failed', error_message: 'boom'},
+                    ]},
+            ]};
+            const failures = failuresFromConsolidated(consol, identity, detail);
+            assert.equal(failures.length, 1);
+            assert.deepEqual(failures[0].previousStatuses, ['failed']);
+        });
+
+        it('requests the consolidated endpoint with run_attempt, not gh_run_attempt', async () => {
+            const identity = {
+                repository: 'mattermost/mattermost-mobile',
+                branch: 'refs/heads/build-release-833',
+                commit_sha: 'sha1',
+                gh_run_id: '40295770932',
+                gh_run_attempt: '2',
+                name: 'mobile-release-detox-ios-Server_12.1.0-rc1',
+                run_group: 'mobile-release-detox-ios-Server_12.1.0-rc1',
+            };
+            const original = global.fetch;
+            let requestedUrl = '';
+            global.fetch = (url) => {
+                requestedUrl = String(url);
+                return Promise.resolve({ok: true, text: () => Promise.resolve(''), json: () => Promise.resolve({specs: []})});
+            };
+            try {
+                await fetchFailuresFromConsolidated('https://test-io.test.mattermost.com', identity, {reports: []});
+            } finally {
+                global.fetch = original;
+            }
+            assert.match(requestedUrl, /[?&]run_attempt=2(&|$)/);
+            assert.doesNotMatch(requestedUrl, /gh_run_attempt/);
         });
     });
 
@@ -356,6 +402,20 @@ describe('cmt-channel-notify', () => {
             });
             assert.match(text, /🔴 \*\*Suspected app bug — corroborated, needs investigation \(2\)\*\*/);
             assert.match(text, /direct assertion failed on more than one leg/);
+        });
+
+        it('does not promote a direct assertion when only one leg has a job name', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
+                perJobCounts: {},
+                failures: [
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                    {job: '', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                ],
+            });
+            assert.doesNotMatch(text, /Suspected app bug/);
+            assert.match(text, /🔍 \*\*Needs a closer look — not enough evidence to call it an app bug \(2\)\*\*/);
         });
 
         it('does not cascade failures whose job or suite is unknown', () => {
