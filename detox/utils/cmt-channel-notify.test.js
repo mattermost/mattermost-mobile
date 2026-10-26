@@ -337,6 +337,21 @@ describe('cmt-channel-notify', () => {
             assert.match(text, /Messaging MM-1 - case — first failure in TSIO history/);
         });
 
+        it('does not cascade failures whose job or suite is unknown', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
+                perJobCounts: {},
+                failures: [
+                    {job: '', title: '', error: 'Channel attributes are not enabled on this server.', previousStatuses: []},
+                    {job: '', title: '', error: 'expect mismatch', previousStatuses: []},
+                ],
+            });
+            assert.match(text, /🔴 \*\*Suspected app bug — needs investigation \(1\)\*\*/);
+            assert.match(text, /⚠️ \*\*Infra \/ environment — not an app failure \(1\)\*\*/);
+            assert.doesNotMatch(text, /likely a cascade/);
+        });
+
         it('renders no judgement section without failures', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},

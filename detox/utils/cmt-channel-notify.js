@@ -293,13 +293,19 @@ function formatFailureJudgement(failures) {
     // leg (e.g. the server rejects channel creation) makes its sibling tests
     // fail in setup too, with generic errors that carry no infra marker. Those
     // are not independent app-bug candidates.
+    const cascadeKeyOf = (failure) => {
+        const suite = suiteKeyOf(failure.title);
+        return failure.job && suite ? `${failure.job}|${suite}` : null;
+    };
     const infraSuites = new Set(
         judged.
             filter((entry) => entry.verdict.category === 'infra').
-            map((entry) => `${entry.failure.job}|${suiteKeyOf(entry.failure.title)}`),
+            map((entry) => cascadeKeyOf(entry.failure)).
+            filter(Boolean),
     );
     for (const entry of judged) {
-        if (entry.verdict.category === 'app-bug' && infraSuites.has(`${entry.failure.job}|${suiteKeyOf(entry.failure.title)}`)) {
+        const key = cascadeKeyOf(entry.failure);
+        if (entry.verdict.category === 'app-bug' && key && infraSuites.has(key)) {
             entry.verdict = {category: 'infra', reason: 'same suite hit an environment failure in this leg — likely a cascade'};
         }
     }
