@@ -287,9 +287,16 @@ describe('cmt-channel-notify', () => {
             assert.equal(classifyFailure({title: 'MM-T1', error: 'timeout', passedOnRetry: true}).category, 'flaky');
         });
 
-        it('judges a repeatedly failing test as known, and a first-seen assertion as suspected app bug', () => {
+        it('judges a repeatedly failing test as known, and a corroborated direct assertion as suspected app bug', () => {
             assert.equal(classifyFailure({title: 'MM-T2', error: 'expect mismatch', previousStatuses: ['failed', 'failed']}).category, 'known');
-            assert.equal(classifyFailure({title: 'MM-T3', error: 'expect mismatch', previousStatuses: ['passed', 'passed']}).category, 'app-bug');
+            assert.equal(classifyFailure({title: 'MM-T3', error: "expected element toHaveText 'HIGH'", previousStatuses: ['passed', 'passed']}).category, 'app-bug');
+            assert.equal(classifyFailure({title: 'MM-T3', error: "expected element toHaveText 'HIGH'", previousStatuses: [], alsoFailedElsewhere: true}).category, 'app-bug');
+        });
+
+        it('does not call a timing wait or a single uncorroborated assertion an app bug', () => {
+            assert.equal(classifyFailure({title: 'MM-T4', error: 'Timed out while waiting for expectation: TOBEVISIBLE TIMEOUT(10s)', previousStatuses: []}).category, 'investigate');
+            assert.equal(classifyFailure({title: 'MM-T5', error: "expected element toHaveText 'HIGH'", previousStatuses: []}).category, 'investigate');
+            assert.equal(classifyFailure({title: 'MM-T6', error: 'some opaque failure', previousStatuses: ['passed']}).category, 'investigate');
         });
     });
 
@@ -325,16 +332,30 @@ describe('cmt-channel-notify', () => {
                 detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
                 perJobCounts: {},
                 failures: [
-                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-1 - case', error: 'expect mismatch', previousStatuses: ['passed']},
+                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-1 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: ['passed']},
                     {job: 'detox-ios-Server_12.1.0-rc1', title: 'Attributes MM-2 - case', error: 'Channel attributes are not enabled on this server.', previousStatuses: []},
                     {job: 'detox-ios-Server_12.1.0-rc1', title: 'Attributes MM-3 - case', error: 'chip not visible after 10s', previousStatuses: []},
                 ],
             });
             assert.match(text, /Failure judgement/);
-            assert.match(text, /🔴 \*\*Suspected app bug — needs investigation \(1\)\*\*/);
+            assert.match(text, /🔴 \*\*Suspected app bug — corroborated, needs investigation \(1\)\*\*/);
             assert.match(text, /⚠️ \*\*Infra \/ environment — not an app failure \(2\)\*\*/);
             assert.match(text, /Attributes MM-3 - case — same suite hit an environment failure/);
-            assert.match(text, /Messaging MM-1 - case — first failure in TSIO history/);
+            assert.match(text, /Messaging MM-1 - case — passed in earlier runs and now fails a direct assertion/);
+        });
+
+        it('promotes a direct assertion that failed on two legs to suspected app bug', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
+                perJobCounts: {},
+                failures: [
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                ],
+            });
+            assert.match(text, /🔴 \*\*Suspected app bug — corroborated, needs investigation \(2\)\*\*/);
+            assert.match(text, /direct assertion failed on more than one leg/);
         });
 
         it('does not cascade failures whose job or suite is unknown', () => {
@@ -347,7 +368,7 @@ describe('cmt-channel-notify', () => {
                     {job: '', title: '', error: 'expect mismatch', previousStatuses: []},
                 ],
             });
-            assert.match(text, /🔴 \*\*Suspected app bug — needs investigation \(1\)\*\*/);
+            assert.match(text, /🔍 \*\*Needs a closer look — not enough evidence to call it an app bug \(1\)\*\*/);
             assert.match(text, /⚠️ \*\*Infra \/ environment — not an app failure \(1\)\*\*/);
             assert.doesNotMatch(text, /likely a cascade/);
         });

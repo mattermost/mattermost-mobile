@@ -221,11 +221,30 @@ function formatLegResultText(leg) {
 }
 
 const JUDGEMENTS = {
-    'app-bug': {emoji: '🔴', heading: 'Suspected app bug — needs investigation'},
+    'app-bug': {emoji: '🔴', heading: 'Suspected app bug — corroborated, needs investigation'},
+    investigate: {emoji: '🔍', heading: 'Needs a closer look — not enough evidence to call it an app bug'},
     flaky: {emoji: '🟠', heading: 'Flaky — intermittent in TSIO history'},
     known: {emoji: '⚪', heading: 'Known failing — also failed before this run'},
     infra: {emoji: '⚠️', heading: 'Infra / environment — not an app failure'},
 };
+
+// A visibility/existence wait expiring says the UI was not in the expected
+// state in time — timing, navigation, or a slow server explain it at least as
+// well as an app bug, so it is never enough on its own for "app bug".
+const TIMING_ERROR_PATTERNS = [
+    /timed out while waiting|timeout expired/i,
+    /TOEXIST|TOBEVISIBLE|to be visible|not visible/i,
+    /doesn't match the selected view|Failed expectation/i,
+];
+
+// A direct assertion on content or state (expected X, got Y) is the kind of
+// failure an app bug actually produces — unlike a wait expiring.
+const HARD_ASSERTION_PATTERNS = [
+    /toHaveText|toHaveLabel|toHaveValue/i,
+    /expected .{0,80} to (be|equal|match|contain)/i,
+    /Expected:[\s\S]{0,120}Received:/i,
+    /AssertionError/i,
+];
 
 const INFRA_ERROR_PATTERNS = [
     /attributes_feature_disabled|not enabled on this server/i,
@@ -237,11 +256,14 @@ const INFRA_ERROR_PATTERNS = [
 ];
 
 /**
- * Judge one failing test from the evidence TSIO has for it. Deliberately
- * conservative: "app-bug" means only that the failure is new in the recorded
- * history and its error shows no infrastructure cause — a human still confirms.
+ * Judge one failing test from the evidence TSIO has for it. "app-bug" is the
+ * last resort, not the default: it needs a direct content/state assertion
+ * (not a wait expiring) AND corroboration — the same test failing on another
+ * leg of this run, or a test that passed in earlier history now failing that
+ * assertion. Anything weaker is "investigate": one observation of a timing
+ * wait is as consistent with a flake or a slow server as with an app bug.
  *
- * @param {{title?: string, error?: string, previousStatuses?: string[], passedOnRetry?: boolean}} failure
+ * @param {{title?: string, error?: string, previousStatuses?: string[], passedOnRetry?: boolean, alsoFailedElsewhere?: boolean}} failure
  * @returns {{category: string, reason: string}}
  */
 function classifyFailure(failure) {
@@ -268,7 +290,19 @@ function classifyFailure(failure) {
     if (sawFail) {
         return {category: 'known', reason: 'failed in earlier runs in TSIO history'};
     }
-    return {category: 'app-bug', reason: 'first failure in TSIO history, no infra cause in the error'};
+    if (TIMING_ERROR_PATTERNS.some((pattern) => pattern.test(error))) {
+        return {category: 'investigate', reason: 'visibility/existence wait expired — timing, navigation, or app; needs a repro or a repeat before calling it an app bug'};
+    }
+    if (!HARD_ASSERTION_PATTERNS.some((pattern) => pattern.test(error))) {
+        return {category: 'investigate', reason: 'single observation with no direct assertion in the error — needs a repro or a repeat'};
+    }
+    if (failure?.alsoFailedElsewhere) {
+        return {category: 'app-bug', reason: 'direct assertion failed on more than one leg of this run, no infra cause in the error'};
+    }
+    if (sawPass) {
+        return {category: 'app-bug', reason: 'passed in earlier runs and now fails a direct assertion, no infra cause in the error'};
+    }
+    return {category: 'investigate', reason: 'direct assertion, but a single observation with no earlier history — needs a repeat before calling it an app bug'};
 }
 
 /**
@@ -287,7 +321,26 @@ function suiteKeyOf(title) {
 }
 
 function formatFailureJudgement(failures) {
-    const judged = (failures || []).map((failure) => ({failure, verdict: classifyFailure(failure)}));
+    // Corroboration for the app-bug gate: the same test failing on more than
+    // one leg of this run is a second, independent observation of it.
+    const jobsByTitle = new Map();
+    for (const failure of failures || []) {
+        const title = (failure.title || '').trim();
+        if (!title) {
+            continue;
+        }
+        if (!jobsByTitle.has(title)) {
+            jobsByTitle.set(title, new Set());
+        }
+        jobsByTitle.get(title).add(failure.job || '');
+    }
+    const judged = (failures || []).map((failure) => {
+        const enriched = {
+            ...failure,
+            alsoFailedElsewhere: (jobsByTitle.get((failure.title || '').trim())?.size || 0) > 1,
+        };
+        return {failure: enriched, verdict: classifyFailure(enriched)};
+    });
 
     // Cascade rule: a suite whose own setup hit an environment failure in this
     // leg (e.g. the server rejects channel creation) makes its sibling tests
@@ -305,7 +358,7 @@ function formatFailureJudgement(failures) {
     );
     for (const entry of judged) {
         const key = cascadeKeyOf(entry.failure);
-        if (entry.verdict.category === 'app-bug' && key && infraSuites.has(key)) {
+        if ((entry.verdict.category === 'app-bug' || entry.verdict.category === 'investigate') && key && infraSuites.has(key)) {
             entry.verdict = {category: 'infra', reason: 'same suite hit an environment failure in this leg — likely a cascade'};
         }
     }
