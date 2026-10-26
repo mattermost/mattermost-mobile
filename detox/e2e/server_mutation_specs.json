@@ -10,6 +10,7 @@
     {"spec": "detox/e2e/test/products/channels/channel_settings/share_with_connected_workspaces.e2e.ts", "target": "B", "iosTarget": "site3"},
     {"spec": "detox/e2e/test/products/channels/messaging/file_upload_max_size.e2e.ts", "target": "B", "iosTarget": "site3"},
     {"spec": "detox/e2e/test/products/channels/interactive_dialog/interactive_dialog_plugin.e2e.ts", "target": "B"},
+    {"spec": "detox/e2e/test/products/channels/interactive_dialog/interactive_dialog_collapsible.e2e.ts", "target": "B"},
     {"spec": "detox/e2e/test/products/channels/interactive_dialog/interactive_dialog_mobile_upload_disabled.e2e.ts", "target": "B"}
   ]
 }
