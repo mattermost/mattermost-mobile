@@ -220,6 +220,112 @@ function formatLegResultText(leg) {
     return `❌ ${leg.passed}/${executed}`;
 }
 
+const JUDGEMENTS = {
+    'app-bug': {emoji: '🔴', heading: 'Suspected app bug — needs investigation'},
+    flaky: {emoji: '🟠', heading: 'Flaky — intermittent in TSIO history'},
+    known: {emoji: '⚪', heading: 'Known failing — also failed before this run'},
+    infra: {emoji: '⚠️', heading: 'Infra / environment — not an app failure'},
+};
+
+const INFRA_ERROR_PATTERNS = [
+    /attributes_feature_disabled|not enabled on this server/i,
+    /simctl|NSPOSIXErrorDomain|Failed to CreateArtifact/i,
+    /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|socket hang up/i,
+    /Exceeded timeout of \d+ ?ms for a hook/i,
+    /Cannot read properties of undefined \(reading '(id|channel|team|user)'\)/i,
+    /test server (is )?(down|unreachable)|server did not (respond|become ready)/i,
+];
+
+/**
+ * Judge one failing test from the evidence TSIO has for it. Deliberately
+ * conservative: "app-bug" means only that the failure is new in the recorded
+ * history and its error shows no infrastructure cause — a human still confirms.
+ *
+ * @param {{title?: string, error?: string, previousStatuses?: string[], passedOnRetry?: boolean}} failure
+ * @returns {{category: string, reason: string}}
+ */
+function classifyFailure(failure) {
+    const title = failure?.title || '';
+    const error = failure?.error || '';
+    const previous = failure?.previousStatuses || [];
+
+    if (/spec did not run/i.test(title) || /produced no result/i.test(error)) {
+        return {category: 'infra', reason: 'spec never ran (shard produced no result)'};
+    }
+    for (const pattern of INFRA_ERROR_PATTERNS) {
+        if (pattern.test(error)) {
+            return {category: 'infra', reason: 'error points at the test environment, not the app'};
+        }
+    }
+    if (failure?.passedOnRetry) {
+        return {category: 'flaky', reason: 'passed on retry in this run'};
+    }
+    const sawPass = previous.includes('passed') || previous.includes('flaky');
+    const sawFail = previous.includes('failed');
+    if (sawPass && sawFail) {
+        return {category: 'flaky', reason: 'passed and failed in recent TSIO history'};
+    }
+    if (sawFail) {
+        return {category: 'known', reason: 'failed in earlier runs in TSIO history'};
+    }
+    return {category: 'app-bug', reason: 'first failure in TSIO history, no infra cause in the error'};
+}
+
+/**
+ * @param {string} jobName gh_job_name of the leg the failure came from
+ * @returns {string}
+ */
+function legLabelForJob(jobName) {
+    const parsed = parseMobileJobName(jobName);
+    return parsed ? formatLegName(parsed) : (jobName || 'unknown leg');
+}
+
+const MAX_JUDGED_PER_CATEGORY = 15;
+
+function suiteKeyOf(title) {
+    return (title || '').replace(/›?\s*MM-[A-Za-z0-9_-]+.*$/, '').trim();
+}
+
+function formatFailureJudgement(failures) {
+    const judged = (failures || []).map((failure) => ({failure, verdict: classifyFailure(failure)}));
+
+    // Cascade rule: a suite whose own setup hit an environment failure in this
+    // leg (e.g. the server rejects channel creation) makes its sibling tests
+    // fail in setup too, with generic errors that carry no infra marker. Those
+    // are not independent app-bug candidates.
+    const infraSuites = new Set(
+        judged.
+            filter((entry) => entry.verdict.category === 'infra').
+            map((entry) => `${entry.failure.job}|${suiteKeyOf(entry.failure.title)}`),
+    );
+    for (const entry of judged) {
+        if (entry.verdict.category === 'app-bug' && infraSuites.has(`${entry.failure.job}|${suiteKeyOf(entry.failure.title)}`)) {
+            entry.verdict = {category: 'infra', reason: 'same suite hit an environment failure in this leg — likely a cascade'};
+        }
+    }
+    if (judged.length === 0) {
+        return [];
+    }
+
+    const lines = ['**Failure judgement** _(TSIO history + error text; “suspected” still needs a human confirm)_', ''];
+    for (const category of Object.keys(JUDGEMENTS)) {
+        const group = judged.filter((entry) => entry.verdict.category === category);
+        if (group.length === 0) {
+            continue;
+        }
+        const {emoji, heading} = JUDGEMENTS[category];
+        lines.push(`${emoji} **${heading} (${group.length})**`);
+        for (const {failure, verdict} of group.slice(0, MAX_JUDGED_PER_CATEGORY)) {
+            lines.push(`- ${legLabelForJob(failure.job)} ${failure.title || 'unnamed test'} — ${verdict.reason}`);
+        }
+        if (group.length > MAX_JUDGED_PER_CATEGORY) {
+            lines.push(`- …and ${group.length - MAX_JUDGED_PER_CATEGORY} more (see the consolidated report)`);
+        }
+        lines.push('');
+    }
+    return lines;
+}
+
 function reportTitleForIdentity(compositeIdentity) {
     const {webhookBucketForReportName} = require('./build-tsio-job-config');
     const bucket = webhookBucketForReportName(
@@ -270,6 +376,7 @@ function formatCmtChannelMessage({
     runUrl,
     baseUrl,
     perJobCounts,
+    failures,
     upstreamJobsSucceeded = true,
     hasFailures = false,
 }) {
@@ -321,6 +428,11 @@ function formatCmtChannelMessage({
         lines.push('_No per-leg results available yet._', '');
     }
 
+    lines.push(...formatFailureJudgement(failures));
+    if ((failures || []).length > 0 && failed > failures.length) {
+        lines.push(`_Judged ${failures.length} of ${failed} failing tests; the rest have no TSIO test detail yet._`, '');
+    }
+
     // A tracked test failure already fails the E2E job (the aggregator exits 1 by
     // design), so upstreamJobsSucceeded=false only means something broke *outside*
     // the tests when there are no failing tests to explain it.
@@ -358,28 +470,7 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
         }
     }
 
-    const repoTrailing = (compositeIdentity.repository || '').split('/').pop() || compositeIdentity.repository;
-    const params = new URLSearchParams({
-        repository: repoTrailing,
-        branch: (compositeIdentity.branch || '').replace(/^refs\/(heads|tags)\//, ''),
-        commit: compositeIdentity.commit_sha,
-        name: compositeIdentity.run_group || compositeIdentity.name,
-        gh_run_id: String(compositeIdentity.gh_run_id),
-    });
-    if (compositeIdentity.gh_run_attempt) {
-        params.set('gh_run_attempt', String(compositeIdentity.gh_run_attempt));
-    }
-
-    const consol = await fetchWithTimeout(
-        `${baseUrl}/api/v1/reports/consolidated?${params}`,
-        undefined,
-        async (res) => {
-            if (!res.ok) {
-                throw new Error(`consolidated fetch failed: ${res.status} ${await res.text()}`);
-            }
-            return res.json();
-        },
-    );
+    const consol = await fetchConsolidated(baseUrl, compositeIdentity);
 
     const counts = {};
     const commitSha = compositeIdentity.commit_sha;
@@ -410,6 +501,84 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
     }
 
     return counts;
+}
+
+/**
+ * Failures for this commit/attempt from one consolidated TSIO payload, with the
+ * spec's earlier history attached for classifyFailure().
+ *
+ * @param {Object} consol - parsed /api/v1/reports/consolidated response
+ * @param {Object} compositeIdentity
+ * @param {Object} groupDetail - the job group's TSIO detail (for report_id → job)
+ * @returns {Array<{job: string, title: string, error: string, previousStatuses: string[], passedOnRetry: boolean}>}
+ */
+function failuresFromConsolidated(consol, compositeIdentity, groupDetail) {
+    const idToJob = {};
+    for (const report of groupDetail?.reports || []) {
+        const name = report.gh_job_name || report.display_name;
+        if (report.id && name) {
+            idToJob[report.id] = name;
+        }
+    }
+
+    const commitSha = compositeIdentity.commit_sha;
+    const attempt = Number.parseInt(compositeIdentity.gh_run_attempt || '1', 10);
+    const failures = [];
+
+    for (const spec of consol?.specs || []) {
+        const history = spec.history || [];
+        const isCurrent = (entry) =>
+            entry.commit_sha === commitSha &&
+            Number.parseInt(entry.run_attempt || '0', 10) === attempt;
+        const current = history.filter(isCurrent);
+        const failedHere = current.find((entry) => entry.status === 'failed');
+        if (!failedHere) {
+            continue;
+        }
+        failures.push({
+            job: idToJob[failedHere.report_id] || '',
+            title: spec.full_title || '',
+            error: failedHere.error_message || '',
+            previousStatuses: history.filter((entry) => !isCurrent(entry)).map((entry) => entry.status || 'failed'),
+            passedOnRetry: current.some((entry) => entry.status === 'flaky'),
+        });
+    }
+    return failures;
+}
+
+async function fetchConsolidated(baseUrl, compositeIdentity) {
+    const repoTrailing = (compositeIdentity.repository || '').split('/').pop() || compositeIdentity.repository;
+    const params = new URLSearchParams({
+        repository: repoTrailing,
+        branch: (compositeIdentity.branch || '').replace(/^refs\/(heads|tags)\//, ''),
+        commit: compositeIdentity.commit_sha,
+        name: compositeIdentity.run_group || compositeIdentity.name,
+        gh_run_id: String(compositeIdentity.gh_run_id),
+    });
+    if (compositeIdentity.gh_run_attempt) {
+        params.set('gh_run_attempt', String(compositeIdentity.gh_run_attempt));
+    }
+    return fetchWithTimeout(
+        `${baseUrl}/api/v1/reports/consolidated?${params}`,
+        undefined,
+        async (res) => {
+            if (!res.ok) {
+                throw new Error(`consolidated fetch failed: ${res.status} ${await res.text()}`);
+            }
+            return res.json();
+        },
+    );
+}
+
+/**
+ * @param {string} baseUrl
+ * @param {Object} compositeIdentity
+ * @param {Object} groupDetail
+ * @returns {Promise<Array>} failures from failuresFromConsolidated
+ */
+async function fetchFailuresFromConsolidated(baseUrl, compositeIdentity, groupDetail) {
+    const consol = await fetchConsolidated(baseUrl, compositeIdentity);
+    return failuresFromConsolidated(consol, compositeIdentity, groupDetail);
 }
 
 /**
@@ -465,6 +634,7 @@ async function notifyCmtChannel({
     reportUrl,
     runUrl,
     perJobCounts,
+    failures,
     upstreamJobsSucceeded = true,
     hasFailures = false,
     webhookUrl,
@@ -488,6 +658,7 @@ async function notifyCmtChannel({
             runUrl,
             baseUrl,
             perJobCounts: counts,
+            failures,
             upstreamJobsSucceeded,
             hasFailures,
         });
@@ -507,6 +678,9 @@ module.exports = {
     formatLegResultText,
     reportTitleForIdentity,
     formatCmtChannelMessage,
+    classifyFailure,
+    failuresFromConsolidated,
+    fetchFailuresFromConsolidated,
     fetchPerJobCountsFromConsolidated,
     postMattermostWebhook,
     notifyCmtChannel,
