@@ -70,7 +70,7 @@ jest.setTimeout(360000);
     beforeAll(async () => {
         requireMutationServer('share_with_connected_workspaces');
         if (!hasSharedChannels) {
-            throw new Error('Shared Channels is not running on this server: GET /api/v4/remotecluster did not return 200 (see "[globalSetup] Shared Channels available" in the shard log)');
+            throw new Error('Shared Channels is not available on this server (the reason is in "[globalSetup] Shared Channels available" in the shard log)');
         }
 
         const {user, channel, team} = await Setup.apiInit(siteOneUrl);
