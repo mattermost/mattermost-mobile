@@ -688,6 +688,7 @@ jobs:
        needs.maestro-ios-e2e.result == 'failure' ||
        needs.maestro-android-e2e.result == 'failure')
     needs:
+      - calculate-commit-hash
       - cmt-identity
       - detox-e2e
       - detox-android-e2e
@@ -698,8 +699,19 @@ jobs:
       contents: read
       statuses: write
       pull-requests: read
+    # Every lane writes the shared e2e-test/triage context, and the toolkit's
+    # status publisher has no compare-and-swap: its status.ts requires every
+    # caller to hold the same non-cancelling, SHA-scoped job concurrency lock
+    # across its reads and writes. max-parallel serializes the matrix entries
+    # within this run without discarding queued entries; the concurrency group
+    # serializes against triage writers from any other run of the same commit.
+    # The workflow-level cancel-in-progress group above does neither.
+    concurrency:
+      group: e2e-test-triage-${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         job-key: ${{ fromJSON(needs.cmt-identity.outputs.tsio-job-keys) }}
     steps:

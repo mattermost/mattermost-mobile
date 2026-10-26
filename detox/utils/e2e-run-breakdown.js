@@ -68,7 +68,7 @@ function summarizeJobs(jobs) {
         }
         const group = groups.get(key);
         group.total++;
-        const conclusion = job.conclusion || 'other';
+        const conclusion = job.conclusion === 'timed_out' ? 'failure' : (job.conclusion || 'other');
         if (conclusion === 'success' || conclusion === 'failure' || conclusion === 'cancelled' || conclusion === 'skipped') {
             group[conclusion]++;
         } else {

@@ -44,6 +44,17 @@ describe('e2e-run-breakdown', () => {
         assert.match(renderMarkdown(summary), /Failing jobs:/);
     });
 
+    it('should count timed-out jobs as failures', () => {
+        const summary = summarizeRuns([{jobs: [
+            {name: 'cmt / detox-ios-Server_1', conclusion: 'timed_out'},
+            {name: 'cmt / detox-ios-Server_2', conclusion: 'some-future-conclusion'},
+        ]}]);
+        const plain = toPlainObject(summary);
+        assert.equal(plain['detox/ios'].failure, 1);
+        assert.deepEqual(plain['detox/ios'].failingJobs, ['cmt / detox-ios-Server_1']);
+        assert.equal(plain['detox/ios'].other, 1);
+    });
+
     it('should merge jobs across several run payloads', () => {
         const summary = summarizeRuns([
             {jobs: [{name: 'a / detox-ios', conclusion: 'failure'}]},
