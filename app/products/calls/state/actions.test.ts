@@ -65,6 +65,7 @@ import {
     AudioDevice,
     type Call,
     type CallsState,
+    CallsTransport,
     type CurrentCall,
     DefaultCall,
     DefaultCallsConfig,
@@ -421,7 +422,7 @@ describe('useCallsState', () => {
         setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-1': call1}});
         const {result} = renderHook(() => useCurrentCall());
 
-        act(() => atAnsweredTime(() => newCurrentCall('server1', 'channel-1', 'myUserId')));
+        act(() => atAnsweredTime(() => newCurrentCall('server1', 'channel-1', 'myUserId', CallsTransport.Rtcd)));
 
         assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
     });
@@ -866,7 +867,7 @@ describe('useCallsState', () => {
 
         // test
         act(() => atAnsweredTime(() => {
-            newCurrentCall('server1', 'channel-1', 'myUserId');
+            newCurrentCall('server1', 'channel-1', 'myUserId', CallsTransport.Rtcd);
             userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId');
         }));
         assert.deepEqual(result.current[0], expectedCallsState);
@@ -938,7 +939,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test joining a call and setting url:
-        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId', CallsTransport.Rtcd));
         act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
         assert.deepEqual((result.current[1])?.screenShareURL, '');
         act(() => setScreenShareURL('testUrl'));
@@ -992,7 +993,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
-        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId', CallsTransport.Rtcd));
         act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
         assert.deepEqual((result.current[1])?.audioDeviceInfo, defaultAudioDeviceInfo);
         act(() => setAudioDeviceInfo(newAudioDeviceInfo));
@@ -1056,7 +1057,7 @@ describe('useCallsState', () => {
         // join call
         act(() => atAnsweredTime(() => {
             setMicPermissionsGranted(false);
-            newCurrentCall('server1', 'channel-1', 'myUserId');
+            newCurrentCall('server1', 'channel-1', 'myUserId', CallsTransport.Rtcd);
             userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId');
         }));
         assert.deepEqual(result.current[0], expectedCallsState);
@@ -1147,7 +1148,7 @@ describe('useCallsState', () => {
 
         // join call
         act(() => atAnsweredTime(() => {
-            newCurrentCall('server1', 'channel-1', 'myUserId');
+            newCurrentCall('server1', 'channel-1', 'myUserId', CallsTransport.Rtcd);
             userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId');
         }));
         assert.deepEqual(result.current[0], expectedCallsState);
@@ -1786,6 +1787,49 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], {'channel-2': true});
     });
 
+    it('should keep the sessions and voice state of a LiveKit current call on an HTTP calls update', async () => {
+        const liveKitCurrentCall: CurrentCall = {
+            ...DefaultCurrentCall,
+            ...call1,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            voiceOn: {session1: true},
+            transport: CallsTransport.LiveKit,
+        };
+        const {result} = renderHook(() => useCurrentCall());
+        await act(async () => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            setCurrentCall(liveKitCurrentCall);
+        });
+
+        await act(async () => setCalls('server1', 'myUserId', {'channel-1': {...call1, sessions: {}, hostId: 'user-2'}}, {}));
+
+        assert.deepEqual(result.current, {...liveKitCurrentCall, hostId: 'user-2'});
+    });
+
+    it('should take the HTTP sessions of an rtcd current call even after the server config moved to LiveKit', async () => {
+        const rtcdCurrentCall: CurrentCall = {
+            ...DefaultCurrentCall,
+            ...call1,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            voiceOn: {session1: true},
+            transport: CallsTransport.Rtcd,
+        };
+        const {result} = renderHook(() => useCurrentCall());
+        await act(async () => {
+            setConfig('server1', {...DefaultCallsConfig, version: {version: '2.0.0'}});
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            setCurrentCall(rtcdCurrentCall);
+        });
+
+        await act(async () => setCalls('server1', 'myUserId', {'channel-1': {...call1, sessions: {}}}, {}));
+
+        assert.deepEqual(result.current, {...rtcdCurrentCall, sessions: {}, voiceOn: {}});
+
+        act(() => setConfig('server1', DefaultCallsConfig));
+    });
+
     it('setCurrentCallConnected', () => {
         const initialCurrentCallState: CurrentCall = {
             ...DefaultCurrentCall,
@@ -1944,7 +1988,7 @@ describe('useCallsState', () => {
             // Earlier tests leave a ringing incoming call behind in the store, which would make
             // the backgrounding path stop that ringtone too.
             setIncomingCalls(DefaultIncomingCalls);
-            newCurrentCall('server1', 'channel-ringback', 'myUserId');
+            newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd);
         });
 
         afterEach(() => {
@@ -1976,7 +2020,7 @@ describe('useCallsState', () => {
             // Starting a call: there's no call in callsState yet, so newCurrentCall seeds
             // currentCall from DefaultCall and ownerId is ''.
             setCallsState('server1', {...DefaultCallsState, calls: {}});
-            act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId'));
+            act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd));
 
             await connect();
             expect(CallsNative.startRingtone).not.toHaveBeenCalled();
@@ -1991,7 +2035,7 @@ describe('useCallsState', () => {
 
         it('does not ring back for a call the current user does not own', async () => {
             setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': {...callIOwn, ownerId: 'someone-else'}}});
-            newCurrentCall('server1', 'channel-ringback', 'myUserId');
+            newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd);
 
             await connect();
             expect(CallsNative.startRingtone).not.toHaveBeenCalled();
@@ -2053,7 +2097,7 @@ describe('useCallsState', () => {
             // hour ahead of the server saw the window as long gone and killed the tone immediately.
             const skewed = {...callIOwn, startTime: Date.now() - (60 * 60 * 1000)};
             setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': skewed}});
-            newCurrentCall('server1', 'channel-ringback', 'myUserId');
+            newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd);
 
             await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
@@ -2129,7 +2173,7 @@ describe('useCallsState', () => {
 
             // a brand new call in the same channel should be able to ring back again
             setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': callIOwn}});
-            act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId'));
+            act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd));
             await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledTimes(2);
         });
@@ -2167,6 +2211,17 @@ describe('useCallsState', () => {
             act(() => startOutgoingCall('server1', 'channel-1'));
 
             assert.equal(result.current?.hostId, call1.hostId);
+        });
+
+        it('should seed the transport the cached server config selects', () => {
+            setConfig('server1', {...DefaultCallsConfig, version: {version: '2.0.0'}});
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+
+            assert.equal(result.current?.transport, CallsTransport.LiveKit);
+
+            act(() => setConfig('server1', DefaultCallsConfig));
         });
 
         it('should show my own session unmuted from the start on a call I place live', () => {
@@ -2263,7 +2318,7 @@ describe('useCallsState', () => {
             });
             const {result} = renderHook(() => useCurrentCall());
 
-            act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
+            act(() => newCurrentCall('server1', 'channel-1', 'myUserId', CallsTransport.Rtcd));
             act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
 
             assert.equal(result.current?.sessions.mySessionId.muted, true);

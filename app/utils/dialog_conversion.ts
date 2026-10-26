@@ -4,7 +4,7 @@
 // Dialog conversion utilities for Interactive Dialog to AppsForm migration
 // Based on webapp dialog_conversion.ts from PR #31821
 
-import {isAppSelectOption, mapDialogTypeToAppFieldType, DialogElementTypes, DialogTextSubtypes} from './dialog_utils';
+import {isAppSelectOption, mapDialogTypeToAppFieldType, DialogElementTypes, DialogTextSubtypes, flattenDialogElements} from './dialog_utils';
 
 export interface ConversionContext {
     elements: DialogElement[];
@@ -137,6 +137,19 @@ export function convertAppFormValuesToDialogSubmission(
  * Used when converting dialog config to AppForm
  */
 export function convertDialogElementToAppField(element: DialogElement): AppField {
+    if (element.type === DialogElementTypes.COLLAPSIBLE) {
+        return {
+            name: element.name,
+            type: 'collapsible',
+            label: element.display_name,
+            collapsible_config: {
+                fields: element.collapsible_config?.elements?.map((e) => convertDialogElementToAppField(e)) || [],
+                expanded: !element.collapsible_config?.collapsed,
+                bordered: !element.collapsible_config?.borderless,
+            },
+        };
+    }
+
     const appField: AppField = {
         name: element.name,
         type: mapDialogTypeToAppFieldType(element.type, element.data_source),
@@ -203,8 +216,9 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
         position: index,
     })) || [];
 
-    // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
-    const hasRefreshFields = convertedFields.some((field) => field.refresh === true);
+    // Flatten first so a refresh field nested in a section still sets form.source
+    // (matches webapp; otherwise refreshOnSelect errors with "`source` is not defined").
+    const hasRefreshFields = flattenDialogElements(config.dialog.elements || []).some((element) => element.refresh === true);
     const sourceUrl = config.dialog.source_url;
 
     const form: AppForm = {
