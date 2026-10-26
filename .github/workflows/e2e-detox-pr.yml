@@ -738,10 +738,10 @@ jobs:
           IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
           SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
         run: |
-          # Site 2 is mutation server B, the only server that gets the demo plugin; a repeated URL would put it on a pool server.
+          # Site 2 is mutation server B; a repeated URL would run its server-wide changes on a pool or shared server.
           DUPES=$(printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL" | sort | uniq -d)
           if [ -n "$DUPES" ]; then
-            echo "::error::PR test server URLs must be distinct; the demo plugin would land on a pool server if a site 2 URL repeats another server:"
+            echo "::error::PR test server URLs must be distinct; a site 2 URL that repeats another server would mix mutation specs into a pool or shared server:"
             printf '%s\n' "$DUPES"
             exit 1
           fi
@@ -749,9 +749,9 @@ jobs:
             echo "list<<EOF"
             printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"
             echo "EOF"
-            # Site 2 is mutation server B, the only server that gets the demo plugin.
+            # The dialog specs run on pool server A (site 1) and mutation server B (site 2); the shared SITE_3 does not get the demo plugin.
             echo "demo<<EOF"
-            printf '%s\n' "$ANDROID_SITE_2_URL" "$IOS_SITE_2_URL"
+            printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 

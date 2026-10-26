@@ -13,7 +13,7 @@ inputs:
     description: Newline-separated HTTPS Mattermost test server URLs
     required: true
   demo-plugin-server-urls:
-    description: Newline-separated subset of server-urls that get the demo plugin (the mutation servers B); empty means none
+    description: Newline-separated subset of server-urls that get the demo plugin (the full-suite pool servers A and mutation servers B); empty means none
     required: false
     default: ''
 

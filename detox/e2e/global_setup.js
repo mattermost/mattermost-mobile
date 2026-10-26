@@ -95,7 +95,7 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
 // Plugins in this set are never disabled by this setup; provisioning owns them (provision/constants.ts).
-// The demo plugin is installed only on server B.
+// The demo plugin is installed on every full-suite server (pool A and mutation B), in DialogOnlyMode.
 const PROVISIONED_PLUGINS = new Set(['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
 
 // Prepackaged plugins to keep enabled (shared with provisioning).
