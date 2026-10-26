@@ -106,6 +106,10 @@ function toTsioDetoxSuite(suite, opts = {}) {
             fullName: c.fullName || c.title || '',
             status: c.status || 'failed',
             title: c.title || c.fullName || 'unnamed',
+
+            // Earlier failed attempts of a retried test; TSIO records each as a
+            // failed attempt, so a pass on retry reads as flaky rather than clean.
+            ...(Array.isArray(c.retryReasons) && c.retryReasons.length ? {retryReasons: c.retryReasons} : {}),
         })),
     };
 
