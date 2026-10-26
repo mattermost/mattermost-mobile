@@ -32,23 +32,6 @@ export const demoPluginFixturePath = (): string => {
     return path.join(fixturesDir, DEMO_PLUGIN_FIXTURE_FILENAME);
 };
 
-export type DemoPluginStatus = {
-    isActive?: boolean;
-    isInstalled?: boolean;
-};
-
-export type DemoPluginPlan = 'noop' | 'enable' | 'upload-fixture';
-
-export const demoPluginInstallPlan = (status: DemoPluginStatus): DemoPluginPlan => {
-    if (status.isActive) {
-        return 'noop';
-    }
-    if (status.isInstalled) {
-        return 'enable';
-    }
-    return 'upload-fixture';
-};
-
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const downloadToFile = (url: string, dest: string, redirects = 0): Promise<void> =>
