@@ -150,7 +150,7 @@ jobs:
           fi
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  # Provisions license, config and plugins (demo plugin on site 2 only) before tests.
+  # Provisions license, config and plugins (demo plugin on full-suite site 1 and site 2) before tests.
   # CMT previously skipped that and only used Matterwick-booted servers, so
   # interactive_dialog_plugin failed 24× with "Demo plugin is not active".
   provision-cmt-servers:
@@ -185,20 +185,22 @@ jobs:
             exit 1
           fi
 
-          # The demo plugin goes only to full-suite site 2 URLs; a pool, shared or smoke server must not be one of them.
+          # The demo plugin goes only to full-suite site 1 and site 2 URLs; a shared SITE_3 or a smoke server must not be one of them.
           DEMO_CONFLICTS=$(echo "$CMT_MATRIX" | jq -r '
             . as $m
             | ([ $m.server[] | select(.latest != true) | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url, .site_3_url ]
-              + [ $m.server[] | select(.latest == true) | .android_site_1_url, .ios_site_1_url, .site_3_url ]
-              | map(select(. != null and . != ""))) as $pool
+              + [ $m.server[] | select(.latest == true) | .site_3_url ]
+              | map(select(. != null and . != ""))) as $other
+            | ([ $m.server[] | select(.latest == true) | .android_site_1_url, .ios_site_1_url ] | map(select(. != null and . != ""))) as $pool
             | $m.server[] | select(.latest == true) | . as $row
             | ["android", "ios"][] as $p
-            | $row[$p + "_site_2_url"] as $url
-            | select($url != null and $url != "" and ($pool | any(. == $url)))
-            | "\($row.version // "unknown"): \($p)_site_2_url \($url) is also a pool, shared or smoke server"
+            | ["_site_1_url", "_site_2_url"][] as $k
+            | $row[$p + $k] as $url
+            | select($url != null and $url != "" and (($other | any(. == $url)) or ($k == "_site_2_url" and ($pool | any(. == $url)))))
+            | "\($row.version // "unknown"): \($p)\($k) \($url) is also a pool, shared or smoke server"
           ')
           if [ -n "$DEMO_CONFLICTS" ]; then
-            echo "::error::The demo plugin would land on a pool server; these site 2 URLs are also pool, shared or smoke servers:"
+            echo "::error::These full-suite URLs are also pool, shared or smoke servers (a site 2 must not be any pool site 1, and the demo plugin must not land on a shared or smoke server):"
             printf '%s\n' "$DEMO_CONFLICTS"
             exit 1
           fi
@@ -212,11 +214,11 @@ jobs:
             echo "::error::CMT_MATRIX contained no server URLs to provision"
             exit 1
           fi
-          # Only full-suite rows run the mutation shard on site 2 (smoke rows use smoke_test, which has no mutation specs).
+          # Only full-suite rows run the dialog specs, on pool site 1 and mutation site 2 (smoke rows use smoke_test, which has none).
           DEMO_URLS=$(echo "$CMT_MATRIX" | jq -r '
             .server[]
             | select(.latest == true)
-            | .android_site_2_url, .ios_site_2_url
+            | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url
             | select(. != null and . != "")
           ' | awk 'NF && !seen[$0]++')
           echo "Provisioning $(echo "$URLS" | wc -l | tr -d ' ') unique server(s)"

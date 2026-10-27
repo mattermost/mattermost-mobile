@@ -290,7 +290,7 @@ export async function setUpDialogSuite(channelsCategory: string) {
 
     const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
     if (!statusCheck.isActive) {
-        throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. It is installed only on server B: route this spec to B in detox/e2e/server_mutation_specs.json and provision B with --demo-plugin.`);
+        throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Provision this server with --demo-plugin (CI does that for every full-suite server).`);
     }
     await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 

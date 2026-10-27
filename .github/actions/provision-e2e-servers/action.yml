@@ -13,7 +13,7 @@ inputs:
     description: Newline-separated HTTPS Mattermost test server URLs
     required: true
   demo-plugin-server-urls:
-    description: Newline-separated subset of server-urls that get the demo plugin (the mutation servers B); empty means none
+    description: Newline-separated subset of server-urls that get the demo plugin (the full-suite pool servers A and mutation servers B); empty means none
     required: false
     default: ''
 
@@ -83,16 +83,16 @@ runs:
       if: inputs.demo-plugin-server-urls != ''
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
-        path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz
-        key: mattermost-plugin-demo-linux-amd64-v0.12.1
+        path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.2-linux-amd64.tar.gz
+        key: mattermost-plugin-demo-linux-amd64-v0.12.2
 
     - name: Download demo plugin fixture
       if: inputs.demo-plugin-server-urls != '' && steps.demo-plugin-cache.outputs.cache-hit != 'true'
       run: |
         mkdir -p detox/e2e/support/fixtures
-        curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz \
-          "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.12.1/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz"
-        ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz
+        curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.2-linux-amd64.tar.gz \
+          "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.12.2/mattermost-plugin-demo-v0.12.2-linux-amd64.tar.gz"
+        ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.2-linux-amd64.tar.gz
       shell: bash
 
     - name: Provision servers (license + plugins)
