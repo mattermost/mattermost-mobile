@@ -16,6 +16,7 @@ const {
     writeMergedJestResultsForTsio,
     appendUnreportedSpecs,
     parseExpectedSpecs,
+    parseShards,
 } = require('./merge-jest-results-for-tsio');
 
 describe('merge-jest-results-for-tsio', () => {
@@ -185,6 +186,23 @@ describe('merge-jest-results-for-tsio', () => {
         assert.equal(merged.testResults.length, 3, 'every assigned spec must appear');
         assert.equal(merged.testResults[1].testResults[0].status, 'failed');
         assert.match(merged.testResults[1].testResults[0].failureMessages[0], /produced no result/);
+    });
+
+    it('should say whether the spec\'s shard reported nothing or stopped before reaching it', () => {
+        // Triage re-runs a shard that reported nothing, and judges a spec whose shard stopped before it by its history.
+        const merged = {testResults: [{testFilePath: 'detox/e2e/test/a.e2e.ts', testResults: [{status: 'passed'}]}]};
+        const shards = [['detox/e2e/test/a.e2e.ts', 'detox/e2e/test/b.e2e.ts'], ['detox/e2e/test/c.e2e.ts', 'detox/e2e/test/d.e2e.ts']];
+        appendUnreportedSpecs(merged, shards.flat(), shards);
+
+        const reason = (spec) => merged.testResults.find((s) => s.testFilePath === spec).testResults[0].failureMessages[0];
+        assert.equal(reason('detox/e2e/test/b.e2e.ts'), 'detox/e2e/test/b.e2e.ts was assigned to a shard but produced no result: other specs of its shard reported, so its Jest process stopped before reaching this spec.');
+        assert.equal(reason('detox/e2e/test/c.e2e.ts'), 'detox/e2e/test/c.e2e.ts was assigned to a shard but produced no result: no spec of its shard reported, so the shard ran or uploaded nothing.');
+        assert.match(reason('detox/e2e/test/d.e2e.ts'), /no spec of its shard reported/);
+    });
+
+    it('should read each generate-specs row as one shard', () => {
+        assert.deepEqual(parseShards(JSON.stringify({include: [{specs: 'a.e2e.ts  b.e2e.ts'}, {specs: 'c.e2e.ts'}, {}]})), [['a.e2e.ts', 'b.e2e.ts'], ['c.e2e.ts']]);
+        assert.deepEqual(parseShards(''), []);
     });
 
     it('should not touch a complete report', () => {
