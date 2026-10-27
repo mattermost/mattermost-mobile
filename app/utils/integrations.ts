@@ -4,6 +4,7 @@
 import {defineMessages, type IntlShape} from 'react-intl';
 
 import {isAppSelectOption, DialogElementTypes, DialogTextSubtypes} from './dialog_utils';
+import {logWarning} from './log';
 
 import type {KeyboardTypeOptions} from 'react-native';
 
@@ -139,6 +140,12 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
             }
         }
     } else if (type === DialogElementTypes.CHECKBOX_MATRIX) {
+        // Not rendered without matrix_config, so don't block submit on it.
+        if (!elem.matrix_config) {
+            logWarning('checkDialogElementForError: checkbox_matrix element has no matrix_config', elem.name);
+            return null;
+        }
+
         if (!Array.isArray(value)) {
             return elem.optional ? null : fieldRequiredError;
         }
@@ -158,9 +165,11 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
                 }
 
                 const rowValue: string = entry.slice(0, colonIndex);
-                const columns: string[] = entry.slice(colonIndex + 1).split(',').map((col: string) => col.trim()).filter(Boolean);
 
-                if (columns.length === 0 || !validRows.has(rowValue) || seenRows.has(rowValue)) {
+                // Reject empty tokens ("row1:col1,"), as the server does.
+                const columns: string[] = entry.slice(colonIndex + 1).split(',').map((col: string) => col.trim());
+
+                if (columns.includes('') || !validRows.has(rowValue) || seenRows.has(rowValue)) {
                     return intl.formatMessage(messages.invalidFormat);
                 }
 

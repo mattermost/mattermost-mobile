@@ -204,7 +204,8 @@ describe('AppsFormComponent submit button', () => {
 
         const submitViaHeader = async () => {
             const headerRight = getHeaderSubmit();
-            const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+            expect(headerRight).toEqual(expect.any(Function));
+            const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
             await act(async () => {
                 pressSubmit(getByTestId('interactive_dialog.submit.button'));
             });

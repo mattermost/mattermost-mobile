@@ -329,6 +329,18 @@ describe('checkDialogElementForError - checkbox_group', () => {
 });
 
 describe('checkDialogElementForError - checkbox_matrix', () => {
+    const matrixConfig: NonNullable<DialogElement['matrix_config']> = {
+        rows: [
+            {text: 'Row 1', value: 'row1'},
+            {text: 'Row 2', value: 'row2'},
+        ],
+        columns: [
+            {text: 'Col 1', value: 'col1'},
+            {text: 'Col 2', value: 'col2'},
+        ],
+        row_selection: 'multiple',
+    };
+
     const checkboxMatrixElement: DialogElement = {
         name: 'checkbox_matrix_field',
         type: 'checkbox_matrix',
@@ -341,17 +353,7 @@ describe('checkDialogElementForError - checkbox_matrix', () => {
         min_length: 0,
         max_length: 0,
         data_source: '',
-        matrix_config: {
-            rows: [
-                {text: 'Row 1', value: 'row1'},
-                {text: 'Row 2', value: 'row2'},
-            ],
-            columns: [
-                {text: 'Col 1', value: 'col1'},
-                {text: 'Col 2', value: 'col2'},
-            ],
-            row_selection: 'multiple',
-        },
+        matrix_config: matrixConfig,
     };
 
     it('should return required error for undefined value on required field', () => {
@@ -382,10 +384,19 @@ describe('checkDialogElementForError - checkbox_matrix', () => {
         expect(checkDialogElementForError(checkboxMatrixElement, ['row1:col1', 'row1:col2'], makeIntl())).toBe('Invalid matrix selection format');
     });
 
+    it('should not block submit when a required matrix has no matrix_config', () => {
+        const noConfigElement = {...checkboxMatrixElement, matrix_config: undefined};
+        expect(checkDialogElementForError(noConfigElement, [], makeIntl())).toBeNull();
+    });
+
+    it('should return invalid format error for an empty column token', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, ['row1:col1,'], makeIntl())).toBe('Invalid matrix selection format');
+    });
+
     it('should reject more than one column when row_selection is single', () => {
         const singleSelectionElement = {
             ...checkboxMatrixElement,
-            matrix_config: {...checkboxMatrixElement.matrix_config!, row_selection: 'single' as const},
+            matrix_config: {...matrixConfig, row_selection: 'single' as const},
         };
         expect(checkDialogElementForError(singleSelectionElement, ['row1:col1,col2'], makeIntl())).toBe('Invalid matrix selection format');
     });
@@ -393,7 +404,7 @@ describe('checkDialogElementForError - checkbox_matrix', () => {
     it('should allow a single column when row_selection is single', () => {
         const singleSelectionElement = {
             ...checkboxMatrixElement,
-            matrix_config: {...checkboxMatrixElement.matrix_config!, row_selection: 'single' as const},
+            matrix_config: {...matrixConfig, row_selection: 'single' as const},
         };
         expect(checkDialogElementForError(singleSelectionElement, ['row1:col1'], makeIntl())).toBeNull();
     });

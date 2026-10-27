@@ -197,11 +197,8 @@ export function supportsDataSource(fieldType: InteractiveDialogElementType): boo
  * Parses matrix submission/default entries (`"rowValue:col1,col2"`) into a
  * map of row value to the set of selected column values.
  *
- * The delimiters are deliberately unescaped: the server rejects any
- * matrix_config row/column value containing `:`, `,` or `;` (and any duplicate
- * values) in validateDialogElementMatrixConfig, so a dialog whose values would
- * be ambiguous here never opens. Do not relax that server validation without
- * adding escaping to this parser and to encodeMatrixValue.
+ * Delimiters are unescaped. The server only warns about row/column values
+ * containing `:`, `,` or `;`, so checkDialogElementForError guards submissions.
  */
 export function parseMatrixValue(entries: string[]): Map<string, Set<string>> {
     const selection = new Map<string, Set<string>>();
