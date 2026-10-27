@@ -11,19 +11,47 @@ import {
 } from '@mattermost/react-native-network-client';
 import {getAndroidId, getIosIdForVendorAsync, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {isRootedExperimentalAsync, osVersion} from 'expo-device';
-import {Platform} from 'react-native';
+import {defineMessages} from 'react-intl';
+import {Alert, Platform} from 'react-native';
 import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 
 import {fetchSessionAttributesManifest} from '@actions/remote/session_attributes';
 import {License} from '@constants';
 import {SESSION_ATTRIBUTES_SSID_FIELD} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
+import {DEFAULT_LOCALE} from '@i18n';
 import {getConfigBooleanValue, getLicense} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
+import {getIntlShape} from '@utils/general';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
+const messages = defineMessages({
+    locationPermissionTitle: {
+        id: 'session_attributes.location_permission.title',
+        defaultMessage: 'Allow location access?',
+    },
+    locationPermissionMessage: {
+        id: 'session_attributes.location_permission.message',
+        defaultMessage: "Your location can be used to report the Wi-Fi network name to your administrator when required by your organization's security policy.",
+    },
+    locationPermissionCancel: {
+        id: 'session_attributes.location_permission.cancel',
+        defaultMessage: 'Not now',
+    },
+    locationPermissionContinue: {
+        id: 'session_attributes.location_permission.continue',
+        defaultMessage: 'Continue',
+    },
+});
+
 export class SessionAttributesManagerSingleton {
+    private locationPermissionRequest?: Promise<void>;
+
+    // Servers whose requests carry session attributes, mirroring what the native client was told.
+    private enabledServers = new Set<string>();
+
     syncStaticValues = async (): Promise<void> => {
         const values = await this.collectStaticValues();
         setSessionAttributesStableValues(values);
@@ -35,7 +63,7 @@ export class SessionAttributesManagerSingleton {
 
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             if (!database) {
-                removeSessionAttributesServer(serverUrl);
+                this.removeServer(serverUrl);
                 return;
             }
 
@@ -44,10 +72,11 @@ export class SessionAttributesManagerSingleton {
             const enabled = sessionAttributesEnabled &&
                 isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
             if (!enabled) {
-                removeSessionAttributesServer(serverUrl);
+                this.removeServer(serverUrl);
                 return;
             }
 
+            this.enabledServers.add(serverUrl);
             setSessionAttributesEnabled(serverUrl, true);
 
             const {manifest, error} = await fetchSessionAttributesManifest(serverUrl);
@@ -65,23 +94,30 @@ export class SessionAttributesManagerSingleton {
 
             if (manifest.some((field) => field.name === SESSION_ATTRIBUTES_SSID_FIELD)) {
                 // Not awaited so the permission prompt never blocks the reconnect sync.
-                this.requestLocationPermission();
+                this.requestLocationPermission(serverUrl);
             }
         } catch (error) {
             logDebug('[SessionAttributesManager.refreshManifest]', getFullErrorMessage(error));
-            removeSessionAttributesServer(serverUrl);
+            this.removeServer(serverUrl);
         }
     };
 
     removeServer = (serverUrl: string) => {
+        this.enabledServers.delete(serverUrl);
         removeSessionAttributesServer(serverUrl);
     };
+
+    /**
+     * Servers that evaluate this device's session attributes, which include its network (SSID,
+     * interface, IP), in ABAC decisions.
+     */
+    getEnabledServers = () => [...this.enabledServers];
 
     upsertManifestField = (serverUrl: string, field: SAField) => {
         upsertSessionAttributesField(serverUrl, field);
 
         if (field.name === SESSION_ATTRIBUTES_SSID_FIELD) {
-            this.requestLocationPermission();
+            this.requestLocationPermission(serverUrl);
         }
     };
 
@@ -93,7 +129,17 @@ export class SessionAttributesManagerSingleton {
      * The SSID is read natively, which both platforms gate behind location authorization.
      * Only the resulting status is logged, never the network name.
      */
-    private requestLocationPermission = async (): Promise<void> => {
+    private requestLocationPermission = (serverUrl: string): Promise<void> => {
+        if (!this.locationPermissionRequest) {
+            this.locationPermissionRequest = this.requestLocationPermissionInternal(serverUrl).finally(() => {
+                this.locationPermissionRequest = undefined;
+            });
+        }
+
+        return this.locationPermissionRequest;
+    };
+
+    private requestLocationPermissionInternal = async (serverUrl: string): Promise<void> => {
         const location = Platform.select({
             ios: PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
             default: PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
@@ -102,6 +148,11 @@ export class SessionAttributesManagerSingleton {
         try {
             const status = await check(location);
             if (status === RESULTS.DENIED) {
+                if (Platform.OS === 'android' && !await this.confirmAndroidLocationPermission(serverUrl)) {
+                    logDebug('[SessionAttributesManager.requestLocationPermission] Android location pre-prompt declined');
+                    return;
+                }
+
                 const result = await request(location);
                 logDebug('[SessionAttributesManager.requestLocationPermission] requested for the ssid attribute:', result);
                 return;
@@ -112,6 +163,42 @@ export class SessionAttributesManagerSingleton {
             }
         } catch (error) {
             logDebug('[SessionAttributesManager.requestLocationPermission]', getFullErrorMessage(error));
+        }
+    };
+
+    private confirmAndroidLocationPermission = async (serverUrl: string): Promise<boolean> => {
+        const intl = getIntlShape(await this.getCurrentLocale(serverUrl));
+
+        return new Promise((resolve) => {
+            Alert.alert(
+                intl.formatMessage(messages.locationPermissionTitle),
+                intl.formatMessage(messages.locationPermissionMessage),
+                [
+                    {
+                        text: intl.formatMessage(messages.locationPermissionCancel),
+                        style: 'cancel',
+                        onPress: () => resolve(false),
+                    },
+                    {
+                        text: intl.formatMessage(messages.locationPermissionContinue),
+                        onPress: () => resolve(true),
+                    },
+                ],
+                {
+                    cancelable: true,
+                    onDismiss: () => resolve(false),
+                },
+            );
+        });
+    };
+
+    private getCurrentLocale = async (serverUrl: string): Promise<string> => {
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const user = await getCurrentUser(database);
+            return user?.locale || DEFAULT_LOCALE;
+        } catch {
+            return DEFAULT_LOCALE;
         }
     };
 

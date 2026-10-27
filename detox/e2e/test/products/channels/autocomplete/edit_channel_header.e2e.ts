@@ -40,7 +40,9 @@ describe('Autocomplete - Edit Channel Header', () => {
 
         // # Open a channel screen and open edit channel header screen
         await ChannelScreen.open(channelsCategory, channel.name);
-        await CreateOrEditChannelScreen.openEditChannelHeader();
+        await CreateOrEditChannelScreen.openEditChannelHeader({
+            reopen: {category: channelsCategory, channelName: channel.name},
+        });
     });
 
     beforeEach(async () => {

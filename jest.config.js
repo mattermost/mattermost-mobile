@@ -14,6 +14,11 @@ module.exports = {
     },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     clearMocks: true,
+
+    // Jest's 5s default is shorter than the in-test waits these suites already declare
+    // (a 10s waitFor around a WatermelonDB write can never finish inside it), so a loaded
+    // CI runner kills the test before its own assertion gets a chance to run.
+    testTimeout: 30000,
     setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
     collectCoverageFrom: ['app/**/*.{js,jsx,ts,tsx}'],
     coverageReporters: ['lcov', 'text-summary', 'json-summary'],
@@ -22,7 +27,7 @@ module.exports = {
     transformIgnorePatterns: [
         'node_modules/(?!' +
         '(@react-native|react-native)|' +
-        'expo(?:-[^/]+)?|@expo|expo-modules-core|uuid|' +
+        'expo(?:-[^/]+)?|@expo|expo-modules-core|@react-navigation/[^/]+|uuid|' +
         '@sentry/react-native|' +
         'react-intl|@formatjs/[^/]+|intl-messageformat|@messageformat/[^/]+|' +
         'validator|' +

@@ -106,7 +106,7 @@ describe('Smoke Test - Account', () => {
         await expect(accountCustomStatusExpiry).toBeVisible();
 
         // # Tap on clear button for custom status from display field
-        await AccountScreen.customStatusClearButton.tap();
+        await AccountScreen.clearCustomStatus();
 
         // * Verify custom status is cleared from account screen
         const defaultStatusText = 'Set a custom status';
@@ -124,7 +124,7 @@ describe('Smoke Test - Account', () => {
         await EditProfileScreen.scrollView.scroll(100, 'down');
         await EditProfileScreen.usernameInput.clearText();
         await EditProfileScreen.usernameInput.typeText(`${testUser.username}${suffix}`);
-        await EditProfileScreen.saveButton.tap();
+        await EditProfileScreen.save();
 
         // * Verify on account screen and user full name and username are updated
         await AccountScreen.toBeVisible();
@@ -139,7 +139,7 @@ describe('Smoke Test - Account', () => {
         await EditProfileScreen.scrollView.scroll(100, 'down');
         await EditProfileScreen.usernameInput.clearText();
         await EditProfileScreen.usernameInput.typeText(testUser.username);
-        await EditProfileScreen.saveButton.tap();
+        await EditProfileScreen.save();
 
         // * Verify on account screen and user full name and username are reverted back to original values
         await AccountScreen.toBeVisible();

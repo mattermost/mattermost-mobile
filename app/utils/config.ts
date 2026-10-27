@@ -14,3 +14,8 @@ export function hasReliableWebsocket(version?: string, reliableWebsocketsConfig?
 export function isZeroPersistenceConfig(config: ClientConfig | undefined) {
     return config?.MobileEphemeralModeEnabled === 'true' && config.MobileEphemeralModeAutoCacheCleanupDays === '0';
 }
+
+export function parseNonNegativeConfigNumber(value: string | undefined): number {
+    const parsed = Number(value ?? '0');
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+}

@@ -8,7 +8,11 @@ import {InteractiveDialogAdapter} from './interactive_dialog_adapter';
 
 // Mock dependencies
 jest.mock('@actions/remote/integrations');
-jest.mock('./dialog_conversion');
+jest.mock('./dialog_conversion', () => ({
+    ...jest.requireActual('./dialog_conversion'),
+    convertDialogToAppForm: jest.fn(),
+    convertAppFormValuesToDialogSubmission: jest.fn(),
+}));
 jest.mock('@utils/log');
 
 const mockSubmitInteractiveDialog = require('@actions/remote/integrations').submitInteractiveDialog;
@@ -223,6 +227,55 @@ describe('InteractiveDialogAdapter', () => {
 
             expect(result.url).toBe('');
             expect(result.callback_id).toBe('');
+        });
+
+        it('should collect file_ids from file-type elements', () => {
+            const fileConfig = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        ...mockConfig.dialog.elements,
+                        {
+                            name: 'attachment',
+                            type: 'file',
+                            display_name: 'Attachment',
+                            optional: true,
+                            allow_multiple: true,
+                            default: '',
+                            placeholder: '',
+                            help_text: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                            options: [],
+                        },
+                    ],
+                },
+            } as InteractiveDialogConfig;
+
+            mockConvertAppFormValuesToDialogSubmission.mockReturnValue({
+                submission: {
+                    text_field: 'user input',
+                    attachment: 'file-1,file-2',
+                },
+                errors: [],
+            });
+
+            const result = InteractiveDialogAdapter.convertValuesToSubmission(mockAppFormValues, fileConfig);
+
+            expect(result.file_ids).toEqual(['file-1', 'file-2']);
+        });
+
+        it('should omit file_ids when no file element has a value', () => {
+            mockConvertAppFormValuesToDialogSubmission.mockReturnValue({
+                submission: {text_field: 'user input'},
+                errors: [],
+            });
+
+            const result = InteractiveDialogAdapter.convertValuesToSubmission(mockAppFormValues, mockConfig);
+
+            expect(result.file_ids).toBeUndefined();
         });
     });
 
@@ -547,6 +600,119 @@ describe('InteractiveDialogAdapter', () => {
 
             // Should call conversion again since old config object was dereferenced
             expect(mockConvertDialogToAppForm).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    describe('convertValuesToSubmission flattens collapsible elements', () => {
+        // These tests exercise the adapter's flattening contract. flattenDialogElements
+        // (from ./dialog_utils) is NOT mocked, so it runs for real; we drive the real
+        // value->submission conversion to prove nested leaves survive end-to-end.
+        const realConvert: typeof convertAppFormValuesToDialogSubmission =
+            jest.requireActual('./dialog_conversion').convertAppFormValuesToDialogSubmission;
+
+        beforeEach(() => {
+            mockConvertAppFormValuesToDialogSubmission.mockImplementation(realConvert);
+        });
+
+        const collapsibleConfig: InteractiveDialogConfig = {
+            app_id: 'app',
+            url: 'https://test.com/dialog',
+            trigger_id: 'trigger',
+            dialog: {
+                callback_id: 'cb',
+                title: 'Nested',
+                state: 'st',
+                notify_on_cancel: false,
+                elements: [
+                    {name: 'name', type: 'text', display_name: 'Name', optional: false} as DialogElement,
+                    {
+                        name: 'contact_section',
+                        type: 'collapsible',
+                        display_name: 'Contact',
+                        collapsible_config: {
+                            elements: [
+                                {name: 'email', type: 'text', display_name: 'Email', optional: true} as DialogElement,
+                                {name: 'priority', type: 'select', display_name: 'Priority', optional: true, options: [{text: 'High', value: 'high'}]} as DialogElement,
+                                {name: 'notify', type: 'bool', display_name: 'Notify', optional: true} as DialogElement,
+                            ],
+                        },
+                    } as DialogElement,
+                ],
+            },
+        } as InteractiveDialogConfig;
+
+        it('passes the flattened leaf elements (not the collapsible container) to the value converter', () => {
+            InteractiveDialogAdapter.convertValuesToSubmission({name: 'Jane'}, collapsibleConfig);
+
+            const passedElements: DialogElement[] = mockConvertAppFormValuesToDialogSubmission.mock.calls[0][1];
+            expect(passedElements.map((e) => e.name)).toEqual(['name', 'email', 'priority', 'notify']);
+            expect(passedElements.some((e) => e.type === 'collapsible')).toBe(false);
+        });
+
+        it('carries values from nested leaves into the submission payload, converting select/bool correctly', () => {
+            const result = InteractiveDialogAdapter.convertValuesToSubmission({
+                name: 'Jane',
+                email: 'jane@example.com',
+                priority: {label: 'High', value: 'high'},
+                notify: true,
+            }, collapsibleConfig);
+
+            expect(result.submission).toEqual({
+                name: 'Jane',
+                email: 'jane@example.com',
+                priority: 'high',
+                notify: true,
+            });
+            expect(result.callback_id).toBe('cb');
+        });
+
+        it('carries deeply nested (depth-2) leaf values into the submission payload', () => {
+            const deepConfig: InteractiveDialogConfig = {
+                ...collapsibleConfig,
+                dialog: {
+                    ...collapsibleConfig.dialog,
+                    elements: [
+                        {
+                            name: 'outer',
+                            type: 'collapsible',
+                            display_name: 'Outer',
+                            collapsible_config: {
+                                elements: [
+                                    {
+                                        name: 'inner',
+                                        type: 'collapsible',
+                                        display_name: 'Inner',
+                                        collapsible_config: {
+                                            elements: [{name: 'deep', type: 'text', display_name: 'Deep', optional: true} as DialogElement],
+                                        },
+                                    } as DialogElement,
+                                ],
+                            },
+                        } as DialogElement,
+                    ],
+                },
+            } as InteractiveDialogConfig;
+
+            const result = InteractiveDialogAdapter.convertValuesToSubmission({deep: 'value'}, deepConfig);
+
+            expect(result.submission).toEqual({deep: 'value'});
+        });
+
+        it('behaves exactly as before for an ordinary (collapsible-free) dialog', () => {
+            const flatConfig: InteractiveDialogConfig = {
+                ...collapsibleConfig,
+                dialog: {
+                    ...collapsibleConfig.dialog,
+                    elements: [
+                        {name: 'a', type: 'text', display_name: 'A', optional: true} as DialogElement,
+                        {name: 'b', type: 'bool', display_name: 'B', optional: true} as DialogElement,
+                    ],
+                },
+            } as InteractiveDialogConfig;
+
+            const result = InteractiveDialogAdapter.convertValuesToSubmission({a: 'x', b: false}, flatConfig);
+
+            expect(result.submission).toEqual({a: 'x', b: false});
         });
     });
 });

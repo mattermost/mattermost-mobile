@@ -10,8 +10,8 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -41,7 +41,11 @@ describe('Messaging - Markdown Image', () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
-        await enablePublicLinksForOwnHost();
+        // # Baseline enables public links and allowlists the site's own host for the metadata fetcher.
+        await assertServerBaseline(siteOneUrl, [
+            'FileSettings.EnablePublicLink',
+            'ServiceSettings.AllowedUntrustedInternalConnections',
+        ]);
         markdownImageUrl = await createPublicImageLink(testChannel.id);
         await requireServerPreloadsImage(testChannel.id, markdownImageUrl);
 
@@ -98,36 +102,6 @@ describe('Messaging - Markdown Image', () => {
         await ChannelScreen.back();
     });
 });
-
-// The metadata fetcher's SSRF guard blocks private hosts, so allowlist the site's own host.
-// Both patches are additive and idempotent, and deliberately not reverted on a shared server.
-async function enablePublicLinksForOwnHost(): Promise<void> {
-    const {config, error} = await System.apiGetConfig(siteOneUrl);
-    if (error || !config) {
-        throw new Error(`markdown image setup: could not read server config: ${JSON.stringify(error)}`);
-    }
-
-    const host = new URL(siteOneUrl).hostname;
-    const allowed = String(config.ServiceSettings?.AllowedUntrustedInternalConnections ?? '').split(/\s+/).filter(Boolean);
-    const needsHost = !allowed.includes(host);
-    const needsPublicLink = config.FileSettings?.EnablePublicLink !== true;
-    if (!needsHost && !needsPublicLink) {
-        return;
-    }
-
-    const patch: any = {};
-    if (needsPublicLink) {
-        patch.FileSettings = {EnablePublicLink: true};
-    }
-    if (needsHost) {
-        patch.ServiceSettings = {AllowedUntrustedInternalConnections: [...allowed, host].join(' ')};
-    }
-
-    const {error: patchError} = await System.apiPatchConfig(siteOneUrl, patch);
-    if (patchError) {
-        throw new Error(`markdown image setup: could not enable public links: ${JSON.stringify(patchError)}`);
-    }
-}
 
 // The server rejects a public link for a dangling upload, so attach the file to a post first.
 async function createPublicImageLink(channelId: string): Promise<string> {

@@ -7,7 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Channel, Post, Setup, System} from '@support/server_api';
+import {Channel, Post, Setup} from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -57,9 +58,7 @@ describe('Channels - Archived Channel Interactions', () => {
 
     beforeAll(async () => {
         // # Ensure archived channels are visible in browse channels
-        await System.apiUpdateConfig(siteOneUrl, {
-            TeamSettings: {ExperimentalViewArchivedChannels: true},
-        });
+        await assertServerBaseline(siteOneUrl, ['TeamSettings.ExperimentalViewArchivedChannels']);
         await wait(timeouts.ONE_SEC);
 
         const {team, user} = await Setup.apiInit(siteOneUrl);
@@ -96,6 +95,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
@@ -127,6 +127,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
@@ -162,6 +163,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         await Post.apiCreatePost(siteOneUrl, {
             channelId: archivedChannel.id,
             message: uniqueMessage,
@@ -229,6 +231,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);

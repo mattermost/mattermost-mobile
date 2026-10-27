@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {flushOrphanedAuditQueues} from '@actions/remote/ephemeral_mode';
 import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
 import CallsNative from '@init/calls_native';
 import {getAllServerCredentials} from '@init/credentials';
+import {migrateLegacyPreauthSecret} from '@init/credentials_migration';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
@@ -14,7 +16,7 @@ import SecurityManager from '@managers/security_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {queryAllActiveServers} from '@queries/app/servers';
+import {getAllServers, queryAllActiveServers} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 
@@ -45,10 +47,20 @@ export async function initialize() {
 
             // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
             const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
+
+            // Ownership must consider inactive/soft-logged-out servers too — a sole active host is
+            // not enough to attribute the legacy shared secret safely.
+            const allServerUrls = (await getAllServers()).map((s) => s.url);
+
+            // Must precede getAllServerCredentials, which caches the secrets for the whole session.
+            await migrateLegacyPreauthSecret(allServerUrls);
+
             serverCredentials = await getAllServerCredentials(activeUrls);
 
             await DatabaseManager.initServerDatabases(serverCredentials.map((c) => c.serverUrl));
             await NetworkManager.init(serverCredentials);
+
+            flushOrphanedAuditQueues(serverCredentials);
 
             // EphemeralModeManager init runs before WS init so any pending wipes
             // complete before WebSocket clients start populating server databases.

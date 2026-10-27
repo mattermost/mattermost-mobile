@@ -32,6 +32,37 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 23,
+        steps: [
+
+            // Existing rows default to 0, below DEFAULT_REDACTION_EPOCH_STATE (used while no epoch
+            // System row exists), so posts cached before this migration start unverified.
+            addColumns({
+                table: POST,
+                columns: [
+                    {name: 'redaction_verified_epoch', type: 'number'},
+                ],
+            }),
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'redaction_required_epoch', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 22,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_CHECKLIST_ITEM,
+                columns: [
+                    {name: 'requirements', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 21,
         steps: [
             addColumns({

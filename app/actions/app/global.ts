@@ -7,6 +7,7 @@ import DatabaseManager from '@database/manager';
 import {getActiveServerUrl} from '@init/credentials';
 import {logError} from '@utils/log';
 
+import type {EphemeralModeAuditEvent} from '@constants/ephemeral_mode';
 import type GlobalModel from '@typings/database/models/app/global';
 
 const {APP: {GLOBAL}} = MM_TABLES;
@@ -22,6 +23,10 @@ export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly
         logError('storeGlobal', error);
         return {error};
     }
+};
+
+export const storePreauthSecretMigrationDone = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.PREAUTH_SECRET_MIGRATION, true);
 };
 
 export const storeDeviceToken = async (token: string, prepareRecordsOnly = false) => {
@@ -134,4 +139,8 @@ export const removePushSigningKey = async (serverUrl: string) => {
         // no cached signing key to remove
     }
     return {};
+};
+
+export const replaceEphemeralModeAuditEvents = async (serverUrl: string, events: EphemeralModeAuditEvent[]) => {
+    return storeGlobal(`${GLOBAL_IDENTIFIERS.EPHEMERAL_MODE_AUDIT_QUEUE}${serverUrl}`, events.length ? events : null, false);
 };

@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: E2E triage for one lane
+description: >-
+  One lane of the e2e-detox-pr.yml tsio-triage job: download the lane's triage
+  evidence, restore the answers cache, run the toolkit e2e/triage action, and
+  save the answers cache. Every run step here is a pinned action, so the code
+  that runs with the API key is the toolkit at its pin. The caller checks this
+  action out from the dispatch ref, not the branch under test.
+
+inputs:
+  job-key:
+    description: Lane key from calculate-tsio-identity (matrix.job-key)
+    required: true
+  composite-identity:
+    description: Lane composite identity as JSON (job-configs[key].composite_identity)
+    required: true
+  status-context:
+    description: Commit status context the lane writes (job-configs[key].status_context)
+    required: true
+  github-token:
+    description: Token with statuses write and pull-requests read (secrets.GITHUB_TOKEN)
+    required: true
+  anthropic-api-key:
+    description: Triage judge key (secrets.ANTHROPIC_API_KEY); without it only the history rules run
+    required: true
+  mode:
+    description: report-only or enforce (vars.E2E_TRIAGE_MODE)
+    required: false
+    default: report-only
+  triage-lanes:
+    description: Comma-separated commit-status contexts the one PR-wide triage check summarises
+    required: false
+    default: e2e-test/detox-ios,e2e-test/detox-ipad,e2e-test/detox-android,e2e-test/maestro-ios,e2e-test/maestro-android
+
+runs:
+  using: composite
+  steps:
+    # Each lane uploads what it saw at every failed test: Detox the screenshot and the
+    # app's busy report, Maestro the failure screenshot, the step it stopped at and the
+    # app's own errors. The judge reads them as producer evidence.
+    - name: Download triage evidence
+      continue-on-error: true
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        pattern: triage-evidence-${{ inputs.job-key }}-*
+        path: triage-evidence
+    # Answers from earlier runs on the same PR (the same commit on master), so a re-run
+    # does not pay for the same question twice. The file also keeps this lane's AI spend
+    # on the PR, for the per-PR budget (pr-budget-usd, $2 by default, split between the
+    # lanes). Restore and save are separate steps: the cache action saves only when the
+    # job succeeds, and a red run is the one most likely to be re-run.
+    - name: Restore triage answers
+      if: always()
+      continue-on-error: true
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: e2e-triage-answers.json
+        key: e2e-triage-answers-${{ inputs.job-key }}-${{ fromJSON(inputs.composite-identity).gh_pr_number && format('pr{0}', fromJSON(inputs.composite-identity).gh_pr_number) || fromJSON(inputs.composite-identity).commit_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: e2e-triage-answers-${{ inputs.job-key }}-${{ fromJSON(inputs.composite-identity).gh_pr_number && format('pr{0}', fromJSON(inputs.composite-identity).gh_pr_number) || fromJSON(inputs.composite-identity).commit_sha }}-
+    # A triage failure must never change the outcome of the E2E run itself.
+    - name: e2e/triage
+      continue-on-error: true
+      uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-triage@main # actions/e2e-test-triage
+      with:
+        composite-identity: ${{ inputs.composite-identity }}
+        status-context: ${{ inputs.status-context }}
+        # One triage check for the whole PR, summarising every lane; a red lane posts it
+        # as pending as soon as it finishes (detox/utils/tsio-report-status.js).
+        triage-status-context: e2e-test/triage
+        triage-lanes: ${{ inputs.triage-lanes }}
+        lane: ${{ inputs.job-key }}
+        evidence-dir: triage-evidence
+        test-root: .
+        github-token: ${{ inputs.github-token }}
+        # The PR changes the app, which can't take the separate test server down or put a
+        # proxy page in front of it: a test that failed on that environment is not the PR's.
+        infra-clears: "true"
+        anthropic-api-key: ${{ inputs.anthropic-api-key }}
+        mode: ${{ inputs.mode }}
+        answers-cache: e2e-triage-answers.json
+    - name: Save triage answers
+      if: always() && hashFiles('e2e-triage-answers.json') != ''
+      continue-on-error: true
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: e2e-triage-answers.json
+        key: e2e-triage-answers-${{ inputs.job-key }}-${{ fromJSON(inputs.composite-identity).gh_pr_number && format('pr{0}', fromJSON(inputs.composite-identity).gh_pr_number) || fromJSON(inputs.composite-identity).commit_sha }}-${{ github.run_id }}-${{ github.run_attempt }}

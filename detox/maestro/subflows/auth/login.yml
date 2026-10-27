@@ -18,9 +18,12 @@ appId: ${MAESTRO_APP_ID}
 # force-stopped flag and then immediately fails its own launch intent.
 # Android: clearState:true wipes app data so no stale session from a previous
 # seed run can interfere (equivalent to adb pm clear — does not set force-stop).
+# iOS in CI: the batch runner already reinstalled the app (reset_ios_app.sh) and waited until it
+# launches, because clearState's own reinstall can launch before FrontBoard knows the app.
 - runFlow:
     when:
       platform: iOS
+      true: ${typeof MAESTRO_APP_RESET_BY_RUNNER === 'undefined' || MAESTRO_APP_RESET_BY_RUNNER !== 'true'}
     commands:
       # # Retry iOS launchApp after a previous batch; do not retry the whole login.
       - retry:
@@ -29,6 +32,17 @@ appId: ${MAESTRO_APP_ID}
             - launchApp:
                 stopApp: true
                 clearState: true
+- runFlow:
+    when:
+      platform: iOS
+      true: ${typeof MAESTRO_APP_RESET_BY_RUNNER !== 'undefined' && MAESTRO_APP_RESET_BY_RUNNER === 'true'}
+    commands:
+      - launchApp:
+          stopApp: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
       # # After clearState, the JS bundle loads fresh + notification dialog
       # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
@@ -375,3 +389,18 @@ appId: ${MAESTRO_APP_ID}
                 visible:
                   id: "tab_bar.home.tab"
                 timeout: 20000
+
+# # iOS raises the Save Password sheet only once the login screen is torn down, a few
+# seconds after the dismissals above ran. Simulator autofill restrictions do not stop it.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            text: "Not Now"
+          timeout: 5000
+          optional: true
+      - tapOn:
+          text: "Not Now"
+          optional: true

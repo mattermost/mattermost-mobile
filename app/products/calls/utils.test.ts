@@ -6,7 +6,7 @@ import assert from 'assert';
 import {Alert} from 'react-native';
 import {SelectedTrackType} from 'react-native-video';
 
-import {CallCardState, CallPostStatus, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
+import {CallCardState, CallPostStatus, CallsTransport, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
 import {License, Post, Preferences} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import TestHelper from '@test/test_helper';
@@ -16,6 +16,7 @@ import {
     getCallCardState,
     getNumUsersInCall,
     getCallPropsFromPost,
+    sortDMSessions,
     sortSessions,
     getHandsRaised,
     getHandsRaisedNames,
@@ -24,6 +25,7 @@ import {
     isSupportedServerCalls,
     isHostControlsAllowed,
     areGroupCallsAllowed,
+    getCallsTransport,
     isCallsCustomMessage,
     idsAreEqual,
     errorAlert,
@@ -215,6 +217,101 @@ describe('sortSessions', () => {
     });
 });
 
+describe('sortDMSessions', () => {
+    const locale = 'en';
+    const teammateNameDisplay = 'username';
+
+    it('should return an empty array for undefined sessions', () => {
+        expect(sortDMSessions(locale, teammateNameDisplay, 'my-id', undefined)).toEqual([]);
+    });
+
+    it('should keep the current user first even when activity state would reorder cards', () => {
+        const sessions = {
+            mySession: {
+                sessionId: 'my-session',
+                userId: 'my-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'me'}),
+            },
+            calleeSession: {
+                sessionId: 'callee-session',
+                userId: 'callee-id',
+                muted: false,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'callee'}),
+            },
+        };
+
+        const sorted = sortDMSessions(locale, teammateNameDisplay, 'my-id', sessions);
+        expect(sorted.map((s) => s.userModel?.username)).toEqual(['me', 'callee']);
+    });
+});
+
+describe('sortByCurrentUser (through sortDMSessions)', () => {
+    const locale = 'en';
+    const teammateNameDisplay = 'username';
+
+    it('should keep non-current users in their pre-existing order after moving the current user to the front', () => {
+        const sessions = {
+            aSession: {
+                sessionId: 'a-session',
+                userId: 'a-id',
+                muted: true,
+                raisedHand: 1000,
+                userModel: TestHelper.fakeUserModel({username: 'alice'}),
+            },
+            bSession: {
+                sessionId: 'b-session',
+                userId: 'b-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'bob'}),
+            },
+            cSession: {
+                sessionId: 'c-session',
+                userId: 'c-id',
+                muted: false,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'carol'}),
+            },
+            mySession: {
+                sessionId: 'my-session',
+                userId: 'my-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'me'}),
+            },
+        };
+
+        const sorted = sortDMSessions(locale, teammateNameDisplay, 'my-id', sessions, 'b-session');
+        expect(sorted.map((s) => s.userId)).toEqual(['my-id', 'b-id', 'a-id', 'c-id']);
+    });
+
+    it('should not change ordering when the current user has no session', () => {
+        const sessions = {
+            aSession: {
+                sessionId: 'a-session',
+                userId: 'a-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'alice'}),
+            },
+            bSession: {
+                sessionId: 'b-session',
+                userId: 'b-id',
+                muted: false,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'bob'}),
+            },
+        };
+
+        const expected = sortSessions(locale, teammateNameDisplay, sessions, 'b-session').map((s) => s.userId);
+        const actual = sortDMSessions(locale, teammateNameDisplay, 'missing-user-id', sessions, 'b-session').map((s) => s.userId);
+        expect(actual).toEqual(expected);
+    });
+});
+
 describe('getHandsRaised', () => {
     it('returns sessions with raised hands', () => {
         const sessions = {
@@ -363,6 +460,29 @@ describe('isHostControlsAllowed and areGroupCallsAllowed', () => {
     it('returns false for undefined values', () => {
         expect(isHostControlsAllowed({} as CallsConfigState)).toBe(false);
         expect(areGroupCallsAllowed({} as CallsConfigState)).toBe(false);
+    });
+});
+
+describe('getCallsTransport', () => {
+    const configWithVersion = (version?: string): CallsConfigState => ({
+        ...DefaultCallsConfig,
+        version: {version},
+    });
+
+    it('selects LiveKit at the 2.0.0 floor', () => {
+        expect(getCallsTransport(configWithVersion('2.0.0'))).toBe(CallsTransport.LiveKit);
+    });
+
+    it('selects LiveKit for a pre-release 2.x plugin build', () => {
+        expect(getCallsTransport(configWithVersion('2.0.1-dev'))).toBe(CallsTransport.LiveKit);
+    });
+
+    it('selects rtcd for a 1.x plugin', () => {
+        expect(getCallsTransport(configWithVersion('1.12.5'))).toBe(CallsTransport.Rtcd);
+    });
+
+    it('selects rtcd when the version has not been fetched', () => {
+        expect(getCallsTransport(DefaultCallsConfig)).toBe(CallsTransport.Rtcd);
     });
 });
 

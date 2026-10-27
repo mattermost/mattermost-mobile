@@ -175,6 +175,14 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
                 seenRows.add(rowValue);
             }
         }
+    } else if (type === DialogElementTypes.FILE) {
+        // FILE value is a comma-joined list of uploaded file IDs; '' means no file.
+        if (!elem.optional) {
+            const ids = typeof value === 'string' ? value.split(',').map((id) => id.trim()).filter(Boolean) : [];
+            if (!ids.length) {
+                return fieldRequiredError;
+            }
+        }
     } else if (type === DialogElementTypes.DATE || type === DialogElementTypes.DATETIME) {
         // Required date/datetime fields must have a value
         if (!elem.optional && (value == null || value === '')) {

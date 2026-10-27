@@ -15,13 +15,23 @@
 #
 # Usage: apply_client_config_value.sh <site-url> <admin-token> <patch-json> <key> <expected-value>
 # Exit 0: the client config serves <expected-value>.
-# Exit 3: this installation forbids the write. Two causes are checked and both are printed:
+#         A read that matches is only meaningful because exit 3 below has already ruled out
+#         an installation that would answer 200 and keep its own value. Callers that need the
+#         value to still be in force later must check it where it matters -- this script does
+#         not hold it, and no wait here could prove that it will.
+# Exit 3: this installation forbids the write. Checked FIRST, before any patch attempt, since
+#         both signals are deterministic and retrying cannot change them. Two causes are
+#         checked and both are printed:
 #         the key being supplied by an environment variable (Mattermost keeps the env value
 #         and silently ignores config/patch while answering 200 -- this is what the PR
 #         Spinwicks do, proven in run 34452126763: "RestrictSystemAdmin=false,
 #         set-by-environment=true"), or ExperimentalSettings.RestrictSystemAdmin being true
 #         (drops every write_restrictable/cloud_restrictable field). Caller should skip.
 # Exit 1: the value never took for some other reason. Exit 2: usage error.
+#
+# CONFIG_DIAGNOSIS_FILE, when set, receives the one-line reason for exit 1 or 3, so the
+# caller's failure report says why (an unreachable server, a page instead of JSON, a value
+# that would not stick) instead of only that the pre-condition was not in force.
 set -euo pipefail
 
 if [[ $# -ne 5 ]]; then
@@ -35,68 +45,74 @@ patch_json="$3"
 key="$4"
 expected="$5"
 
+# Bound every request so a stalled connection cannot hang the script past its retry path.
+CONNECT_TIMEOUT_SECS="${CONFIG_CONNECT_TIMEOUT_SECS:-5}"
+MAX_TIME_SECS="${CONFIG_MAX_TIME_SECS:-30}"
+DIAGNOSIS_FILE="${CONFIG_DIAGNOSIS_FILE:-}"
+if [[ -n "$DIAGNOSIS_FILE" ]]; then
+    : > "$DIAGNOSIS_FILE"
+fi
+# A patch the client timed out on is usually still applied: config saves run one at a time and can
+# take ~90 s on a busy server. Resending only queues another save behind it, so wait this long first.
+TIMED_OUT_WRITE_SETTLE_SECS="${CONFIG_TIMED_OUT_WRITE_SETTLE_SECS:-240}"
+
+# Print the final reason and keep it for the caller's failure report.
+diagnose() {
+    echo "==> $1" >&2
+    if [[ -n "$DIAGNOSIS_FILE" ]]; then
+        printf '%s\n' "$1" > "$DIAGNOSIS_FILE"
+    fi
+}
+
+# What the client config serves for the key; when it can't be read, why (curl's error, or
+# the start of a body that is not JSON, such as an HTML page from a proxy in front of the server).
 read_key() {
-    local response
+    local response err
+    err="$(mktemp)"
     if ! response="$(curl -f -sS --show-error \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
-        "${site_url}/api/v4/config/client?format=old" 2>/dev/null)"; then
-        printf '%s' "<client config could not be read>"
+        "${site_url}/api/v4/config/client?format=old" 2>"$err")"; then
+        printf '<client config could not be read: %s>' "$(tr -s '\r\n' ' ' < "$err" | head -c 160)"
+        rm -f "$err"
         return
     fi
+    rm -f "$err"
     printf '%s' "$response" | python3 -c "
 import json, sys
 key = sys.argv[1]
+raw = sys.stdin.read()
 try:
-    config = json.load(sys.stdin)
+    config = json.loads(raw)
 except ValueError:
-    print('<client config was not JSON>')
+    start = ' '.join(raw.split())[:80]
+    kind = 'an HTML page' if start.lower().startswith(('<!doctype html', '<html')) else 'not JSON'
+    print('<client config was not JSON: the server answered with %s starting %r>' % (kind, start))
     sys.exit(0)
 print(config.get(key, '<key absent from client config>'))
 " "$key"
 }
 
-actual=""
-for attempt in 1 2 3; do
-    if ! curl -f -sS --show-error -X PUT \
-        -H "Authorization: Bearer ${admin_token}" \
-        -H "Content-Type: application/json" \
-        -d "$patch_json" \
-        "${site_url}/api/v4/config/patch" > /dev/null; then
-        echo "==> config/patch call failed on attempt ${attempt}" >&2
-        actual="<config/patch call failed>"
-        continue
-    fi
-
-    # Poll rather than read once: a clustered installation propagates a patch asynchronously.
-    deadline=$(( SECONDS + 10 ))
-    while :; do
-        actual="$(read_key)"
-        if [[ "$actual" == "$expected" ]]; then
-            echo "==> Verified ${key}=${actual} in the client config (attempt ${attempt})"
-            exit 0
-        fi
-        if (( SECONDS >= deadline )); then
-            break
-        fi
-        sleep 2
-    done
-
-    echo "==> ${key} is '${actual}' after attempt ${attempt}, re-applying the patch" >&2
-done
-
-# Work out WHY before deciding failure vs skip, and say so either way. The first version
-# of this script only reported that the value "never took", which left the next run just as
-# undiagnosable as the one before it -- so both signals are printed unconditionally.
-#
-# Two ways an installation can refuse a write while still answering 200:
-#   1. ExperimentalSettings.RestrictSystemAdmin -- drops every write_restrictable /
+# Whether this installation will accept the write at all. Both answers are deterministic --
+# neither depends on how quickly a value propagates, so they are asked before any patching
+# rather than only after attempts have been spent:
+#   1. ExperimentalSettings.RestrictSystemAdmin drops every write_restrictable /
 #      cloud_restrictable field (server/channels/api4/config.go, makeFilterConfigByPermission).
-#   2. The setting is supplied by an environment variable. Mattermost keeps the env value and
-#      silently ignores the patch; GET /api/v4/config/environment reports which fields those
-#      are. Cloud provisioners configure installations this way.
-restricted="$(curl -f -sS --show-error \
-    -H "Authorization: Bearer ${admin_token}" \
-    "${site_url}/api/v4/config" 2>/dev/null | python3 -c "
+#   2. The field is supplied by an environment variable. Mattermost keeps the env value and
+#      silently ignores config/patch while answering 200; GET /api/v4/config/environment
+#      reports which fields those are. Cloud provisioners configure installations this way.
+read_restricted() {
+    # Guard the read like read_key does. Piping a failed curl into python prints its own
+    # 'unknown' and then the || prints a second one, and the caller reports both.
+    local body
+    if ! body="$(curl -f -sS --show-error \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
+        -H "Authorization: Bearer ${admin_token}" \
+        "${site_url}/api/v4/config" 2>/dev/null)"; then
+        printf 'unknown'
+        return
+    fi
+    printf '%s' "$body" | python3 -c "
 import json, sys
 try:
     config = json.load(sys.stdin)
@@ -104,11 +120,19 @@ except ValueError:
     print('unknown')
     sys.exit(0)
 print(str(config.get('ExperimentalSettings', {}).get('RestrictSystemAdmin', 'unknown')).lower())
-" || printf 'unknown')"
+"
+}
 
-env_managed="$(curl -f -sS --show-error \
-    -H "Authorization: Bearer ${admin_token}" \
-    "${site_url}/api/v4/config/environment" 2>/dev/null | python3 -c "
+read_env_managed() {
+    local body
+    if ! body="$(curl -f -sS --show-error \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
+        -H "Authorization: Bearer ${admin_token}" \
+        "${site_url}/api/v4/config/environment" 2>/dev/null)"; then
+        printf 'unknown'
+        return
+    fi
+    printf '%s' "$body" | python3 -c "
 import json, sys
 patch = sys.argv[1]
 try:
@@ -126,9 +150,60 @@ for section, values in fields.items():
             print('true')
             sys.exit(0)
 print('false')
-" "$patch_json" || printf 'unknown')"
+" "$patch_json"
+}
 
-echo "==> ${key} never took: wanted '${expected}', client config serves '${actual}' (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed})" >&2
+# Ask first. An installation that owns the field will answer 200 to every patch and keep its
+# own value, so retrying cannot help and a read that briefly matches is not evidence.
+restricted="$(read_restricted)"
+env_managed="$(read_env_managed)"
+if [[ "$restricted" == "true" || "$env_managed" == "true" ]]; then
+    diagnose "${key} is owned by this installation (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed}), so the flow's pre-condition cannot be created here."
+    exit 3
+fi
+
+actual=""
+for attempt in 1 2 3; do
+    rc=0
+    curl -f -sS --show-error -X PUT \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
+        -H "Authorization: Bearer ${admin_token}" \
+        -H "Content-Type: application/json" \
+        -d "$patch_json" \
+        "${site_url}/api/v4/config/patch" > /dev/null || rc=$?
+    settle_secs=10
+    if (( rc == 28 )); then
+        echo "==> config/patch timed out on attempt ${attempt}; waiting up to ${TIMED_OUT_WRITE_SETTLE_SECS}s for it to land" >&2
+        settle_secs="${TIMED_OUT_WRITE_SETTLE_SECS}"
+    elif (( rc != 0 )); then
+        echo "==> config/patch call failed on attempt ${attempt}" >&2
+        actual="<config/patch call failed>"
+        continue
+    fi
+
+    # Poll rather than read once: a clustered installation propagates a patch asynchronously.
+    deadline=$(( SECONDS + settle_secs ))
+    while :; do
+        actual="$(read_key)"
+        if [[ "$actual" == "$expected" ]]; then
+            echo "==> Verified ${key}=${actual} in the client config (attempt ${attempt})"
+            exit 0
+        fi
+        if (( SECONDS >= deadline )); then
+            break
+        fi
+        sleep 2
+    done
+
+    echo "==> ${key} is '${actual}' after attempt ${attempt}, re-applying the patch" >&2
+done
+
+# The installation said it would accept the write, so re-ask rather than assume: the answer
+# can change mid-run, and printing both signals keeps the next run diagnosable.
+restricted="$(read_restricted)"
+env_managed="$(read_env_managed)"
+
+diagnose "${key} never took: wanted '${expected}', client config serves '${actual}' (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed})"
 
 if [[ "$restricted" == "true" || "$env_managed" == "true" ]]; then
     echo "==> This installation does not allow that write, so the flow's pre-condition cannot be created here." >&2

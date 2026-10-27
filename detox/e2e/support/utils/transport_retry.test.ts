@@ -16,7 +16,7 @@ const ENOTFOUND = {error: {message: 'No response from server: getaddrinfo ENOTFO
 const FORBIDDEN = {error: {message: 'Forbidden'}, status: 403} as const;
 
 // A success carries `preferences` rather than an `error`/`status` — structurally unrelated to
-// ApiResult, so it needs the explicit cast (mirrors how classification_lock casts its results).
+// ApiResult, so it needs the explicit cast.
 const SUCCESS = {preferences: []} as unknown as ApiResult;
 
 type CallCounter = {calls: number};

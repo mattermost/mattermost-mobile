@@ -9,13 +9,15 @@ import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
-import {convertAppFormValuesToDialogSubmission} from '@utils/dialog_conversion';
+import {convertAppFormValuesToDialogSubmission, flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
+import {flattenDialogElements} from '@utils/dialog_utils';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
 import {logDebug} from '@utils/log';
 
 export type DialogRouterProps = {
     config: InteractiveDialogConfig;
+    channelId: string;
 };
 
 function dialogOptionToLookupSelectOption(opt: DialogOption): AppSelectOption {
@@ -55,6 +57,7 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
 
 export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
+    channelId,
 }) => {
     const navigation = useNavigation();
     const serverUrl = useServerUrl();
@@ -85,6 +88,9 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
         return Array.from(byName.values());
     }, []);
+
+    // Per-field FILE values from earlier multiform steps (field name → comma-joined IDs).
+    const [accumulatedFileFields, setAccumulatedFileFields] = useState<Record<string, string>>({});
 
     // Update modal title when dialog config changes
     useEffect(() => {
@@ -134,15 +140,20 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                     logDebug('[DialogRouter.handleSubmit] multiform conversion errors', conversionErrors);
                 }
 
+                const {submission: stepSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
+                const mergedFileFields = mergeFileFieldValues(accumulatedFileFields, stepSubmission as {[x: string]: string}, currentConfig.dialog.elements);
+                const fileIds = flattenFileFieldValues(mergedFileFields);
+
                 legacySubmission = {
                     url: currentConfig.url || '',
                     callback_id: currentConfig.dialog.callback_id || '',
                     state: currentConfig.dialog.state || '',
-                    submission: multiformSubmission,
+                    submission: multiformSubmission as {[x: string]: string},
                     user_id: '', // Will be populated by mobile action
                     channel_id: '', // Will be populated by mobile action
                     team_id: '', // Will be populated by mobile action
                     cancelled: false,
+                    ...(fileIds.length > 0 && {file_ids: fileIds}),
                 };
             } else {
                 // Single-step dialog - use normal conversion
@@ -166,6 +177,9 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 setAccumulatedValues(newAccumulatedValues);
                 setAccumulatedElements(mergeElements(accumulatedElements, currentConfig.dialog.elements || []));
 
+                const {submission: stepSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
+                setAccumulatedFileFields(mergeFileFieldValues(accumulatedFileFields, stepSubmission as {[x: string]: string}, currentConfig.dialog.elements));
+
                 // Use the raw dialog data from server - it's already in the correct format!
                 const newDialogConfig: InteractiveDialogConfig = {
                     ...currentConfig,
@@ -182,6 +196,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             // Clear accumulated state since dialog is completing
                 setAccumulatedValues({});
                 setAccumulatedElements([]);
+                setAccumulatedFileFields({});
             }
 
             return result;
@@ -198,7 +213,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, accumulatedValues, accumulatedElements, mergeElements]);
+    }, [currentConfig, serverUrl, intl, accumulatedValues, accumulatedElements, mergeElements, accumulatedFileFields]);
 
     // Memoize form conversion to avoid recalculation on every render
     const appForm = useMemo(() => {
@@ -225,7 +240,9 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             return {data: {type: 'ok', data: {items: []}}};
         }
 
-        const elements = currentConfig.dialog.elements || [];
+        // Flatten first so a dynamic select nested inside a collapsible section is
+        // still found by name — otherwise its lookup silently returns no options.
+        const elements = flattenDialogElements(currentConfig.dialog.elements || []);
         const element = findDialogElement(elements, field.name ?? '');
 
         if (!element || element.data_source !== 'dynamic' || !element.data_source_url) {
@@ -299,6 +316,9 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
 
+                const {submission: refreshedSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
+                setAccumulatedFileFields(mergeFileFieldValues(accumulatedFileFields, refreshedSubmission as {[x: string]: string}, currentConfig.dialog.elements));
+
                 // Update the dialog config state with new form data
                 const newConfig = {
                     ...currentConfig,
@@ -342,7 +362,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues]);
+    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, accumulatedFileFields]);
 
     if (!appForm || !appForm.fields) {
         return null;
@@ -368,6 +388,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             submit={handleSubmit}
             performLookupCall={performLookupCall}
             refreshOnSelect={refreshOnSelect}
+            channelId={channelId}
         />
     );
 });

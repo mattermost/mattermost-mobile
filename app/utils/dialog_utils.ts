@@ -28,10 +28,12 @@ export const DialogElementTypes = {
     SELECT: 'select' as const,
     RADIO: 'radio' as const,
     BOOL: 'bool' as const,
+    FILE: 'file' as const,
     DATE: 'date' as const,
     DATETIME: 'datetime' as const,
     CHECKBOX_GROUP: 'checkbox_group' as const,
     CHECKBOX_MATRIX: 'checkbox_matrix' as const,
+    COLLAPSIBLE: 'collapsible' as const,
 } as const;
 
 /**
@@ -69,6 +71,8 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'radio';
         case DialogElementTypes.BOOL:
             return 'bool';
+        case DialogElementTypes.FILE:
+            return 'file';
         case DialogElementTypes.DATE:
             return 'date';
         case DialogElementTypes.DATETIME:
@@ -98,6 +102,8 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.RADIO;
         case 'bool':
             return DialogElementTypes.BOOL;
+        case 'file':
+            return DialogElementTypes.FILE;
         case 'date':
             return DialogElementTypes.DATE;
         case 'datetime':
@@ -228,4 +234,39 @@ export function encodeMatrixValue(selection: Map<string, Set<string>>): string[]
         }
     });
     return entries;
+}
+
+/**
+ * Recursively flattens a list by expanding collapsible containers into their children.
+ */
+export function flattenCollapsible<T>(
+    items: T[],
+    isCollapsible: (item: T) => boolean,
+    getChildren: (item: T) => T[] | undefined,
+): T[] {
+    return items.flatMap((item) =>
+        (isCollapsible(item)? flattenCollapsible(getChildren(item) || [], isCollapsible, getChildren): [item]),
+    );
+}
+
+/**
+ * Returns only the leaf (non-collapsible) elements from a dialog element tree.
+ */
+export function flattenDialogElements(elements: DialogElement[]): DialogElement[] {
+    return flattenCollapsible(
+        elements,
+        (el) => el.type === DialogElementTypes.COLLAPSIBLE,
+        (el) => el.collapsible_config?.elements,
+    );
+}
+
+/**
+ * Returns only the leaf (non-collapsible) fields from an AppField tree.
+ */
+export function flattenAppFields(fields: AppField[]): AppField[] {
+    return flattenCollapsible(
+        fields,
+        (f) => f.type === 'collapsible',
+        (f) => f.collapsible_config?.fields,
+    );
 }

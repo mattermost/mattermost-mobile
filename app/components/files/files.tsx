@@ -10,6 +10,7 @@ import {GalleryInit} from '@context/gallery';
 import {usePostConfig} from '@context/post_config';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
+import {useIsInViewPort} from '@hooks/in_viewport';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {fileExists, isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
@@ -63,7 +64,7 @@ const Files = ({
     isPermalinkPreview = false,
 }: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
-    const [inViewPort, setInViewPort] = useState(false);
+    const inViewPort = useIsInViewPort(location, postId ?? '');
     const isTablet = useIsTablet();
     const {canDownloadFiles, enableSecureFilePreview} = usePostConfig();
 
@@ -168,16 +169,6 @@ const Files = ({
             </View>
         );
     };
-
-    useEffect(() => {
-        const onScrollEnd = DeviceEventEmitter.addListener(Events.ITEM_IN_VIEWPORT, (viewableItems) => {
-            if (`${location}-${postId}` in viewableItems) {
-                setInViewPort(true);
-            }
-        });
-
-        return () => onScrollEnd.remove();
-    }, [location, postId]);
 
     useEffect(() => {
         setFilesForGallery([...imageAttachments, ...nonImageAttachments]);

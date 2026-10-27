@@ -56,6 +56,10 @@ export interface ContentBlock {
     status?: ToolCallStatusString;
     shared?: boolean;
 
+    // Persisted form of llm.Tool.UserInteraction; non-empty for tools answered
+    // by the user instead of executed by the server (e.g. AskUserQuestion).
+    user_interaction?: string;
+
     // Marks a pending tool_use block that passed the auto-execution policy.
     would_auto_execute?: boolean;
 
