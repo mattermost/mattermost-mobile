@@ -29,7 +29,6 @@ import {
     Plugin,
     Post,
     Setup,
-    System,
     User,
 } from '@support/server_api';
 import {
@@ -301,23 +300,8 @@ describe('Interactive Dialog - Checkbox Group & Matrix (Plugin)', () => {
         testChannel = channel;
         testUser = user;
 
+        // DialogOnlyMode comes from server provisioning (detox/provision/plugins.ts).
         await User.apiAdminLogin(siteOneUrl);
-        const configResult = await System.apiUpdateConfig(siteOneUrl, {
-            PluginSettings: {
-                PluginStates: {
-                    [DemoPlugin.id]: {Enable: true},
-                },
-                Plugins: {
-                    [DemoPlugin.id]: {
-                        DialogOnlyMode: true,
-                    },
-                },
-            },
-        });
-        if (configResult.error) {
-            throw new Error(`Failed to configure demo plugin: ${configResult.error.message || JSON.stringify(configResult.error)}`);
-        }
-
         const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {
             throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
