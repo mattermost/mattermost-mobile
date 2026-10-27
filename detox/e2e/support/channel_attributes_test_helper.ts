@@ -26,10 +26,8 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
     // Re-patch between polls like enableChannelAttributes; a single write can be dropped.
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
-        const patchResult = await System.apiPatchConfig(baseUrl, {
-            FeatureFlags: {
-                ChannelAttributes: false,
-            },
+        const patchResult = await System.apiPatchFeatureFlags(baseUrl, {
+            ChannelAttributes: false,
         });
 
         // No full-config fallback: a GET-modify-PUT of the whole config reverts every setting
@@ -74,10 +72,8 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<void> =>
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
-        const patchResult = await System.apiPatchConfig(baseUrl, {
-            FeatureFlags: {
-                ChannelAttributes: true,
-            },
+        const patchResult = await System.apiPatchFeatureFlags(baseUrl, {
+            ChannelAttributes: true,
         });
         if (patchResult.error) {
             throw new Error(`enableChannelAttributes: failed to patch server config: ${JSON.stringify(patchResult.error)}`);

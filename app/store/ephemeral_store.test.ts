@@ -81,6 +81,41 @@ describe('EphemeralStore', () => {
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-3')).toBe(false);
     });
 
+    describe('viewable items', () => {
+        afterEach(() => {
+            EphemeralStore.clearViewableItems();
+        });
+
+        it('should report items reported by any mounted list', () => {
+            EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
+
+            expect(EphemeralStore.isItemInViewPort('Channel-post-1')).toBe(true);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-2')).toBe(true);
+        });
+
+        it('should replace only the entries of the list that reported them', () => {
+            EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
+
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-3': true});
+
+            expect(EphemeralStore.isItemInViewPort('Channel-post-1')).toBe(true);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-2')).toBe(false);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-3')).toBe(true);
+        });
+
+        it('should drop every list when cleared', () => {
+            EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
+
+            EphemeralStore.clearViewableItems();
+
+            expect(EphemeralStore.isItemInViewPort('Channel-post-1')).toBe(false);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-2')).toBe(false);
+        });
+    });
+
     describe('classification banner cache', () => {
         const serverUrl = 'classification-server';
         const otherServerUrl = 'classification-server-2';
@@ -126,6 +161,28 @@ describe('EphemeralStore', () => {
 
             expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
             expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-1')).toBe(false);
+        });
+    });
+
+    describe('pendingPreauthSecret', () => {
+        const serverUrl = 'https://example.com';
+
+        afterEach(() => {
+            EphemeralStore.clearPendingPreauthSecret(serverUrl);
+        });
+
+        it('should store and return a pending add-server secret', () => {
+            expect(EphemeralStore.getPendingPreauthSecret(serverUrl)).toBeUndefined();
+
+            EphemeralStore.setPendingPreauthSecret(serverUrl, 'candidate-secret');
+            expect(EphemeralStore.getPendingPreauthSecret(serverUrl)).toBe('candidate-secret');
+        });
+
+        it('should clear a pending secret for a server', () => {
+            EphemeralStore.setPendingPreauthSecret(serverUrl, 'candidate-secret');
+            EphemeralStore.clearPendingPreauthSecret(serverUrl);
+
+            expect(EphemeralStore.getPendingPreauthSecret(serverUrl)).toBeUndefined();
         });
     });
 

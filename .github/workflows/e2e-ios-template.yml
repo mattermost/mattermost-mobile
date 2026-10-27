@@ -43,6 +43,11 @@ on:
         description: "The third test server URL (SITE_3); optional, no automatic fallback"
         required: false
         type: string
+      MM_OTHER_PLATFORM_POOL_URL:
+        description: "The other platform's SITE_1 server, used as this platform's pool SITE_2; empty falls back to SITE_1"
+        required: false
+        type: string
+        default: ""
       MM_TEST_USER_NAME:
         description: "The admin username of the test instance"
         required: false
@@ -89,7 +94,7 @@ on:
         description: "Number of parallel test shards"
         required: false
         type: string
-        default: "28"
+        default: "32"
       detox_config:
         description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
         required: false
@@ -209,6 +214,26 @@ jobs:
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           mode: restore
 
+      # Server B gets a mutation shard when it is distinct from A; the iOS-only site3
+      # target needs SITE_3 to be distinct from both A and B.
+      - name: Resolve mutation server targets
+        id: mutation-targets
+        env:
+          SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
+          SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+          SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+        run: |
+          # No targets without a distinct second server; split-tests then fails only if a mutation spec is selected.
+          TARGETS=""
+          if [ -n "$SERVER_B" ] && [ "$SERVER_B" != "$SERVER_A" ]; then
+            TARGETS="B"
+            if [ -n "$SERVER_SHARED" ] && [ "$SERVER_SHARED" != "$SERVER_A" ] && [ "$SERVER_SHARED" != "$SERVER_B" ]; then
+              TARGETS="B,site3"
+            fi
+          fi
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+          echo "Mutation targets: ${TARGETS:-none}"
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -218,9 +243,11 @@ jobs:
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
           durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
+          platform: ios
+          mutation_targets: ${{ steps.mutation-targets.outputs.targets }}
 
   e2e-ios:
-    name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
+    name: ${{ matrix.role == 'mutation' && 'mutation-' || '' }}machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
     # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
     # macos-26 ships the iOS 26.2 runtime pre-installed, avoiding a ~10min
     # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
@@ -241,36 +268,55 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
-      # does most of its setup, so pinning every shard to the same server would put
-      # all parallel shards on one instance while the second sits mostly idle —
-      # concurrent setup on one server is what drives API rate limiting and
-      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
-      # that load evenly while still giving each shard two distinct sites for the
-      # multi-server specs.
-      - name: Rotate logical test sites by shard
+      # Pool shards pair server A with the other platform's A; mutation shards own server B alone.
+      # SITE_3 is also every pool shard's read-only third server, so site3 mutations must not touch login.
+      - name: Assign test sites by shard role
         env:
+          ROLE: ${{ matrix.role }}
+          TARGET: ${{ matrix.target }}
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
           SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
           SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-          SHARD_ID: ${{ matrix.runId }}
+          OTHER_PLATFORM_POOL: ${{ inputs.MM_OTHER_PLATFORM_POOL_URL }}
         run: |
-          # Single-server topologies leave SERVER_B unset; without this the even
-          # shards would export an empty SITE_1_URL and test_config would silently
-          # fall back to localhost instead of the provisioned server.
-          SERVER_B="${SERVER_B:-$SERVER_A}"
-          if (( 10#$SHARD_ID % 2 == 1 )); then
-            SITE_1_URL="$SERVER_A"
-            SITE_2_URL="$SERVER_B"
-          else
-            SITE_1_URL="$SERVER_B"
-            SITE_2_URL="$SERVER_A"
+          case "$ROLE" in
+            pool)
+              SITE_1_URL="$SERVER_A"; SITE_1_LABEL="server-a"
+              if [ -n "$OTHER_PLATFORM_POOL" ]; then
+                SITE_2_URL="$OTHER_PLATFORM_POOL"; SITE_2_LABEL="other-platform-a"
+              else
+                # Never SITE_3: on iOS it is also a mutation target.
+                echo "::warning::MM_OTHER_PLATFORM_POOL_URL is empty; pool SITE_2 falls back to this shard's own server A"
+                SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              fi
+              SITE_3_URL="$SERVER_SHARED"; SITE_3_LABEL="site3"
+              GUARD="enforce"
+              ;;
+            mutation)
+              case "$TARGET" in
+                B) SITE_1_URL="$SERVER_B"; SITE_1_LABEL="server-b" ;;
+                site3) SITE_1_URL="$SERVER_SHARED"; SITE_1_LABEL="site3" ;;
+                A) echo "::error::No isolated server for mutation specs (MM_TEST_SERVER_URL_2 missing or equal to MM_TEST_SERVER_URL); they would change state on the pool server"; exit 1 ;;
+                *) echo "::error::Unknown mutation target '$TARGET'"; exit 1 ;;
+              esac
+              SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              SITE_3_URL=""; SITE_3_LABEL="unset"
+              GUARD="off"
+              ;;
+            *)
+              echo "::error::Unknown shard role '$ROLE'"; exit 1 ;;
+          esac
+          if [ -z "$SITE_1_URL" ]; then
+            echo "::error::SITE_1 is empty for role=$ROLE target=$TARGET"; exit 1
           fi
           {
             echo "SITE_1_URL=$SITE_1_URL"
             echo "SITE_2_URL=$SITE_2_URL"
-            echo "SITE_3_URL=$SERVER_SHARED"
+            echo "SITE_3_URL=$SITE_3_URL"
+            echo "E2E_SERVER_ROLE=$ROLE"
+            echo "E2E_POOL_GUARD=$GUARD"
           } >> "$GITHUB_ENV"
+          echo "role=$ROLE target=$TARGET: SITE_1=$SITE_1_LABEL SITE_2=$SITE_2_LABEL SITE_3=$SITE_3_LABEL pool_guard=$GUARD"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -707,17 +753,67 @@ jobs:
           set +e
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
-          # the existing detox/artifacts/ upload.
-          if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
-          else
-            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
-          fi
-          DETOX_EXIT_CODE=$?
+          # the existing detox/artifacts/ upload. The output is also kept for the
+          # triage evidence step: on a Jest timeout it is the only record of what
+          # the app was still waiting on.
+          run_specs() {
+            if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
+              npm run e2e:ios-ipad-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
+            else
+              npm run e2e:ios-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
+            fi
+          }
+          # Diagnostics only (no behavior change): record what happens to the Jest process when it
+          # dies with a signal (detox reports exit code = null). Output goes under artifacts/diag,
+          # which the iOS report upload already ships.
+          DIAG_DIR=artifacts/diag
+          mkdir -p "$DIAG_DIR"
+          touch "$DIAG_DIR/step-marker"
+          (
+            while :; do
+              echo "$(date -u +%H:%M:%S) $(memory_pressure -Q 2>/dev/null | tail -1)"
+              ps -axo pid=,ppid=,rss=,etime=,comm= | grep -E 'jest|node|launchd_sim|Simulator|SpringBoard|applesimutils|simctl' || true
+              sleep 2
+            done
+          ) >> "$DIAG_DIR/sampler.log" 2>&1 &
+          SAMPLER_PID=$!
+          trap 'kill "$SAMPLER_PID" 2>/dev/null || true' EXIT
+          run_specs "${SPECS[@]}" 2>&1 | tee "$RUNNER_TEMP/detox-run.log"
+          DETOX_EXIT_CODE=${PIPESTATUS[0]}
+          RETRIED=0
+          echo "$DETOX_EXIT_CODE" > "$DIAG_DIR/detox-exit.txt"
+          log show --last 60m --style compact --predicate '(eventMessage CONTAINS[c] "memorystatus") OR (eventMessage CONTAINS[c] "jetsam") OR (process == "kernel" AND eventMessage CONTAINS[c] "kill")' > "$DIAG_DIR/unified-log.txt" 2>&1 || true
+          find "$HOME/Library/Logs/DiagnosticReports" /Library/Logs/DiagnosticReports -type f -newer "$DIAG_DIR/step-marker" -exec cp {} "$DIAG_DIR/" \; 2>/dev/null || true
+          ls -la "$DIAG_DIR" > "$DIAG_DIR/listing.txt" 2>&1 || true
           if [ ! -f artifacts/jest-results.json ]; then
             if [ -f artifacts/jest-stare/ios-data.json ]; then
               echo "⚠️ Detox left no jest-results.json — promoting jest-stare/ios-data.json"
               cp artifacts/jest-stare/ios-data.json artifacts/jest-results.json
+
+              # Jest was killed between spec files, so the files after that point never started.
+              # Run only those once in a fresh Jest; files that already ran keep their own result.
+              UNRUN_SPECS=()
+              while IFS= read -r spec; do
+                [ -n "$spec" ] && UNRUN_SPECS+=("$spec")
+              done < <(node utils/failed-jest-specs.js --unrun-only --results artifacts/jest-results.json --shard-specs "$MATRIX_SPECS")
+              if [ "${#UNRUN_SPECS[@]}" -gt 0 ]; then
+                echo "::warning::Jest died before finishing the shard (exit ${DETOX_EXIT_CODE}); running the ${#UNRUN_SPECS[@]} spec(s) it never started: ${UNRUN_SPECS[*]}"
+                mv artifacts/jest-results.json artifacts/jest-results-attempt1.json
+                run_specs "${UNRUN_SPECS[@]}" 2>&1 | tee -a "$RUNNER_TEMP/detox-run.log"
+                UNRUN_EXIT_CODE=${PIPESTATUS[0]}
+                if [ ! -f artifacts/jest-results.json ] && [ -f artifacts/jest-stare/ios-data.json ]; then
+                  cp artifacts/jest-stare/ios-data.json artifacts/jest-results.json
+                fi
+                node utils/failed-jest-specs.js \
+                  --attempt1 artifacts/jest-results-attempt1.json \
+                  --attempt2 artifacts/jest-results.json \
+                  --output artifacts/jest-results.json
+                MERGE_EXIT_CODE=$?
+                if [ "$UNRUN_EXIT_CODE" -eq 0 ] && [ "$MERGE_EXIT_CODE" -eq 0 ] &&
+                  node -e 'process.exit(require("./artifacts/jest-results.json").success ? 0 : 1)'; then
+                  DETOX_EXIT_CODE=0
+                fi
+              fi
             else
               echo "⚠️ Detox left no artifacts/jest-results.json (exit ${DETOX_EXIT_CODE}) — writing shard stub"
               node utils/write-tsio-failure-stub.mjs \
@@ -727,10 +823,66 @@ jobs:
                 --reason "Detox exited ${DETOX_EXIT_CODE} before writing jest-results.json (specs: ${MATRIX_SPECS})"
             fi
           fi
+
+          # Re-run each failed spec file once, as Android's shard script does.
+          # jest.retryTimes retries a failed test but never a failed beforeAll, so
+          # a file whose setup failed gets no second chance without this. The
+          # attempts are merged so a spec that passes now is recorded as flaky,
+          # its first failure kept as a retry, not as a failure. More than
+          # MAX_RETRY_SPECS failed files is usually an environment-wide problem a
+          # re-run won't fix, so those are left for triage.
+          if [ "$DETOX_EXIT_CODE" -ne 0 ] && [ -f artifacts/jest-results.json ]; then
+            RETRY_SPECS=()
+            while IFS= read -r spec; do
+              [ -n "$spec" ] && RETRY_SPECS+=("$spec")
+            done < <(node utils/failed-jest-specs.js --results artifacts/jest-results.json --shard-specs "${SPECS[*]}")
+            if [ "${#RETRY_SPECS[@]}" -gt 0 ] && [ "${#RETRY_SPECS[@]}" -le "$MAX_RETRY_SPECS" ]; then
+              echo "Re-running ${#RETRY_SPECS[@]} failed spec file(s) once: ${RETRY_SPECS[*]}"
+              mv artifacts/jest-results.json artifacts/jest-results-attempt1.json
+              RETRIED=1
+              run_specs "${RETRY_SPECS[@]}" 2>&1 | tee -a "$RUNNER_TEMP/detox-run.log"
+              DETOX_EXIT_CODE=${PIPESTATUS[0]}
+              if [ -f artifacts/jest-results.json ]; then
+                node utils/failed-jest-specs.js --attempt1 artifacts/jest-results-attempt1.json --attempt2 artifacts/jest-results.json --output artifacts/jest-results.json
+              else
+                echo "⚠️ The re-run left no jest-results.json — keeping the first attempt's results"
+                mv artifacts/jest-results-attempt1.json artifacts/jest-results.json
+                DETOX_EXIT_CODE=1
+              fi
+            elif [ "${#RETRY_SPECS[@]}" -gt "$MAX_RETRY_SPECS" ]; then
+              echo "${#RETRY_SPECS[@]} spec files failed (more than $MAX_RETRY_SPECS); not re-running them"
+            fi
+          fi
+
+          # The runner can lose its route for ~2 s (every host flow, DNS included, -1009). Re-run once
+          # only the files whose every failure shows that in its own device.log; the rest stay red.
+          # Skipped when the failed files were already re-run above, so no file runs a third time.
+          if [ "$DETOX_EXIT_CODE" -ne 0 ] && [ "$RETRIED" -eq 0 ] && [ -f artifacts/jest-results.json ]; then
+            OUTAGE_SPECS=()
+            while IFS= read -r spec; do
+              [ -n "$spec" ] && OUTAGE_SPECS+=("$spec")
+            done < <(node utils/network-outage-specs.js --results artifacts/jest-results.json --artifacts artifacts)
+            if [ "${#OUTAGE_SPECS[@]}" -gt 0 ]; then
+              echo "::warning::Runner lost its network route during ${#OUTAGE_SPECS[@]} spec(s); re-running only those: ${OUTAGE_SPECS[*]}"
+              mv artifacts/jest-results.json artifacts/jest-results-attempt1.json
+              run_specs "${OUTAGE_SPECS[@]}" 2>&1 | tee -a "$RUNNER_TEMP/detox-run.log"
+              RERUN_EXIT_CODE=${PIPESTATUS[0]}
+              node utils/failed-jest-specs.js \
+                --attempt1 artifacts/jest-results-attempt1.json \
+                --attempt2 artifacts/jest-results.json \
+                --output artifacts/jest-results.json
+              MERGE_EXIT_CODE=$?
+              if [ "$RERUN_EXIT_CODE" -eq 0 ] && [ "$MERGE_EXIT_CODE" -eq 0 ] &&
+                node -e 'process.exit(require("./artifacts/jest-results.json").success ? 0 : 1)'; then
+                DETOX_EXIT_CODE=0
+              fi
+            fi
+          fi
           exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
           MATRIX_SPECS: ${{ matrix.specs }}
+          MAX_RETRY_SPECS: "5"
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "info"
@@ -740,6 +892,24 @@ jobs:
           SITE_1_URL: ${{ env.SITE_1_URL }}
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
+
+      # For the E2E triage judge: for each failed test, the screenshot at the
+      # failure (e2e/timeout_evidence.js's on a timeout, Detox's otherwise), the
+      # requests Detox reported the app was still waiting on, and the test's own
+      # server calls that failed.
+      - name: Collect triage evidence for timed-out tests
+        if: always()
+        continue-on-error: true
+        working-directory: detox
+        run: node utils/triage-evidence.js --results artifacts/jest-results.json --log "$RUNNER_TEMP/detox-run.log" --dir artifacts/triage-evidence --artifacts artifacts --out "artifacts/triage-evidence/evidence-${{ matrix.runId }}.json"
+
+      - name: Upload triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('detox/artifacts/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/triage-evidence/
 
       - name: Cleanup Simulator State
         if: always()
@@ -803,8 +973,38 @@ jobs:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
-      - name: Upload iOS Test Report (retry)
-        if: always() && steps.upload-ios-report.outcome == 'failure'
+      # upload-artifact fails fast on ENOTFOUND/ETIMEDOUT (no internal retry), so each retry
+      # waits for the results service to answer before it runs.
+      - name: Await results service
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      - name: Upload iOS Test Report (retry 1)
+        id: upload-ios-report-retry
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+
+      - name: Await results service (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure' &&
+          steps.upload-ios-report-retry.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      # Last attempt: overwrite clears an artifact a timed-out attempt may have left behind.
+      - name: Upload iOS Test Report (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-ios-report.outcome == 'failure' &&
+          steps.upload-ios-report-retry.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
@@ -994,6 +1194,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
+          # says triage is coming instead of looking final.
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && vars.E2E_TRIAGE_MODE == 'enforce' }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-ios.result }}
           JOB_STATUS: ${{ job.status }}
@@ -1003,12 +1206,14 @@ jobs:
         run: |
           set +e
           UPSTREAM="true"
+          CANCELLED="false"
           # This job runs with always(), so job.status stays success when an upstream
           # job is cancelled — read the needs results to detect that.
           if [ "$SPECS_RESULT" = "cancelled" ] ||
              [ "$E2E_RESULT" = "cancelled" ] ||
              [ "$JOB_STATUS" = "cancelled" ]; then
             UPSTREAM="false"
+            CANCELLED="true"
           fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-ios"')
@@ -1019,7 +1224,9 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
+            --cancelled="$CANCELLED" \
             --e2e-override="$E2E_OVERRIDE" \
+            --announce-triage="$ANNOUNCE_TRIAGE" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

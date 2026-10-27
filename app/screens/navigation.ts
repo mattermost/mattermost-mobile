@@ -13,9 +13,11 @@ import {logError} from '@utils/log';
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+// Expo Router URI-decodes params more than once between push and useLocalSearchParams, so any
+// "%XX" in a value would be decoded. Escaping "%" as a JSON unicode escape leaves nothing to decode.
 export function propsToParams(props: any): Record<string, string> {
     return Object.keys(props || {}).reduce((params, key) => {
-        params[key] = JSON.stringify(props[key]);
+        params[key] = JSON.stringify(props[key])?.replace(/%/g, '\\u0025');
         return params;
     }, {} as Record<string, string>);
 }

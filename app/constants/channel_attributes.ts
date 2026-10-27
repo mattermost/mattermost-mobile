@@ -27,6 +27,9 @@ export const ACCESS_CONTROL_GROUP_NAME = 'access_control';
 
 export const CHANNEL_ATTRIBUTE_OBJECT_TYPE = 'channel';
 
+// Custom Profile Attributes in the same group: the attributes an ABAC subject is built from.
+export const USER_ATTRIBUTE_OBJECT_TYPE = 'user';
+
 // Values of a field's attrs.actions, deciding where its value displays. The
 // server allow-lists exactly these four, so an unknown value here means the
 // contract moved.

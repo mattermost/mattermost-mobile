@@ -40,6 +40,7 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     DATE: 'date',
     DATETIME: 'datetime',
     ACTION_BUTTON: 'action_button',
+    COLLAPSIBLE: 'collapsible',
 };
 
 export const SelectableAppFieldTypes = [

@@ -21,13 +21,15 @@ import useDidUpdate from '@hooks/did_update';
 import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
 import {resolveRelativeDate, parseDateInTimezone} from '@utils/date_utils';
-import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType, mergeUserValues} from '@utils/dialog_utils';
+import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType, flattenAppFields, mergeUserValues} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {logDebug, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
+import {typography} from '@utils/typography';
 
 import AppsFormField from './apps_form_field';
+import CollapsibleSection from './collapsible_section';
 import DialogIntroductionText from './dialog_introduction_text';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -39,17 +41,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         errorContainer: {
             marginTop: 15,
             marginLeft: 15,
-            fontSize: 14,
-            fontWeight: 'bold',
         },
         scrollView: {
             paddingBottom: 20,
             marginTop: 10,
         },
         errorLabel: {
-            fontSize: 12,
             textAlign: 'left',
-            color: (theme.errorTextColor || '#DA4A4A'),
+            color: theme.errorTextColor,
+            ...typography('Body', 75, 'Regular'),
         },
         buttonContainer: {
             paddingTop: 20,
@@ -106,6 +106,49 @@ export type Props = {
 type Errors = {[name: string]: string}
 const emptyErrorsState: Errors = {};
 
+// Returns true if this field or any of its (recursively nested) children have an error.
+function sectionHasError(field: AppField, errors: Errors): boolean {
+    if (field.type !== AppFieldTypes.COLLAPSIBLE) {
+        return Boolean(field.name && errors[field.name]);
+    }
+    return (field.collapsible_config?.fields || []).some((child) => sectionHasError(child, errors));
+}
+
+// A section's key for expand tracking and React keys: its name, or a tree path
+// when unnamed. renderField must derive the path the same way (same unfiltered arrays).
+function sectionKeyFor(field: AppField, path: string): string {
+    return field.name || path;
+}
+
+function childPath(parentPath: string, index: number): string {
+    return parentPath === '' ? `${index}` : `${parentPath}/${index}`;
+}
+
+// Partial version map: errored sections only, each bumped by 1 from `prev`.
+function computeExpandBumps(
+    fields: AppField[],
+    errors: Errors,
+    prev: Record<string, number>,
+    parentPath = '',
+): Record<string, number> {
+    const next: Record<string, number> = {};
+    fields.forEach((f, index) => {
+        if (f.type !== AppFieldTypes.COLLAPSIBLE) {
+            return;
+        }
+
+        // Bump this section if its subtree holds an error, then always recurse: a
+        // section may itself be error-free while a nested section still needs to open.
+        const path = childPath(parentPath, index);
+        if (sectionHasError(f, errors)) {
+            const key = sectionKeyFor(f, path);
+            next[key] = (prev[key] || 0) + 1;
+        }
+        Object.assign(next, computeExpandBumps(f.collapsible_config?.fields || [], errors, prev, path));
+    });
+    return next;
+}
+
 type ValuesAction = {name: string; value: AppFormValue} | {elements?: AppField[]} | {values: AppFormValues}
 function valuesReducer(state: AppFormValues, action: ValuesAction) {
     if ('values' in action) {
@@ -113,7 +156,8 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
     }
 
     if (!('name' in action)) {
-        return initValues(action.elements);
+        // Merge server values over user input so a refresh keeps what they typed.
+        return {...state, ...initValues(action.elements)};
     }
 
     if (state[action.name] === action.value) {
@@ -125,6 +169,11 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 export function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
     fields?.forEach((field) => {
+        if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            Object.assign(values, initValues(field.collapsible_config?.fields));
+            return;
+        }
+
         if (!field.name) {
             return;
         }
@@ -141,9 +190,7 @@ export function initValues(fields?: AppField[]) {
 
             // Round up to next time interval
             const minutesMod = currentTime.minutes() % timeInterval;
-            const defaultMoment = minutesMod === 0
-                ? currentTime.clone().seconds(0).milliseconds(0)
-                : currentTime.clone().add(timeInterval - minutesMod, 'minutes').seconds(0).milliseconds(0);
+            const defaultMoment = minutesMod === 0? currentTime.clone().seconds(0).milliseconds(0): currentTime.clone().add(timeInterval - minutesMod, 'minutes').seconds(0).milliseconds(0);
 
             // Clamp to min/max bounds
             if (field.min_date) {
@@ -188,16 +235,24 @@ function AppsFormComponent({
 }: Props) {
     const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
     const isMountedRef = useRef(true);
+
+    // Synchronous in-flight guard: `submitting` state lags a render, so a double-tap
+    // would submit twice. The ref blocks the second call before any await.
+    const submittingRef = useRef(false);
     const [submitting, setSubmitting] = useState(false);
     const [uploadingFields, setUploadingFieldsState] = useState<Set<string>>(new Set());
-    const navigation = useNavigation();
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [error, setError] = useState('');
     const [errors, setErrors] = useState(emptyErrorsState);
     const [values, dispatchValues] = useReducer(valuesReducer, form.fields, initValues);
+
+    // Tracks per-section expand triggers. Incrementing a key forces the named
+    // CollapsibleSection to open even if the user previously collapsed it.
+    const [expandVersions, setExpandVersions] = useState<Record<string, number>>({});
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+    const navigation = useNavigation();
 
     const setFieldUploading = useCallback((fieldName: string, uploading: boolean) => {
         setUploadingFieldsState((prev) => {
@@ -235,7 +290,7 @@ function AppsFormComponent({
         const previousFields = refreshPreviousFieldsRef.current;
         if (previousFields) {
             refreshPreviousFieldsRef.current = undefined;
-            dispatchValues({values: mergeUserValues(form.fields, initValues(form.fields), previousFields, userValuesRef.current)});
+            dispatchValues({values: mergeUserValues(flattenAppFields(form.fields || []), initValues(form.fields), previousFields, userValuesRef.current)});
             return;
         }
 
@@ -244,7 +299,7 @@ function AppsFormComponent({
     }, [form]);
 
     const submitButtons = useMemo(() => {
-        return form.fields && form.fields.find((f) => f.name === form.submit_buttons);
+        return flattenAppFields(form.fields || []).find((f) => f.name === form.submit_buttons);
     }, [form]);
 
     const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
@@ -281,8 +336,13 @@ function AppsFormComponent({
         return hasErrors;
     }, [intl]);
 
+    // Open every errored section (at any depth) so the user can find the problem.
+    const bumpErroredSections = useCallback((fieldErrors: Errors) => {
+        setExpandVersions((prev) => ({...prev, ...computeExpandBumps(form.fields || [], fieldErrors, prev)}));
+    }, [form.fields]);
+
     const onChange = useCallback((name: string, value: AppFormValue) => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields || []).find((f) => f.name === name);
         if (!field) {
             logDebug('AppsFormComponent: Field not found for onChange', {name});
             return;
@@ -303,8 +363,15 @@ function AppsFormComponent({
                     const errorResponse = res.error;
                     const errorMsg = errorResponse.text;
                     const newErrors = errorResponse.data?.errors;
-                    const elements = fieldsAsElements(form.fields);
+
+                    // Flatten to leaf fields so a nested-field server error matches its element.
+                    const elements = fieldsAsElements(flattenAppFields(form.fields || []));
                     updateErrors(elements, newErrors, errorMsg);
+
+                    // Open any section holding a refreshed-field error (as submit does).
+                    if (newErrors) {
+                        bumpErroredSections(newErrors);
+                    }
                     return;
                 }
 
@@ -338,19 +405,13 @@ function AppsFormComponent({
         }
 
         dispatchValues({name, value});
-    }, [form, values, refreshOnSelect, updateErrors, intl, cancelRefreshOnReturn]);
+    }, [form, values, refreshOnSelect, updateErrors, bumpErroredSections, intl, cancelRefreshOnReturn]);
 
-    // Memoize elements conversion for performance
-    const elements = useMemo(() => fieldsAsElements(form.fields), [form.fields]);
-
-    // Memoize filtered fields to avoid recalculation on every render
-    const visibleFields = useMemo(() =>
-        form.fields?.filter((f) => f.name !== form.submit_buttons) || [],
-    [form.fields, form.submit_buttons],
-    );
+    // Memoize elements conversion for performance; flatten collapsible containers to leaf fields
+    const elements = useMemo(() => fieldsAsElements(flattenAppFields(form.fields || [])), [form.fields]);
 
     const handleSubmit = useCallback(async (button?: string) => {
-        if (submitting || uploadingFields.size > 0) {
+        if (submittingRef.current || uploadingFields.size > 0) {
             return;
         }
 
@@ -370,6 +431,7 @@ function AppsFormComponent({
 
         if (hasErrors) {
             setErrors(fieldErrors);
+            bumpErroredSections(fieldErrors);
             return;
         }
 
@@ -379,6 +441,7 @@ function AppsFormComponent({
             submission[form.submit_buttons] = button;
         }
 
+        submittingRef.current = true;
         setSubmitting(true);
         cancelRefreshOnReturn();
 
@@ -397,12 +460,17 @@ function AppsFormComponent({
                 close();
                 return;
             }
+            if (errorResponse.data?.errors) {
+                bumpErroredSections(errorResponse.data.errors);
+            }
+            submittingRef.current = false;
             setSubmitting(false);
             return;
         }
 
         setError('');
         setErrors(emptyErrorsState);
+        setExpandVersions({});
 
         const callResponse = res.data!;
         switch (callResponse.type) {
@@ -414,6 +482,7 @@ function AppsFormComponent({
                 handleGotoLocation(serverUrl, intl, callResponse.navigate_to_url!);
                 return;
             case AppCallResponseTypes.FORM:
+                submittingRef.current = false;
                 setSubmitting(false);
                 return;
             default:
@@ -423,9 +492,10 @@ function AppsFormComponent({
                 }, {
                     type: callResponse.type,
                 }));
+                submittingRef.current = false;
                 setSubmitting(false);
         }
-    }, [elements, form, values, submit, submitting, uploadingFields, updateErrors, serverUrl, intl, cancelRefreshOnReturn]);
+    }, [elements, form, values, submit, uploadingFields, updateErrors, bumpErroredSections, serverUrl, intl, cancelRefreshOnReturn]);
 
     const refreshOnReturn = useCallback(async () => {
         if (!refreshForm) {
@@ -433,7 +503,7 @@ function AppsFormComponent({
         }
 
         const seq = ++refreshSeqRef.current;
-        refreshPreviousFieldsRef.current = new Map(form.fields?.flatMap((f) => (f.name ? [[f.name, f] as const] : [])));
+        refreshPreviousFieldsRef.current = new Map(flattenAppFields(form.fields || []).flatMap((f) => (f.name ? [[f.name, f] as const] : [])));
 
         let res: DoAppCallResult<FormResponseData>;
         try {
@@ -462,8 +532,35 @@ function AppsFormComponent({
         }
     }, [refreshNonce]);
 
+    // Default submit lives in the header (like edit_profile) so it clears the keyboard;
+    // forms with their own submit_buttons keep those inline instead.
+    const hasSubmitButtonsField = Boolean(submitButtons?.options?.length);
+    const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
+    useEffect(() => {
+        if (hasSubmitButtonsField) {
+            navigation.setOptions({headerRight: undefined});
+            return;
+        }
+        navigation.setOptions({
+            headerRight: () => (
+
+                // The View testID constrains the Detox hit area to the button, not the title
+                // (see edit_profile.save.button). NavigationButton matches the header convention.
+                <View testID='interactive_dialog.submit.button'>
+                    <NavigationButton
+                        onPress={() => handleSubmit()}
+                        disabled={submitting || uploadingFields.size > 0}
+                        iconName='check'
+                        iconSize={24}
+                        accessibilityLabel={submitLabel}
+                    />
+                </View>
+            ),
+        });
+    }, [navigation, hasSubmitButtonsField, submitting, uploadingFields, submitLabel, handleSubmit, style]);
+
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields || []).find((f) => f.name === name);
         if (!field?.name) {
             return [];
         }
@@ -518,35 +615,59 @@ function AppsFormComponent({
         }
     }, [form, values, performLookupCall, intl]);
 
-    useEffect(() => {
-        // Header Submit is the default submission affordance. When the form
-        // declares a custom submit_buttons field with at least one option, the
-        // inline buttons rendered at the bottom of the form replace the header
-        // Submit so the user picks an explicit button value. If the field has
-        // no options (nothing renders inline), keep the header Submit so the
-        // form remains submittable.
-        if (submitButtons?.options?.length) {
-            navigation.setOptions({headerRight: undefined});
-            return;
-        }
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSubmit}
-                    disabled={submitting || uploadingFields.size > 0}
-                    testID='interactive_dialog.submit.button'
-                    text={form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
-                />
-            ),
-        });
-    }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting, uploadingFields]);
-
     // Cleanup on unmount to prevent memory leaks
     useEffect(() => {
         return () => {
             isMountedRef.current = false;
         };
     }, []);
+
+    // `path` indexes the unfiltered field tree (same as computeExpandBumps) so
+    // force-expand keys line up; filtered-out children just render as null.
+    const renderField = useCallback((field: AppField, path: string, depth = 0): React.ReactNode => {
+        if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            const rawChildren = field.collapsible_config?.fields || [];
+            const renderedChildren = rawChildren.map((child, i) => renderField(child, childPath(path, i), depth + 1));
+
+            // Drop a section with no visible fields (e.g. only submit_buttons).
+            if (!renderedChildren.some(Boolean)) {
+                return null;
+            }
+            const key = sectionKeyFor(field, path);
+            return (
+                <CollapsibleSection
+                    key={key}
+                    label={field.label || field.name || ''}
+                    initiallyExpanded={field.collapsible_config?.expanded ?? true}
+                    bordered={field.collapsible_config?.bordered ?? true}
+                    depth={depth}
+                    hasError={sectionHasError(field, errors)}
+                    forceExpandVersion={expandVersions[key]}
+                    testID={`AppFormSection.${key}`}
+                >
+                    {renderedChildren}
+                </CollapsibleSection>
+            );
+        }
+        if (!field.name || field.name === form.submit_buttons) {
+            return null;
+        }
+        const value = secureGetFromRecord(values, field.name);
+        return (
+            <AppsFormField
+                field={field}
+                key={field.name}
+                name={field.name}
+                errorText={secureGetFromRecord(errors, field.name)}
+                value={value || ''}
+                performLookup={performLookup}
+                onChange={onChange}
+                setFieldUploading={setFieldUploading}
+                channelId={channelId}
+                serverUrl={serverUrl}
+            />
+        );
+    }, [values, errors, expandVersions, performLookup, onChange, setFieldUploading, channelId, serverUrl, form.submit_buttons]);
 
     return (
         <SafeAreaView
@@ -577,45 +698,28 @@ function AppsFormComponent({
                         value={form.header}
                     />
                 }
-                {visibleFields.map((field) => {
-                    if (!field.name) {
-                        return null;
-                    }
-                    const value = secureGetFromRecord(values, field.name);
-                    return (
-                        <AppsFormField
-                            field={field}
-                            key={field.name}
-                            name={field.name}
-                            errorText={secureGetFromRecord(errors, field.name)}
-                            value={value || ''}
-                            performLookup={performLookup}
-                            onChange={onChange}
-                            setFieldUploading={setFieldUploading}
-                            channelId={channelId}
-                            serverUrl={serverUrl}
-                        />
-                    );
-                })}
-                <View
-                    style={style.buttonsWrapper}
-                >
-                    {submitButtons?.options?.map((o) => (
-                        <View
-                            key={o.value}
-                            style={style.buttonContainer}
-                        >
-                            <Button
-                                onPress={() => handleSubmit(o.value)}
-                                theme={theme}
-                                size='lg'
-                                text={o.label || ''}
-                                disabled={submitting || uploadingFields.size > 0}
-                                testID={`interactive_dialog.submit_button.${o.value}`}
-                            />
-                        </View>
-                    ))}
-                </View>
+                {(form.fields || []).map((field, index) => renderField(field, childPath('', index)))}
+                {hasSubmitButtonsField && (
+                    <View
+                        style={style.buttonsWrapper}
+                    >
+                        {submitButtons?.options?.map((o) => (
+                            <View
+                                key={o.value}
+                                style={style.buttonContainer}
+                            >
+                                <Button
+                                    onPress={() => handleSubmit(o.value)}
+                                    theme={theme}
+                                    size='lg'
+                                    text={o.label || ''}
+                                    disabled={submitting || uploadingFields.size > 0}
+                                    testID={`interactive_dialog.submit_button.${o.value}`}
+                                />
+                            </View>
+                        ))}
+                    </View>
+                )}
             </KeyboardAwareScrollView>
         </SafeAreaView>
     );

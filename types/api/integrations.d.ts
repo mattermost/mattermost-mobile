@@ -101,6 +101,13 @@ type DialogElement = {
         url: string;
         context?: Record<string, string>;
     };
+
+    // Collapsible section fields
+    collapsible_config?: {
+        elements?: DialogElement[];
+        collapsed?: boolean;
+        borderless?: boolean;
+    };
 };
 
 type InteractiveDialogConfig = {
@@ -163,5 +170,5 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button' | 'collapsible'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

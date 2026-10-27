@@ -203,6 +203,15 @@ type AppField = {
     // Action button props
     action_button_url?: string;
     action_button_context?: Record<string, string>;
+
+    // Collapsible section props
+    collapsible_config?: AppCollapsibleConfig;
+};
+
+type AppCollapsibleConfig = {
+    fields?: AppField[];
+    expanded?: boolean;
+    bordered?: boolean;
 };
 
 type DateTimeConfig = {
