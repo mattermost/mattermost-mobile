@@ -27,6 +27,10 @@ inputs:
     description: report-only or enforce (vars.E2E_TRIAGE_MODE)
     required: false
     default: report-only
+  triage-lanes:
+    description: Comma-separated commit-status contexts the one PR-wide triage check summarises
+    required: false
+    default: e2e-test/detox-ios,e2e-test/detox-ipad,e2e-test/detox-android,e2e-test/maestro-ios,e2e-test/maestro-android
 
 runs:
   using: composite
@@ -63,7 +67,7 @@ runs:
         # One triage check for the whole PR, summarising every lane; a red lane posts it
         # as pending as soon as it finishes (detox/utils/tsio-report-status.js).
         triage-status-context: e2e-test/triage
-        triage-lanes: e2e-test/detox-ios,e2e-test/detox-ipad,e2e-test/detox-android,e2e-test/maestro-ios,e2e-test/maestro-android
+        triage-lanes: ${{ inputs.triage-lanes }}
         lane: ${{ inputs.job-key }}
         evidence-dir: triage-evidence
         test-root: .
