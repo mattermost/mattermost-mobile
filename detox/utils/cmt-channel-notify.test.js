@@ -13,6 +13,9 @@ const {
     formatLegResultText,
     formatCmtChannelMessage,
     notifyCmtChannel,
+    classifyFailure,
+    failuresFromConsolidated,
+    fetchFailuresFromConsolidated,
 } = require('./cmt-channel-notify');
 
 describe('cmt-channel-notify', () => {
@@ -268,6 +271,175 @@ describe('cmt-channel-notify', () => {
                 text,
                 /🔗 \*\*CI run:\*\* https:\/\/github\.com\/mattermost\/mattermost-mobile\/actions\/runs\/30424009936/,
             );
+        });
+    });
+
+    describe('classifyFailure', () => {
+        it('judges a spec that never ran as infra', () => {
+            assert.equal(classifyFailure({title: 'CI shard reporting › spec did not run', error: 'x was assigned to a shard but produced no result'}).category, 'infra');
+        });
+
+        it('judges a server-disabled feature error as infra, not an app bug', () => {
+            assert.equal(classifyFailure({title: 'MM-T6310', error: 'api.channel.create_channel.attributes_feature_disabled: Channel attributes are not enabled on this server.'}).category, 'infra');
+        });
+
+        it('judges a test with mixed pass/fail history as flaky', () => {
+            assert.equal(classifyFailure({title: 'MM-T1', error: 'timeout', previousStatuses: ['passed', 'failed', 'passed']}).category, 'flaky');
+            assert.equal(classifyFailure({title: 'MM-T1', error: 'timeout', passedOnRetry: true}).category, 'flaky');
+        });
+
+        it('judges a repeatedly failing test as known, and a corroborated direct assertion as suspected app bug', () => {
+            assert.equal(classifyFailure({title: 'MM-T2', error: 'expect mismatch', previousStatuses: ['failed', 'failed']}).category, 'known');
+            assert.equal(classifyFailure({title: 'MM-T3', error: "expected element toHaveText 'HIGH'", previousStatuses: ['passed', 'passed']}).category, 'app-bug');
+            assert.equal(classifyFailure({title: 'MM-T3', error: "expected element toHaveText 'HIGH'", previousStatuses: [], alsoFailedElsewhere: true}).category, 'app-bug');
+        });
+
+        it('does not treat a selected-view mismatch carrying a direct assertion as timing', () => {
+            assert.equal(classifyFailure({title: 'MM-T8', error: "'HIGH' doesn't match the selected view (toHaveText)", previousStatuses: ['passed']}).category, 'app-bug');
+        });
+
+        it('does not call a timing wait or a single uncorroborated assertion an app bug', () => {
+            assert.equal(classifyFailure({title: 'MM-T4', error: 'Timed out while waiting for expectation: TOBEVISIBLE TIMEOUT(10s)', previousStatuses: []}).category, 'investigate');
+            assert.equal(classifyFailure({title: 'MM-T5', error: "expected element toHaveText 'HIGH'", previousStatuses: []}).category, 'investigate');
+            assert.equal(classifyFailure({title: 'MM-T6', error: 'some opaque failure', previousStatuses: ['passed']}).category, 'investigate');
+        });
+    });
+
+    describe('failuresFromConsolidated', () => {
+        it('extracts this commit\'s failures with earlier history attached', () => {
+            const identity = {commit_sha: 'sha1', gh_run_attempt: '1'};
+            const detail = {reports: [{id: 'r1', gh_job_name: 'detox-ios-Server_12.1.0-rc1'}]};
+            const consol = {specs: [
+                {full_title: 'Suite MM-T1 - case',
+                    history: [
+                        {report_id: 'r1', commit_sha: 'sha0', run_attempt: 1, status: 'passed'},
+                        {report_id: 'r1', commit_sha: 'sha1', run_attempt: 1, status: 'failed', error_message: 'boom'},
+                    ]},
+                {full_title: 'Suite MM-T2 - case',
+                    history: [
+                        {report_id: 'r1', commit_sha: 'sha1', run_attempt: 1, status: 'passed'},
+                    ]},
+            ]};
+            assert.deepEqual(failuresFromConsolidated(consol, identity, detail), [{
+                job: 'detox-ios-Server_12.1.0-rc1',
+                title: 'Suite MM-T1 - case',
+                error: 'boom',
+                previousStatuses: ['passed'],
+                passedOnRetry: false,
+            }]);
+        });
+
+        it('excludes other attempts of the same run from previous statuses', () => {
+            const identity = {commit_sha: 'sha1', gh_run_attempt: '2'};
+            const detail = {reports: [{id: 'r1', gh_job_name: 'detox-ios-Server_12.1.0-rc1'}]};
+            const consol = {specs: [
+                {full_title: 'Suite MM-T1 - case',
+                    history: [
+                        {report_id: 'r1', commit_sha: 'sha0', run_attempt: 1, status: 'failed'},
+                        {report_id: 'r1', commit_sha: 'sha1', run_attempt: 1, status: 'passed'},
+                        {report_id: 'r1', commit_sha: 'sha1', run_attempt: 2, status: 'failed', error_message: 'boom'},
+                    ]},
+            ]};
+            const failures = failuresFromConsolidated(consol, identity, detail);
+            assert.equal(failures.length, 1);
+            assert.deepEqual(failures[0].previousStatuses, ['failed']);
+        });
+
+        it('requests the consolidated endpoint with run_attempt, not gh_run_attempt', async () => {
+            const identity = {
+                repository: 'mattermost/mattermost-mobile',
+                branch: 'refs/heads/build-release-833',
+                commit_sha: 'sha1',
+                gh_run_id: '40295770932',
+                gh_run_attempt: '2',
+                name: 'mobile-release-detox-ios-Server_12.1.0-rc1',
+                run_group: 'mobile-release-detox-ios-Server_12.1.0-rc1',
+            };
+            const original = global.fetch;
+            let requestedUrl = '';
+            global.fetch = (url) => {
+                requestedUrl = String(url);
+                return Promise.resolve({ok: true, text: () => Promise.resolve(''), json: () => Promise.resolve({specs: []})});
+            };
+            try {
+                await fetchFailuresFromConsolidated('https://test-io.test.mattermost.com', identity, {reports: []});
+            } finally {
+                global.fetch = original;
+            }
+            assert.match(requestedUrl, /[?&]run_attempt=2(&|$)/);
+            assert.doesNotMatch(requestedUrl, /gh_run_attempt/);
+        });
+    });
+
+    describe('formatCmtChannelMessage failure judgement', () => {
+        it('renders grouped judgements when failures are supplied', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
+                perJobCounts: {},
+                failures: [
+                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-1 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: ['passed']},
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Attributes MM-2 - case', error: 'Channel attributes are not enabled on this server.', previousStatuses: []},
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Attributes MM-3 - case', error: 'chip not visible after 10s', previousStatuses: []},
+                ],
+            });
+            assert.match(text, /Failure judgement/);
+            assert.match(text, /🔴 \*\*Suspected app bug — corroborated, needs investigation \(1\)\*\*/);
+            assert.match(text, /⚠️ \*\*Infra \/ environment — not an app failure \(2\)\*\*/);
+            assert.match(text, /Attributes MM-3 - case — same suite hit an environment failure/);
+            assert.match(text, /Messaging MM-1 - case — passed in earlier runs and now fails a direct assertion/);
+        });
+
+        it('promotes a direct assertion that failed on two legs to suspected app bug', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
+                perJobCounts: {},
+                failures: [
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                ],
+            });
+            assert.match(text, /🔴 \*\*Suspected app bug — corroborated, needs investigation \(2\)\*\*/);
+            assert.match(text, /direct assertion failed on more than one leg/);
+        });
+
+        it('does not promote a direct assertion when only one leg has a job name', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
+                perJobCounts: {},
+                failures: [
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                    {job: '', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
+                ],
+            });
+            assert.doesNotMatch(text, /Suspected app bug/);
+            assert.match(text, /🔍 \*\*Needs a closer look — not enough evidence to call it an app bug \(2\)\*\*/);
+        });
+
+        it('does not cascade failures whose job or suite is unknown', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
+                perJobCounts: {},
+                failures: [
+                    {job: '', title: '', error: 'Channel attributes are not enabled on this server.', previousStatuses: []},
+                    {job: '', title: '', error: 'expect mismatch', previousStatuses: []},
+                ],
+            });
+            assert.match(text, /🔍 \*\*Needs a closer look — not enough evidence to call it an app bug \(1\)\*\*/);
+            assert.match(text, /⚠️ \*\*Infra \/ environment — not an app failure \(1\)\*\*/);
+            assert.doesNotMatch(text, /likely a cascade/);
+        });
+
+        it('renders no judgement section without failures', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                detail: {status: 'completed', test_stats: {passed: 1, failed: 0}, reports: []},
+                perJobCounts: {},
+            });
+            assert.doesNotMatch(text, /Failure judgement/);
         });
     });
 
