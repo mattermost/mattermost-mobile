@@ -50,6 +50,7 @@ jobs:
     outputs:
       tsio-base-config: ${{ steps.id.outputs.tsio-base-config }}
       tsio-job-configs: ${{ steps.id.outputs.tsio-job-configs }}
+      tsio-job-keys: ${{ steps.id.outputs.tsio-job-keys }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -86,6 +87,11 @@ jobs:
             process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys)));
           ')
           echo "tsio-job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
+          JOB_KEYS=$(node -e '
+            const {cmtJobKeys} = require("./detox/utils/build-tsio-job-config.js");
+            process.stdout.write(JSON.stringify(cmtJobKeys(JSON.parse(process.env.CMT_MATRIX), JSON.parse(process.env.MAESTRO_MATRIX))));
+          ')
+          echo "tsio-job-keys=$JOB_KEYS" >> "$GITHUB_OUTPUT"
 
   update-initial-status:
     runs-on: ubuntu-24.04
@@ -150,7 +156,7 @@ jobs:
           fi
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  # Provisions license, config and plugins (demo plugin on site 2 only) before tests.
+  # Provisions license, config and plugins (demo plugin on full-suite site 1 and site 2) before tests.
   # CMT previously skipped that and only used Matterwick-booted servers, so
   # interactive_dialog_plugin failed 24× with "Demo plugin is not active".
   provision-cmt-servers:
@@ -185,20 +191,22 @@ jobs:
             exit 1
           fi
 
-          # The demo plugin goes only to full-suite site 2 URLs; a pool, shared or smoke server must not be one of them.
+          # The demo plugin goes only to full-suite site 1 and site 2 URLs; a shared SITE_3 or a smoke server must not be one of them.
           DEMO_CONFLICTS=$(echo "$CMT_MATRIX" | jq -r '
             . as $m
             | ([ $m.server[] | select(.latest != true) | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url, .site_3_url ]
-              + [ $m.server[] | select(.latest == true) | .android_site_1_url, .ios_site_1_url, .site_3_url ]
-              | map(select(. != null and . != ""))) as $pool
+              + [ $m.server[] | select(.latest == true) | .site_3_url ]
+              | map(select(. != null and . != ""))) as $other
+            | ([ $m.server[] | select(.latest == true) | .android_site_1_url, .ios_site_1_url ] | map(select(. != null and . != ""))) as $pool
             | $m.server[] | select(.latest == true) | . as $row
             | ["android", "ios"][] as $p
-            | $row[$p + "_site_2_url"] as $url
-            | select($url != null and $url != "" and ($pool | any(. == $url)))
-            | "\($row.version // "unknown"): \($p)_site_2_url \($url) is also a pool, shared or smoke server"
+            | ["_site_1_url", "_site_2_url"][] as $k
+            | $row[$p + $k] as $url
+            | select($url != null and $url != "" and (($other | any(. == $url)) or ($k == "_site_2_url" and ($pool | any(. == $url)))))
+            | "\($row.version // "unknown"): \($p)\($k) \($url) is also a pool, shared or smoke server"
           ')
           if [ -n "$DEMO_CONFLICTS" ]; then
-            echo "::error::The demo plugin would land on a pool server; these site 2 URLs are also pool, shared or smoke servers:"
+            echo "::error::These full-suite URLs are also pool, shared or smoke servers (a site 2 must not be any pool site 1, and the demo plugin must not land on a shared or smoke server):"
             printf '%s\n' "$DEMO_CONFLICTS"
             exit 1
           fi
@@ -212,11 +220,11 @@ jobs:
             echo "::error::CMT_MATRIX contained no server URLs to provision"
             exit 1
           fi
-          # Only full-suite rows run the mutation shard on site 2 (smoke rows use smoke_test, which has no mutation specs).
+          # Only full-suite rows run the dialog specs, on pool site 1 and mutation site 2 (smoke rows use smoke_test, which has none).
           DEMO_URLS=$(echo "$CMT_MATRIX" | jq -r '
             .server[]
             | select(.latest == true)
-            | .android_site_2_url, .ios_site_2_url
+            | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url
             | select(. != null and . != "")
           ' | awk 'NF && !seen[$0]++')
           echo "Provisioning $(echo "$URLS" | wc -l | tr -d ' ') unique server(s)"
@@ -664,3 +672,78 @@ jobs:
             --poll-attempts=6 || true
 
       # Instance cleanup is handled by matterwick on workflow_run completed.
+
+  # Same per-test judging the PR/main lanes get in e2e-detox-pr.yml: without it
+  # every CMT shard is raw any-failure-red (FAILURES > 0 in the template summary
+  # jobs), so a handful of known-flaky failures out of ~650 tests per leg turned
+  # every CMT run red. Report-only (the default) only posts the verdict;
+  # E2E_TRIAGE_MODE=enforce makes the verdict the shard's commit status, exactly
+  # as on PR/main. The workflow run itself stays red on real failures either way.
+  tsio-triage:
+    name: Triage CMT failures (${{ matrix.job-key }})
+    runs-on: ubuntu-24.04
+    if: >-
+      !cancelled() &&
+      (needs.detox-e2e.result == 'failure' ||
+       needs.detox-android-e2e.result == 'failure' ||
+       needs.detox-ipad-e2e.result == 'failure' ||
+       needs.maestro-ios-e2e.result == 'failure' ||
+       needs.maestro-android-e2e.result == 'failure')
+    needs:
+      - calculate-commit-hash
+      - cmt-identity
+      - detox-e2e
+      - detox-android-e2e
+      - detox-ipad-e2e
+      - maestro-ios-e2e
+      - maestro-android-e2e
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: read
+    # Every lane writes the shared e2e-test/triage context, and the toolkit's
+    # status publisher has no compare-and-swap: its status.ts requires every
+    # caller to hold the same non-cancelling, SHA-scoped job concurrency lock
+    # across its reads and writes. max-parallel serializes the matrix entries
+    # within this run without discarding queued entries; the concurrency group
+    # serializes against triage writers from any other run of the same commit.
+    # The workflow-level cancel-in-progress group above does neither.
+    concurrency:
+      group: e2e-test-triage-${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        job-key: ${{ fromJSON(needs.cmt-identity.outputs.tsio-job-keys) }}
+    steps:
+      # Checked out from the workflow ref (the build-release-* branch under
+      # test runs no code with the API key beyond this composite's own steps,
+      # which are pinned actions; same pattern as e2e-detox-pr.yml).
+      - name: Checkout triage action
+        continue-on-error: true
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/e2e-triage/
+          sparse-checkout-cone-mode: false
+
+      - name: Resolve CMT triage lanes
+        id: lanes
+        env:
+          JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
+        run: |
+          echo "contexts=$(echo "$JOB_CONFIGS" | jq -r '[.[].status_context] | join(",")')" >> "$GITHUB_OUTPUT"
+
+      - name: e2e/triage
+        continue-on-error: true
+        uses: ./.github/actions/e2e-triage
+        with:
+          job-key: ${{ matrix.job-key }}
+          composite-identity: ${{ toJSON(fromJSON(needs.cmt-identity.outputs.tsio-job-configs)[matrix.job-key].composite_identity) }}
+          status-context: ${{ fromJSON(needs.cmt-identity.outputs.tsio-job-configs)[matrix.job-key].status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          triage-lanes: ${{ steps.lanes.outputs.contexts }}
+          # A triage failure must never change the outcome of the CMT run itself.
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'report-only' }}

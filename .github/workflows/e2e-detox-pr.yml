@@ -298,6 +298,7 @@ jobs:
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
+      job-keys-json: ${{ steps.id.outputs.job-keys-json }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -374,6 +375,7 @@ jobs:
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+          echo "job-keys-json=$(echo "$JOB_CONFIGS" | jq -c 'keys')" >> "$GITHUB_OUTPUT"
 
   update-initial-tsio-status:
     name: Set pending per-job TSIO commit statuses
@@ -738,10 +740,10 @@ jobs:
           IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
           SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
         run: |
-          # Site 2 is mutation server B, the only server that gets the demo plugin; a repeated URL would put it on a pool server.
+          # Site 2 is mutation server B; a repeated URL would run its server-wide changes on a pool or shared server.
           DUPES=$(printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL" | sort | uniq -d)
           if [ -n "$DUPES" ]; then
-            echo "::error::PR test server URLs must be distinct; the demo plugin would land on a pool server if a site 2 URL repeats another server:"
+            echo "::error::PR test server URLs must be distinct; a site 2 URL that repeats another server would mix mutation specs into a pool or shared server:"
             printf '%s\n' "$DUPES"
             exit 1
           fi
@@ -749,9 +751,9 @@ jobs:
             echo "list<<EOF"
             printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"
             echo "EOF"
-            # Site 2 is mutation server B, the only server that gets the demo plugin.
+            # The dialog specs run on pool server A (site 1) and mutation server B (site 2); the shared SITE_3 does not get the demo plugin.
             echo "demo<<EOF"
-            printf '%s\n' "$ANDROID_SITE_2_URL" "$IOS_SITE_2_URL"
+            printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -1138,3 +1140,63 @@ jobs:
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM" \
             --poll-attempts=6 || true
+
+  # Judges each red lane: is the failure the PR's fault? The toolkit asks TSIO for the
+  # history of exactly the failed tests and settles what the rules can (broken or flaky
+  # on main, recurring on other PRs, owned by the PR's diff). Only the rest reaches a
+  # second judge that must cite evidence. Runs on main too, where only intermittency
+  # clears a failure. report-only (the default) posts the PR comment and leaves the
+  # per-job statuses alone; E2E_TRIAGE_MODE=enforce makes the verdict the lane's status.
+  tsio-triage:
+    name: Triage E2E failures (${{ matrix.job-key }})
+    runs-on: ubuntu-24.04
+    # Red runs only: a verdict can turn a red run green, never the reverse. The gate is
+    # per run, not per lane, so a passing lane may still run and post nothing. Not on a
+    # cancelled run: its unfinished specs count as failures.
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (needs.run-detox-ios.result == 'failure' ||
+       needs.run-detox-android.result == 'failure' ||
+       needs.run-maestro-ios.result == 'failure' ||
+       needs.run-maestro-android.result == 'failure')
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: read
+    strategy:
+      fail-fast: false
+      matrix:
+        job-key: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-keys-json) }}
+    steps:
+      # The triage composite is a local action, so it must be in the workspace first. It is
+      # checked out from the dispatch ref, never MOBILE_VERSION: this job holds the API key,
+      # and the branch under test must not run code with it. Sparse, so the workspace holds
+      # only the composite directory.
+      - name: Checkout triage action
+        continue-on-error: true
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/e2e-triage/
+          sparse-checkout-cone-mode: false
+      - name: e2e/triage
+        continue-on-error: true
+        uses: ./.github/actions/e2e-triage
+        with:
+          job-key: ${{ matrix.job-key }}
+          composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
+          status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # A triage failure must never change the outcome of the E2E run itself.
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'report-only' }}

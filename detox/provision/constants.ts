@@ -28,7 +28,7 @@ export const REQUIRED_PLUGINS: RequiredPlugin[] = [
     {id: 'com.mattermost.calls', url: CALLS_PLUGIN_URL, fixture: null},
 ];
 
-// Only servers provisioned with --demo-plugin (mutation server B). url is null on purpose: origin-side install_from_url 524s behind Cloudflare.
+// Only servers provisioned with --demo-plugin (the full-suite pool and mutation servers). url is null on purpose: origin-side install_from_url 524s behind Cloudflare.
 export const DEMO_PLUGIN_REQUIREMENT: RequiredPlugin = {id: DEMO_PLUGIN_ID, url: null, fixture: DEMO_PLUGIN_FIXTURE_FILENAME};
 
 export const ALLOWED_DOMAIN_PATTERNS = [

@@ -6,7 +6,7 @@
  *
  * Usage: npx tsx provision/index.ts <server_url> [--demo-plugin | --no-demo-plugin]
  *
- * The demo plugin is installed by default; CI passes --no-demo-plugin for every server but mutation server B.
+ * The demo plugin is installed by default; CI passes --no-demo-plugin for the shared SITE_3 and smoke-only servers.
  *
  * Environment variables:
  *   ADMIN_USERNAME / ADMIN_PASSWORD - admin credentials (required)
