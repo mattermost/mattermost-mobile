@@ -60,6 +60,12 @@ class InteractiveDialogScreen {
         }
     };
 
+    // Tapping a field's label is safe with stacked dialogs, where the scroll view matches more than once.
+    dismissKeyboardViaLabel = async (elementName: string) => {
+        await element(by.id(`AppFormElement.${elementName}.label`)).tap();
+        await wait(timeouts.HALF_SEC);
+    };
+
     fillTextElement = async (elementName: string, value: string) => {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 

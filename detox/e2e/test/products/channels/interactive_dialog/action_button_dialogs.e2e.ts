@@ -39,6 +39,7 @@ import {
     System,
     User,
 } from '@support/server_api';
+import {requireMutationServer} from '@support/server_role';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -378,6 +379,9 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
     let testUser: any;
 
     beforeAll(async () => {
+        // Restarts the demo plugin and patches its config, so it runs alone on the mutation server.
+        requireMutationServer('action_button_dialogs');
+
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
@@ -532,6 +536,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         // # Fill the note form and save it
         await InteractiveDialogScreen.selectOption('note_type', NOTE_TYPE_ROOT_CAUSE);
         await InteractiveDialogScreen.fillTextElement('message', 'Detox concurrent dialog note');
+        await InteractiveDialogScreen.dismissKeyboardViaLabel('message');
         await tapSubmitOption(NOTE_ACTION_SAVE_CLOSE);
 
         // * The child closes but the triage parent survives its submission
@@ -578,6 +583,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         // # Stage a note with Add Note
         await InteractiveDialogScreen.selectOption('note_type', NOTE_TYPE_ROOT_CAUSE);
         await InteractiveDialogScreen.fillTextElement('message', noteMessage);
+        await InteractiveDialogScreen.dismissKeyboardViaLabel('message');
         await tapSubmitOption(NOTE_ACTION_ADD);
 
         // * The dialog stays open with an empty message, ready for the next note
