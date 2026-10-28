@@ -5,6 +5,7 @@
 
 import Emm, {AuthenticationOutcome} from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
+import {Platform} from 'react-native';
 
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
@@ -568,6 +569,48 @@ describe('SecurityManager', () => {
             expect(SecurityManager.getServerConfig('server-9')?.authenticated).toBe(true);
         });
 
+        test('should remove the transient iOS blur after biometric authentication succeeds', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer('server-without-screen-capture', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-without-screen-capture')).resolves.toBe(true);
+
+            expect(Emm.authenticate).toHaveBeenCalledWith(expect.objectContaining({blurOnAuthenticate: false}));
+            expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
+        });
+
+        test('should not remove a transient blur on Android', async () => {
+            const originalOS = Platform.OS;
+            Platform.OS = 'android';
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer('android-server', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            try {
+                await expect(SecurityManager.authenticateWithBiometricsIfNeeded('android-server')).resolves.toBe(true);
+                expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+            } finally {
+                Platform.OS = originalOS;
+            }
+        });
+
+        test('should preserve the iOS blur policy when screen capture prevention is enabled', async () => {
+            const server = 'server-with-screen-capture';
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer(server, {
+                MobileEnableBiometrics: 'true',
+                MobilePreventScreenCapture: 'true',
+            } as SecurityClientConfig);
+            SecurityManager.activeServer = server;
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded(server)).resolves.toBe(true);
+
+            expect(Emm.authenticate).toHaveBeenCalledWith(expect.objectContaining({blurOnAuthenticate: true}));
+            expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+        });
+
         test('should offer logout when authentication genuinely fails', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockRejectedValue(rejectWith(AuthenticationOutcome.Failed));
@@ -586,6 +629,7 @@ describe('SecurityManager', () => {
             expect(interruptedAlert()).toHaveBeenCalled();
             expect(failureAlert()).not.toHaveBeenCalled();
             expect(SecurityManager.getServerConfig('server-11')?.authenticated).toBe(false);
+            expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
         });
 
         test('should retry the prompt when the interrupted alert returns retry', async () => {

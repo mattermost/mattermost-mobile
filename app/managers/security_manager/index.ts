@@ -5,7 +5,7 @@
 
 import Emm, {AuthenticationOutcome} from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
-import {AppState, DeviceEventEmitter, type AppStateStatus, type EventSubscription} from 'react-native';
+import {AppState, DeviceEventEmitter, Platform, type AppStateStatus, type EventSubscription} from 'react-native';
 
 import {terminateSession} from '@actions/local/session';
 import {getCurrentUserLocale} from '@actions/local/user';
@@ -774,13 +774,14 @@ class SecurityManagerSingleton {
         }
 
         const translations = getTranslations(locale);
+        const blurOnAuthenticate = this.shouldBlurOnAuthenticate(server);
 
         try {
             await Emm.authenticate({
                 reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
                 fallback: true,
                 supressEnterPassword: false,
-                blurOnAuthenticate: this.shouldBlurOnAuthenticate(server),
+                blurOnAuthenticate,
             });
 
             if (config) {
@@ -800,6 +801,12 @@ class SecurityManagerSingleton {
             logDebug('SecurityManager: Authentication attempt did not succeed', {outcome, reason: getFullErrorMessage(error)});
 
             return outcome === AuthenticationOutcome.Failed ? 'failed' : 'interrupted';
+        } finally {
+            // iOS applies a transient privacy overlay for every biometric prompt. When screen
+            // capture prevention is disabled, the app owns removing it after the prompt settles.
+            if (Platform.OS === 'ios' && !blurOnAuthenticate) {
+                Emm.removeBlurEffect();
+            }
         }
     };
 
