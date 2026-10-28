@@ -75,7 +75,7 @@ object WireGuardConfigParser {
         try {
             return Config.parse(BufferedReader(StringReader(rawConfig)))
         } catch (error: BadConfigException) {
-            val location = error.location.name.ifEmpty { error.section.name }
+            val location = error.location.getName().ifEmpty { error.section.getName() }
             val reason = error.reason.name.lowercase().replace('_', ' ')
             throw WireGuardConfigException("Invalid WireGuard $location: $reason.")
         } catch (error: IllegalArgumentException) {
