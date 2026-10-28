@@ -83,6 +83,21 @@ export const apiDeletePropertyField = async (baseUrl: string, groupName: string,
 };
 
 /**
+ * Patch a property field. The server merges `attrs`, so keys left out keep their value.
+ */
+export const apiPatchPropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string, patch: Record<string, unknown>) => {
+    try {
+        const response = await client.patch(
+            `${baseUrl}/api/v4/properties/groups/${groupName}/${objectType}/fields/${fieldId}`,
+            patch,
+        );
+        return {field: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get property values for a target.
  */
 export const apiGetPropertyValues = async (baseUrl: string, groupName: string, objectType: string, targetId: string) => {
@@ -560,6 +575,7 @@ export const Properties = {
     apiGetPropertyFields,
     apiCreatePropertyField,
     apiDeletePropertyField,
+    apiPatchPropertyField,
     apiGetPropertyValues,
     apiPatchPropertyValues,
     apiGetSystemPropertyValues,

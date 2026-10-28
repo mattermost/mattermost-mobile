@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {addSessionAttributesNetworkChangeListener} from '@mattermost/react-native-network-client';
 import NetInfo from '@react-native-community/netinfo';
 import {AppState} from 'react-native';
 import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
@@ -10,7 +11,6 @@ import {handleFirstConnect, handleReconnect} from '@actions/websocket';
 import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import DatabaseManager from '@database/manager';
-import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import RenderPermissionsStore from '@store/render_permissions_store';
@@ -32,10 +32,6 @@ jest.mock('@calls/native_call_mappings', () => ({
 }));
 jest.mock('@client/websocket');
 jest.mock('@database/manager');
-jest.mock('@managers/session_attributes_manager', () => ({
-    __esModule: true,
-    default: {getEnabledServers: jest.fn(() => [])},
-}));
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 jest.mock('@utils/log');
@@ -348,74 +344,27 @@ describe('WebsocketManager', () => {
             expect(manager.getClient(mockServerUrl)?.close).toHaveBeenCalled();
         });
 
-        it('should revalidate render-time permission decisions when the device changes networks', () => {
+        it('should revalidate the render-time permission decisions of the servers the network client reports on a network change', () => {
             // Network session attributes feed ABAC decisions and change with no server event.
-            jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
             const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
-            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
+            const onNetworkChange = jest.mocked(addSessionAttributesNetworkChangeListener).mock.calls[0][0];
+            const otherServerUrl = 'https://other.example.com';
 
-            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
-            expireServer.mockClear();
+            onNetworkChange([mockServerUrl, otherServerUrl]);
 
-            // Same type, different SSID: handleStateChange sees nothing, but the subject changed.
-            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'home'}});
-            expect(expireServer).toHaveBeenCalledTimes(1);
+            expect(expireServer).toHaveBeenCalledTimes(2);
             expect(expireServer).toHaveBeenCalledWith(mockServerUrl);
-
-            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'home'}});
-            mockNetInfoCallback({isConnected: false, type: 'none'});
-            expect(expireServer).toHaveBeenCalledTimes(1);
+            expect(expireServer).toHaveBeenCalledWith(otherServerUrl);
             expireServer.mockRestore();
         });
 
-        it('should revalidate render-time permission decisions when the device reconnects to a network of the same type without an SSID', () => {
-            // iOS reports no SSID, so a Wi-Fi to Wi-Fi switch only shows as a disconnect and a reconnect.
-            jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
-            const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
-            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
+        it('should replace the network change listener when initialized again', async () => {
+            const subscription = jest.mocked(addSessionAttributesNetworkChangeListener).mock.results[0].value;
 
-            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: null}});
-            expireServer.mockClear();
+            await manager.init(mockCredentials);
 
-            mockNetInfoCallback({isConnected: false, type: 'none'});
-            expect(expireServer).not.toHaveBeenCalled();
-
-            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: null}});
-            expect(expireServer).toHaveBeenCalledTimes(1);
-            expireServer.mockRestore();
-        });
-
-        it('should leave the decisions of servers that do not collect session attributes alone on a network change', () => {
-            // Without session attributes the server never sees the device's network.
-            jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([]);
-            const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
-            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
-
-            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
-            mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
-
-            expect(expireServer).not.toHaveBeenCalled();
-            expireServer.mockRestore();
-        });
-
-        it('should close the sockets before revalidating on a network switch, so the revalidation waits for the reconnect', () => {
-            jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
-            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
-            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
-
-            let stateWhenExpired: string | undefined;
-            const subscription = manager.observeWebsocketState(mockServerUrl).subscribe((state) => {
-                stateWhenExpired = state;
-            });
-            const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer').mockImplementation(() => {
-                subscription.unsubscribe();
-            });
-
-            mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
-
-            expect(expireServer).toHaveBeenCalledTimes(1);
-            expect(stateWhenExpired).not.toBe('connected');
-            expireServer.mockRestore();
+            expect(subscription.remove).toHaveBeenCalledTimes(1);
+            expect(addSessionAttributesNetworkChangeListener).toHaveBeenCalledTimes(2);
         });
     });
 
