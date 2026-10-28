@@ -88,6 +88,8 @@ export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape,
 
     if (authenticated) {
         canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
+
+        // Login/SSO resolve the pre-auth secret from the keychain by serverUrl.
         callback(data);
         return;
     }

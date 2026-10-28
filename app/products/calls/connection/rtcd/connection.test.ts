@@ -1,19 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
-import CallsNative, {type AudioRoute} from '@mattermost/calls-native';
 import {zlibSync, strToU8} from 'fflate';
 import {Platform} from 'react-native';
 
+import {startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
+import {getCurrentCall, newCurrentCall} from '@calls/state';
+import {CallsTransport} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
 import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
 
-import {newConnection} from './connection';
-import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
+import {WebSocketClient, wsReconnectionTimeoutErr} from '../websocket_client';
 
-jest.mock('./websocket_client');
+import {newRtcdConnection} from './connection';
+
+jest.mock('../websocket_client');
 jest.mock('@mattermost/calls/lib');
-jest.mock('react-native-webrtc', () => ({
+jest.mock('@livekit/react-native-webrtc', () => ({
     registerGlobals: jest.fn(),
     mediaDevices: {
         getUserMedia: jest.fn().mockResolvedValue({
@@ -30,12 +33,23 @@ jest.mock('react-native-webrtc', () => ({
         }),
     },
 }));
-jest.mock('@calls/connection/foreground_service', () => ({
+jest.mock('@calls/connection/session/foreground_service', () => ({
     foregroundServiceStart: jest.fn(),
     foregroundServiceStop: jest.fn(),
 }));
+jest.mock('@calls/connection/session/audio', () => ({
+    startAudioSession: jest.fn(() => Promise.resolve()),
+    stopAudioSession: jest.fn(() => Promise.resolve()),
+    createAudioRouteManager: jest.fn(() => mockAudioRouteManager),
+}));
 
-describe('newConnection', () => {
+const mockAudioRouteManager = {
+    setUserSelectedAudioRoute: jest.fn(),
+    start: jest.fn(() => Promise.resolve()),
+    stop: jest.fn(),
+};
+
+describe('newRtcdConnection', () => {
     const mockClient = {
         getWebSocketUrl: jest.fn(() => 'ws://localhost:8065'),
         getCallsConfig: jest.fn(() => ({
@@ -43,6 +57,7 @@ describe('newConnection', () => {
             ICEServersConfigs: [{urls: ['stun:stun.example.com']}],
             AllowEnableCalls: true,
             EnableAV1: true,
+            NeedsTURNCredentials: false,
         })),
         getVersion: jest.fn(() => ({
             version: '1.7.0',
@@ -153,7 +168,7 @@ describe('newConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -171,16 +186,31 @@ describe('newConnection', () => {
         expect(wsSend).toHaveBeenCalledWith('reconnect', {channelID: 'channelID', originalConnID: 'originalConnID', prevConnID: 'prevConnID'});
     });
 
-    it('should call startAudioSession when connecting', async () => {
+    it('should start the audio session and route manager on join, and stop both on disconnect', async () => {
+        const wsSend = jest.fn();
+
+        // @ts-ignore
+        RTCPeer.mockImplementation(() => ({
+            on: jest.fn(),
+            once: jest.fn(),
+            off: jest.fn(),
+            getStats: jest.fn(),
+            destroy: jest.fn(),
+        }));
 
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
-            on: jest.fn(),
-            send: jest.fn(),
+            on: (event: string, handler: any) => {
+                if (event === 'join') {
+                    handler();
+                }
+            },
+            send: wsSend,
+            close: jest.fn(),
         }));
 
-        await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -189,7 +219,48 @@ describe('newConnection', () => {
             mockIntl,
         );
 
-        expect(CallsNative.startAudioSession).toHaveBeenCalled();
+        expect(startAudioSession).toHaveBeenCalled();
+        expect(mockAudioRouteManager.start).toHaveBeenCalled();
+
+        connection.disconnect();
+
+        expect(stopAudioSession).toHaveBeenCalled();
+        expect(mockAudioRouteManager.stop).toHaveBeenCalled();
+    });
+
+    it('should not set up the call when disconnected while fetching TURN credentials', async () => {
+        mockClient.getCallsConfig.mockReturnValueOnce({...mockClient.getCallsConfig(), NeedsTURNCredentials: true});
+        let joinHandler: () => Promise<void> = () => Promise.resolve();
+
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: () => Promise<void>) => {
+                if (event === 'join') {
+                    joinHandler = handler;
+                }
+            },
+            send: jest.fn(),
+            close: jest.fn(),
+        }));
+
+        const connection = await newRtcdConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+            mockIntl,
+        );
+
+        mockClient.genTURNCredentials.mockImplementationOnce(async () => {
+            connection.disconnect();
+            return [];
+        });
+        await joinHandler();
+
+        expect(mockAudioRouteManager.start).not.toHaveBeenCalled();
+        expect(RTCPeer).not.toHaveBeenCalled();
     });
 
     it('mute/unmute', async () => {
@@ -218,7 +289,7 @@ describe('newConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -240,6 +311,28 @@ describe('newConnection', () => {
         expect(wsSend).toHaveBeenCalledWith('unmute');
     });
 
+    it('stops showing the user as live when there is no voice track to unmute', async () => {
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: jest.fn(),
+            send: jest.fn(),
+        }));
+        newCurrentCall('http://localhost:8065', 'channelID', 'myUserId', CallsTransport.Rtcd, {startUnmuted: true});
+
+        const connection = await newRtcdConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+            mockIntl,
+        );
+        connection.unmute();
+
+        expect(getCurrentCall()?.startUnmuted).toBe(false);
+    });
+
     it('raise/unraise hand', async () => {
         const wsSend = jest.fn();
 
@@ -250,7 +343,7 @@ describe('newConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -276,7 +369,7 @@ describe('newConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -308,7 +401,7 @@ describe('newConnection', () => {
             close: jest.fn(),
         }));
 
-        await newConnection(
+        await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             mockCloseCb,
@@ -341,7 +434,7 @@ describe('newConnection', () => {
             send: jest.fn(),
         }));
 
-        await newConnection(
+        await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             mockCloseCb,
@@ -356,9 +449,9 @@ describe('newConnection', () => {
     });
 
     it('voice track', async () => {
-        const getUserMedia = require('react-native-webrtc').mediaDevices.getUserMedia;
+        const getUserMedia = require('@livekit/react-native-webrtc').mediaDevices.getUserMedia;
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -416,7 +509,7 @@ describe('newConnection', () => {
             close: wsClose,
         }));
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -501,7 +594,7 @@ describe('newConnection', () => {
             close: wsClose,
         }));
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -564,7 +657,7 @@ describe('newConnection', () => {
         // @ts-ignore
         parseRTCStats.mockImplementation(() => mockRTCStats);
 
-        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false, mockIntl);
+        const connection = await newRtcdConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false, mockIntl);
         expect(connection).toBeDefined();
         expect(joinHandler).toHaveBeenCalled();
         await joinPromise;
@@ -573,7 +666,7 @@ describe('newConnection', () => {
     it('waitForPeerConnection', async () => {
         // Default mock: ws.on('join') never fires → peer never created →
         // onPeerConnected resolver never called → timeout fires.
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -621,7 +714,7 @@ describe('newConnection', () => {
             sessionID: 'sessionID',
         }));
 
-        const connection = await newConnection(
+        const connection = await newRtcdConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -640,103 +733,5 @@ describe('newConnection', () => {
         connectCb!();
 
         await expect(res).resolves.toBe('sessionID');
-    });
-
-    // Helper: connect (triggering the join handler) and return the connection +
-    // registered onAudioRouteChanged listener.
-    const connectAndGetRouteListener = async (initialRoute?: Partial<AudioRoute>) => {
-        (CallsNative.getAudioRoute as jest.Mock).mockResolvedValueOnce({
-            selectedAudioDevice: 'EARPIECE',
-            availableAudioDeviceList: ['EARPIECE', 'SPEAKER_PHONE'],
-            ...initialRoute,
-        });
-
-        // @ts-ignore
-        WebSocketClient.mockImplementation(() => ({
-            initialize: jest.fn(),
-            on: (event: string, handler: () => void) => {
-                if (event === 'join') {
-                    handler();
-                }
-            },
-            send: jest.fn(),
-        }));
-
-        const conn = await newConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
-            () => {},
-            false,
-            mockIntl,
-        );
-
-        const calls = (CallsNative.onAudioRouteChanged as jest.Mock).mock.calls;
-        const listener = calls[calls.length - 1]?.[0] as (route: AudioRoute) => void;
-        return {conn, listener};
-    };
-
-    describe('audio routing', () => {
-        it('should select Bluetooth over WiredHeadset and Earpiece (highest priority)', async () => {
-            const {listener} = await connectAndGetRouteListener();
-            jest.clearAllMocks();
-
-            listener({
-                selectedAudioDevice: 'EARPIECE',
-                availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE', 'WIRED_HEADSET', 'BLUETOOTH'],
-            });
-
-            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
-        });
-
-        it('should select WiredHeadset over Earpiece when Bluetooth is not available', async () => {
-            const {listener} = await connectAndGetRouteListener();
-            jest.clearAllMocks();
-
-            listener({
-                selectedAudioDevice: 'EARPIECE',
-                availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE', 'WIRED_HEADSET'],
-            });
-
-            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('WIRED_HEADSET');
-        });
-
-        it('should use the initial route from getAudioRoute on join', async () => {
-            await connectAndGetRouteListener({
-                selectedAudioDevice: 'BLUETOOTH',
-                availableAudioDeviceList: ['BLUETOOTH', 'EARPIECE', 'SPEAKER_PHONE'],
-            });
-
-            expect(CallsNative.getAudioRoute).toHaveBeenCalled();
-            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
-        });
-
-        it('should not re-route when user-pinned device is still available', async () => {
-            const {conn, listener} = await connectAndGetRouteListener();
-
-            conn.setUserSelectedAudioRoute('SPEAKER_PHONE');
-            jest.clearAllMocks();
-
-            listener({
-                selectedAudioDevice: 'SPEAKER_PHONE',
-                availableAudioDeviceList: ['EARPIECE', 'SPEAKER_PHONE'],
-            });
-
-            expect(CallsNative.setAudioRoute).not.toHaveBeenCalled();
-        });
-
-        it('should clear user pin and auto-route when pinned device disconnects', async () => {
-            const {conn, listener} = await connectAndGetRouteListener();
-
-            conn.setUserSelectedAudioRoute('BLUETOOTH');
-            jest.clearAllMocks();
-
-            listener({
-                selectedAudioDevice: 'EARPIECE',
-                availableAudioDeviceList: ['EARPIECE', 'SPEAKER_PHONE'],
-            });
-
-            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('EARPIECE');
-        });
     });
 });

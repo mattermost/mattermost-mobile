@@ -57,6 +57,23 @@ jobs:
           echo "::group::detox-typecheck"
           cd detox && npm run tsc
           echo "::endgroup::"
+      # Server roles: specs that change server-wide state must be in the mutation manifest, and
+      # the shard split and pool guard must keep them off the shared pool servers.
+      - name: ci/detox-check-server-mutation-manifest
+        shell: bash
+        run: node detox/utils/check-server-mutation-manifest.js
+      - name: ci/detox-split-tests-unit
+        shell: bash
+        run: |
+          echo "::group::detox-split-tests-unit"
+          npx jest --rootDir . --config '{"testEnvironment":"node"}' .github/actions/generate-specs/split-tests.test.js
+          echo "::endgroup::"
+      - name: ci/detox-unit
+        shell: bash
+        run: |
+          echo "::group::detox-unit"
+          cd detox && npm run test:unit
+          echo "::endgroup::"
       # Also validated by the E2E workflow, but that one is label-gated, so a header
       # contract break could sit unreported until someone asked for an E2E run. This
       # job is unconditional and finishes in about a minute.

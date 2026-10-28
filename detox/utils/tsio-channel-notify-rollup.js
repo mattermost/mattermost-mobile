@@ -17,6 +17,7 @@
 const {webhookBucketForReportName} = require('./build-tsio-job-config');
 const {parseArgs} = require('./cli-args');
 const {
+    fetchFailuresFromConsolidated,
     fetchPerJobCountsFromConsolidated,
     notifyCmtChannel,
     resolveWebhookUrl,
@@ -128,6 +129,37 @@ async function collectPerJobCounts({
     return merged;
 }
 
+/**
+ * Merge per-leg failing tests across jobs, for the channel message's failure
+ * judgement. Same per-job consolidated fetch pattern as collectPerJobCounts.
+ *
+ * @param {Object} params
+ * @param {string} params.baseUrl
+ * @param {Array<{identity: object, detail: object|null}>} params.results
+ * @param {Function} [params.fetchFailures] - injectable for tests
+ * @param {Function} [params.warn]
+ * @returns {Promise<Array<object>>}
+ */
+async function collectFailures({
+    baseUrl,
+    results,
+    fetchFailures = fetchFailuresFromConsolidated,
+    warn = console.warn,
+}) {
+    const merged = [];
+    for (const {identity, detail} of results) {
+        if (!detail) {
+            continue;
+        }
+        try {
+            merged.push(...await fetchFailures(baseUrl, identity, detail));
+        } catch (err) {
+            warn(`tsio-channel-notify-rollup: no failure details for ${identity.name}: ${err.message}`);
+        }
+    }
+    return merged;
+}
+
 async function main() {
     const args = parseArgs(process.argv);
     const raw = args['job-configs'] || process.env.JOB_CONFIGS || '';
@@ -183,6 +215,7 @@ async function main() {
 
     const detail = mergeDetails(results.map((r) => r.detail));
     const perJobCounts = await collectPerJobCounts({baseUrl, results});
+    const failures = await collectFailures({baseUrl, results});
 
     // The bucket name has no single TSIO group of its own (each job owns
     // mobile-<flow>-<job>), so the rollup links to the workflow run and each leg
@@ -203,6 +236,7 @@ async function main() {
         detail,
         runUrl,
         perJobCounts,
+        failures,
         upstreamJobsSucceeded: upstreamSucceeded,
         hasFailures,
         webhookUrl,
@@ -216,4 +250,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {bucketIdentity, mergeDetails, collectPerJobCounts};
+module.exports = {bucketIdentity, mergeDetails, collectPerJobCounts, collectFailures};
