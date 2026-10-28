@@ -4,7 +4,7 @@
 import {errorCodes, isErrorWithCode, pick, types} from '@react-native-documents/picker';
 import {router} from 'expo-router';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Text, TextInput, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -38,6 +38,25 @@ const initialState: WireGuardState = {
     txBytes: 0,
     applicationId: '',
 };
+
+const statusMessages = defineMessages({
+    [WireGuardStatus.Disconnected]: {
+        id: 'mobile.vpn.status.disconnected',
+        defaultMessage: 'Disconnected',
+    },
+    [WireGuardStatus.Connecting]: {
+        id: 'mobile.vpn.status.connecting',
+        defaultMessage: 'Connecting',
+    },
+    [WireGuardStatus.Connected]: {
+        id: 'mobile.vpn.status.connected',
+        defaultMessage: 'Connected',
+    },
+    [WireGuardStatus.Failed]: {
+        id: 'mobile.vpn.status.failed',
+        defaultMessage: 'Connection failed',
+    },
+});
 
 type SummaryRowProps = {
     label: string;
@@ -85,15 +104,7 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
     const controlsDisabled = connecting || importing;
     const visibleError = localError ?? state.message;
 
-    const statusLabel = intl.formatMessage({
-        id: `mobile.vpn.status.${state.status}`,
-        defaultMessage: {
-            [WireGuardStatus.Disconnected]: 'Disconnected',
-            [WireGuardStatus.Connecting]: 'Connecting',
-            [WireGuardStatus.Connected]: 'Connected',
-            [WireGuardStatus.Failed]: 'Connection failed',
-        }[state.status],
-    });
+    const statusLabel = intl.formatMessage(statusMessages[state.status]);
     let statusColor = theme.centerChannelColor;
     if (connected) {
         statusColor = theme.onlineIndicator;
