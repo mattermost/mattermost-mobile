@@ -8,6 +8,7 @@ import {Events, Navigation, Screens} from '@constants';
 import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import {NavigationStore} from '@store/navigation_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
@@ -83,7 +84,7 @@ export function navigateToScreen(screen: AvailableScreens, props?: Record<string
             logError('navigateToScreen: no Expo Router path for screen', screen);
         }
     } catch (e) {
-        logError('navigateToScreen: Expo Router navigation failed', e);
+        logError('navigateToScreen: Expo Router navigation failed', getFullErrorMessage(e));
     }
     return false;
 }

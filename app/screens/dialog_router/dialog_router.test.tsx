@@ -680,5 +680,23 @@ describe('DialogRouter', () => {
             expect(await act(() => first)).toEqual({data: {type: 'ok'}});
             expect(mockInteractiveDialogAdapter.convertToAppForm).not.toHaveBeenCalledWith(expect.objectContaining({dialog: expect.objectContaining({title: 'Stale'})}));
         });
+
+        it('should ignore a field refresh response superseded by a newer refresh', async () => {
+            let resolveFirst: (value: unknown) => void = () => undefined;
+            mockSubmitInteractiveDialog.
+                mockReturnValueOnce(new Promise((resolve) => {
+                    resolveFirst = resolve;
+                })).
+                mockResolvedValueOnce({data: {type: 'form', form: refreshedDialog}});
+            renderRouter({source_url: sourceUrl, refresh_on_return: true});
+
+            const {refreshOnSelect, refreshForm} = latestProps();
+            const first = refreshOnSelect({name: 'test_field', refresh: true} as AppField, {test_field: 'a'});
+            await act(() => refreshForm({}));
+            resolveFirst({data: {type: 'form', form: {...mockConfig.dialog, title: 'Stale'}}});
+
+            expect(await act(() => first)).toEqual({data: {type: 'form'}});
+            expect(mockInteractiveDialogAdapter.convertToAppForm).not.toHaveBeenCalledWith(expect.objectContaining({dialog: expect.objectContaining({title: 'Stale'})}));
+        });
     });
 });

@@ -354,8 +354,9 @@ async function drainDialogStack() {
         }
         try {
             await closeTopDialog();
-        } catch {
-            return;
+        } catch (err) {
+            // Fail here rather than let the next test inherit open dialogs.
+            throw new Error(`drainDialogStack: could not close dialog (attempt ${attempt + 1}): ${err}`);
         }
     }
 }
@@ -422,7 +423,13 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
     });
 
     afterEach(async () => {
-        await drainDialogStack();
+        // Finish cleanup before rethrowing, so a drain failure can't leave the delay set.
+        let drainError: unknown;
+        try {
+            await drainDialogStack();
+        } catch (err) {
+            drainError = err;
+        }
 
         // Defensively clear any delay a test set, so a mid-test failure cannot
         // slow every subsequent dialog request.
@@ -438,9 +445,13 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
             await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
         }
         await wait(timeouts.HALF_SEC);
+
+        if (drainError) {
+            throw drainError;
+        }
     });
 
-    it('MM-T5001 should stack a child dialog and keep the parent mounted', async () => {
+    it('MM-T5001_1 should stack a child dialog and keep the parent mounted', async () => {
         // # Open the incident board
         await openIncidentBoard();
 
@@ -464,7 +475,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await expectDialogStillStacked(BOARD_TITLE);
     });
 
-    it('MM-T5002 should preserve parent field values while a child dialog is open', async () => {
+    it('MM-T5002_1 should preserve parent field values while a child dialog is open', async () => {
         // # Open the board and drill into triage
         await openIncidentBoard();
         await tapActionButton(BTN_TRIAGE_INC301);
@@ -493,7 +504,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await waitForVisibleText(SEVERITY_LOW);
     });
 
-    it('MM-T5003 should unwind the stack one dialog at a time', async () => {
+    it('MM-T5003_1 should unwind the stack one dialog at a time', async () => {
         // # Build a 3-deep stack
         await openIncidentBoard();
         await tapActionButton(BTN_TRIAGE_INC301);
@@ -525,7 +536,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    it('MM-T5004 should keep the parent open after submitting a child dialog', async () => {
+    it('MM-T5004_1 should keep the parent open after submitting a child dialog', async () => {
         // # Build a 3-deep stack
         await openIncidentBoard();
         await tapActionButton(BTN_TRIAGE_INC301);
@@ -545,7 +556,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await expectDialogStillStacked(BOARD_TITLE);
     });
 
-    it('MM-T5007 should show a change saved in a child dialog on the parent and keep its typed values', async () => {
+    it('MM-T5007_1 should show a change saved in a child dialog on the parent and keep its typed values', async () => {
         const shiftNotes = `Detox shift notes ${getRandomId()}`;
 
         // # Type in the board's Shift Notes, then open triage for INC-301
@@ -570,7 +581,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await expect(InteractiveDialogScreen.getTextInput('shift_notes')).toHaveText(shiftNotes);
     });
 
-    it('MM-T5008 should save a note staged with Add Note only once', async () => {
+    it('MM-T5008_1 should save a note staged with Add Note only once', async () => {
         const noteMessage = `Detox staged note ${getRandomId()}`;
 
         // # Open the timeline note dialog for INC-301
@@ -605,7 +616,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         }
     });
 
-    it('MM-T5005 should show a loader and ignore repeat taps while an action is in flight', async () => {
+    it('MM-T5005_1 should show a loader and ignore repeat taps while an action is in flight', async () => {
         // # Slow the plugin's action handler so the in-flight window is observable
         await setPluginConfig({IntegrationRequestDelay: 3});
 
@@ -661,7 +672,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         }
     });
 
-    it('MM-T5006 should surface an error and open no child when the action fails', async () => {
+    it('MM-T5006_1 should surface an error and open no child when the action fails', async () => {
         // # Open the board and tap the always-failing action button
         await openIncidentBoard();
         await tapActionButton(BTN_ESCALATE_FAIL);

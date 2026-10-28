@@ -364,8 +364,14 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             return {data: {type: 'ok'}};
         }
 
+        const seq = ++formSeqRef.current;
         try {
             const {form, error} = await requestRefresh(values, field.name);
+
+            // Superseded; a FORM response without a form is a no-op for the caller.
+            if (seq !== formSeqRef.current) {
+                return {data: {type: 'form' as AppCallResponseType}};
+            }
 
             // Check if we got a new dialog configuration back
             if (form) {
@@ -383,7 +389,6 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                     dialog: form,
                 };
 
-                formSeqRef.current++;
                 setCurrentConfig(newConfig);
 
                 // Convert the new dialog to AppForm

@@ -64,10 +64,10 @@ const AppsFormActionButton = ({field, testID}: Props) => {
     const button = (
         <Button
             onPress={handlePress}
-            text={field.label || field.modal_label || ''}
+            text={field.modal_label || field.label || ''}
             theme={theme}
             showLoader={loading}
-            disabled={loading || !field.action_button_url}
+            disabled={loading || Boolean(field.readonly) || !field.action_button_url}
             testID={testID}
         />
     );

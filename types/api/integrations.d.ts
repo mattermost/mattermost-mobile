@@ -60,7 +60,7 @@ type ExecuteDialogActionRequest = {
 };
 
 type ExecuteDialogActionResponse = {
-    trigger_id: string;
+    trigger_id?: string;
 };
 
 type DialogOption = {
