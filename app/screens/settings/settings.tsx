@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {router} from 'expo-router';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
@@ -50,6 +51,10 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
         navigateToSettingsScreen(Screens.SETTINGS_ADVANCED);
     }, []));
 
+    const goToVpn = usePreventDoubleTap(useCallback(() => {
+        router.push({pathname: '/vpn', params: {management: 'true'}});
+    }, []));
+
     const openHelp = usePreventDoubleTap(useCallback(() => {
         if (helpLink) {
             handleGotoLocation(serverUrl, intl, helpLink);
@@ -68,6 +73,13 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
                 optionName='display'
                 testID='settings.display.option'
             />
+            {Platform.OS === 'android' && (
+                <SettingItem
+                    onPress={goToVpn}
+                    optionName='vpn'
+                    testID='settings.vpn.option'
+                />
+            )}
             <SettingItem
                 onPress={goToAdvancedSettings}
                 optionName='advanced_settings'

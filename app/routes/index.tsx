@@ -5,6 +5,7 @@ import {Redirect, type Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 
 import {determineInitialExpoRoute, type ExpoRouterLaunchResult} from '@init/launch';
+import {getWireGuardState, isWireGuardRequired, WireGuardStatus} from '@managers/wireguard_manager';
 import {propsToParams} from '@screens/navigation';
 
 export default function RootIndex() {
@@ -12,6 +13,20 @@ export default function RootIndex() {
 
     useEffect(() => {
         async function initializeLaunch() {
+            if (isWireGuardRequired()) {
+                try {
+                    const vpnState = await getWireGuardState();
+                    if (vpnState.status !== WireGuardStatus.Connected) {
+                        setLaunchResult({route: '/vpn', params: {}});
+                        return;
+                    }
+                } catch {
+                    // Fail closed: the normal server/login flow requires a verified tunnel.
+                    setLaunchResult({route: '/vpn', params: {}});
+                    return;
+                }
+            }
+
             const result = await determineInitialExpoRoute();
             setLaunchResult(result);
         }

@@ -45,6 +45,10 @@ const messages = defineMessages({
         defaultMessage: 'Advanced Settings',
         id: 'general_settings.advanced_settings',
     },
+    vpn: {
+        defaultMessage: 'VPN connection',
+        id: 'general_settings.vpn',
+    },
     about: {
         defaultMessage: 'About {appTitle}',
         id: 'general_settings.about',
@@ -105,6 +109,12 @@ export const SettingOptionConfig: Record<string, SettingConfigDetails> = {
         id: messages.advanced_settings.id,
         icon: 'tune',
         testID: messages.advanced_settings.id,
+    },
+    vpn: {
+        defaultMessage: messages.vpn.defaultMessage,
+        id: messages.vpn.id,
+        icon: 'shield-lock-outline',
+        testID: messages.vpn.id,
     },
     about: {
         defaultMessage: messages.about.defaultMessage,
