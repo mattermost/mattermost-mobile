@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   build-wireguard-android-apk:
@@ -34,8 +35,39 @@ jobs:
         run: ./node_modules/.bin/jetify
 
       - name: Run Android unit tests
+        id: unit_tests
         working-directory: android
-        run: ./gradlew :app:testReleaseUnitTest -PreactNativeArchitectures=arm64-v8a --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:testReleaseUnitTest -PreactNativeArchitectures=arm64-v8a --stacktrace 2>&1 | tee "$RUNNER_TEMP/wireguard-unit-tests.log"
+
+      - name: Publish native unit-test failure diagnostics
+        if: failure() && steps.unit_tests.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          tail -c 50000 "$RUNNER_TEMP/wireguard-unit-tests.log" > "$RUNNER_TEMP/wireguard-unit-tests-tail.txt"
+          node - <<'NODE'
+          const fs = require('fs');
+          const temp = process.env.RUNNER_TEMP;
+          const payload = {
+            name: 'wireguard-native-unit-test-diagnostics',
+            head_sha: process.env.HEAD_SHA,
+            status: 'completed',
+            conclusion: 'neutral',
+            details_url: process.env.RUN_URL,
+            output: {
+              title: 'Native unit-test failure diagnostics',
+              summary: 'Final Gradle output from the failed Android unit-test step.',
+              text: fs.readFileSync(`${temp}/wireguard-unit-tests-tail.txt`, 'utf8'),
+            },
+          };
+          fs.writeFileSync(`${temp}/wireguard-check-run.json`, JSON.stringify(payload));
+          NODE
+          gh api "repos/$GH_REPO/check-runs" --method POST --input "$RUNNER_TEMP/wireguard-check-run.json"
 
       - name: Build Android application with per-app WireGuard
         working-directory: android
