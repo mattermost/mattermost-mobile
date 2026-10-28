@@ -75,6 +75,7 @@ class SecurityManagerSingleton {
     isEnrolling = false;
     isCheckingBiometrics = false;
     private hasTransientAuthBlur = false;
+    private releaseAuthBlurOnActivation = false;
     needsEnrollmentCheck = false;
     intunePolicySubscription?: EventSubscription;
     intuneEnrollmentSubscription?: EventSubscription;
@@ -696,6 +697,13 @@ class SecurityManagerSingleton {
         this.serverConfig[serverUrl].lastAccessed = Date.now();
         this.setScreenCapturePolicy(serverUrl);
 
+        if (this.releaseAuthBlurOnActivation) {
+            this.releaseAuthBlurOnActivation = false;
+            if (!this.isScreenCapturePrevented(serverUrl)) {
+                Emm.removeBlurEffect();
+            }
+        }
+
         // Security checks (moved from start() method)
         // Order matters: MAM enrollment first, then jailbreak, then biometrics
         // This way we only check jailbreak/biometrics if user doesn't need to enroll
@@ -777,10 +785,8 @@ class SecurityManagerSingleton {
         const translations = getTranslations(locale);
 
         const blurOnAuthenticate = this.shouldBlurOnAuthenticate(server);
-        this.hasTransientAuthBlur = Platform.OS === 'ios' &&
-            !blurOnAuthenticate &&
-            !(this.activeServer && this.isScreenCapturePrevented(this.activeServer)) &&
-            !this.isScreenshotProtectionHandledByEmm();
+        this.hasTransientAuthBlur = Platform.OS === 'ios' && !blurOnAuthenticate && !this.isScreenshotProtectionHandledByEmm();
+        this.releaseAuthBlurOnActivation = false;
 
         try {
             await Emm.authenticate({
@@ -815,13 +821,23 @@ class SecurityManagerSingleton {
      * prompt; when screen capture prevention is off, the app owns removing it once the
      * flow settles, so it stays up while a failure alert is shown.
      */
-    private finishBiometricCheck = () => {
+    private finishBiometricCheck = (server: string) => {
         this.isCheckingBiometrics = false;
 
-        if (this.hasTransientAuthBlur) {
-            this.hasTransientAuthBlur = false;
-            Emm.removeBlurEffect();
+        if (!this.hasTransientAuthBlur) {
+            return;
         }
+
+        this.hasTransientAuthBlur = false;
+
+        // The blur is shared with the active server's recording protection, so it is only
+        // released once the server being authenticated becomes active.
+        if (this.activeServer && this.activeServer !== server && this.isScreenCapturePrevented(this.activeServer)) {
+            this.releaseAuthBlurOnActivation = true;
+            return;
+        }
+
+        Emm.removeBlurEffect();
     };
 
     private runDeferredEnrollmentCheck = async (server: string) => {
@@ -875,7 +891,7 @@ class SecurityManagerSingleton {
 
                 if (outcome === 'success') {
                     this.backgroundSince = 0;
-                    this.finishBiometricCheck();
+                    this.finishBiometricCheck(server);
                     await this.runDeferredEnrollmentCheck(server);
                     return true;
                 }
@@ -884,25 +900,25 @@ class SecurityManagerSingleton {
                 // is on screen.
                 if (outcome === 'notSecured') {
                     await showNotSecuredAlert(server, siteName, locale);
-                    this.finishBiometricCheck();
+                    this.finishBiometricCheck(server);
                     return false;
                 }
 
                 if (outcome === 'failed') {
                     await showBiometricFailureAlert(server, this.shouldBlurOnAuthenticate(server), siteName, locale);
-                    this.finishBiometricCheck();
+                    this.finishBiometricCheck(server);
                     return false;
                 }
 
                 const choice = await showAuthenticationInterruptedAlert(server, siteName || config?.siteName, locale);
                 if (choice !== 'retry') {
-                    this.finishBiometricCheck();
+                    this.finishBiometricCheck(server);
                     return false;
                 }
             }
         } catch (error) {
             // Never leave the gate latched, or every future prompt is blocked.
-            this.finishBiometricCheck();
+            this.finishBiometricCheck(server);
             logError('SecurityManager.authenticateWithBiometrics', getFullErrorMessage(error));
             return false;
         }

@@ -656,7 +656,7 @@ describe('SecurityManager', () => {
             }
         });
 
-        test('should not remove the iOS blur when the active server prevents screen capture', async () => {
+        test('should hold the iOS blur until an unprotected destination server becomes active', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockResolvedValue(true);
             await SecurityManager.addServer('protected-server', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
@@ -667,6 +667,13 @@ describe('SecurityManager', () => {
 
             expect(Emm.authenticate).toHaveBeenCalledWith(expect.objectContaining({blurOnAuthenticate: false}));
             expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+
+            await SecurityManager.setActiveServer({
+                serverUrl: 'destination-server',
+                options: {skipBiometricCheck: true, skipJailbreakCheck: true, skipMAMEnrollmentCheck: true},
+            });
+
+            expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
         });
 
         test('should keep the iOS blur while the failure alert is displayed', async () => {
