@@ -195,6 +195,10 @@ async function expectTopDialog(title: string) {
 
 /** The given dialog is still on the stack, underneath whatever is on top. */
 async function expectDialogStillStacked(title: string) {
+    // Android doesn't expose a covered dialog's views; the parent is checked when it returns.
+    if (isAndroid()) {
+        return;
+    }
     if (!(await isTextPresent(title))) {
         throw new Error(`Expected "${title}" to still be mounted underneath, but it is gone`);
     }
@@ -536,7 +540,8 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    it('MM-T5004_1 should keep the parent open after submitting a child dialog', async () => {
+    // Needs submit_buttons/refresh_on_return (mattermost#39155); CI servers run 12.1.
+    it.skip('MM-T5004_1 should keep the parent open after submitting a child dialog', async () => {
         // # Build a 3-deep stack
         await openIncidentBoard();
         await tapActionButton(BTN_TRIAGE_INC301);
@@ -556,7 +561,8 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await expectDialogStillStacked(BOARD_TITLE);
     });
 
-    it('MM-T5007_1 should show a change saved in a child dialog on the parent and keep its typed values', async () => {
+    // Needs submit_buttons/refresh_on_return (mattermost#39155); CI servers run 12.1.
+    it.skip('MM-T5007_1 should show a change saved in a child dialog on the parent and keep its typed values', async () => {
         const shiftNotes = `Detox shift notes ${getRandomId()}`;
 
         // # Type in the board's Shift Notes, then open triage for INC-301
@@ -581,7 +587,8 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         await expect(InteractiveDialogScreen.getTextInput('shift_notes')).toHaveText(shiftNotes);
     });
 
-    it('MM-T5008_1 should save a note staged with Add Note only once', async () => {
+    // Needs submit_buttons/refresh_on_return (mattermost#39155); CI servers run 12.1.
+    it.skip('MM-T5008_1 should save a note staged with Add Note only once', async () => {
         const noteMessage = `Detox staged note ${getRandomId()}`;
 
         // # Open the timeline note dialog for INC-301

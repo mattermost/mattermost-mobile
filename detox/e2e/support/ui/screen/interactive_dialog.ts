@@ -73,9 +73,8 @@ class InteractiveDialogScreen {
 
         // The apps form renders inside a modal with a sticky header and a
         // keyboard-aware scroll view. A fixed-distance scroll can push the target
-        // under the header or stop short on long forms, so dismiss any open
-        // keyboard first, then scroll until the input is actually visible.
-        await this.dismissKeyboard();
+        // under the header or stop short on long forms, so scroll until the input
+        // is actually visible. The previous fill already dismissed its keyboard.
         try {
             await waitFor(appsFormElement).
                 toBeVisible().
@@ -91,8 +90,10 @@ class InteractiveDialogScreen {
         await this.setDialogInputText(appsFormElement, value);
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
+        // Tap the field's label, not a fixed point: (20,20) can land on markdown
+        // (e.g. a table opens the Table viewer) or match several stacked dialogs.
         try {
-            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
+            await this.dismissKeyboardViaLabel(elementName);
         } catch {
             try {
                 await this.interactiveDialogScreen.tap();
