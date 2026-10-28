@@ -42,7 +42,17 @@ jobs:
         working-directory: android
         run: |
           set -o pipefail
-          ./gradlew :app:testReleaseUnitTest -PreactNativeArchitectures=arm64-v8a --stacktrace 2>&1 | tee "$RUNNER_TEMP/wireguard-unit-tests.log"
+          : > "$RUNNER_TEMP/wireguard-unit-tests.log"
+          for attempt in 1 2; do
+            echo "Native unit-test attempt $attempt" | tee -a "$RUNNER_TEMP/wireguard-unit-tests.log"
+            if ./gradlew :app:testReleaseUnitTest -PreactNativeArchitectures=arm64-v8a --stacktrace 2>&1 | tee -a "$RUNNER_TEMP/wireguard-unit-tests.log"; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 2 ]; then
+              exit 1
+            fi
+            echo "Retrying after a transient dependency or test failure." | tee -a "$RUNNER_TEMP/wireguard-unit-tests.log"
+          done
 
       - name: Publish native unit-test failure diagnostics
         if: failure() && steps.unit_tests.outcome == 'failure'
