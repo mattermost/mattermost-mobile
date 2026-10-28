@@ -111,10 +111,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await postSlashCommandDirect('/dialog boolean');
         await ensureDialogOpen();
-        await expect(element(by.id('AppFormElement.required_boolean.toggled..button'))).toExist();
-        await expect(element(by.id('AppFormElement.optional_boolean.toggled..button'))).toExist();
+        await expect(element(by.id('AppFormElement.required_boolean.toggled.false.button'))).toExist();
+        await expect(element(by.id('AppFormElement.optional_boolean.toggled.false.button'))).toExist();
         await expect(element(by.id('AppFormElement.boolean_default_true.toggled.true.button'))).toExist();
-        await expect(element(by.id('AppFormElement.boolean_default_false.toggled..button'))).toExist();
+        await expect(element(by.id('AppFormElement.boolean_default_false.toggled.false.button'))).toExist();
         await InteractiveDialogScreen.toggleBooleanElement('required_boolean');
         await InteractiveDialogScreen.toggleBooleanElement('boolean_default_false');
         await InteractiveDialogScreen.submit();
@@ -443,7 +443,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(element(by.text('Web Application'))).toExist();
         await element(by.text('Web Application')).tap();
         await waitFor(element(by.id('AppFormElement.frontend_framework.select.button'))).toExist().withTimeout(2000);
-        await expect(element(by.id('AppFormElement.enable_pwa.toggled..button'))).toExist();
+        await expect(element(by.id('AppFormElement.enable_pwa.toggled.false.button'))).toExist();
         await projectTypeButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Mobile Application'))).toExist();
