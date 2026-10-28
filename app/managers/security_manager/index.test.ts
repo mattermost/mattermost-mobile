@@ -8,6 +8,7 @@ import {isRootedExperimentalAsync} from 'expo-device';
 import {Platform} from 'react-native';
 
 import DatabaseManager from '@database/manager';
+import ManagedApp from '@init/managed_app';
 import IntuneManager from '@managers/intune_manager';
 import {
     type IntunePolicy,
@@ -638,6 +639,21 @@ describe('SecurityManager', () => {
 
             expect(Emm.authenticate).toHaveBeenCalledWith(expect.objectContaining({blurOnAuthenticate: false}));
             expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
+        });
+
+        test('should not remove the iOS blur when screenshot protection is managed by EMM', async () => {
+            const managedApp = ManagedApp as unknown as {cacheConfig?: {blurApplicationScreen: string}};
+            managedApp.cacheConfig = {blurApplicationScreen: 'true'};
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer('managed-server', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            try {
+                await expect(SecurityManager.authenticateWithBiometricsIfNeeded('managed-server')).resolves.toBe(true);
+                expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+            } finally {
+                delete managedApp.cacheConfig;
+            }
         });
 
         test('should keep the iOS blur while the failure alert is displayed', async () => {

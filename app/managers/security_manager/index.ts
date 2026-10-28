@@ -777,7 +777,7 @@ class SecurityManagerSingleton {
         const translations = getTranslations(locale);
 
         const blurOnAuthenticate = this.shouldBlurOnAuthenticate(server);
-        this.hasTransientAuthBlur = Platform.OS === 'ios' && !blurOnAuthenticate;
+        this.hasTransientAuthBlur = Platform.OS === 'ios' && !blurOnAuthenticate && !this.isScreenshotProtectionHandledByEmm();
 
         try {
             await Emm.authenticate({
