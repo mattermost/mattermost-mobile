@@ -1,5 +1,5 @@
 ---
-name: phase3-encma-android-build
+name: phase4-encma-android-build
 
 on:
   push:
@@ -27,6 +27,17 @@ jobs:
 
       - name: Prepare Node dependencies
         uses: ./.github/actions/prepare-node-deps
+
+      - name: Run Phase 4 focused JavaScript tests
+        run: |
+          NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand \
+            app/client/rest/channels.test.ts \
+            app/actions/remote/channel.test.ts \
+            app/screens/channel_settings/permanent_delete/permanent_delete.test.tsx \
+            app/components/post_draft/quick_actions/quick_actions.test.tsx \
+            app/components/post_draft/quick_actions/index.test.tsx \
+            app/components/post_draft/quick_actions/voice_record_action/voice_record_action.test.tsx \
+            app/utils/voice_message.test.ts
 
       - name: Set up JDK 17
         uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
@@ -101,7 +112,7 @@ jobs:
       - name: Upload installable arm64 APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: phase3-encma-wireguard-arm64-release
+          name: phase4-encma-wireguard-arm64-release
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
