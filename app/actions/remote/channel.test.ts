@@ -55,6 +55,7 @@ import {
     updateChannelNotifyProps,
     toggleMuteChannel,
     archiveChannel,
+    permanentlyDeleteChannel,
     unarchiveChannel,
     convertChannelToPrivate,
     handleKickFromChannel,
@@ -142,6 +143,7 @@ const mockClient = {
     searchAllChannels: jest.fn(() => ([{id: channelId, name: 'channel1', creatorId: user.id, team_id: teamId}])),
     updateChannelNotifyProps: jest.fn(),
     deleteChannel: jest.fn(),
+    deleteChannelPermanently: jest.fn(),
     unarchiveChannel: jest.fn(),
     convertChannelToPrivate: jest.fn(),
     getGroupMessageMembersCommonTeams: jest.fn(() => ({id: teamId, name: 'teamname'})),
@@ -652,6 +654,63 @@ describe('app/actions/remote/channel', () => {
             const result = await archiveChannel(serverUrl, channelId);
             expect(result).toBeDefined();
             expect(result).not.toHaveProperty('error');
+        });
+
+        it('permanentlyDeleteChannel - base case', async () => {
+            await operator.handleChannel({
+                channels: [{
+                    id: channelId,
+                    name: 'channelname',
+                    team_id: teamId,
+                    total_msg_count: 0,
+                    type: 'O',
+                } as Channel],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await permanentlyDeleteChannel(serverUrl, channelId);
+
+            expect(result).toBeDefined();
+            expect(result).not.toHaveProperty('error');
+            expect(mockClient.deleteChannelPermanently).toHaveBeenCalledWith(channelId);
+        });
+
+        it('permanentlyDeleteChannel - rejects the default channel', async () => {
+            await operator.handleChannel({
+                channels: [{
+                    id: channelId,
+                    name: 'town-square',
+                    display_name: 'Town Square',
+                    team_id: teamId,
+                    total_msg_count: 0,
+                    type: 'O',
+                } as Channel],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await permanentlyDeleteChannel(serverUrl, channelId);
+
+            expect(result.error).toBeDefined();
+            expect(mockClient.deleteChannelPermanently).not.toHaveBeenCalled();
+        });
+
+        it.each(['D', 'G'])('permanentlyDeleteChannel - rejects %s conversations', async (type) => {
+            await operator.handleChannel({
+                channels: [{
+                    id: `${channelId}${type}`,
+                    name: `channelname${type}`,
+                    display_name: 'Direct or group conversation',
+                    team_id: '',
+                    total_msg_count: 0,
+                    type,
+                } as Channel],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await permanentlyDeleteChannel(serverUrl, `${channelId}${type}`);
+
+            expect(result.error).toBeDefined();
+            expect(mockClient.deleteChannelPermanently).not.toHaveBeenCalled();
         });
 
         it('unarchiveChannel - base case', async () => {

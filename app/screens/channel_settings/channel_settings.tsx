@@ -17,6 +17,7 @@ import Archive from './archive';
 import ChannelConfigurationOption from './channel_configuration_option';
 import ChannelInfoOption from './channel_info';
 import ConvertPrivate from './convert_private';
+import PermanentDelete from './permanent_delete';
 
 type Props = {
     canArchive: boolean;
@@ -117,6 +118,12 @@ const ChannelSettings = ({
                         canArchive={canArchive}
                         canUnarchive={canUnarchive}
                         channelId={channelId}
+                        type={type}
+                    />
+                    <PermanentDelete
+                        canDelete={canArchive}
+                        channelId={channelId}
+                        displayName={displayName}
                         type={type}
                     />
                 </>

@@ -13,6 +13,7 @@ export interface ClientChannelsMix {
     createDirectChannel: (userIds: string[]) => Promise<Channel>;
     createGroupChannel: (userIds: string[]) => Promise<Channel>;
     deleteChannel: (channelId: string) => Promise<any>;
+    deleteChannelPermanently: (channelId: string) => Promise<any>;
     unarchiveChannel: (channelId: string) => Promise<Channel>;
     updateChannel: (channel: Channel) => Promise<Channel>;
     convertChannelToPrivate: (channelId: string) => Promise<Channel>;
@@ -132,6 +133,13 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
     deleteChannel = async (channelId: string) => {
         return this.doFetch(
             `${this.getChannelRoute(channelId)}`,
+            {method: 'delete'},
+        );
+    };
+
+    deleteChannelPermanently = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getChannelRoute(channelId)}?permanent=true`,
             {method: 'delete'},
         );
     };
