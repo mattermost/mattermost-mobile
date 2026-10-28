@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">ENCMA monochrome notification icon</title>
+  <g transform="translate(512 512) scale(1.2) translate(-512 -512)" fill="#FFFFFF">
+    <rect x="282" y="232" width="132" height="560" rx="36"/>
+    <rect x="282" y="232" width="460" height="132" rx="36"/>
+    <rect x="282" y="446" width="364" height="132" rx="36"/>
+    <rect x="282" y="660" width="460" height="132" rx="36"/>
+  </g>
+</svg>
