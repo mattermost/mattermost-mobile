@@ -9,7 +9,7 @@ import org.junit.Test
 import java.net.InetAddress
 
 class WireGuardConfigParserTest {
-    private val applicationId = "com.example.encma"
+    private val applicationId = "com.encma.hxmain"
 
     private fun validConfig(
         allowedIps: String = "10.20.0.0/24",

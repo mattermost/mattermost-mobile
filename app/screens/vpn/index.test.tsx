@@ -54,7 +54,7 @@ const disconnectedState = {
     handshakeEpochMillis: 0,
     rxBytes: 0,
     txBytes: 0,
-    applicationId: 'com.mattermost.rnbeta',
+    applicationId: 'com.encma.hxmain',
 };
 
 const connectedState = {

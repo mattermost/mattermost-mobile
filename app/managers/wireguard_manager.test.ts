@@ -34,7 +34,7 @@ const connectedState: WireGuardState = {
     handshakeEpochMillis: 123456,
     rxBytes: 128,
     txBytes: 256,
-    applicationId: 'com.mattermost.rnbeta',
+    applicationId: 'com.encma.hxmain',
 };
 
 const summary = {

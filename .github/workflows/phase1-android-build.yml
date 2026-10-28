@@ -1,5 +1,5 @@
 ---
-name: phase2-wireguard-android-build
+name: phase3-encma-android-build
 
 on:
   push:
@@ -21,6 +21,9 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
+
+      - name: Check Android release script syntax
+        run: ruby -c fastlane/Fastfile
 
       - name: Prepare Node dependencies
         uses: ./.github/actions/prepare-node-deps
@@ -69,21 +72,26 @@ jobs:
           NODE
           gh api "repos/$GH_REPO/check-runs" --method POST --input "$RUNNER_TEMP/wireguard-check-run.json"
 
-      - name: Build Android application with per-app WireGuard
+      - name: Build ENCMA Android application with per-app WireGuard
         working-directory: android
         run: ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --stacktrace
 
-      - name: Verify APK output
+      - name: Verify ENCMA APK identity and output
         run: |
           apk="android/app/build/outputs/apk/release/app-release.apk"
           test -s "$apk"
+          aapt_bin="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          test -x "$aapt_bin"
+          "$aapt_bin" dump badging "$apk" > "$RUNNER_TEMP/encma-apk-badging.txt"
+          grep -F "package: name='com.encma.hxmain'" "$RUNNER_TEMP/encma-apk-badging.txt"
+          grep -F "application: label='ENCMA'" "$RUNNER_TEMP/encma-apk-badging.txt"
           ls -lh "$apk"
           sha256sum "$apk"
 
       - name: Upload installable arm64 APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: phase2-mattermost-wireguard-arm64-release
+          name: phase3-encma-wireguard-arm64-release
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30

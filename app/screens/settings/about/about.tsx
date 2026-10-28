@@ -5,7 +5,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Image, Text, View} from 'react-native';
 
 import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
@@ -34,11 +34,17 @@ import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
+const isEncmaApp = applicationId === 'com.encma.hxmain';
+const encmaLogo = require('@assets/images/encma-icon.png');
 
 const TABLET_EXTRA_PADDING = 20;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        logo: {
+            height: 80,
+            width: 80,
+        },
         logoContainer: {
             alignItems: 'center',
             marginTop: 20,
@@ -209,12 +215,21 @@ const About = ({config, license}: AboutProps) => {
         <SettingContainer testID='about'>
             <View style={isTablet ? styles.tabletContentWrapper : undefined}>
                 <View style={styles.logoContainer}>
-                    <CompassIcon
-                        color={theme.centerChannelColor}
-                        name='mattermost'
-                        size={80}
-                        testID='about.logo'
-                    />
+                    {isEncmaApp ? (
+                        <Image
+                            resizeMode='contain'
+                            source={encmaLogo}
+                            style={styles.logo}
+                            testID='about.logo'
+                        />
+                    ) : (
+                        <CompassIcon
+                            color={theme.centerChannelColor}
+                            name='mattermost'
+                            size={80}
+                            testID='about.logo'
+                        />
+                    )}
                     <Title
                         config={config}
                         license={license}

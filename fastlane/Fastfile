@@ -833,7 +833,7 @@ platform :android do
   lane :unsigned do
     UI.success('Building unsigned Android app')
 
-    ENV['APP_NAME'] = 'Mattermost'
+    ENV['APP_NAME'] = 'ENCMA'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
     ENV['APP_SCHEME'] = 'mattermost'
@@ -863,17 +863,18 @@ platform :android do
 
   lane :update_identifiers do
     # Set the name for the app
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'ENCMA'
     sh "echo '#{app_name}' > ../fastlane/metadata/android/en-US/title.txt"
     android_change_string_app_name(
         newName: app_name,
         stringsFile: './android/app/src/main/res/values/strings.xml'
     )
 
-    package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+    package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.encma.hxmain'
+    namespace_id = ENV['MAIN_APP_IDENTIFIER'] ? package_id : 'com.mattermost.rnbeta'
     android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
-    android_update_namespace(app_folder_name: 'android/app', namespace: package_id)
+    android_update_namespace(app_folder_name: 'android/app', namespace: namespace_id)
 
     app_scheme = ENV['APP_SCHEME'] || 'mattermost'
     find_replace_string(
@@ -885,15 +886,17 @@ platform :android do
     
     app_auth_scheme = get_auth_scheme
 
-    find_replace_string(
-        path_to_file: "./android/app/src/main/AndroidManifest.xml",
-        old_string: 'scheme="mmauthbeta"',
-        new_string: "scheme=\"#{app_auth_scheme}\"",
-    )
+    unless ['mmauth', 'mmauthbeta'].include?(app_auth_scheme)
+      find_replace_string(
+          path_to_file: "./android/app/src/main/AndroidManifest.xml",
+          old_string: 'scheme="mmauthbeta"',
+          new_string: "scheme=\"#{app_auth_scheme}\"",
+      )
+    end
 
     helpers_dir = './android/app/src/main/java/com/mattermost/helpers/'
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
-    release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
+    release_dir = "./android/app/src/main/java/#{namespace_id.gsub '.', '/'}/"
     if release_dir != beta_dir
       unless Dir.exist?(".#{release_dir}")
         FileUtils.mkdir_p ".#{release_dir}"
@@ -905,7 +908,7 @@ platform :android do
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
-            new_string: "package #{package_id};"
+            new_string: "package #{namespace_id};"
         )
       end
 
@@ -913,7 +916,7 @@ platform :android do
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta',
-            new_string: "package #{package_id}"
+            new_string: "package #{namespace_id}"
         )
       end
 
@@ -921,7 +924,7 @@ platform :android do
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'import com.mattermost.rnbeta.MainApplication;',
-            new_string: "import #{package_id}.MainApplication;"
+            new_string: "import #{namespace_id}.MainApplication;"
         )
       end
 
@@ -929,7 +932,7 @@ platform :android do
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'import com.mattermost.rnbeta.*;',
-            new_string: "import #{package_id}.*;"
+            new_string: "import #{namespace_id}.*;"
         )
       end
 
@@ -937,7 +940,7 @@ platform :android do
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'import com.mattermost.rnbeta.*',
-            new_string: "import #{package_id}.*"
+            new_string: "import #{namespace_id}.*"
         )
       end
     end
@@ -1011,7 +1014,7 @@ platform :android do
   end
 
   def move_android_to_root
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'ENCMA'
     app_name_sub = app_name.gsub(" ", "_")
     build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
     build_task = build_task.split(",")

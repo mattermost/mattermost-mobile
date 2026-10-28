@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {applicationId} from 'expo-application';
 import React from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Text} from 'react-native';
@@ -21,6 +22,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const isEncmaApp = applicationId === 'com.encma.hxmain';
 
 const messages = defineMessages({
     mattermost: {
@@ -68,9 +71,7 @@ const Title = ({config, license}: TitleProps) => {
             style={style.title}
             testID='about.title'
         >
-            {product}
-            {' '}
-            {edition}
+            {isEncmaApp ? 'ENCMA' : `${product} ${edition}`}
         </Text>
     );
 };
