@@ -1,5 +1,5 @@
 ---
-name: phase1-android-build
+name: phase2-wireguard-android-build
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build-existing-android-apk:
+  build-wireguard-android-apk:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
 
@@ -33,7 +33,11 @@ jobs:
       - name: Jetify Android libraries
         run: ./node_modules/.bin/jetify
 
-      - name: Build existing Android application
+      - name: Run Android unit tests
+        working-directory: android
+        run: ./gradlew :app:testReleaseUnitTest -PreactNativeArchitectures=arm64-v8a --stacktrace
+
+      - name: Build Android application with per-app WireGuard
         working-directory: android
         run: ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --stacktrace
 
@@ -47,7 +51,7 @@ jobs:
       - name: Upload installable arm64 APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: phase1-mattermost-arm64-release
+          name: phase2-mattermost-wireguard-arm64-release
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30

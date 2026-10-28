@@ -20,6 +20,7 @@ import com.mattermost.rnshare.ShareWorker
 import com.mattermost.rnshare.helpers.RealPathUtil
 import com.mattermost.turbolog.TurboLog
 import com.mattermost.turbolog.ConfigureOptions
+import com.mattermost.wireguard.WireGuardPackage
 import io.sentry.react.RNSentrySDK
 import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage
 import com.wix.reactnativenotifications.core.AppLaunchHelper
@@ -43,6 +44,7 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         ExpoReactHostFactory.getDefaultReactHost(
             context = applicationContext,
             packageList = PackageList(this).packages.apply {
+                add(WireGuardPackage())
                 add(WatermelonDBJSIPackage())
             },
             jsMainModulePath = "index"
