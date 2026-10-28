@@ -656,6 +656,19 @@ describe('SecurityManager', () => {
             }
         });
 
+        test('should not remove the iOS blur when the active server prevents screen capture', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer('protected-server', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
+            await SecurityManager.addServer('destination-server', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+            SecurityManager.activeServer = 'protected-server';
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('destination-server')).resolves.toBe(true);
+
+            expect(Emm.authenticate).toHaveBeenCalledWith(expect.objectContaining({blurOnAuthenticate: false}));
+            expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+        });
+
         test('should keep the iOS blur while the failure alert is displayed', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockRejectedValue(rejectWith(AuthenticationOutcome.Failed));
