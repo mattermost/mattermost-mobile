@@ -75,7 +75,7 @@ class SecurityManagerSingleton {
     isEnrolling = false;
     isCheckingBiometrics = false;
     private hasTransientAuthBlur = false;
-    private releaseAuthBlurOnActivation = false;
+    private releaseAuthBlurOnActivation?: string;
     needsEnrollmentCheck = false;
     intunePolicySubscription?: EventSubscription;
     intuneEnrollmentSubscription?: EventSubscription;
@@ -437,6 +437,10 @@ class SecurityManagerSingleton {
 
         logDebug('SecurityManager: Compliance failed', {reason, serverCount: serverUrls.length});
 
+        // Compliance now owns the shared blur, so biometric cleanup must not strip it.
+        this.hasTransientAuthBlur = false;
+        this.releaseAuthBlurOnActivation = undefined;
+
         Emm.enableBlurScreen(true);
         Emm.applyBlurEffect(20);
         this.onWipeRequested({oid, serverUrls});
@@ -697,8 +701,8 @@ class SecurityManagerSingleton {
         this.serverConfig[serverUrl].lastAccessed = Date.now();
         this.setScreenCapturePolicy(serverUrl);
 
-        if (this.releaseAuthBlurOnActivation) {
-            this.releaseAuthBlurOnActivation = false;
+        if (this.releaseAuthBlurOnActivation === serverUrl) {
+            this.releaseAuthBlurOnActivation = undefined;
             if (!this.isScreenCapturePrevented(serverUrl)) {
                 Emm.removeBlurEffect();
             }
@@ -786,7 +790,7 @@ class SecurityManagerSingleton {
 
         const blurOnAuthenticate = this.shouldBlurOnAuthenticate(server);
         this.hasTransientAuthBlur = Platform.OS === 'ios' && !blurOnAuthenticate && !this.isScreenshotProtectionHandledByEmm();
-        this.releaseAuthBlurOnActivation = false;
+        this.releaseAuthBlurOnActivation = undefined;
 
         try {
             await Emm.authenticate({
@@ -833,7 +837,7 @@ class SecurityManagerSingleton {
         // The blur is shared with the active server's recording protection, so it is only
         // released once the server being authenticated becomes active.
         if (this.activeServer && this.activeServer !== server && this.isScreenCapturePrevented(this.activeServer)) {
-            this.releaseAuthBlurOnActivation = true;
+            this.releaseAuthBlurOnActivation = server;
             return;
         }
 
@@ -891,6 +895,13 @@ class SecurityManagerSingleton {
 
                 if (outcome === 'success') {
                     this.backgroundSince = 0;
+
+                    // If capture prevention flipped on during the prompt, start native
+                    // protection before removing the transient overlay.
+                    if (this.hasTransientAuthBlur && this.activeServer === server && this.isScreenCapturePrevented(server)) {
+                        this.setScreenCapturePolicy(server);
+                    }
+
                     this.finishBiometricCheck(server);
                     await this.runDeferredEnrollmentCheck(server);
                     return true;

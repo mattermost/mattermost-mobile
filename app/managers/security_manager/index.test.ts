@@ -641,6 +641,40 @@ describe('SecurityManager', () => {
             expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
         });
 
+        test('should start screen-capture protection before removing the iOS blur when PreventScreenCapture flips on during the prompt', async () => {
+            const server = 'server-capture-flip';
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            await SecurityManager.addServer(server, {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+            SecurityManager.activeServer = server;
+
+            let releasePrompt: (value: boolean) => void;
+            jest.mocked(Emm.authenticate).mockReturnValue(new Promise((resolve) => {
+                releasePrompt = resolve;
+            }));
+
+            const biometricResult = SecurityManager.authenticateWithBiometrics(server);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            jest.mocked(IntuneManager.getPolicy).mockResolvedValue(null);
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(false);
+            await SecurityManager.onConfigChanged({
+                serverUrl: server,
+                config: {
+                    MobileEnableBiometrics: 'true',
+                    MobilePreventScreenCapture: 'true',
+                } as SecurityClientConfig,
+            });
+
+            releasePrompt!(true);
+            await expect(biometricResult).resolves.toBe(true);
+
+            expect(Emm.enableBlurScreen).toHaveBeenCalledWith(true);
+            expect(Emm.removeBlurEffect).toHaveBeenCalled();
+            expect(jest.mocked(Emm.enableBlurScreen).mock.invocationCallOrder[0]).toBeLessThan(
+                jest.mocked(Emm.removeBlurEffect).mock.invocationCallOrder[0],
+            );
+        });
+
         test('should not remove the iOS blur when screenshot protection is managed by EMM', async () => {
             const managedApp = ManagedApp as unknown as {cacheConfig?: {blurApplicationScreen: string}};
             managedApp.cacheConfig = {blurApplicationScreen: 'true'};
@@ -673,6 +707,39 @@ describe('SecurityManager', () => {
                 options: {skipBiometricCheck: true, skipJailbreakCheck: true, skipMAMEnrollmentCheck: true},
             });
 
+            expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
+        });
+
+        test('should not release the iOS blur when a server other than the authenticated destination becomes active', async () => {
+            const skipSecurityChecks = {skipBiometricCheck: true, skipJailbreakCheck: true, skipMAMEnrollmentCheck: true};
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer('protected-server', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
+            await SecurityManager.addServer('destination-server', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+            await SecurityManager.addServer('third-server', {} as SecurityClientConfig);
+            SecurityManager.activeServer = 'protected-server';
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('destination-server')).resolves.toBe(true);
+
+            expect(Emm.authenticate).toHaveBeenCalledWith(expect.objectContaining({blurOnAuthenticate: false}));
+            expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+
+            await SecurityManager.setActiveServer({
+                serverUrl: 'protected-server',
+                options: {...skipSecurityChecks, forceSwitch: true},
+            });
+            expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+
+            await SecurityManager.setActiveServer({
+                serverUrl: 'third-server',
+                options: skipSecurityChecks,
+            });
+            expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+
+            await SecurityManager.setActiveServer({
+                serverUrl: 'destination-server',
+                options: skipSecurityChecks,
+            });
             expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
         });
 
@@ -737,6 +804,45 @@ describe('SecurityManager', () => {
 
             releasePrompt!(true);
             await expect(first).resolves.toBe(true);
+        });
+
+        test('should not strip the compliance overlay when authenticate resolves during a compliance failure', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            await SecurityManager.addServer('server-compliance-blur', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            let releasePrompt: (value: boolean) => void;
+            jest.mocked(Emm.authenticate).mockReturnValue(new Promise((resolve) => {
+                releasePrompt = resolve;
+            }));
+
+            const biometricResult = SecurityManager.authenticateWithBiometrics('server-compliance-blur');
+            await new Promise((resolve) => setImmediate(resolve));
+
+            let alertCallback: (() => void) | undefined;
+            const complianceAlertSpy = jest.spyOn(alerts, 'showMAMComplianceFailedAlert').mockImplementation(
+                (_title, _msg, _reason, _locale, callback) => {
+                    alertCallback = callback;
+                },
+            );
+            const onWipeSpy = jest.spyOn(SecurityManager, 'onWipeRequested').mockResolvedValue(undefined);
+
+            await SecurityManager.onComplianceFailed({
+                oid: 'object-id',
+                serverUrls: ['server-compliance-blur'],
+                reason: 'not_compliant',
+                errorTitle: 'App Protection Required',
+                errorMessage: 'Your device is not compliant.',
+            });
+
+            releasePrompt!(true);
+            await expect(biometricResult).resolves.toBe(true);
+            expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+
+            alertCallback!();
+            expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
+
+            complianceAlertSpy.mockRestore();
+            onWipeSpy.mockRestore();
         });
 
         test('should not attempt biometric authentication if server was previously authenticated within the window', async () => {
