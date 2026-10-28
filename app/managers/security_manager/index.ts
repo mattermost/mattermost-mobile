@@ -774,14 +774,13 @@ class SecurityManagerSingleton {
         }
 
         const translations = getTranslations(locale);
-        const blurOnAuthenticate = this.shouldBlurOnAuthenticate(server);
 
         try {
             await Emm.authenticate({
                 reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
                 fallback: true,
                 supressEnterPassword: false,
-                blurOnAuthenticate,
+                blurOnAuthenticate: this.shouldBlurOnAuthenticate(server),
             });
 
             if (config) {
@@ -801,12 +800,19 @@ class SecurityManagerSingleton {
             logDebug('SecurityManager: Authentication attempt did not succeed', {outcome, reason: getFullErrorMessage(error)});
 
             return outcome === AuthenticationOutcome.Failed ? 'failed' : 'interrupted';
-        } finally {
-            // iOS applies a transient privacy overlay for every biometric prompt. When screen
-            // capture prevention is disabled, the app owns removing it after the prompt settles.
-            if (Platform.OS === 'ios' && !blurOnAuthenticate) {
-                Emm.removeBlurEffect();
-            }
+        }
+    };
+
+    /**
+     * Ends the biometric gate. iOS applies a transient privacy overlay for every biometric
+     * prompt; when screen capture prevention is off, the app owns removing it once the
+     * flow settles, so it stays up while a failure alert is shown.
+     */
+    private finishBiometricCheck = (server: string) => {
+        this.isCheckingBiometrics = false;
+
+        if (Platform.OS === 'ios' && !this.shouldBlurOnAuthenticate(server)) {
+            Emm.removeBlurEffect();
         }
     };
 
@@ -861,7 +867,7 @@ class SecurityManagerSingleton {
 
                 if (outcome === 'success') {
                     this.backgroundSince = 0;
-                    this.isCheckingBiometrics = false;
+                    this.finishBiometricCheck(server);
                     await this.runDeferredEnrollmentCheck(server);
                     return true;
                 }
@@ -870,25 +876,25 @@ class SecurityManagerSingleton {
                 // is on screen.
                 if (outcome === 'notSecured') {
                     await showNotSecuredAlert(server, siteName, locale);
-                    this.isCheckingBiometrics = false;
+                    this.finishBiometricCheck(server);
                     return false;
                 }
 
                 if (outcome === 'failed') {
                     await showBiometricFailureAlert(server, this.shouldBlurOnAuthenticate(server), siteName, locale);
-                    this.isCheckingBiometrics = false;
+                    this.finishBiometricCheck(server);
                     return false;
                 }
 
                 const choice = await showAuthenticationInterruptedAlert(server, siteName || config?.siteName, locale);
                 if (choice !== 'retry') {
-                    this.isCheckingBiometrics = false;
+                    this.finishBiometricCheck(server);
                     return false;
                 }
             }
         } catch (error) {
             // Never leave the gate latched, or every future prompt is blocked.
-            this.isCheckingBiometrics = false;
+            this.finishBiometricCheck(server);
             logError('SecurityManager.authenticateWithBiometrics', getFullErrorMessage(error));
             return false;
         }

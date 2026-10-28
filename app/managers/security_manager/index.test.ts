@@ -621,6 +621,26 @@ describe('SecurityManager', () => {
             expect(SecurityManager.getServerConfig('server-10')?.authenticated).toBe(false);
         });
 
+        test('should keep the iOS blur while the failure alert is displayed', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockRejectedValue(rejectWith(AuthenticationOutcome.Failed));
+            let dismissAlert: () => void;
+            failureAlert().mockReturnValueOnce(new Promise<void>((resolve) => {
+                dismissAlert = resolve;
+            }));
+            await SecurityManager.addServer('server-10a', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            const result = SecurityManager.authenticateWithBiometrics('server-10a');
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(failureAlert()).toHaveBeenCalled();
+            expect(Emm.removeBlurEffect).not.toHaveBeenCalled();
+
+            dismissAlert!();
+            await expect(result).resolves.toBe(false);
+            expect(Emm.removeBlurEffect).toHaveBeenCalledTimes(1);
+        });
+
         test('should offer retry without logout when authentication is cancelled', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockRejectedValue(rejectWith(AuthenticationOutcome.Cancelled));
