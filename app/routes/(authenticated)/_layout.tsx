@@ -71,4 +71,4 @@ function AuthenticatedLayout() {
 // Apply withServerDatabase HOC to entire layout
 // This wraps the Stack with DatabaseProvider + ServerProvider + ThemeProvider
 // When server switches, the entire layout remounts with new database
-export default withServerDatabase(AuthenticatedLayout);
+export default withServerDatabase(AuthenticatedLayout, {redirectToServerWhenUnavailable: true});

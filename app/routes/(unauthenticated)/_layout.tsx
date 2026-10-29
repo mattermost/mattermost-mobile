@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
 });
 
 export default function UnauthenticatedLayout() {
-    const hasCredentials = useHasCredentials();
+    const hasCredentials = useHasCredentials(true);
     const theme = useThemeByAppearanceWithDefault();
 
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({

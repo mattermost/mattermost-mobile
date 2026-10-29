@@ -3,9 +3,16 @@
 
 import {renderHook, waitFor} from '@testing-library/react-native';
 
+import DatabaseManager from '@database/manager';
 import {useHasCredentials} from '@hooks/use_has_credentials';
 import {getAllServerCredentials} from '@init/credentials';
 
+import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('@database/manager', () => ({
+    getActiveServerDatabase: jest.fn(),
+    getActiveServerUrl: jest.fn(),
+}));
 jest.mock('@init/credentials');
 
 const mockGetAllServerCredentials = jest.mocked(getAllServerCredentials);
@@ -74,6 +81,42 @@ describe('useHasCredentials', () => {
         });
 
         expect(mockGetAllServerCredentials).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not redirect to authenticated when the active session database is missing', async () => {
+        mockGetAllServerCredentials.mockResolvedValue([
+            {
+                serverUrl: 'https://server1.com',
+                userId: 'user1',
+                token: 'token1',
+            },
+        ]);
+        jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue('https://server1.com');
+        jest.mocked(DatabaseManager.getActiveServerDatabase).mockResolvedValue(undefined);
+
+        const {result} = renderHook(() => useHasCredentials(true));
+
+        await waitFor(() => {
+            expect(result.current).toBe(false);
+        });
+    });
+
+    it('should allow authenticated redirect only with matching credentials and a database', async () => {
+        mockGetAllServerCredentials.mockResolvedValue([
+            {
+                serverUrl: 'https://server1.com',
+                userId: 'user1',
+                token: 'token1',
+            },
+        ]);
+        jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue('https://server1.com');
+        jest.mocked(DatabaseManager.getActiveServerDatabase).mockResolvedValue({} as Database);
+
+        const {result} = renderHook(() => useHasCredentials(true));
+
+        await waitFor(() => {
+            expect(result.current).toBe(true);
+        });
     });
 
     it('should only check credentials once on mount', async () => {

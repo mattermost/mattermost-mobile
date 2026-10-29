@@ -16,6 +16,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Launch, DeepLink} from '@constants';
+import DatabaseManager from '@database/manager';
 import useDidMount from '@hooks/did_mount';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {getServerCredentials} from '@init/credentials';
@@ -306,7 +307,7 @@ const Server = ({
 
         const server = await getServerByDisplayName(displayName);
         const credentials = await getServerCredentials(serverUrl);
-        if (server && server.lastActiveAt > 0 && credentials?.token) {
+        if (server && server.lastActiveAt > 0 && credentials?.token && DatabaseManager.serverDatabases[server.url]?.database) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
                 id: 'mobile.server_name.exists',
@@ -524,7 +525,7 @@ const Server = ({
         const credentials = await getServerCredentials(headRequest.url);
         setConnecting(false);
 
-        if (server && server.lastActiveAt > 0 && credentials?.token) {
+        if (server && server.lastActiveAt > 0 && credentials?.token && DatabaseManager.serverDatabases[server.url]?.database) {
             setButtonDisabled(true);
             setUrlError(formatMessage({
                 id: 'mobile.server_identifier.exists',
