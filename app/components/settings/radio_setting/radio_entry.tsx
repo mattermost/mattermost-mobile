@@ -35,6 +35,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 12,
             color: theme.linkColor,
         },
+        checkmarkHidden: {
+            opacity: 0,
+        },
         text: {
             ...typography('Body', 75, 'Regular'),
             color: theme.centerChannelColor,
@@ -71,10 +74,12 @@ function RadioEntry({
             <Text style={style.text}>{text}</Text>
         </View>
     );
-    const checkmarkEl = isSelected && (
+
+    // Leading checkmark keeps its space when unselected so labels stay aligned.
+    const checkmarkEl = (isSelected || labelPosition === 'after') && (
         <CompassIcon
             name='check'
-            style={style.checkmark}
+            style={[style.checkmark, !isSelected && style.checkmarkHidden]}
         />
     );
 

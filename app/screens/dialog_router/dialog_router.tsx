@@ -315,6 +315,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 // Accumulate values from field refresh for preservation
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
+                setAccumulatedElements(mergeElements(accumulatedElements, currentConfig.dialog.elements || []));
 
                 const {submission: refreshedSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
                 setAccumulatedFileFields(mergeFileFieldValues(accumulatedFileFields, refreshedSubmission as {[x: string]: string}, currentConfig.dialog.elements));
@@ -362,7 +363,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, accumulatedFileFields]);
+    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, accumulatedElements, mergeElements, accumulatedFileFields]);
 
     if (!appForm || !appForm.fields) {
         return null;

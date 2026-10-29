@@ -62,7 +62,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         checkIcon: {
             color: theme.buttonColor,
-            fontSize: 18,
         },
         disabledCheckIcon: {
             color: theme.centerChannelColor,
@@ -119,6 +118,7 @@ function CheckboxEntry({
             {isSelected && (
                 <CompassIcon
                     name='check'
+                    size={18}
                     style={iconStyle}
                     testID={`${testID}.checked`}
                 />
@@ -131,6 +131,8 @@ function CheckboxEntry({
             onPress={onPress}
             disabled={disabled}
             style={({pressed}) => [pressed && style.pressed]}
+            accessibilityRole='checkbox'
+            accessibilityState={{checked: isSelected, disabled}}
             testID={testID}
         >
             <View style={style.container}>

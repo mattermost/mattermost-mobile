@@ -220,17 +220,12 @@ export function initValues(fields?: AppField[]) {
             }
 
             values[field.name] = defaultMoment.toISOString();
+        } else if (field.type === AppFieldTypes.CHECKBOX_GROUP || field.type === AppFieldTypes.CHECKBOX_MATRIX) {
+            // Always an array: native Apps forms may omit the value or send ''.
+            values[field.name] = Array.isArray(field.value) ? field.value : [];
         } else if (field.value !== undefined && field.value !== null) {
             // Use provided value for non-boolean fields
             values[field.name] = field.value;
-        } else if (field.type === AppFieldTypes.CHECKBOX_GROUP || field.type === AppFieldTypes.CHECKBOX_MATRIX) {
-            // Native Apps forms may send a checkbox_group/checkbox_matrix field
-            // with no value at all (unlike converted dialogs, which always
-            // populate field.value with an array via
-            // convertDialogElementToAppField). Default to an empty array rather
-            // than '' so CheckboxGroupSetting/CheckboxMatrixSetting always
-            // receive an array.
-            values[field.name] = [];
         } else {
             // Initialize empty fields with empty string
             values[field.name] = '';

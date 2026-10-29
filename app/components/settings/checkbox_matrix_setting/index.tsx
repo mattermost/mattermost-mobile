@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useLayoutEffect, useMemo, useRef} from 'react';
 import {Pressable, ScrollView, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -101,7 +101,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         checkIcon: {
             color: theme.buttonColor,
-            fontSize: 14,
         },
         disabledCheckIcon: {
             color: theme.centerChannelColor,
@@ -138,6 +137,7 @@ type MatrixStyle = ReturnType<typeof getStyleSheet>;
 type MatrixCellProps = {
     rowValue: string;
     columnValue: string;
+    accessibilityLabel: string;
     checked: boolean;
     isRadio: boolean;
     disabled: boolean;
@@ -146,7 +146,7 @@ type MatrixCellProps = {
     testID: string;
 }
 
-function MatrixCell({rowValue, columnValue, checked, isRadio, disabled, onToggle, style, testID}: MatrixCellProps) {
+function MatrixCell({rowValue, columnValue, accessibilityLabel, checked, isRadio, disabled, onToggle, style, testID}: MatrixCellProps) {
     const handlePress = useCallback(() => {
         onToggle(rowValue, columnValue);
     }, [onToggle, rowValue, columnValue]);
@@ -163,6 +163,7 @@ function MatrixCell({rowValue, columnValue, checked, isRadio, disabled, onToggle
             {checked && (
                 <CompassIcon
                     name='check'
+                    size={14}
                     style={[style.checkIcon, disabled && style.disabledCheckIcon]}
                     testID={`${testID}.checked`}
                 />
@@ -175,6 +176,9 @@ function MatrixCell({rowValue, columnValue, checked, isRadio, disabled, onToggle
             onPress={onPress}
             disabled={disabled}
             style={({pressed}) => [style.cell, pressed && style.pressed]}
+            accessibilityRole={isRadio ? 'radio' : 'checkbox'}
+            accessibilityLabel={accessibilityLabel}
+            accessibilityState={{checked, disabled}}
             testID={testID}
         >
             {control}
@@ -218,9 +222,9 @@ function CheckboxMatrixSetting({
 
     // Ref keeps handleCellToggle stable (not recreated on every value change) and
     // provides an optimistic read on rapid taps before React re-renders.
-    // Synced in an effect (not during render) to avoid reading uncommitted values in concurrent mode.
+    // Synced in a layout effect (not during render) so a press right after commit never reads a stale value.
     const selectionRef = useRef(selection);
-    useEffect(() => {
+    useLayoutEffect(() => {
         selectionRef.current = selection;
     }, [selection]);
 
@@ -301,6 +305,7 @@ function CheckboxMatrixSetting({
                         </View>
                         {rows.map((row, rowIndex) => {
                             const rowValue = row.value || '';
+                            const rowLabel = row.label || rowValue;
                             const selectedColumns = selection.get(rowValue);
                             return (
                                 <View
@@ -314,6 +319,7 @@ function CheckboxMatrixSetting({
                                                 key={`${id}.cell.${rowIndex}.${columnIndex}`}
                                                 rowValue={rowValue}
                                                 columnValue={columnValue}
+                                                accessibilityLabel={`${rowLabel}, ${column.label || columnValue}`}
                                                 checked={Boolean(selectedColumns?.has(columnValue))}
                                                 isRadio={isRadio}
                                                 disabled={disabled}

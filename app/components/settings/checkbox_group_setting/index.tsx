@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useLayoutEffect, useMemo, useRef} from 'react';
 import {View} from 'react-native';
 
 import {useTheme} from '@context/theme';
@@ -58,9 +58,9 @@ function CheckboxGroupSetting({
 
     // Use a ref so handleChange always sees the latest value without being recreated on every change.
     // This prevents stale-closure bugs on rapid taps where two presses fire before React re-renders.
-    // Synced in an effect (not during render) to avoid reading uncommitted values in concurrent mode.
+    // Synced in a layout effect (not during render) so a press right after commit never reads a stale value.
     const valueRef = useRef(value);
-    useEffect(() => {
+    useLayoutEffect(() => {
         valueRef.current = value;
     }, [value]);
 
