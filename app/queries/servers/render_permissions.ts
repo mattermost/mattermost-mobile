@@ -11,7 +11,7 @@ import RenderPermissionsStore from '@store/render_permissions_store';
 import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
 
-import {getLicense, observeConfigValue, observeLicense} from './system';
+import {getConfigValue, getLicense, observeConfigBooleanValue, observeConfigValue, observeLicense} from './system';
 
 import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';
@@ -53,14 +53,23 @@ export const observeRenderPermission = (
     );
 };
 
-// The server only enforces channel access actions on Enterprise Advanced.
-const isChannelAccessLicensed = (enforced: boolean, license?: ClientLicense) => {
-    return enforced && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+// The server only enforces channel access actions behind the ChannelPermissionActions feature flag, on
+// Enterprise Advanced.
+const isChannelAccessActive = (enforced: boolean, license: ClientLicense | undefined, flag: boolean) => {
+    return enforced && flag && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
 };
 
+/**
+ * Mirrors channelReadAccessEnforcementActive (server app/channel_read_access.go): ABAC enforced, the
+ * ChannelPermissionActions flag on, and an Enterprise Advanced license.
+ */
 export const isChannelAccessEnforced = async (database: Database) => {
-    const [enforced, license] = await Promise.all([isRedactionEnforced(database), getLicense(database)]);
-    return isChannelAccessLicensed(enforced, license);
+    const [enforced, license, flag] = await Promise.all([
+        isRedactionEnforced(database),
+        getLicense(database),
+        getConfigValue(database, 'FeatureFlagChannelPermissionActions'),
+    ]);
+    return isChannelAccessActive(enforced, license, flag === 'true');
 };
 
 // Shared per database like observeRedactionEnforced: the write check of every post row reads it.
@@ -75,8 +84,9 @@ const observeChannelAccessEnforced = (database: Database): Observable<boolean> =
     const stream = combineLatest([
         observeRedactionEnforced(database),
         observeLicense(database),
+        observeConfigBooleanValue(database, 'FeatureFlagChannelPermissionActions'),
     ]).pipe(
-        map(([enforced, license]) => isChannelAccessLicensed(enforced, license)),
+        map(([enforced, license, flag]) => isChannelAccessActive(enforced, license, flag)),
         distinctUntilChanged(),
         shareReplay({bufferSize: 1, refCount: true}),
     );
@@ -86,11 +96,11 @@ const observeChannelAccessEnforced = (database: Database): Observable<boolean> =
 
 /**
  * Whether an ABAC policy denies the current user a channel access action (write, management). Only
- * while ABAC is enforced on Enterprise Advanced: below it the server does not enforce channel access,
- * while the decisions API still fails closed, so its denies there would lock controls the server
- * allows. On Enterprise Advanced a fail-closed deny (one with a reason) counts, as enforcement fails
- * closed too. Emits false until a decision is stored; it never fetches one itself (see
- * useFetchRenderPermissions).
+ * while the server enforces channel access (ABAC on, the ChannelPermissionActions flag on, Enterprise
+ * Advanced): otherwise the decisions API can still deny, from policies kept while the flag is off or by
+ * failing closed below Enterprise Advanced, and those denies would lock controls the server allows. When
+ * enforced, a fail-closed deny (one with a reason) counts, as enforcement fails closed too. Emits false
+ * until a decision is stored; it never fetches one itself (see useFetchRenderPermissions).
  */
 export const observeChannelActionDenied = (
     database: Database,

@@ -109,6 +109,7 @@ describe('EditPost', () => {
             configs: [
                 {id: 'FeatureFlagPermissionPolicies', value: 'true'},
                 {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+                {id: 'FeatureFlagChannelPermissionActions', value: 'true'},
             ],
             configsToDelete: [],
             prepareRecordsOnly: false,

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {RedactionInvalidationReason, invalidateRedactionGlobally} from '@actions/local/redaction';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import RenderPermissionsStore, {RENDER_PERMISSIONS_RETRY_MS, RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
@@ -42,6 +43,16 @@ const enforcedOnServer = (version: string) => storeConfig({
     FeatureFlagPermissionPolicies: 'true',
     EnableAttributeBasedAccessControl: 'true',
 });
+
+// Channel access actions are enforced on top of ABAC only behind their flag, on Enterprise Advanced.
+const channelAccessEnforcedOnServer = async (channelPermissionActions: string) => {
+    await enforcedOnServer('12.0.0');
+    await storeConfig({FeatureFlagChannelPermissionActions: channelPermissionActions});
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: 'advanced'}}],
+        prepareRecordsOnly: false,
+    });
+};
 
 describe('fetchRenderPermissions', () => {
     beforeAll(() => {
@@ -134,7 +145,7 @@ describe('fetchRenderPermissions', () => {
     });
 
     it('should drop the channel when a policy denies its read access', async () => {
-        await enforcedOnServer('12.0.0');
+        await channelAccessEnforcedOnServer('true');
         mockClient.searchChannelActionDecisions.mockResolvedValue({
             ...allowed,
             decisions: {channel_read_access: {allowed: false, evaluated: true}},
@@ -143,6 +154,18 @@ describe('fetchRenderPermissions', () => {
         await fetchRenderPermissions(serverUrl, channelId);
 
         expect(handleChannelAccessDenied).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should keep the channel on a read access deny while the ChannelPermissionActions flag is off', async () => {
+        await channelAccessEnforcedOnServer('false');
+        mockClient.searchChannelActionDecisions.mockResolvedValue({
+            ...allowed,
+            decisions: {channel_read_access: {allowed: false, evaluated: true}},
+        });
+
+        await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(handleChannelAccessDenied).not.toHaveBeenCalled();
     });
 
     it('should keep the channel when an ABAC change revokes the request in flight', async () => {

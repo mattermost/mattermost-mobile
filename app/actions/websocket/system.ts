@@ -14,6 +14,7 @@ import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {logError} from '@utils/log';
@@ -86,6 +87,13 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.ConfigChanged);
         } else if (abacWasEnforced && !abacIsEnforced) {
             await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.ConfigChanged);
+        }
+
+        // The flag turns enforcement of the channel access actions on or off without any policy event, so
+        // decisions cached under the previous setting are revalidated. Channels hidden by a read policy
+        // come back with the next sync.
+        if (prevConfig?.FeatureFlagChannelPermissionActions !== config?.FeatureFlagChannelPermissionActions) {
+            RenderPermissionsStore.expireServer(serverUrl);
         }
 
         // Run last: a flag transition can wipe and recreate the server DB, invalidating

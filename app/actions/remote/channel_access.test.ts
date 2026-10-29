@@ -99,10 +99,11 @@ const storedChannelIds = async () => {
     return rows.map((r) => r.id).sort();
 };
 
-const enableFeature = async (skuShortName = 'advanced', version = '12.1.0') => {
+const enableFeature = async (skuShortName = 'advanced', version = '12.1.0', channelPermissionActions = 'true') => {
     await operator.handleConfigs({
         configs: [
             {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+            {id: 'FeatureFlagChannelPermissionActions', value: channelPermissionActions},
             {id: 'EnableAttributeBasedAccessControl', value: 'true'},
             {id: 'Version', value: version},
         ],
@@ -159,6 +160,16 @@ describe('channel access', () => {
             await reconcileChannelAccess(serverUrl);
 
             expect(mockClient.getMyChannels).not.toHaveBeenCalled();
+        });
+
+        it('should make no request while the ChannelPermissionActions flag is off', async () => {
+            await enableFeature('advanced', '12.1.0', 'false');
+            await seed([channel('channel1')]);
+
+            await reconcileChannelAccess(serverUrl);
+
+            expect(mockClient.getMyChannels).not.toHaveBeenCalled();
+            expect(await storedChannelIds()).toEqual(['channel1']);
         });
 
         it('should make no request on servers older than the channel read access version', async () => {
