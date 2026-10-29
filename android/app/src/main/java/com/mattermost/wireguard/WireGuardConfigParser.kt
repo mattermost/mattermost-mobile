@@ -3,6 +3,7 @@ package com.mattermost.wireguard
 import com.wireguard.config.BadConfigException
 import com.wireguard.config.Config
 import com.wireguard.config.Interface
+import com.wireguard.config.InetNetwork
 import java.io.BufferedReader
 import java.io.StringReader
 import java.net.InetAddress
@@ -108,7 +109,7 @@ object WireGuardConfigParser {
     fun probeAddresses(config: Config): List<InetAddress> {
         val targets = linkedSetOf<InetAddress>()
         config.peers.forEach { peer ->
-            val allowedAddress = peer.allowedIps.firstOrNull { it.mask != 0 }?.address
+            val allowedAddress = peer.allowedIps.firstOrNull { it.mask != 0 }?.let(::firstUsableHost)
             val endpointAddress = if (allowedAddress == null) {
                 peer.endpoint.orElse(null)?.resolved?.orElse(null)?.let { endpoint ->
                     InetAddress.getByName(endpoint.host)
@@ -119,5 +120,28 @@ object WireGuardConfigParser {
             (allowedAddress ?: endpointAddress)?.let(targets::add)
         }
         return targets.toList()
+    }
+
+    /**
+     * Android can establish a route for a network while rejecting a packet addressed to its
+     * network identifier. Use the first usable host so the probe actually reaches wireguard-go.
+     * /31 and /127 point-to-point ranges have no separate network/broadcast addresses.
+     */
+    private fun firstUsableHost(network: InetNetwork): InetAddress {
+        val bytes = network.address.address
+        val addressBits = bytes.size * 8
+        for (bit in network.mask until addressBits) {
+            val bitInByte = 7 - (bit % 8)
+            bytes[bit / 8] = (bytes[bit / 8].toInt() and (1 shl bitInByte).inv()).toByte()
+        }
+
+        if (network.mask < addressBits - 1) {
+            for (index in bytes.indices.reversed()) {
+                val value = bytes[index].toInt() and 0xff
+                bytes[index] = ((value + 1) and 0xff).toByte()
+                if (value != 0xff) break
+            }
+        }
+        return InetAddress.getByAddress(bytes)
     }
 }

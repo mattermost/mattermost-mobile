@@ -91,10 +91,33 @@ class WireGuardConfigParserTest {
     }
 
     @Test
-    fun probeAddressesUsesAnAllowedAddressForSplitTunneling() {
+    fun probeAddressesUsesTheFirstUsableHostForSplitTunneling() {
         val config = WireGuardConfigParser.parse(validConfig(), applicationId)
 
-        assertEquals(listOf(InetAddress.getByName("10.20.0.0")), WireGuardConfigParser.probeAddresses(config))
+        assertEquals(listOf(InetAddress.getByName("10.20.0.1")), WireGuardConfigParser.probeAddresses(config))
+    }
+
+    @Test
+    fun probeAddressesAvoidsAClasslessNetworkIdentifier() {
+        val config = WireGuardConfigParser.parse(validConfig(allowedIps = "192.168.0.0/16"), applicationId)
+
+        assertEquals(listOf(InetAddress.getByName("192.168.0.1")), WireGuardConfigParser.probeAddresses(config))
+    }
+
+    @Test
+    fun probeAddressesNormalizesHostBitsBeforeSelectingAHost() {
+        val config = WireGuardConfigParser.parse(validConfig(allowedIps = "10.20.0.99/24"), applicationId)
+
+        assertEquals(listOf(InetAddress.getByName("10.20.0.1")), WireGuardConfigParser.probeAddresses(config))
+    }
+
+    @Test
+    fun probeAddressesPreservesSingleHostAndPointToPointRanges() {
+        val singleHost = WireGuardConfigParser.parse(validConfig(allowedIps = "10.20.0.99/32"), applicationId)
+        val pointToPoint = WireGuardConfigParser.parse(validConfig(allowedIps = "10.20.0.0/31"), applicationId)
+
+        assertEquals(listOf(InetAddress.getByName("10.20.0.99")), WireGuardConfigParser.probeAddresses(singleHost))
+        assertEquals(listOf(InetAddress.getByName("10.20.0.0")), WireGuardConfigParser.probeAddresses(pointToPoint))
     }
 
     @Test
