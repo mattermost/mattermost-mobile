@@ -12,6 +12,7 @@ import {queryAllMyChannel, queryMyChannelsByChannelIds, queryMyChannelsByTeam} f
 import {isChannelAccessEnforced} from '@queries/servers/render_permissions';
 import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore, {type PendingChannelAccessChecks} from '@store/ephemeral_store';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -27,14 +28,8 @@ import type {Database, Model} from '@nozbe/watermelondb';
 
 const BATCH_SIZE = 10;
 
-type PendingChecks = {
-    teamIds: Set<string>;
-    channelIds: Set<string>;
-};
-
 // One run at a time per server: work arriving mid-run is picked up by its next pass, so a burst of
 // events costs at most two passes and two passes never restore the same channel concurrently.
-const pending = new Map<string, PendingChecks>();
 const running = new Set<string>();
 
 // DMs and GMs are exempt from the policy, and an archived channel is not brought back by it.
@@ -89,6 +84,14 @@ async function prepareRestoredChannels(serverUrl: string, database: Database, ch
 async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId: string): Promise<Model[]> {
     const {database} = operator;
     const client = NetworkManager.getClient(serverUrl);
+
+    // Read before the request: a channel joined or left while it is in flight would otherwise be
+    // compared against a list that predates it, and wrongly purged or restored.
+    const [teamChannelIds, allChannelIds] = await Promise.all([
+        queryMyChannelsByTeam(database, teamId).fetchIds(),
+        queryAllMyChannel(database).fetchIds(),
+    ]);
+
     let channels: Channel[];
     try {
         channels = await client.getMyChannels(teamId);
@@ -100,7 +103,7 @@ async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId
     // An empty list means every stored team channel was denied: a user with no memberships at all
     // gets a 404 instead, and DMs and GMs, which the policy never denies, would be listed.
     const listed = new Set(channels.map((c) => c.id));
-    const deniedIds = (await queryMyChannelsByTeam(database, teamId).fetchIds()).filter((id) => !listed.has(id));
+    const deniedIds = teamChannelIds.filter((id) => !listed.has(id));
 
     if (deniedIds.length) {
         const currentChannelId = await getCurrentChannelId(database);
@@ -128,7 +131,7 @@ async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId
     }
 
     const models: Model[] = [];
-    const storedIds = new Set(await queryAllMyChannel(database).fetchIds());
+    const storedIds = new Set(allChannelIds);
     const regained = channels.filter((c) => !storedIds.has(c.id) && isRestorable(c));
     if (regained.length) {
         try {
@@ -162,7 +165,7 @@ async function checkChannels(serverUrl: string, database: Database, channelIds: 
     return prepareRestoredChannels(serverUrl, database, regained, fetched.map(([, membership]) => membership));
 }
 
-async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChecks) {
+async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChannelAccessChecks) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isChannelAccessEnforced(database))) {
@@ -202,8 +205,7 @@ async function drain(serverUrl: string) {
 
     running.add(serverUrl);
     try {
-        for (let work = pending.get(serverUrl); work; work = pending.get(serverUrl)) {
-            pending.delete(serverUrl);
+        for (let work = EphemeralStore.takePendingChannelAccessChecks(serverUrl); work; work = EphemeralStore.takePendingChannelAccessChecks(serverUrl)) {
             // eslint-disable-next-line no-await-in-loop
             await runChecks(serverUrl, work);
         }
@@ -212,18 +214,13 @@ async function drain(serverUrl: string) {
     }
 }
 
-function schedule(serverUrl: string, {teamId, channelId}: {teamId?: string; channelId?: string}) {
-    const work = pending.get(serverUrl) ?? {teamIds: new Set<string>(), channelIds: new Set<string>()};
-    if (teamId) {
-        work.teamIds.add(teamId);
-    }
-    if (channelId) {
-        work.channelIds.add(channelId);
-    }
-    pending.set(serverUrl, work);
+function schedule(serverUrl: string, check: {teamId?: string; channelId?: string}) {
+    EphemeralStore.addPendingChannelAccessCheck(serverUrl, check);
     return drain(serverUrl);
 }
 
+// Only the current team, so a policy edit costs each client one request: other teams' denied channels
+// are dropped by the next sync, or when opened (the view call is refused).
 export async function reconcileChannelAccess(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -240,8 +237,4 @@ export async function reconcileChannelAccess(serverUrl: string): Promise<{error?
 
 export function checkChannelAccess(serverUrl: string, channelId: string) {
     return schedule(serverUrl, {channelId});
-}
-
-export function clearChannelAccessState(serverUrl: string) {
-    pending.delete(serverUrl);
 }

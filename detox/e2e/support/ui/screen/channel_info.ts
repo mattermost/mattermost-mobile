@@ -38,6 +38,7 @@ class ChannelInfoScreen {
         copyChannelLinkOption: 'channel_info.options.copy_channel_link.option',
         channelSettingsOption: 'channel_info.options.channel_settings.option',
         leaveChannelOption: 'channel_info.options.leave_channel.option',
+        attributes: 'channel_info.attributes',
         copyHeaderTextAction: 'channel_info.extra.header.bottom_sheet.copy_header_text',
         copyUrlAction: 'channel_info.extra.header.bottom_sheet.copy_url',
         copyHeaderCancelAction: 'channel_info.extra.header.bottom_sheet.cancel',
@@ -74,6 +75,10 @@ class ChannelInfoScreen {
     copyChannelLinkOption = element(by.id(this.testID.copyChannelLinkOption));
     channelSettingsOption = element(by.id(this.testID.channelSettingsOption));
     leaveChannelOption = element(by.id(this.testID.leaveChannelOption));
+    attributes = element(by.id(this.testID.attributes));
+
+    getAttributeRow = (fieldName: string) => element(by.id(`${this.testID.attributes}.${fieldName}`));
+    getAttributeNotSet = (fieldName: string) => element(by.id(`${this.testID.attributes}.${fieldName}.not_set`));
 
     getDirectMessageTitle = (userId: string) => {
         const directMessageTitleTestId = `${this.testID.directMessageTitlePrefix}${userId}`;

@@ -43,6 +43,11 @@ on:
         description: "The third test server URL (SITE_3); optional, no automatic fallback"
         required: false
         type: string
+      MM_OTHER_PLATFORM_POOL_URL:
+        description: "The other platform's SITE_1 server, used as this platform's pool SITE_2; empty falls back to SITE_1"
+        required: false
+        type: string
+        default: ""
       MM_TEST_USER_NAME:
         description: "The admin username of the test instance"
         required: false
@@ -83,7 +88,7 @@ on:
         description: "Number of parallel test shards"
         required: false
         type: string
-        default: "28"
+        default: "32"
       android_avd_name:
         description: "Android Emulator name"
         required: false
@@ -210,6 +215,22 @@ jobs:
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           mode: restore
 
+      # Server B gets a mutation shard when it is distinct from A. Android has no
+      # site3 mutation target; its specs whose iosTarget is site3 run on B.
+      - name: Resolve mutation server targets
+        id: mutation-targets
+        env:
+          SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
+          SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+        run: |
+          # No targets without a distinct second server; split-tests then fails only if a mutation spec is selected.
+          TARGETS=""
+          if [ -n "$SERVER_B" ] && [ "$SERVER_B" != "$SERVER_A" ]; then
+            TARGETS="B"
+          fi
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+          echo "Mutation targets: ${TARGETS:-none}"
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -219,9 +240,11 @@ jobs:
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
           durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
+          platform: android
+          mutation_targets: ${{ steps.mutation-targets.outputs.targets }}
 
   e2e-android:
-    name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
+    name: ${{ matrix.role == 'mutation' && 'mutation-' || '' }}machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
     timeout-minutes: 150
@@ -239,29 +262,55 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Rotate logical test sites by shard
+      # Pool shards pair server A with the other platform's A; mutation shards own server B alone.
+      # SITE_3 is also every pool shard's read-only third server, so site3 mutations must not touch login.
+      - name: Assign test sites by shard role
         env:
+          ROLE: ${{ matrix.role }}
+          TARGET: ${{ matrix.target }}
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
           SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
           SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-          SHARD_ID: ${{ matrix.runId }}
+          OTHER_PLATFORM_POOL: ${{ inputs.MM_OTHER_PLATFORM_POOL_URL }}
         run: |
-          # Single-server topologies leave SERVER_B unset; without this the even
-          # shards would export an empty SITE_1_URL and test_config would silently
-          # fall back to localhost instead of the provisioned server.
-          SERVER_B="${SERVER_B:-$SERVER_A}"
-          if (( 10#$SHARD_ID % 2 == 1 )); then
-            SITE_1_URL="$SERVER_A"
-            SITE_2_URL="$SERVER_B"
-          else
-            SITE_1_URL="$SERVER_B"
-            SITE_2_URL="$SERVER_A"
+          case "$ROLE" in
+            pool)
+              SITE_1_URL="$SERVER_A"; SITE_1_LABEL="server-a"
+              if [ -n "$OTHER_PLATFORM_POOL" ]; then
+                SITE_2_URL="$OTHER_PLATFORM_POOL"; SITE_2_LABEL="other-platform-a"
+              else
+                # Never SITE_3: on iOS it is also a mutation target.
+                echo "::warning::MM_OTHER_PLATFORM_POOL_URL is empty; pool SITE_2 falls back to this shard's own server A"
+                SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              fi
+              SITE_3_URL="$SERVER_SHARED"; SITE_3_LABEL="site3"
+              GUARD="enforce"
+              ;;
+            mutation)
+              case "$TARGET" in
+                B) SITE_1_URL="$SERVER_B"; SITE_1_LABEL="server-b" ;;
+                site3) SITE_1_URL="$SERVER_SHARED"; SITE_1_LABEL="site3" ;;
+                A) echo "::error::No isolated server for mutation specs (MM_TEST_SERVER_URL_2 missing or equal to MM_TEST_SERVER_URL); they would change state on the pool server"; exit 1 ;;
+                *) echo "::error::Unknown mutation target '$TARGET'"; exit 1 ;;
+              esac
+              SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              SITE_3_URL=""; SITE_3_LABEL="unset"
+              GUARD="off"
+              ;;
+            *)
+              echo "::error::Unknown shard role '$ROLE'"; exit 1 ;;
+          esac
+          if [ -z "$SITE_1_URL" ]; then
+            echo "::error::SITE_1 is empty for role=$ROLE target=$TARGET"; exit 1
           fi
           {
             echo "SITE_1_URL=$SITE_1_URL"
             echo "SITE_2_URL=$SITE_2_URL"
-            echo "SITE_3_URL=$SERVER_SHARED"
+            echo "SITE_3_URL=$SITE_3_URL"
+            echo "E2E_SERVER_ROLE=$ROLE"
+            echo "E2E_POOL_GUARD=$GUARD"
           } >> "$GITHUB_ENV"
+          echo "role=$ROLE target=$TARGET: SITE_1=$SITE_1_LABEL SITE_2=$SITE_2_LABEL SITE_3=$SITE_3_LABEL pool_guard=$GUARD"
 
       # Only libpulse0 is a real dependency here — the Android emulator needs it for
       # audio. xvfb is already in the runner image (apt reports "already the newest
@@ -467,8 +516,34 @@ jobs:
           # containing a glob character would silently become a different argument
           # list (or vanish). Matches the iOS template's read -ra handling.
           read -ra specs <<< "$MATRIX_SPECS"
-          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}"
+          # The output is also kept for the triage evidence step below. Not a pipe
+          # into tee: the shard script leaves the emulator, adb and Metro running,
+          # they inherit the pipe, and tee would wait on them until the job times
+          # out. Write to the file and stream it until the script exits.
+          log="$RUNNER_TEMP/detox-run.log"
+          : > "$log"
+          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}" > "$log" 2>&1 &
+          shard=$!
+          tail -n +1 -f --pid="$shard" "$log"
+          wait "$shard"
         continue-on-error: true # We want to run all the tests
+
+      # For the E2E triage judge: for each failed test, Detox's failure screenshot,
+      # the requests Detox reported the app was still waiting on, and the test's
+      # own server calls that failed.
+      - name: Collect triage evidence for failed tests
+        if: always()
+        continue-on-error: true
+        working-directory: detox
+        run: node utils/triage-evidence.js --results artifacts/jest-results.json --log "$RUNNER_TEMP/detox-run.log" --dir artifacts/triage-evidence --artifacts artifacts --out "artifacts/triage-evidence/evidence-${{ matrix.runId }}.json"
+
+      - name: Upload triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('detox/artifacts/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/triage-evidence/
 
       # Second attempt for the same reason as the iOS template: losing this upload to a
       # transient ETIMEDOUT reports the shard as having produced no results at all.
@@ -481,8 +556,36 @@ jobs:
           name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
-      - name: Upload Android Test Report (retry)
-        if: always() && steps.upload-android-report.outcome == 'failure'
+      # Same two-retry sequence as the iOS template (see there).
+      - name: Await results service
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      - name: Upload Android Test Report (retry 1)
+        id: upload-android-report-retry
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+
+      - name: Await results service (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure' &&
+          steps.upload-android-report-retry.outcome == 'failure'
+        uses: ./.github/actions/await-results-service
+
+      - name: Upload Android Test Report (retry 2)
+        if: |
+          !cancelled() &&
+          steps.upload-android-report.outcome == 'failure' &&
+          steps.upload-android-report-retry.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
@@ -663,6 +766,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
+          # says triage is coming instead of looking final.
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && vars.E2E_TRIAGE_MODE == 'enforce' }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-android.result }}
           JOB_STATUS: ${{ job.status }}
@@ -672,12 +778,14 @@ jobs:
         run: |
           set +e
           UPSTREAM="true"
+          CANCELLED="false"
           # This job runs with always(), so job.status stays success when an upstream
           # job is cancelled — read the needs results to detect that.
           if [ "$SPECS_RESULT" = "cancelled" ] ||
              [ "$E2E_RESULT" = "cancelled" ] ||
              [ "$JOB_STATUS" = "cancelled" ]; then
             UPSTREAM="false"
+            CANCELLED="true"
           fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-android"')
@@ -688,7 +796,9 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
+            --cancelled="$CANCELLED" \
             --e2e-override="$E2E_OVERRIDE" \
+            --announce-triage="$ANNOUNCE_TRIAGE" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

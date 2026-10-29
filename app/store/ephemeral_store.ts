@@ -12,6 +12,11 @@ import {toMilliseconds} from '@utils/datetime';
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 const TIME_TO_CLEAR_RECENTLY_UNSAVED_SAVED_POSTS = toMilliseconds({minutes: 2});
 
+export type PendingChannelAccessChecks = {
+    teamIds: Set<string>;
+    channelIds: Set<string>;
+};
+
 class EphemeralStoreSingleton {
     private themeSubject = new BehaviorSubject<Theme>(getDefaultThemeByAppearance());
     creatingChannel = false;
@@ -80,9 +85,16 @@ class EphemeralStoreSingleton {
     // recreated, so a previous session's entry could block a fetch for the next one.
     private linkedPostFetchAttempts: {[serverUrl: string]: Set<string>} = {};
 
+    // Channel access checks waiting for the server's next run (see @actions/remote/channel_access).
+    // Cleared on logout, so a previous session's checks are not run for the next one.
+    private pendingChannelAccessChecks: {[serverUrl: string]: PendingChannelAccessChecks} = {};
+
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
     private runningTranslations = new Set<string>();
+
+    // Add-server candidate secret before a session exists (not safe in Expo Router params).
+    private pendingPreauthSecrets: {[serverUrl: string]: string | undefined} = {};
 
     addRunningTranslation = (postId: string) => {
         this.runningTranslations.add(postId);
@@ -566,6 +578,30 @@ class EphemeralStoreSingleton {
         delete this.linkedPostFetchAttempts[serverUrl];
     };
 
+    addPendingChannelAccessCheck = (serverUrl: string, {teamId, channelId}: {teamId?: string; channelId?: string}) => {
+        if (!this.pendingChannelAccessChecks[serverUrl]) {
+            this.pendingChannelAccessChecks[serverUrl] = {teamIds: new Set(), channelIds: new Set()};
+        }
+        const checks = this.pendingChannelAccessChecks[serverUrl];
+        if (teamId) {
+            checks.teamIds.add(teamId);
+        }
+        if (channelId) {
+            checks.channelIds.add(channelId);
+        }
+    };
+
+    // Returns the server's pending checks and removes them, so checks added meanwhile wait for the next run.
+    takePendingChannelAccessChecks = (serverUrl: string): PendingChannelAccessChecks | undefined => {
+        const checks = this.pendingChannelAccessChecks[serverUrl];
+        delete this.pendingChannelAccessChecks[serverUrl];
+        return checks;
+    };
+
+    clearPendingChannelAccessChecks = (serverUrl: string) => {
+        delete this.pendingChannelAccessChecks[serverUrl];
+    };
+
     // Ephemeral control for rejected files
     addRejectedFile = (fileId: string, rejectionReason?: string) => {
         this.rejectedFiles.set(fileId, rejectionReason || '');
@@ -584,6 +620,18 @@ class EphemeralStoreSingleton {
 
     clearRejectedFiles = () => {
         this.rejectedFiles.clear();
+    };
+
+    setPendingPreauthSecret = (serverUrl: string, secret: string) => {
+        this.pendingPreauthSecrets[serverUrl] = secret;
+    };
+
+    getPendingPreauthSecret = (serverUrl: string) => {
+        return this.pendingPreauthSecrets[serverUrl];
+    };
+
+    clearPendingPreauthSecret = (serverUrl: string) => {
+        delete this.pendingPreauthSecrets[serverUrl];
     };
 
     // Ephemeral control for the items currently in a post list viewport

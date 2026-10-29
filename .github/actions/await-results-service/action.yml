@@ -1,0 +1,43 @@
+name: Await results service
+description: Waits, bounded, for the Actions results service to answer before an upload-artifact retry.
+
+inputs:
+  timeout-seconds:
+    description: Upper bound on the wait before the retry runs anyway
+    required: false
+    default: '120'
+
+runs:
+  using: composite
+  steps:
+    - name: Wait for results service
+      shell: bash
+      env:
+        WAIT_TIMEOUT_SECONDS: ${{ inputs.timeout-seconds }}
+      run: |
+        # ACTIONS_RESULTS_URL is exported only to JS and container actions, not run steps.
+        # Probe the hosted results host unless the variable happens to be set; never print its value.
+        if [ -n "${ACTIONS_RESULTS_URL:-}" ]; then
+          url="$ACTIONS_RESULTS_URL"; src="env"
+        else
+          url="https://results-receiver.actions.githubusercontent.com/"; src="default"
+        fi
+        echo "Results host source: $src"
+        deadline=$(( $(date +%s) + WAIT_TIMEOUT_SECONDS ))
+        probe=0
+        while true; do
+          probe=$((probe + 1))
+          rc=0
+          # Any HTTP response counts as reachable; curl exits 6 (DNS), 7 (connect) or 28 (timeout).
+          curl -s -o /dev/null --connect-timeout 5 --max-time 10 "$url" || rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "Results service reachable after $probe probe(s)"
+            exit 0
+          fi
+          if [ "$(date +%s)" -ge "$deadline" ]; then
+            echo "::warning::Results service still unreachable after ${WAIT_TIMEOUT_SECONDS}s (last curl exit $rc); retrying the upload anyway"
+            exit 0
+          fi
+          echo "Probe $probe: results service unreachable (curl exit $rc), retrying in 2s"
+          sleep 2
+        done

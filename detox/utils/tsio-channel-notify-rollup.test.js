@@ -10,6 +10,7 @@ const {
     bucketIdentity,
     mergeDetails,
     collectPerJobCounts,
+    collectFailures,
 } = require('./tsio-channel-notify-rollup');
 
 const BASE_URL = 'https://test-io.test.mattermost.com';
@@ -82,27 +83,53 @@ describe('tsio-channel-notify-rollup', () => {
             });
         });
 
-        it('skips groups that never reported and tolerates a failed fetch', async () => {
-            const warnings = [];
-            const counts = await collectPerJobCounts({
-                baseUrl: BASE_URL,
-                results: [
-                    {identity: identityFor('detox-ios'), detail: null},
-                    {identity: identityFor('detox-android'), detail: {reports: []}},
-                    {identity: identityFor('detox-ipad'), detail: {reports: []}},
-                ],
-                fetchCounts: (baseUrl, identity) => {
-                    if (identity.name === 'mobile-main-detox-android') {
-                        return Promise.reject(new Error('consolidated fetch failed: 500'));
-                    }
-                    return Promise.resolve({'detox-ipad': {passed: 3, failed: 0, skipped: 0, flaky: 1}});
-                },
-                warn: (msg) => warnings.push(msg),
+        describe('collectFailures', () => {
+            it('merges failures across jobs and tolerates a failed fetch', async () => {
+                const warnings = [];
+                const failures = await collectFailures({
+                    baseUrl: BASE_URL,
+                    results: [
+                        {identity: identityFor('detox-ios'), detail: null},
+                        {identity: identityFor('detox-android'), detail: {reports: []}},
+                        {identity: identityFor('detox-ipad'), detail: {reports: []}},
+                    ],
+                    fetchFailures: (baseUrl, identity) => {
+                        if (identity.name === 'mobile-main-detox-android') {
+                            return Promise.reject(new Error('consolidated fetch failed: 500'));
+                        }
+                        return Promise.resolve([{job: 'detox-ipad', title: 'MM-T9 - case', error: 'boom', previousStatuses: [], passedOnRetry: false}]);
+                    },
+                    warn: (msg) => warnings.push(msg),
+                });
+                assert.equal(failures.length, 1);
+                assert.equal(failures[0].title, 'MM-T9 - case');
+                assert.equal(warnings.length, 1);
             });
+        });
 
-            assert.deepEqual(counts, {'detox-ipad': {passed: 3, failed: 0, skipped: 0, flaky: 1}});
-            assert.equal(warnings.length, 1);
-            assert.match(warnings[0], /mobile-main-detox-android/);
+        describe('collectPerJobCounts', () => {
+            it('skips groups that never reported and tolerates a failed fetch', async () => {
+                const warnings = [];
+                const counts = await collectPerJobCounts({
+                    baseUrl: BASE_URL,
+                    results: [
+                        {identity: identityFor('detox-ios'), detail: null},
+                        {identity: identityFor('detox-android'), detail: {reports: []}},
+                        {identity: identityFor('detox-ipad'), detail: {reports: []}},
+                    ],
+                    fetchCounts: (baseUrl, identity) => {
+                        if (identity.name === 'mobile-main-detox-android') {
+                            return Promise.reject(new Error('consolidated fetch failed: 500'));
+                        }
+                        return Promise.resolve({'detox-ipad': {passed: 3, failed: 0, skipped: 0, flaky: 1}});
+                    },
+                    warn: (msg) => warnings.push(msg),
+                });
+
+                assert.deepEqual(counts, {'detox-ipad': {passed: 3, failed: 0, skipped: 0, flaky: 1}});
+                assert.equal(warnings.length, 1);
+                assert.match(warnings[0], /mobile-main-detox-android/);
+            });
         });
     });
 });

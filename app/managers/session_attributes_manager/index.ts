@@ -47,9 +47,10 @@ const messages = defineMessages({
 });
 
 export class SessionAttributesManagerSingleton {
+    private locationPermissionRequest?: Promise<void>;
+
     // Servers whose requests carry session attributes, mirroring what the native client was told.
     private enabledServers = new Set<string>();
-    private locationPermissionRequest?: Promise<void>;
 
     syncStaticValues = async (): Promise<void> => {
         const values = await this.collectStaticValues();

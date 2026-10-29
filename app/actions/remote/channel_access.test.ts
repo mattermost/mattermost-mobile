@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removeCurrentUserFromChannel} from '@actions/local/channel';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {fetchCategories} from './category';
 import {handleChannelAccessDenied} from './channel';
-import {checkChannelAccess, clearChannelAccessState, reconcileChannelAccess} from './channel_access';
+import {checkChannelAccess, reconcileChannelAccess} from './channel_access';
 import {fetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -130,7 +132,7 @@ describe('channel access', () => {
     });
 
     afterEach(async () => {
-        clearChannelAccessState(serverUrl);
+        EphemeralStore.clearPendingChannelAccessChecks(serverUrl);
         Object.values(mockClient).forEach((fn) => fn.mockReset());
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
@@ -249,6 +251,33 @@ describe('channel access', () => {
             await reconcileChannelAccess(serverUrl);
 
             expect(await storedChannelIds()).toEqual(['archived', 'dmchannel']);
+            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
+        });
+
+        it('should keep a channel joined while the channel list request is in flight', async () => {
+            await enableFeature();
+            await seed([channel('channel1')]);
+            mockClient.getMyChannels.mockImplementationOnce(async () => {
+                await seed([channel('joined')]);
+                return [channel('channel1')];
+            });
+
+            await reconcileChannelAccess(serverUrl);
+
+            expect(await storedChannelIds()).toEqual(['channel1', 'joined']);
+        });
+
+        it('should not restore a channel left while the channel list request is in flight', async () => {
+            await enableFeature();
+            await seed([channel('channel1'), channel('left')]);
+            mockClient.getMyChannels.mockImplementationOnce(async () => {
+                await removeCurrentUserFromChannel(serverUrl, 'left');
+                return [channel('channel1'), channel('left')];
+            });
+
+            await reconcileChannelAccess(serverUrl);
+
+            expect(await storedChannelIds()).toEqual(['channel1']);
             expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
         });
 

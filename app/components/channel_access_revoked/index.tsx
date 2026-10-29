@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {defineMessages, useIntl, type IntlShape} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -10,7 +10,6 @@ import Button from '@components/button';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -18,10 +17,6 @@ const messages = defineMessages({
     title: {
         id: 'channel_access_revoked.title',
         defaultMessage: 'Channel unavailable',
-    },
-    description: {
-        id: 'channel_access_revoked.description',
-        defaultMessage: 'You no longer have access to {displayName}. It will reappear here if access is restored.',
     },
     okay: {
         id: 'channel_access_revoked.okay',
@@ -41,18 +36,7 @@ const BOTTOM_MARGIN = 10; // between the button and the bottom safe area
 const MARGINS = TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + BOTTOM_MARGIN;
 
 // Everything in the sheet except the description text.
-const FIXED_CONTENT_HEIGHT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS;
-const MIN_TEXT_CONTAINER_HEIGHT = 80;
-const MAX_TEXT_CONTAINER_HEIGHT = 320;
-
-// The sheet cannot grow to fit its content, so size it from the rendered text: the channel
-// name and the translation both change how many lines the description wraps to.
-export const snapPointFor = (description: string) => {
-    const length = description.length / 100;
-    return FIXED_CONTENT_HEIGHT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
-};
-
-export const description = (intl: IntlShape, displayName: string) => intl.formatMessage(messages.description, {displayName});
+export const FIXED_CONTENT_HEIGHT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

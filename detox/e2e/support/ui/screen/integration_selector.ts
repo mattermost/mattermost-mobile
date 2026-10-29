@@ -10,6 +10,8 @@ class IntegrationSelectorScreen {
         selectorItemPrefix: 'integration_selector.selector_item.',
         searchInput: 'selector.search_bar.search.input',
         doneButton: 'integration_selector.multiselect.submit.button',
+        channelList: 'integration_selector.channel_list',
+        userItemPrefix: 'integration_selector.user_list.user_item.',
 
         // The selector is a pushed screen (getHeaderOptions), so "cancel" is the
         // navigation-header back button — there is no integration_selector.cancel.button.
@@ -19,6 +21,11 @@ class IntegrationSelectorScreen {
     integrationSelectorScreen = element(by.id(this.testID.integrationSelectorScreen));
     searchInput = element(by.id(this.testID.searchInput));
     doneButton = element(by.id(this.testID.doneButton));
+    channelList = element(by.id(this.testID.channelList));
+
+    getChannelRow = (channelId: string) => element(by.id(`${this.testID.channelList}.${channelId}`));
+    getUserItem = (userId: string) => element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}`));
+    getUserItemDisplayName = (userId: string) => element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}.display_name`));
     cancelButton = element(by.id(this.testID.cancelButton));
 
     // Helper to select an option by value
