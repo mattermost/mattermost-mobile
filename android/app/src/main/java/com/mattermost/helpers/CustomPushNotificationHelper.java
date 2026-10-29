@@ -574,7 +574,7 @@ public class CustomPushNotificationHelper {
         }
     }
 
-    private static Bitmap userAvatar(final Context context, @NonNull final String serverUrl, final String userId, final String urlOverride) throws IOException {
+    public static Bitmap userAvatar(final Context context, @NonNull final String serverUrl, final String userId, final String urlOverride) throws IOException {
         try {
             Response response;
             Double lastUpdateAt = 0.0;

@@ -5,12 +5,13 @@ import {NativeModules, Platform} from 'react-native';
 
 import {storeGlobal} from '@actions/app/global';
 import DatabaseManager from '@database/manager';
-import {getDeviceToken, queryGlobalValue} from '@queries/app/global';
+import {getDeviceToken, getVoIPDeviceToken, queryGlobalValue} from '@queries/app/global';
 
 import {
     getNotificationDeliveryMode,
     getNotificationDeliveryModeKey,
     getNotificationDeviceToken,
+    getNotificationVoIPDeviceToken,
     loadNotificationDeliveryModes,
     NotificationDeliveryMode,
     normalizeNotificationDeliveryMode,
@@ -30,6 +31,7 @@ jest.mock('@database/manager', () => ({
 }));
 jest.mock('@queries/app/global', () => ({
     getDeviceToken: jest.fn(),
+    getVoIPDeviceToken: jest.fn(),
     queryGlobalValue: jest.fn(),
 }));
 
@@ -49,6 +51,7 @@ describe('Direct notification delivery modes', () => {
         nativeModule.removeServer.mockResolvedValue(undefined);
         jest.mocked(storeGlobal).mockResolvedValue([]);
         jest.mocked(getDeviceToken).mockResolvedValue('fcm-token');
+        jest.mocked(getVoIPDeviceToken).mockResolvedValue('voip-token');
         resetNotificationDeliveryModeCache();
     });
 
@@ -73,16 +76,20 @@ describe('Direct notification delivery modes', () => {
         await expect(getNotificationDeliveryMode(serverUrl)).resolves.toBe(NotificationDeliveryMode.DIRECT);
     });
 
-    it('never exposes an FCM token for Direct or Off, but preserves Server push', async () => {
+    it('never exposes FCM or VoIP tokens for Direct or Off, but preserves Server push', async () => {
         await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.DIRECT);
         await expect(getNotificationDeviceToken(serverUrl)).resolves.toBe('');
+        await expect(getNotificationVoIPDeviceToken(serverUrl)).resolves.toBe('');
 
         await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.OFF);
         await expect(getNotificationDeviceToken(serverUrl)).resolves.toBe('');
+        await expect(getNotificationVoIPDeviceToken(serverUrl)).resolves.toBe('');
 
         await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.SERVER_PUSH);
         await expect(getNotificationDeviceToken(serverUrl)).resolves.toBe('fcm-token');
+        await expect(getNotificationVoIPDeviceToken(serverUrl)).resolves.toBe('voip-token');
         expect(getDeviceToken).toHaveBeenCalledTimes(1);
+        expect(getVoIPDeviceToken).toHaveBeenCalledTimes(1);
     });
 
     it('loads all saved modes before WebSocket decisions and updates native storage', async () => {

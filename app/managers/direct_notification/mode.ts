@@ -6,7 +6,7 @@ import {NativeModules, Platform} from 'react-native';
 import {storeGlobal} from '@actions/app/global';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getDeviceToken, queryGlobalValue} from '@queries/app/global';
+import {getDeviceToken, getVoIPDeviceToken, queryGlobalValue} from '@queries/app/global';
 
 import type GlobalModel from '@typings/database/models/app/global';
 
@@ -155,6 +155,14 @@ export async function getNotificationDeviceToken(serverUrl: string): Promise<str
         return '';
     }
     return getDeviceToken();
+}
+
+export async function getNotificationVoIPDeviceToken(serverUrl: string): Promise<string> {
+    const mode = await getNotificationDeliveryMode(serverUrl);
+    if (mode !== NotificationDeliveryMode.SERVER_PUSH) {
+        return '';
+    }
+    return getVoIPDeviceToken();
 }
 
 export function resetNotificationDeliveryModeCache(): void {

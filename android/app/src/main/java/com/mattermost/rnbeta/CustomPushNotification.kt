@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
+import com.mattermost.callsnative.managers.IncomingCallEntry
 import com.mattermost.helpers.CustomPushNotificationHelper
 import com.mattermost.helpers.DatabaseHelper
 import com.mattermost.helpers.Network
@@ -18,8 +19,10 @@ import com.wix.reactnativenotifications.core.JsIOHelper
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter
 import com.wix.reactnativenotifications.core.notification.PushNotification
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CustomPushNotification(
         context: Context,
@@ -50,6 +53,7 @@ class CustomPushNotification(
         val isIdLoaded = initialData.getString("id_loaded") == "true"
         val notificationId = NotificationHelper.getNotificationId(initialData)
         val serverUrl = addServerUrlToBundle(initialData)
+        val isVoip = initialData.getString("voip") == "true"
 
         // Direct and Off are per-server choices, not global FCM switches.
         // Keep clear events so stale groups can still be dismissed, but do not
@@ -63,9 +67,113 @@ class CustomPushNotification(
 
         GlobalScope.launch {
             try {
-                handlePushNotificationInCoroutine(serverUrl, type, channelId, ackId, isIdLoaded, notificationId, postId, signature)
+                if (isVoip) {
+                    handleVoipCallInCoroutine(serverUrl, channelId, ackId, isIdLoaded, notificationId, postId, signature, initialData)
+                } else {
+                    handlePushNotificationInCoroutine(serverUrl, type, channelId, ackId, isIdLoaded, notificationId, postId, signature)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private suspend fun handleVoipCallInCoroutine(
+            serverUrl: String?,
+            channelId: String?,
+            ackId: String?,
+            isIdLoaded: Boolean,
+            notificationId: Int,
+            postId: String?,
+            signature: String?,
+            initialData: Bundle
+    ) {
+        // Never create a ringing call surface for an unverified push.
+        if (!CustomPushNotificationHelper.verifySignature(mContext, signature, serverUrl, ackId)) {
+            TurboLog.w("ENCMA Calls", "VoIP push signature verification failed")
+            return
+        }
+        if (serverUrl.isNullOrEmpty() || channelId.isNullOrEmpty()) {
+            TurboLog.w("ENCMA Calls", "VoIP push is missing its server URL or channel ID")
+            return
+        }
+
+        // While MainActivity is foreground, the existing in-app WebSocket
+        // screen owns ringing. Acknowledge delivery without adding a second
+        // native call screen or ringtone.
+        if (com.mattermost.callsnative.managers.CallSurfaceCoordinator.isMainActivityForeground()) {
+            if (ackId != null) {
+                ReceiptDelivery.send(ackId, serverUrl, postId, CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, isIdLoaded)
+            }
+            return
+        }
+
+        val uuid = try {
+            IncomingCallEntry.report(
+                mContext,
+                IncomingCallEntry.Params(
+                    channelId = channelId,
+                    serverId = initialData.getString("server_id").orEmpty(),
+                    serverUrl = serverUrl,
+                    callerName = initialData.getString("sender_name").orEmpty(),
+                    callerId = initialData.getString("sender_id").orEmpty(),
+                    postId = postId.orEmpty(),
+                    threadId = initialData.getString("root_id").orEmpty(),
+                ),
+            )
+        } catch (e: Exception) {
+            TurboLog.w("ENCMA Calls", "Native incoming-call setup failed: ${e.message}")
+            null
+        }
+
+        if (uuid == null) {
+            // Telecom can be unavailable because of device policy or an OEM
+            // failure. Preserve the previous message alert rather than making
+            // the call completely silent.
+            handlePushNotificationInCoroutine(
+                serverUrl,
+                CustomPushNotificationHelper.PUSH_TYPE_MESSAGE,
+                channelId,
+                ackId,
+                isIdLoaded,
+                notificationId,
+                postId,
+                signature,
+            )
+            return
+        }
+
+        val callerId = initialData.getString("sender_id").orEmpty()
+        if (callerId.isNotEmpty()) {
+            GlobalScope.launch {
+                try {
+                    val bitmap = withContext(Dispatchers.IO) {
+                        CustomPushNotificationHelper.userAvatar(mContext, serverUrl, callerId, null)
+                    }
+                    IncomingCallEntry.updateAvatar(mContext, uuid, bitmap)
+                } catch (e: Exception) {
+                    TurboLog.w("ENCMA Calls", "Caller avatar fetch failed: ${e.message}")
+                }
+            }
+        }
+
+        // For id_loaded pushes the ack response enriches the caller name. The
+        // native ring starts immediately with the push's available display
+        // data and is refreshed when this request completes.
+        if (ackId != null) {
+            val response = ReceiptDelivery.send(
+                ackId,
+                serverUrl,
+                postId,
+                CustomPushNotificationHelper.PUSH_TYPE_MESSAGE,
+                isIdLoaded,
+            )
+            if (isIdLoaded && response != null) {
+                val enrichedName = response.getString("sender_name").orEmpty()
+                if (enrichedName.isNotEmpty()) {
+                    IncomingCallEntry.updateCallerName(mContext, uuid, enrichedName)
+                }
             }
         }
     }
