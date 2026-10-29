@@ -211,9 +211,6 @@ async function collectPerJobCounts({
             for (const key of COUNT_KEYS) {
                 merged[job][key] += jobCounts[key] || 0;
             }
-            if (jobCounts.failedTests !== undefined) {
-                merged[job].failedTests = (merged[job].failedTests || 0) + jobCounts.failedTests;
-            }
         }
     }
     return merged;

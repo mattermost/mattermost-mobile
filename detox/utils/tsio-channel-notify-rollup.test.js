@@ -88,15 +88,6 @@ describe('tsio-channel-notify-rollup', () => {
             });
         });
 
-        it('keeps the distinct failed tests of each job', async () => {
-            const counts = await collectPerJobCounts({
-                baseUrl: BASE_URL,
-                results: [{identity: identityFor('detox-ios'), detail: {reports: [{id: 'r1', gh_job_name: 'detox-ios'}]}}],
-                fetchCounts: () => Promise.resolve({'detox-ios': {passed: 1, failed: 3, skipped: 0, flaky: 0, failedTests: 2}}),
-            });
-            assert.equal(counts['detox-ios'].failedTests, 2);
-        });
-
         describe('collectFailures', () => {
             it('merges failures across jobs and tolerates a failed fetch', async () => {
                 const warnings = [];

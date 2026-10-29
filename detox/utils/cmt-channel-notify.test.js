@@ -333,6 +333,20 @@ describe('cmt-channel-notify', () => {
             }]);
         });
 
+        it('marks a test that failed a try and passed the next as passed on retry', () => {
+            const identity = {commit_sha: 'sha1', gh_run_attempt: '1'};
+            const detail = {reports: [{id: 'r1', gh_job_name: 'detox-android'}]};
+            const tries = (...statuses) => statuses.map((status) => ({report_id: 'r1', commit_sha: 'sha1', run_attempt: 1, status}));
+            const consol = {specs: [
+                {full_title: 'Retried MM-T1 - case', history: tries('failed', 'passed')},
+                {full_title: 'Failed MM-T2 - case', history: tries('failed', 'failed')},
+            ]};
+            assert.deepEqual(failuresFromConsolidated(consol, identity, detail).map((f) => [f.title, f.passedOnRetry]), [
+                ['Retried MM-T1 - case', true],
+                ['Failed MM-T2 - case', false],
+            ]);
+        });
+
         it('excludes other attempts of the same run from previous statuses', () => {
             const identity = {commit_sha: 'sha1', gh_run_attempt: '2'};
             const detail = {reports: [{id: 'r1', gh_job_name: 'detox-ios-Server_12.1.0-rc1'}]};
@@ -629,25 +643,29 @@ describe('cmt-channel-notify', () => {
 
         it('judges a failed test triage left out, and names failed tests with neither a verdict nor detail', () => {
             const lanes = [{lane: 'detox-ios', counts: {flaky: 0}, findings: [row('Login MM-T3 - should log in', 'FLAKY_ON_TRUNK', 'flaky')]}];
-            const legs = [{platform: 'ios', framework: 'detox', kind: 'e2e', serverVersion: 'default', failed: 5, failedTests: 4, passed: 5}];
+            const legs = [{platform: 'ios', framework: 'detox', kind: 'e2e', serverVersion: 'default', failed: 4, passed: 5}];
             const failures = [
                 {title: 'Login MM-T3 - should log in', job: 'detox-ios', error: 'Element not found'},
                 {title: 'spec did not run', job: 'detox-ios', error: 'was assigned to a shard but produced no result'},
+                {title: 'Search MM-T9 - should find', job: 'detox-ios', error: 'Element not found', passedOnRetry: true},
             ];
             const text = formatTriageVerdict({triage: lanes, onMain: false, legs, failures}).join('\n');
             assert.match(text, /^- 📱 detox-ios spec did not run — /m, 'a failure with no finding is judged from its error text');
             assert.equal(text.match(/Login MM-T3/g).length, 1);
+            assert.doesNotMatch(text, /MM-T9/, 'a test that passed on retry is in the retry count, not a failure');
             assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 detox-ios \(2 of 4 failed tests\) — the triage job left no verdict; look at the run$/m);
         });
 
-        it('counts each failed test once, and a history entry with no known status as failed', async () => {
+        // TSIO keeps each try as its own entry: main run 40764686027's detox-android had 2 tests that failed both
+        // tries and 4 that failed, then passed.
+        it('counts each test once: failed then passed is flaky, and a status with no known name failed', async () => {
             const at = (status, report = 'r1') => ({commit_sha: 'sha1', run_attempt: '1', report_id: report, status});
-            const specs = [{history: [at('failed'), at('failed')]}, {history: [at(undefined)]}, {history: [at('timedOut')]}, {history: [at('passed')]}];
+            const specs = [{history: [at('failed'), at('failed')]}, {history: [at('failed'), at('passed')]}, {history: [at(undefined)]}, {history: [at('timedOut')]}, {history: [at('passed')]}];
             const original = global.fetch;
             global.fetch = () => Promise.resolve({ok: true, text: () => Promise.resolve(''), json: () => Promise.resolve({specs})});
             try {
                 const counts = await fetchPerJobCountsFromConsolidated('https://tsio.test', {commit_sha: 'sha1', gh_run_attempt: '1', name: 'n', gh_run_id: '1'}, {reports: [{id: 'r1', gh_job_name: 'detox-ios'}]});
-                assert.deepEqual(counts, {'detox-ios': {passed: 1, failed: 4, skipped: 0, flaky: 0, failedTests: 3}});
+                assert.deepEqual(counts, {'detox-ios': {passed: 1, failed: 3, skipped: 0, flaky: 1}});
             } finally {
                 global.fetch = original;
             }

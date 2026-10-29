@@ -111,7 +111,7 @@ function buildIndividualReportUrl(baseUrl, reportId) {
 }
 
 /**
- * @param {Record<string, {passed?: number, failed?: number, skipped?: number, flaky?: number, failedTests?: number}>} perJobCounts
+ * @param {Record<string, {passed?: number, failed?: number, skipped?: number, flaky?: number}>} perJobCounts
  * @param {Array<{id?: string, gh_job_name?: string, display_name?: string, status?: string}>} uploadedReports
  * @param {string} [baseUrl]
  * @returns {Array<object>}
@@ -159,7 +159,6 @@ function buildLegSummaries(perJobCounts, uploadedReports, baseUrl) {
             framework: parsed.framework,
             serverVersion: parsed.serverVersion,
             kind: parsed.kind,
-            failedTests: counts.failedTests ?? failed,
             reportUrl: uploaded?.id && baseUrl ? buildIndividualReportUrl(baseUrl, uploaded.id) : undefined,
         });
     }
@@ -527,8 +526,9 @@ function formatTriageVerdict({triage, onMain, changes = null, repository = 'matt
 
     // A failed test has a verdict only when a finding of its run names it: a triage job that failed, found only a
     // problem with the whole run, or left out a test (a spec that never ran) gave none. Those failures are judged
-    // from their error text, as before triage; failed tests with neither a verdict nor TSIO detail were not checked,
-    // so say so instead of guessing.
+    // from their error text, as before triage, except one that passed on retry in a run triage checked: it is in
+    // the retry count above. Failed tests with neither a verdict nor TSIO detail were not checked, so say so
+    // instead of guessing.
     const named = new Map();
     const verdicts = new Map();
     for (const lane of triage || []) {
@@ -543,15 +543,18 @@ function formatTriageVerdict({triage, onMain, changes = null, repository = 'matt
         named.set(key, names);
         verdicts.set(key, (verdicts.get(key) || 0) + (lane.findings || []).length);
     }
-    const unjudged = (failures || []).filter((failure) => !named.get(legKeyOf(failure.job))?.has(failure.title));
+    const unjudged = (failures || []).filter((failure) => {
+        const names = named.get(legKeyOf(failure.job));
+        return !names?.has(failure.title) && !(names && failure.passedOnRetry);
+    });
     lines.push(...formatFailureJudgement(unjudged));
     const unchecked = [];
     for (const leg of legs || []) {
         const key = legKey(leg);
         const accounted = (verdicts.get(key) || 0) + unjudged.filter((failure) => legKeyOf(failure.job) === key).length;
-        const missing = (leg.failedTests ?? leg.failed) - accounted;
-        if (leg.failed > 0 && missing > 0) {
-            unchecked.push(accounted ? `${formatLegName(leg)} (${missing} of ${leg.failedTests ?? leg.failed} failed tests)` : formatLegName(leg));
+        const missing = leg.failed - accounted;
+        if (missing > 0) {
+            unchecked.push(accounted ? `${formatLegName(leg)} (${missing} of ${leg.failed} failed tests)` : formatLegName(leg));
         }
     }
     if (unchecked.length) {
@@ -717,7 +720,7 @@ function formatCmtChannelMessage({
  * @param {string} baseUrl
  * @param {Object} compositeIdentity
  * @param {Object} groupDetail
- * @returns {Promise<Record<string, {passed: number, failed: number, skipped: number, flaky: number, failedTests: number}>>}
+ * @returns {Promise<Record<string, {passed: number, failed: number, skipped: number, flaky: number}>>}
  */
 async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, groupDetail) {
     const idToJob = {};
@@ -730,8 +733,7 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
 
     const consol = await fetchConsolidated(baseUrl, compositeIdentity);
 
-    const counts = {};
-    const failedSpecs = {}; // job → the distinct tests behind its failed entries (a test can fail more than once)
+    const triesByTest = {}; // job → Map(spec → the statuses of its tries in this attempt)
     const commitSha = compositeIdentity.commit_sha;
     const attempt = Number.parseInt(compositeIdentity.gh_run_attempt || '1', 10);
 
@@ -747,22 +749,44 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
             if (!job) {
                 continue;
             }
-            if (!counts[job]) {
-                counts[job] = {passed: 0, failed: 0, skipped: 0, flaky: 0};
+            if (!triesByTest[job]) {
+                triesByTest[job] = new Map();
             }
-            const status = entry.status || 'failed';
-            const counted = Object.prototype.hasOwnProperty.call(counts[job], status) ? status : 'failed';
-            counts[job][counted] += 1;
-            if (counted === 'failed') {
-                (failedSpecs[job] ||= new Set()).add(spec);
-            }
+            const tries = triesByTest[job];
+            tries.set(spec, [...(tries.get(spec) || []), entry.status || 'failed']);
         }
     }
-    for (const job of Object.keys(counts)) {
-        counts[job].failedTests = failedSpecs[job]?.size || 0;
-    }
 
+    const counts = {};
+    for (const [job, tries] of Object.entries(triesByTest)) {
+        counts[job] = {passed: 0, failed: 0, skipped: 0, flaky: 0};
+        for (const statuses of tries.values()) {
+            counts[job][outcomeOf(statuses)] += 1;
+        }
+    }
     return counts;
+}
+
+const OUTCOMES = ['passed', 'failed', 'skipped', 'flaky'];
+
+/**
+ * One outcome per test of a run. TSIO keeps each try as its own entry (failed, then passed on the retry), so a
+ * test that failed a try and passed the next is flaky, and one that failed every try failed once. A status TSIO
+ * does not name counts as failed.
+ *
+ * @param {string[]} statuses - the test's tries in this attempt
+ * @returns {string}
+ */
+function outcomeOf(statuses) {
+    const failed = statuses.some((status) => status === 'failed' || !OUTCOMES.includes(status));
+    const passed = statuses.some((status) => status === 'passed' || status === 'flaky');
+    if (statuses.includes('flaky') || (failed && passed)) {
+        return 'flaky';
+    }
+    if (failed) {
+        return 'failed';
+    }
+    return passed ? 'passed' : 'skipped';
 }
 
 /**
@@ -808,7 +832,7 @@ function failuresFromConsolidated(consol, compositeIdentity, groupDetail) {
             title: spec.full_title || '',
             error: failedHere.error_message || '',
             previousStatuses: history.filter((entry) => !isCurrentRun(entry)).map((entry) => entry.status || 'failed'),
-            passedOnRetry: current.some((entry) => entry.status === 'flaky'),
+            passedOnRetry: outcomeOf(current.filter((entry) => entry.report_id === failedHere.report_id).map((entry) => entry.status || 'failed')) === 'flaky',
         });
     }
     return failures;
