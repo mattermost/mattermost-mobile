@@ -30,12 +30,33 @@ jobs:
 
       - name: Run ENCMA focused JavaScript tests
         run: |
-          NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand \
+          NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand --runTestsByPath \
             app/components/encma_auth_header/index.test.tsx \
             app/screens/server/header.test.tsx \
+            'app/routes/(authenticated)/(home)/_layout.test.tsx' \
+            app/screens/home/channel_list/categories_list/index.test.tsx \
+            app/screens/home/channel_list/categories_list/encma.test.tsx \
             app/screens/home/channel_list/categories_list/subheader/search_field/index.test.tsx \
             app/screens/home/channel_list/categories_list/subheader/search_field/encma.test.tsx \
             app/screens/home/channel_list/categories_list/subheader/unread_filter/unread_filter.test.tsx \
+            app/i18n/index.test.ts \
+            app/i18n/encma.test.ts \
+            app/utils/branding.test.ts \
+            app/components/system_avatar/encma.test.tsx \
+            app/screens/settings/about/title.test.tsx \
+            app/screens/settings/about/encma.test.tsx \
+            app/screens/settings/encma.test.tsx \
+            app/screens/settings/notifications/send_test_notification_notice/send_test_notification_notice.test.tsx \
+            app/screens/settings/notifications/send_test_notification_notice/encma.test.tsx \
+            app/screens/report_a_problem/report_problem.test.tsx \
+            app/screens/report_a_problem/encma.test.tsx \
+            app/utils/share_logs.test.ts \
+            app/utils/alerts/index.test.ts \
+            app/utils/reviews.test.ts \
+            app/utils/server/index.test.ts \
+            app/init/managed_app.test.ts \
+            app/managers/security_manager/index.test.ts \
+            app/init/calls_native.test.ts \
             app/client/rest/channels.test.ts \
             app/actions/remote/channel.test.ts \
             app/queries/servers/role.test.ts \
@@ -124,7 +145,7 @@ jobs:
       - name: Upload installable arm64 APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: phase5-encma-wireguard-arm64-release-channel-list-ui
+          name: phase5-encma-wireguard-arm64-release-navigation-branding
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
