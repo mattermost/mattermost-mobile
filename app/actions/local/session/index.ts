@@ -15,6 +15,7 @@ import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
+import DirectNotificationManager from '@managers/direct_notification';
 import NetworkManager from '@managers/network_manager';
 import RedactionRevalidationManager from '@managers/redaction_revalidation_manager';
 import {removeServerCertificate} from '@managers/server_certificate_manager';
@@ -217,6 +218,10 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     deleteFileCache(serverUrl);
     deleteFileCacheByDir('mmPasteInput');
     deleteFileCacheByDir('thumbnails');
+
+    await safeExecute('directNotificationCleanup', async () => {
+        await DirectNotificationManager.onSessionTerminated(serverUrl, removeServer);
+    }, false);
 
     if (errors.length > 0) {
         return {error: errors};

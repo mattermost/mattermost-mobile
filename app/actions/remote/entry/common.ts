@@ -18,6 +18,7 @@ import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
+import {getNotificationDeliveryMode, NotificationDeliveryMode} from '@managers/direct_notification/mode';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken, getVoIPDeviceToken} from '@queries/app/global';
 import {getChannelById, queryChannelsById, queryMyChannelsByChannelIds} from '@queries/servers/channel';
@@ -301,6 +302,14 @@ export async function entryInitialChannelId(database: Database, requestedChannel
 
 export const setExtraSessionProps = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
+        const deliveryMode = await getNotificationDeliveryMode(serverUrl);
+        if (deliveryMode !== NotificationDeliveryMode.SERVER_PUSH) {
+            // Empty device IDs do not detach an existing token on Mattermost.
+            // Avoid this call entirely for Direct/Off so reconnects cannot
+            // attach the app-global FCM token to those sessions.
+            return {};
+        }
+
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
         const deviceToken = await getDeviceToken();
@@ -324,6 +333,11 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
 };
 
 export async function verifyPushProxy(serverUrl: string, groupLabel?: RequestGroupLabel) {
+    const deliveryMode = await getNotificationDeliveryMode(serverUrl);
+    if (deliveryMode !== NotificationDeliveryMode.SERVER_PUSH) {
+        return;
+    }
+
     const deviceId = await getDeviceToken();
     if (!deviceId) {
         return;

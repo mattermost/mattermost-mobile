@@ -47,6 +47,7 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
             packageList = PackageList(this).packages.apply {
                 add(WireGuardPackage())
                 add(ServerCertificatePackage())
+                add(DirectNotificationsPackage())
                 add(WatermelonDBJSIPackage())
             },
             jsMainModulePath = "index"

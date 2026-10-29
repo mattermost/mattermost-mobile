@@ -104,6 +104,12 @@
       <service android:name=".NotificationDismissService"
                 android:enabled="true"
                 android:exported="false" />
+      <service
+          android:name=".DirectNotificationsService"
+          android:enabled="true"
+          android:exported="false"
+          android:foregroundServiceType="dataSync"
+          android:stopWithTask="false" />
       <receiver android:name=".NotificationReplyBroadcastReceiver"
                android:enabled="true"
                android:exported="false" />

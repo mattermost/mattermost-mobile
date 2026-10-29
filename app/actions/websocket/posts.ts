@@ -19,6 +19,7 @@ import {isAgentPost} from '@agents/utils';
 import {ActionType, Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
+import {handleDirectNotification} from '@managers/direct_notification/handler';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
@@ -231,6 +232,10 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     models.push(...postModels);
 
     await operator.batchRecords(models, 'handleNewPostEvent');
+
+    // Direct mode is checked synchronously from its initialized mode cache;
+    // Server push and Off therefore add no work to the normal posted path.
+    await handleDirectNotification(serverUrl, post, msg);
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {

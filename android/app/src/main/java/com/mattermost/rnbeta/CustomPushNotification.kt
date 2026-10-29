@@ -50,6 +50,15 @@ class CustomPushNotification(
         val isIdLoaded = initialData.getString("id_loaded") == "true"
         val notificationId = NotificationHelper.getNotificationId(initialData)
         val serverUrl = addServerUrlToBundle(initialData)
+
+        // Direct and Off are per-server choices, not global FCM switches.
+        // Keep clear events so stale groups can still be dismissed, but do not
+        // display or acknowledge ordinary pushes for a suppressed server.
+        if (type != CustomPushNotificationHelper.PUSH_TYPE_CLEAR &&
+            DirectNotificationStore.shouldSuppressFcm(mContext, serverUrl)) {
+            return
+        }
+
         Network.init(mContext)
 
         GlobalScope.launch {
@@ -89,6 +98,37 @@ class CustomPushNotification(
         }
 
         finishProcessingNotification(serverUrl, type, channelId, notificationId)
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun onPostRequest(notificationId: Int?): Int {
+        val bundle = mNotificationProps.asBundle()
+        val isDirect = when (val value = bundle.get("encma_direct")) {
+            is String -> value == "true"
+            is Boolean -> value
+            else -> false
+        }
+        if (!isDirect) {
+            return super.onPostRequest(notificationId)
+        }
+
+        // A post ID is stable across repeated WebSocket deliveries. Building
+        // off the JS/native-modules thread also preserves the existing avatar
+        // fetch behavior without blocking notification handling.
+        val directNotificationId = NotificationHelper.getNotificationId(bundle)
+        GlobalScope.launch {
+            try {
+                val createSummary = NotificationHelper.addNotificationToPreferences(
+                    mContext,
+                    directNotificationId,
+                    bundle,
+                )
+                buildNotification(directNotificationId, createSummary)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        return directNotificationId
     }
 
     override fun onOpened() {
