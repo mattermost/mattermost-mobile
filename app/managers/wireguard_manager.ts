@@ -4,6 +4,8 @@
 import {NativeEventEmitter, NativeModules, Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
+import {WIREGUARD_KEYCHAIN_ACCOUNT, WIREGUARD_KEYCHAIN_SERVICE} from '@constants/wireguard';
+
 export const WireGuardStatus = {
     Disconnected: 'disconnected',
     Connecting: 'connecting',
@@ -42,8 +44,6 @@ type NativeWireGuardModule = {
 };
 
 const STATE_EVENT = 'ENCMAWireGuardStateChanged';
-const KEYCHAIN_SERVICE = 'encma.wireguard.configuration';
-const KEYCHAIN_ACCOUNT = 'wireguard-config';
 
 function getNativeModule(): NativeWireGuardModule {
     const nativeModule = NativeModules.ENCMAWireGuard as NativeWireGuardModule | undefined;
@@ -96,8 +96,8 @@ export function addWireGuardStateListener(listener: (state: WireGuardState) => v
 }
 
 export async function saveWireGuardConfig(config: string): Promise<void> {
-    const stored = await KeyChain.setGenericPassword(KEYCHAIN_ACCOUNT, config, {
-        service: KEYCHAIN_SERVICE,
+    const stored = await KeyChain.setGenericPassword(WIREGUARD_KEYCHAIN_ACCOUNT, config, {
+        service: WIREGUARD_KEYCHAIN_SERVICE,
         securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
     });
     if (stored === false) {
@@ -106,15 +106,15 @@ export async function saveWireGuardConfig(config: string): Promise<void> {
 }
 
 export async function loadWireGuardConfig(): Promise<string | undefined> {
-    const credentials = await KeyChain.getGenericPassword({service: KEYCHAIN_SERVICE});
-    if (!credentials || credentials.username !== KEYCHAIN_ACCOUNT) {
+    const credentials = await KeyChain.getGenericPassword({service: WIREGUARD_KEYCHAIN_SERVICE});
+    if (!credentials || credentials.username !== WIREGUARD_KEYCHAIN_ACCOUNT) {
         return undefined;
     }
     return credentials.password;
 }
 
 export async function clearWireGuardConfig(): Promise<void> {
-    const cleared = await KeyChain.resetGenericPassword({service: KEYCHAIN_SERVICE});
+    const cleared = await KeyChain.resetGenericPassword({service: WIREGUARD_KEYCHAIN_SERVICE});
     if (cleared === false) {
         throw new Error('The saved WireGuard configuration could not be removed.');
     }

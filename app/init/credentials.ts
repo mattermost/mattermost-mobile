@@ -4,6 +4,7 @@
 import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
+import {WIREGUARD_KEYCHAIN_SERVICE} from '@constants/wireguard';
 import DatabaseManager from '@database/manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logWarning} from '@utils/log';
@@ -86,7 +87,11 @@ const getAllKeychainServerUrls = async (): Promise<string[]> => {
     // Android lists every generic-password alias, which includes our per-server pre-auth aliases
     // and, before the migration runs, the legacy shared empty alias.
     const services = await KeyChain.getAllGenericPasswordServices();
-    return services.filter((service) => service && !service.startsWith(ANDROID_PREAUTH_SERVICE_PREFIX));
+    return services.filter((service) => (
+        service &&
+        service !== WIREGUARD_KEYCHAIN_SERVICE &&
+        !service.startsWith(ANDROID_PREAUTH_SERVICE_PREFIX)
+    ));
 };
 
 export const getAllServerCredentials = async (knownServerUrls?: string[]): Promise<ServerCredential[]> => {
@@ -98,7 +103,7 @@ export const getAllServerCredentials = async (knownServerUrls?: string[]): Promi
 
     // Empty knownServerUrls intentionally lists (wiped/fresh DB).
     if (knownServerUrls?.length) {
-        serverUrls = knownServerUrls;
+        serverUrls = knownServerUrls.filter((url) => Platform.OS !== 'android' || url !== WIREGUARD_KEYCHAIN_SERVICE);
     } else {
         serverUrls = await getAllKeychainServerUrls();
     }
@@ -113,6 +118,10 @@ export const getAllServerCredentials = async (knownServerUrls?: string[]): Promi
 
 export const getActiveServerUrl = async () => {
     let serverUrl = await DatabaseManager.getActiveServerUrl();
+    if (Platform.OS === 'android' && serverUrl === WIREGUARD_KEYCHAIN_SERVICE) {
+        // Ignore invalid active-server state left by an affected build.
+        serverUrl = undefined;
+    }
     if (!serverUrl) {
         const serverUrls = await getAllKeychainServerUrls();
         serverUrl = serverUrls[0];
