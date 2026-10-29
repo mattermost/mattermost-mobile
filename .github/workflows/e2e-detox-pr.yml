@@ -1161,6 +1161,8 @@ jobs:
   tsio-triage:
     name: Triage E2E failures (${{ matrix.job-key }})
     runs-on: ubuntu-24.04
+    # The channel message waits for this job: a hang must not hold it for hours (recent runs take under a minute).
+    timeout-minutes: 15
     # Red runs only: a verdict can turn a red run green, never the reverse. The gate is
     # per run, not per lane, so a passing lane may still run and post nothing. Not on a
     # cancelled run: its unfinished specs count as failures.

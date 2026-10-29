@@ -111,7 +111,7 @@ function buildIndividualReportUrl(baseUrl, reportId) {
 }
 
 /**
- * @param {Record<string, {passed?: number, failed?: number, skipped?: number, flaky?: number}>} perJobCounts
+ * @param {Record<string, {passed?: number, failed?: number, skipped?: number, flaky?: number, failedTests?: number}>} perJobCounts
  * @param {Array<{id?: string, gh_job_name?: string, display_name?: string, status?: string}>} uploadedReports
  * @param {string} [baseUrl]
  * @returns {Array<object>}
@@ -159,6 +159,7 @@ function buildLegSummaries(perJobCounts, uploadedReports, baseUrl) {
             framework: parsed.framework,
             serverVersion: parsed.serverVersion,
             kind: parsed.kind,
+            failedTests: counts.failedTests ?? failed,
             reportUrl: uploaded?.id && baseUrl ? buildIndividualReportUrl(baseUrl, uploaded.id) : undefined,
         });
     }
@@ -486,9 +487,10 @@ function formatChanges(changes, repository) {
  * @param {Object|null} [params.changes] - see formatChanges
  * @param {string} [params.repository]
  * @param {Array} [params.legs] - buildLegSummaries rows, to name runs that failed with no triage verdict
+ * @param {Array} [params.failures] - failed tests from TSIO, judged from their error text where triage left no verdict
  * @returns {string[]}
  */
-function formatTriageVerdict({triage, onMain, changes = null, repository = 'mattermost/mattermost-mobile', legs = []}) {
+function formatTriageVerdict({triage, onMain, changes = null, repository = 'mattermost/mattermost-mobile', legs = [], failures = []}) {
     const entries = [];
     for (const lane of triage || []) {
         for (const row of lane.findings || []) {
@@ -523,13 +525,49 @@ function formatTriageVerdict({triage, onMain, changes = null, repository = 'matt
         lines.push(`🔁 **Passed on retry, not product bugs:** ${total} test${total === 1 ? '' : 's'} (${retried.map((lane) => `${laneName(lane.lane)} ${lane.counts.flaky}`).join(', ')})`, '');
     }
 
-    // A run that failed but left no verdict was not checked: say so instead of guessing.
-    const judged = new Set((triage || []).map((lane) => parseMobileJobName(lane.lane)).filter(Boolean).map((p) => `${p.framework}-${p.platform}`));
-    const unchecked = (legs || []).filter((leg) => leg.failed > 0 && !judged.has(`${leg.framework}-${leg.platform}`));
+    // A failed test has a verdict only when a finding of its run names it: a triage job that failed, found only a
+    // problem with the whole run, or left out a test (a spec that never ran) gave none. Those failures are judged
+    // from their error text, as before triage; failed tests with neither a verdict nor TSIO detail were not checked,
+    // so say so instead of guessing.
+    const named = new Map();
+    const verdicts = new Map();
+    for (const lane of triage || []) {
+        const key = legKeyOf(lane.lane);
+        if (!key) {
+            continue;
+        }
+        const names = named.get(key) || new Set();
+        for (const row of lane.findings || []) {
+            names.add(row.full_title || row.title).add(row.title);
+        }
+        named.set(key, names);
+        verdicts.set(key, (verdicts.get(key) || 0) + (lane.findings || []).length);
+    }
+    const unjudged = (failures || []).filter((failure) => !named.get(legKeyOf(failure.job))?.has(failure.title));
+    lines.push(...formatFailureJudgement(unjudged));
+    const unchecked = [];
+    for (const leg of legs || []) {
+        const key = legKey(leg);
+        const accounted = (verdicts.get(key) || 0) + unjudged.filter((failure) => legKeyOf(failure.job) === key).length;
+        const missing = (leg.failedTests ?? leg.failed) - accounted;
+        if (leg.failed > 0 && missing > 0) {
+            unchecked.push(accounted ? `${formatLegName(leg)} (${missing} of ${leg.failedTests ?? leg.failed} failed tests)` : formatLegName(leg));
+        }
+    }
     if (unchecked.length) {
-        lines.push(`⚙️ **Not checked:** ${unchecked.map((leg) => formatLegName(leg)).join(', ')} — the triage job left no verdict; look at the run`, '');
+        lines.push(`⚙️ **Not checked:** ${unchecked.join(', ')} — the triage job left no verdict; look at the run`, '');
     }
     return lines;
+}
+
+// One key per run: CMT runs of the same framework and platform differ by server version.
+function legKey({framework, platform, serverVersion}) {
+    return `${framework}-${platform}-${serverVersion}`;
+}
+
+function legKeyOf(jobName) {
+    const parsed = parseMobileJobName(jobName);
+    return parsed ? legKey(parsed) : null;
 }
 
 function reportTitleForIdentity(compositeIdentity) {
@@ -645,7 +683,7 @@ function formatCmtChannelMessage({
     if (triage?.length) {
         const {webhookBucketForReportName} = require('./build-tsio-job-config');
         const onMain = webhookBucketForReportName(compositeIdentity?.run_group || compositeIdentity?.name || '') === 'mobile-main';
-        lines.push(...formatTriageVerdict({triage, onMain, changes, repository: compositeIdentity?.repository, legs}));
+        lines.push(...formatTriageVerdict({triage, onMain, changes, repository: compositeIdentity?.repository, legs, failures}));
     } else {
         lines.push(...formatFailureJudgement(failures));
         if ((failures || []).length > 0 && failed > failures.length) {
@@ -679,7 +717,7 @@ function formatCmtChannelMessage({
  * @param {string} baseUrl
  * @param {Object} compositeIdentity
  * @param {Object} groupDetail
- * @returns {Promise<Record<string, {passed: number, failed: number, skipped: number, flaky: number}>>}
+ * @returns {Promise<Record<string, {passed: number, failed: number, skipped: number, flaky: number, failedTests: number}>>}
  */
 async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, groupDetail) {
     const idToJob = {};
@@ -693,6 +731,7 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
     const consol = await fetchConsolidated(baseUrl, compositeIdentity);
 
     const counts = {};
+    const failedSpecs = {}; // job → the distinct tests behind its failed entries (a test can fail more than once)
     const commitSha = compositeIdentity.commit_sha;
     const attempt = Number.parseInt(compositeIdentity.gh_run_attempt || '1', 10);
 
@@ -712,12 +751,15 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
                 counts[job] = {passed: 0, failed: 0, skipped: 0, flaky: 0};
             }
             const status = entry.status || 'failed';
-            if (Object.prototype.hasOwnProperty.call(counts[job], status)) {
-                counts[job][status] += 1;
-            } else {
-                counts[job].failed += 1;
+            const counted = Object.prototype.hasOwnProperty.call(counts[job], status) ? status : 'failed';
+            counts[job][counted] += 1;
+            if (counted === 'failed') {
+                (failedSpecs[job] ||= new Set()).add(spec);
             }
         }
+    }
+    for (const job of Object.keys(counts)) {
+        counts[job].failedTests = failedSpecs[job]?.size || 0;
     }
 
     return counts;

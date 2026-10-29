@@ -19,6 +19,7 @@ const {
     classifyFailure,
     failuresFromConsolidated,
     fetchFailuresFromConsolidated,
+    fetchPerJobCountsFromConsolidated,
 } = require('./cmt-channel-notify');
 
 describe('cmt-channel-notify', () => {
@@ -599,6 +600,68 @@ describe('cmt-channel-notify', () => {
             assert.doesNotMatch(withTriage, /Failure judgement/);
             const without = formatCmtChannelMessage(params);
             assert.match(without, /Failure judgement/, 'with no triage verdict the earlier judgement still runs');
+        });
+
+        it('judges from the error text the failed runs whose triage named no test', () => {
+            const lanes = [
+                {lane: 'maestro-android-e2e', counts: {flaky: 0}, findings: [row('clock_display', 'REGRESSION', 'needs investigation')]},
+                {lane: 'detox-android', triaged: false, verdict: null, counts: {flaky: 0}, findings: []}, // triage failed
+                // detox-ios left no findings file at all; maestro-ios failed with no test detail in TSIO
+            ];
+            const legs = [
+                {platform: 'android', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed: 1, passed: 2},
+                {platform: 'android', framework: 'detox', kind: 'e2e', serverVersion: 'default', failed: 1, passed: 5},
+                {platform: 'ios', framework: 'detox', kind: 'e2e', serverVersion: 'default', failed: 1, passed: 5},
+                {platform: 'ios', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed: 2, passed: 5},
+            ];
+            const failures = [
+                {title: 'clock_display', job: 'maestro-android-e2e', error: 'Element not found'},
+                {title: 'Channels MM-T1 - should open', job: 'detox-android', error: 'Element not found'},
+                {title: 'Search MM-T2 - should find', job: 'detox-ios', error: 'Element not found'},
+            ];
+            const text = formatTriageVerdict({triage: lanes, onMain: true, changes, legs, failures}).join('\n');
+            assert.match(text, /Failure judgement/);
+            assert.match(text, /^- 🤖 detox-android Channels MM-T1 - should open — /m, 'a run whose triage failed is judged from the error text');
+            assert.match(text, /^- 📱 detox-ios Search MM-T2 - should find — /m, 'a run with no findings file is judged from the error text');
+            assert.equal(text.match(/clock_display/g).length, 1, 'a test triage judged is not judged again');
+            assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 maestro-ios — the triage job left no verdict; look at the run$/m);
+        });
+
+        it('judges a failed test triage left out, and names failed tests with neither a verdict nor detail', () => {
+            const lanes = [{lane: 'detox-ios', counts: {flaky: 0}, findings: [row('Login MM-T3 - should log in', 'FLAKY_ON_TRUNK', 'flaky')]}];
+            const legs = [{platform: 'ios', framework: 'detox', kind: 'e2e', serverVersion: 'default', failed: 5, failedTests: 4, passed: 5}];
+            const failures = [
+                {title: 'Login MM-T3 - should log in', job: 'detox-ios', error: 'Element not found'},
+                {title: 'spec did not run', job: 'detox-ios', error: 'was assigned to a shard but produced no result'},
+            ];
+            const text = formatTriageVerdict({triage: lanes, onMain: false, legs, failures}).join('\n');
+            assert.match(text, /^- 📱 detox-ios spec did not run — /m, 'a failure with no finding is judged from its error text');
+            assert.equal(text.match(/Login MM-T3/g).length, 1);
+            assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 detox-ios \(2 of 4 failed tests\) — the triage job left no verdict; look at the run$/m);
+        });
+
+        it('counts each failed test once, and a history entry with no known status as failed', async () => {
+            const at = (status, report = 'r1') => ({commit_sha: 'sha1', run_attempt: '1', report_id: report, status});
+            const specs = [{history: [at('failed'), at('failed')]}, {history: [at(undefined)]}, {history: [at('timedOut')]}, {history: [at('passed')]}];
+            const original = global.fetch;
+            global.fetch = () => Promise.resolve({ok: true, text: () => Promise.resolve(''), json: () => Promise.resolve({specs})});
+            try {
+                const counts = await fetchPerJobCountsFromConsolidated('https://tsio.test', {commit_sha: 'sha1', gh_run_attempt: '1', name: 'n', gh_run_id: '1'}, {reports: [{id: 'r1', gh_job_name: 'detox-ios'}]});
+                assert.deepEqual(counts, {'detox-ios': {passed: 1, failed: 4, skipped: 0, flaky: 0, failedTests: 3}});
+            } finally {
+                global.fetch = original;
+            }
+        });
+
+        it('keeps CMT runs on different servers apart', () => {
+            const lanes = [{lane: 'detox-ios-Server_11.9.0', counts: {flaky: 0}, findings: [row('Login MM-T3 - should log in', 'FLAKY_ON_TRUNK', 'flaky')]}];
+            const legs = [
+                {platform: 'ios', framework: 'detox', kind: 'cmt', serverVersion: '11.9.0', failed: 1, passed: 5},
+                {platform: 'ios', framework: 'detox', kind: 'cmt', serverVersion: '10.11.0', failed: 1, passed: 5},
+            ];
+            const text = formatTriageVerdict({triage: lanes, onMain: false, legs}).join('\n');
+            assert.match(text, /^⚙️ \*\*Not checked:\*\* .*10\.11\.0.* — the triage job left no verdict; look at the run$/m);
+            assert.doesNotMatch(text, /Not checked:.*11\.9\.0/);
         });
     });
 });
