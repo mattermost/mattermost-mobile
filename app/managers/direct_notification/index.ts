@@ -42,7 +42,12 @@ class DirectNotificationManagerSingleton {
 
         this.removeWireGuardListener?.();
         this.removeWireGuardListener = addWireGuardStateListener(this.onWireGuardStateChange);
-        await this.reconcile();
+
+        // Reconciliation reads native WireGuard state and may start the
+        // foreground service or open server sockets. None of that belongs on
+        // the critical splash/initialization path: an unavailable VPN or
+        // server must not prevent the server/login UI from appearing.
+        this.reconcile().catch((error) => logWarning('Direct notification startup reconciliation failed', error));
     };
 
     public cleanup = (): void => {
