@@ -10,6 +10,7 @@ import SectionNotice from '@components/section_notice';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useExternalLink} from '@hooks/use_external_link';
+import {isEncmaApp} from '@utils/branding';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {tryOpenURL} from '@utils/url';
@@ -112,7 +113,11 @@ const SendTestNotificationNotice = ({
         };
     }, [buttonState, intl, onSendTestNotificationClick]);
 
-    const secondaryButton: SectionNoticeButtonProps = useMemo(() => {
+    const secondaryButton = useMemo<SectionNoticeButtonProps | undefined>(() => {
+        if (isEncmaApp) {
+            return undefined;
+        }
+
         return {
             onClick: onGoToNotificationDocumentation,
             text: intl.formatMessage({id: 'user_settings.notifications.test_notification.go_to_docs', defaultMessage: 'Troubleshooting docs'}),

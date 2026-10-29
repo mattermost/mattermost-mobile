@@ -5,6 +5,7 @@ import {Alert, type AlertButton} from 'react-native';
 
 import {Screens, Sso, SupportedServer, Launch} from '@constants';
 import {navigateToScreen} from '@screens/navigation';
+import {isEncmaApp} from '@utils/branding';
 import {getErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {tryOpenURL} from '@utils/url';
@@ -235,7 +236,7 @@ function unsupportedServerAdminAlert(serverDisplayName: string, intl: IntlShape,
             tryOpenURL(url, onError);
         },
     };
-    const buttons: AlertButton[] = [cancel, learnMore];
+    const buttons: AlertButton[] = isEncmaApp ? [cancel] : [cancel, learnMore];
     const options = {cancelable: false};
 
     Alert.alert(title, message, buttons, options);

@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
+import {isEncmaApp, isMattermostEmail, isMattermostWebsite} from '@utils/branding';
 import {logDebug} from '@utils/log';
 import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -107,6 +108,27 @@ const ReportProblem = ({
     }, [serverUrl, currentUserId]);
 
     const handleReport = useCallback(async () => {
+        if (isEncmaApp) {
+            if (reportAProblemType === 'hidden') {
+                return;
+            }
+
+            if (reportAProblemLink && !isMattermostWebsite(reportAProblemLink) && (reportAProblemType === 'link' || !reportAProblemType)) {
+                tryOpenURL(reportAProblemLink);
+                return;
+            }
+
+            if (reportAProblemType === 'email' && reportAProblemMail && !isMattermostEmail(reportAProblemMail)) {
+                await emailLogs(metadata, siteName, reportAProblemMail, !allowDownloadLogs);
+                return;
+            }
+
+            // No ENCMA support site or mailbox has been configured. Keep reporting
+            // available through the platform share sheet without using upstream destinations.
+            await shareLogs(metadata, siteName, undefined, !allowDownloadLogs);
+            return;
+        }
+
         switch (reportAProblemType) {
             case 'email':
                 await emailLogs(metadata, siteName, reportAProblemMail, !allowDownloadLogs);

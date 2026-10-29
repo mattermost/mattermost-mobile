@@ -15,6 +15,7 @@ import {useServerDisplayName, useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack, navigateToSettingsScreen} from '@screens/navigation';
+import {getDisplayProductName, isEncmaApp, isMattermostWebsite} from '@utils/branding';
 
 import ReportProblem from './report_problem';
 
@@ -29,7 +30,8 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
     const serverUrl = useServerUrl();
     const serverDisplayName = useServerDisplayName();
 
-    const serverName = siteName || serverDisplayName;
+    const serverName = getDisplayProductName(siteName || serverDisplayName);
+    const canOpenHelp = showHelp && (!isEncmaApp || !isMattermostWebsite(helpLink));
 
     useAndroidHardwareBackHandler(Screens.SETTINGS, navigateBack);
 
@@ -56,10 +58,10 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
     }, []));
 
     const openHelp = usePreventDoubleTap(useCallback(() => {
-        if (helpLink) {
+        if (canOpenHelp) {
             handleGotoLocation(serverUrl, intl, helpLink);
         }
-    }, [helpLink, intl, serverUrl]));
+    }, [canOpenHelp, helpLink, intl, serverUrl]));
 
     return (
         <SettingContainer testID='settings'>
@@ -93,7 +95,7 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
                 testID='settings.about.option'
             />
             {Platform.OS === 'android' && <MenuDivider/>}
-            {showHelp &&
+            {canOpenHelp &&
                 <SettingItem
                     onPress={openHelp}
                     optionName='help'

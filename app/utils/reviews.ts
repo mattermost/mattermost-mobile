@@ -9,9 +9,11 @@ import {General, Launch} from '@constants';
 import {getDontAskForReview, getFirstLaunch, getLastAskedForReview} from '@queries/app/global';
 import {areAllServersSupported} from '@queries/app/servers';
 import ReviewAppStore from '@store/review_app_store';
+import {isEncmaApp} from '@utils/branding';
 
 export const tryRunAppReview = async (launchType: string, coldStart?: boolean) => {
-    if (!LocalConfig.ShowReview) {
+    // ENCMA does not use the upstream app-store listing or feedback forum.
+    if (isEncmaApp || !LocalConfig.ShowReview) {
         return;
     }
 

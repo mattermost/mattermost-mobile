@@ -9,6 +9,7 @@ import {Alert, AppState, type AppStateStatus, type EventSubscription, type Nativ
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {showAuthenticationInterruptedAlert, showNotSecuredAlert} from '@utils/alerts';
+import {getDisplayProductName} from '@utils/branding';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug} from '@utils/log';
@@ -43,7 +44,7 @@ class ManagedAppSingleton {
     performingAuthentication = false;
     previousAppState?: AppStateStatus;
     processConfigTimeout?: NodeJS.Timeout;
-    vendor = 'Mattermost';
+    vendor = getDisplayProductName();
     cacheConfig?: ManagedConfig = undefined;
     private emmListener: EventSubscription | undefined;
     private appStateChangeListener: NativeEventSubscription | undefined;

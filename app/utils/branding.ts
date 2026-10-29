@@ -19,3 +19,20 @@ export const getDisplayProductName = (siteName?: string) => {
 
     return siteName || 'Mattermost';
 };
+
+export const isMattermostWebsite = (url?: string) => {
+    if (!url) {
+        return false;
+    }
+
+    try {
+        const hostname = new URL(url).hostname.toLowerCase();
+        return hostname === 'mattermost.com' || hostname.endsWith('.mattermost.com');
+    } catch {
+        return false;
+    }
+};
+
+export const isMattermostEmail = (email?: string) => {
+    return Boolean(email && /@mattermost\.com$/i.test(email.trim()));
+};

@@ -22,6 +22,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack} from '@screens/navigation';
+import {isEncmaApp} from '@utils/branding';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -34,7 +35,6 @@ import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
-const isEncmaApp = applicationId === 'com.encma.hxmain';
 const encmaLogo = require('@assets/images/encma-icon.png');
 
 const TABLET_EXTRA_PADDING = 20;
@@ -336,12 +336,14 @@ const About = ({config, license}: AboutProps) => {
                             />
                         </View>
                     )}
-                    <LearnMore
-                        config={config}
-                        license={license}
-                        onPress={handleAboutTeam}
-                    />
-                    {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
+                    {!isEncmaApp && (
+                        <LearnMore
+                            config={config}
+                            license={license}
+                            onPress={handleAboutTeam}
+                        />
+                    )}
+                    {!isEncmaApp && !MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
                         defaultMessage='{site} is powered by Mattermost'
                         id={'settings.about.powered_by'}

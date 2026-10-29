@@ -6,6 +6,7 @@ import {getLocales} from 'react-native-localize';
 import 'moment/min/locales';
 
 import en from '@assets/i18n/en.json';
+import {isEncmaApp} from '@utils/branding';
 import {logError} from '@utils/log';
 
 import availableLanguages from './languages';
@@ -13,6 +14,48 @@ import availableLanguages from './languages';
 const PRIMARY_LOCALE = 'en';
 const deviceLocale = getLocales()[0]?.languageTag || PRIMARY_LOCALE;
 export const DEFAULT_LOCALE = getLocaleFromLanguage(deviceLocale);
+
+const englishTranslations: {[x: string]: string} = en;
+const ENCMA_ATTRIBUTION_MESSAGE_IDS = new Set([
+    'settings.about.copyright',
+    'settings.about.powered_by',
+    'settings.notice_text',
+]);
+const ENCMA_BRANDED_MESSAGE_IDS = new Set(Object.keys(englishTranslations).filter((id) => {
+    return englishTranslations[id].includes('Mattermost') && !ENCMA_ATTRIBUTION_MESSAGE_IDS.has(id);
+}));
+const encmaTranslationsCache = new Map<string, {[x: string]: string}>();
+
+function applyProductBranding(locale: string, translations: {[x: string]: string}) {
+    if (!isEncmaApp) {
+        return translations;
+    }
+
+    const cached = encmaTranslationsCache.get(locale);
+    if (cached) {
+        return cached;
+    }
+
+    const branded = {...translations};
+    const ids = new Set([...Object.keys(translations), ...ENCMA_BRANDED_MESSAGE_IDS]);
+    ids.forEach((id) => {
+        if (ENCMA_ATTRIBUTION_MESSAGE_IDS.has(id)) {
+            return;
+        }
+
+        const message = translations[id] ?? englishTranslations[id] ?? '';
+        if (ENCMA_BRANDED_MESSAGE_IDS.has(id) && !message.includes('Mattermost')) {
+            // Some locales transliterate the upstream name. Use the branded English
+            // message for those few strings rather than leaving the old name visible.
+            branded[id] = englishTranslations[id].replace(/\bMattermost\b/g, 'ENCMA');
+            return;
+        }
+
+        branded[id] = message.replace(/\bMattermost\b/g, 'ENCMA');
+    });
+    encmaTranslationsCache.set(locale, branded);
+    return branded;
+}
 
 function loadTranslation(locale?: string): {[x: string]: string} {
     try {
@@ -257,7 +300,7 @@ export function resetMomentLocale(locale?: string) {
 
 export function getTranslations(lang: string) {
     const locale = getLocaleFromLanguage(lang);
-    return loadTranslation(locale);
+    return applyProductBranding(locale, loadTranslation(locale));
 }
 
 export function getLocalizedMessage(lang: string, id: string, defaultMessage?: string) {
