@@ -72,7 +72,10 @@ export async function initialize() {
             // complete before WebSocket clients start populating server databases.
             await EphemeralModeManager.init(serverCredentials);
             await WebsocketManager.init(serverCredentials);
-            await DirectNotificationManager.reconcile();
+
+            // appEntry opens the initial sockets after the splash is hidden.
+            // Awaiting Direct reconciliation here would also await its first
+            // full server sync and can leave the ENCMA logo up indefinitely.
         } catch (error) {
             baseAppInitialized = false;
             throw error;
