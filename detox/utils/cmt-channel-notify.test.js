@@ -12,6 +12,9 @@ const {
     buildLegSummaries,
     formatLegResultText,
     formatCmtChannelMessage,
+    formatTriageVerdict,
+    formatMassFailures,
+    verdictOf,
     notifyCmtChannel,
     classifyFailure,
     failuresFromConsolidated,
@@ -527,6 +530,75 @@ describe('cmt-channel-notify', () => {
                 'ios-maestro',
                 'android-maestro',
             ]);
+        });
+    });
+
+    // Main run 40764686027 (0ec1413): the triage jobs' findings, as the channel message reads them.
+    describe('triage verdict', () => {
+        const row = (title, cls, label, file = 'detox/e2e/test/a.e2e.ts') => ({title, full_title: title, file, class: cls, label, blocking: label !== 'flaky'});
+        const triage = [
+            {lane: 'detox-android',
+                counts: {flaky: 4},
+                findings: [
+                    row('Server Login - Connect to Server MM-T4676_5 - should show login screen on successful connection to server', 'REGRESSION', 'needs investigation'),
+                ]},
+            {lane: 'detox-ios', counts: {flaky: 1}, findings: []},
+            {lane: 'maestro-android-e2e',
+                counts: {flaky: 0},
+                findings: [
+                    {...row('clock_display', 'REGRESSION', 'needs investigation'), full_title: 'detox/maestro/flows/timezone/clock_display.yml > clock_display', file: 'detox/maestro/flows/timezone/clock_display.yml'},
+                    row('call_ui_permission', 'FLAKY_ON_TRUNK', 'flaky', 'detox/maestro/flows/calls/call_ui_permission.yml'),
+                ]},
+        ];
+        const changes = {from: '39272432327c8ce7c8bf074f86db656ca9be4b20', to: '0ec1413a1a8bd595c2f70f144d7de02051d382e7', prs: [{number: 10266, title: '[MM-71089] Log websocket client creation errors'}]};
+
+        it('puts each test under what it means, in plain words', () => {
+            assert.deepEqual(verdictOf({class: 'REGRESSION', label: 'needs investigation'}, true).key, 'new', 'on main, a test that passed every earlier run is new');
+            assert.deepEqual(verdictOf({class: 'REGRESSION', label: 'needs investigation'}, false).key, 'look', 'on a PR the triage judge decides');
+            assert.equal(verdictOf({class: 'BROKEN_ON_TRUNK', label: 'broken on main'}, true).key, 'still');
+            assert.equal(verdictOf({class: 'INFRA_ERROR', label: 'flaky'}, true).key, 'setup');
+            assert.equal(verdictOf({class: 'FLAKY_ON_TRUNK', label: 'flaky'}, true).key, 'flaky');
+            assert.equal(verdictOf({class: 'REGRESSION', label: 'test bug'}, false).key, 'test');
+            assert.equal(verdictOf({class: 'REGRESSION', label: 'app bug'}, true).key, 'product');
+            assert.deepEqual(verdictOf({class: 'OWNED_BY_PR', label: 'caused by PR'}, false), {key: 'product', reason: 'caused by this change'});
+            assert.equal(verdictOf({class: 'OWNED_BY_PR', label: 'caused by PR'}, true).key, 'new');
+            assert.deepEqual(verdictOf({class: 'INSUFFICIENT_DATA', label: 'needs investigation'}, true), {key: 'look', reason: 'not enough history to tell'});
+        });
+
+        it('names the change merged since the last main run for new failures, and counts retried passes as flaky', () => {
+            const text = formatTriageVerdict({triage, onMain: true, changes}).join('\n');
+            assert.match(text, /^🆕 \*\*New on main\*\* — passed every earlier main run, fail now \(2\)$/m);
+            assert.match(text, /^Most likely broken by the one change merged since the last main run \(`3927243` → `0ec1413`\): \[#10266\]\(https:\/\/github\.com\/mattermost\/mattermost-mobile\/pull\/10266\) \[MM-71089\] Log websocket client creation errors$/m);
+            assert.match(text, /^- 🤖 maestro-android clock_display$/m, 'a Maestro flow is named by its title, not its file path');
+            assert.match(text, /^- 🤖 maestro-android call_ui_permission — failed by chance; it passes on retry or on other runs$/m);
+            assert.match(text, /^🔁 \*\*Passed on retry, not product bugs:\*\* 5 tests \(🤖 detox-android 4, 📱 detox-ios 1\)$/m);
+        });
+
+        it('says when the changes since the last main run are unknown, and names a failed run with no verdict', () => {
+            const legs = [{platform: 'ios', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed: 2, passed: 5}];
+            const text = formatTriageVerdict({triage, onMain: true, changes: null, legs}).join('\n');
+            assert.match(text, /^_Most likely broken by a change merged since the last main run\._$/m);
+            assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 maestro-ios — the triage job left no verdict; look at the run$/m);
+        });
+
+        it('calls out a run where most tests failed at once', () => {
+            const leg = (failed, passed) => ({platform: 'android', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed, passed});
+            assert.deepEqual(formatMassFailures([leg(9, 2)]), ['⚠️ **🤖 maestro-android: 9 of 11 tests failed.** When most of a run fails at once it is usually its setup (device, app build or server) or one broken screen — look at that run before the single tests.']);
+            assert.deepEqual(formatMassFailures([leg(4, 1), leg(9, 20)]), [], 'a few failures, or a minority of the run, are judged one by one');
+        });
+
+        it('uses the triage verdict instead of the error-text judgement when the triage jobs left one', () => {
+            const params = {
+                compositeIdentity: {repository: 'mattermost/mattermost-mobile', name: 'mobile-main', run_group: 'mobile-main', branch: 'main', commit_sha: '0ec1413a1'},
+                detail: {status: 'completed', test_stats: {passed: 2, failed: 1, skipped: 0}, reports: []},
+                perJobCounts: {'maestro-android-e2e': {passed: 2, failed: 1, skipped: 0}},
+                failures: [{title: 'clock_display', job: 'maestro-android-e2e', error: 'Element not found'}],
+            };
+            const withTriage = formatCmtChannelMessage({...params, triage, changes});
+            assert.match(withTriage, /🆕 \*\*New on main\*\*/);
+            assert.doesNotMatch(withTriage, /Failure judgement/);
+            const without = formatCmtChannelMessage(params);
+            assert.match(without, /Failure judgement/, 'with no triage verdict the earlier judgement still runs');
         });
     });
 });

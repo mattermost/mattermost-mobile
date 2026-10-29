@@ -10,9 +10,13 @@
  *   JOB_CONFIGS — JSON map from buildTsioJobConfigMap
  *   UPSTREAM_SUCCEEDED — "true" | "false"
  *   USE_STAGING — "true" to hit staging TSIO
- *   GITHUB_TOKEN — unused here but kept for parity with other CI utils
+ *   GITHUB_TOKEN — reads the changes merged since the last main run (GitHub compare)
+ *   TRIAGE_FINDINGS_DIR — the triage jobs' findings files (--findings-dir)
  *   MATTERMOST_*_WEBHOOK_URL — routed via resolveWebhookUrl / webhookBucketForReportName
  */
+
+const fs = require('fs');
+const path = require('path');
 
 const {webhookBucketForReportName} = require('./build-tsio-job-config');
 const {parseArgs} = require('./cli-args');
@@ -40,6 +44,89 @@ function bucketIdentity(sampleIdentity) {
         name: bucket,
         run_group: bucket,
     };
+}
+
+/**
+ * The triage job's findings file for each run (one artifact per run). Only schema 2, which names each test's
+ * verdict, is used; anything else is skipped with a warning.
+ *
+ * @param {string} dir
+ * @param {Function} [warn]
+ * @returns {Array<{lane: string, findings: Array, counts?: object}>}
+ */
+function loadTriageFindings(dir, warn = console.warn) {
+    if (!dir || !fs.existsSync(dir)) {
+        return [];
+    }
+    const out = [];
+    const walk = (current) => {
+        for (const entry of fs.readdirSync(current, {withFileTypes: true})) {
+            const file = path.join(current, entry.name);
+            if (entry.isDirectory()) {
+                walk(file);
+                continue;
+            }
+            if (!entry.name.endsWith('.json')) {
+                continue;
+            }
+            try {
+                const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+                if (parsed?.schema === 2 && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
+                    out.push(parsed);
+                } else {
+                    warn(`tsio-channel-notify-rollup: ${file} is not a schema 2 findings file — skipped`);
+                }
+            } catch (err) {
+                warn(`tsio-channel-notify-rollup: could not read ${file}: ${err.message}`);
+            }
+        }
+    };
+    walk(dir);
+    return out;
+}
+
+/**
+ * The changes merged between the previous run of this suite on the same branch and this one: TSIO names the
+ * previous run's commit, GitHub's compare lists the commits in between, and each squash-merged commit names its
+ * PR as "(#1234)". Null when either side is unknown.
+ *
+ * @param {Object} params
+ * @param {string} params.baseUrl - TSIO
+ * @param {{repository: string, name: string, branch: string, commit_sha: string}} params.identity - one run's identity
+ * @param {string} [params.token] - GitHub token
+ * @param {Function} [params.fetchImpl]
+ * @returns {Promise<{from: string, to: string, prs: Array<{number: number, title: string}>} | null>}
+ */
+async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fetch}) {
+    const query = new URLSearchParams({repository: identity.repository, name: identity.name, limit: '20'});
+    const res = await fetchImpl(`${baseUrl}/api/v1/reports?${query}`, {signal: AbortSignal.timeout(30000)});
+    if (!res.ok) {
+        return null;
+    }
+    const reports = ((await res.json())?.reports || []).filter((r) => r.branch === identity.branch && r.commit && r.created_at);
+    const current = reports.find((r) => r.commit === identity.commit_sha);
+    const earlier = reports.
+        filter((r) => r.commit !== identity.commit_sha && (!current || r.created_at < current.created_at)).
+        sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    if (!earlier) {
+        return null;
+    }
+    const compare = await fetchImpl(`https://api.github.com/repos/${identity.repository}/compare/${earlier.commit}...${identity.commit_sha}`, {
+        headers: {Accept: 'application/vnd.github+json', ...(token ? {Authorization: `Bearer ${token}`} : {})},
+        signal: AbortSignal.timeout(30000),
+    });
+    if (!compare.ok) {
+        return null;
+    }
+    const prs = [];
+    for (const commit of (await compare.json())?.commits || []) {
+        const subject = (commit.commit?.message || '').split('\n')[0];
+        const number = (/\(#(\d+)\)\s*$/).exec(subject)?.[1];
+        if (number) {
+            prs.push({number: Number(number), title: subject.replace(/\s*\(#\d+\)\s*$/, '')});
+        }
+    }
+    return {from: earlier.commit, to: identity.commit_sha, prs};
 }
 
 function mergeDetails(details) {
@@ -217,6 +304,17 @@ async function main() {
     const perJobCounts = await collectPerJobCounts({baseUrl, results});
     const failures = await collectFailures({baseUrl, results});
 
+    // The triage jobs' verdicts, and on main the changes since the last main run, which the new failures point to.
+    const triage = loadTriageFindings(args['findings-dir'] || process.env.TRIAGE_FINDINGS_DIR || '');
+    let changes = null;
+    if (triage.length && webhookBucketForReportName(rollupIdentity.name) === 'mobile-main') {
+        try {
+            changes = await findChangesSinceLastRun({baseUrl, identity: sampleIdentity, token: process.env.GITHUB_TOKEN});
+        } catch (err) {
+            console.warn(`tsio-channel-notify-rollup: changes since the last main run unknown: ${err.message}`);
+        }
+    }
+
     // The bucket name has no single TSIO group of its own (each job owns
     // mobile-<flow>-<job>), so the rollup links to the workflow run and each leg
     // row deep-links to its own TSIO report.
@@ -237,6 +335,8 @@ async function main() {
         runUrl,
         perJobCounts,
         failures,
+        triage,
+        changes,
         upstreamJobsSucceeded: upstreamSucceeded,
         hasFailures,
         webhookUrl,
@@ -250,4 +350,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {bucketIdentity, mergeDetails, collectPerJobCounts, collectFailures};
+module.exports = {bucketIdentity, mergeDetails, collectPerJobCounts, collectFailures, loadTriageFindings, findChangesSinceLastRun};

@@ -4,6 +4,9 @@
 // CI util unit tests: run with `node --test detox/utils/tsio-channel-notify-rollup.test.js`.
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const {describe, it} = require('node:test');
 
 const {
@@ -11,6 +14,8 @@ const {
     mergeDetails,
     collectPerJobCounts,
     collectFailures,
+    loadTriageFindings,
+    findChangesSinceLastRun,
 } = require('./tsio-channel-notify-rollup');
 
 const BASE_URL = 'https://test-io.test.mattermost.com';
@@ -130,6 +135,56 @@ describe('tsio-channel-notify-rollup', () => {
                 assert.equal(warnings.length, 1);
                 assert.match(warnings[0], /mobile-main-detox-android/);
             });
+        });
+    });
+
+    describe('loadTriageFindings', () => {
+        it('reads each run\'s schema 2 findings file and skips anything else', () => {
+            const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'triage-findings-'));
+            fs.mkdirSync(path.join(dir, 'e2e-triage-findings-detox-android'));
+            fs.writeFileSync(path.join(dir, 'e2e-triage-findings-detox-android', 'e2e-triage-findings.json'), JSON.stringify({schema: 2, lane: 'detox-android', findings: [], counts: {flaky: 4}}));
+            fs.mkdirSync(path.join(dir, 'e2e-triage-findings-detox-ios'));
+            fs.writeFileSync(path.join(dir, 'e2e-triage-findings-detox-ios', 'e2e-triage-findings.json'), JSON.stringify({schema: 1, findings: []}));
+            fs.writeFileSync(path.join(dir, 'broken.json'), '{');
+            const warnings = [];
+            const loaded = loadTriageFindings(dir, (msg) => warnings.push(msg));
+            assert.deepEqual(loaded.map((f) => f.lane), ['detox-android']);
+            assert.equal(warnings.length, 2);
+            assert.deepEqual(loadTriageFindings(path.join(dir, 'missing')), [], 'no findings when no run failed');
+        });
+    });
+
+    describe('findChangesSinceLastRun', () => {
+        const identity = {repository: 'mattermost/mattermost-mobile', name: 'mobile-main-maestro-android-e2e', branch: 'main', commit_sha: 'cccc'};
+        const reports = [
+            {commit: 'cccc', branch: 'main', created_at: '2026-10-28T21:43:46Z'},
+            {commit: 'bbbb', branch: 'main', created_at: '2026-10-27T07:04:03Z'},
+            {commit: 'aaaa', branch: 'main', created_at: '2026-10-27T06:59:31Z'},
+            {commit: 'dddd', branch: 'release-2.35', created_at: '2026-10-28T10:00:00Z'},
+        ];
+        const fetchFor = (compare) => async (url) => {
+            if (url.startsWith(BASE_URL)) {
+                return {ok: true, json: async () => ({reports})};
+            }
+            assert.equal(url, 'https://api.github.com/repos/mattermost/mattermost-mobile/compare/bbbb...cccc', 'from the previous run on the same branch');
+            return compare;
+        };
+
+        it('lists the PRs merged between the previous run and this one', async () => {
+            const compare = {ok: true,
+                json: async () => ({commits: [
+                    {commit: {message: '[MM-71089] Log websocket client creation errors (#10266)\n\nbody'}},
+                    {commit: {message: 'Merge branch main'}},
+                ]})};
+            assert.deepEqual(await findChangesSinceLastRun({baseUrl: BASE_URL, identity, fetchImpl: fetchFor(compare)}), {
+                from: 'bbbb',
+                to: 'cccc',
+                prs: [{number: 10266, title: '[MM-71089] Log websocket client creation errors'}],
+            });
+        });
+
+        it('is unknown when GitHub cannot compare the two commits', async () => {
+            assert.equal(await findChangesSinceLastRun({baseUrl: BASE_URL, identity, fetchImpl: fetchFor({ok: false})}), null);
         });
     });
 });

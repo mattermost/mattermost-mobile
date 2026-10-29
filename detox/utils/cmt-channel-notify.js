@@ -387,6 +387,151 @@ function formatFailureJudgement(failures) {
     return lines;
 }
 
+// The verdict on each failed test comes from the E2E triage job (the toolkit's findings file, schema 2), which
+// checked it against TSIO history: one judge for the run. Each test sits under what it means, in plain words.
+const VERDICT_SECTIONS = [
+    {key: 'product', title: '🐞 **Product bugs**'},
+    {key: 'new', title: '🆕 **New on main** — passed every earlier main run, fail now'},
+    {key: 'still', title: '↩️ **Still failing** — failed on the previous main run too'},
+    {key: 'look', title: '🔎 **Needs a look**'},
+    {key: 'test', title: '🧪 **Problems with the test, not product bugs**'},
+    {key: 'flaky', title: '🔁 **Flaky, not product bugs**'},
+    {key: 'setup', title: '⚙️ **Setup problems, not product bugs**'},
+];
+const TEST_PROBLEM_LABELS = new Set(['test bug', 'server compat', 'out of date', 'fixed on main']);
+const MAX_PER_VERDICT = 5;
+
+/**
+ * Where one triage finding belongs. On main there is no PR: a test that passed every earlier main run and fails
+ * now broke with a change since the last main run, so it is "new" rather than "needs a look".
+ *
+ * @param {{class?: string, label?: string}} row - findings-file row
+ * @param {boolean} onMain
+ * @returns {{key: string, reason: string}}
+ */
+function verdictOf(row, onMain) {
+    const label = row.label || '';
+    const cls = row.class || '';
+    if (label === 'app bug') {
+        return {key: 'product', reason: 'the app does not do what the test expects'};
+    }
+    if (label === 'caused by PR') {
+        return {key: onMain ? 'new' : 'product', reason: onMain ? 'this change edited the test' : 'caused by this change'};
+    }
+    if (onMain && cls === 'REGRESSION') {
+        return {key: 'new', reason: ''};
+    }
+    if (cls === 'BROKEN_ON_TRUNK' || label === 'broken on main') {
+        return {key: 'still', reason: ''};
+    }
+    if (cls === 'INFRA_ERROR') {
+        return {key: 'setup', reason: 'the test device or server failed, not the app'};
+    }
+    if (label === 'flaky') {
+        return {key: 'flaky', reason: 'failed by chance; it passes on retry or on other runs'};
+    }
+    if (TEST_PROBLEM_LABELS.has(label)) {
+        return {key: 'test', reason: 'the test itself is wrong, not the app'};
+    }
+    if (cls === 'INSUFFICIENT_DATA') {
+        return {key: 'look', reason: 'not enough history to tell'};
+    }
+    return {key: 'look', reason: 'the cause is not clear'};
+}
+
+function laneName(lane) {
+    const parsed = parseMobileJobName(lane);
+    return parsed ? formatLegName(parsed) : (lane || 'unknown run');
+}
+
+/**
+ * A run where most tests failed at once: its setup (device, app build or server) or one broken screen explains
+ * that better than as many separate failures.
+ *
+ * @param {Array<{failed: number, passed: number}>} legs - buildLegSummaries rows
+ * @returns {string[]}
+ */
+function formatMassFailures(legs) {
+    return (legs || []).
+        filter((leg) => leg.failed >= 5 && leg.failed * 2 >= leg.passed + leg.failed).
+        map((leg) => `⚠️ **${formatLegName(leg)}: ${leg.failed} of ${leg.passed + leg.failed} tests failed.** When most of a run fails at once it is usually its setup (device, app build or server) or one broken screen — look at that run before the single tests.`);
+}
+
+/**
+ * The changes merged since the last main run, the likely cause of a test that is new on main.
+ *
+ * @param {{from: string, to: string, prs: Array<{number: number, title: string}>, url?: string} | null} changes
+ * @param {string} repository
+ * @returns {string}
+ */
+function formatChanges(changes, repository) {
+    if (!changes) {
+        return '_Most likely broken by a change merged since the last main run._';
+    }
+    const range = `\`${changes.from.slice(0, 7)}\` → \`${changes.to.slice(0, 7)}\``;
+    if (!changes.prs.length) {
+        return `_Most likely broken by a change merged since the last main run (${range})._`;
+    }
+    const shown = changes.prs.slice(0, 5).map((pr) => `[#${pr.number}](https://github.com/${repository}/pull/${pr.number}) ${pr.title}`);
+    const more = changes.prs.length > 5 ? `, and ${changes.prs.length - 5} more` : '';
+    return `Most likely broken by ${changes.prs.length === 1 ? 'the one change' : `one of the ${changes.prs.length} changes`} merged since the last main run (${range}): ${shown.join(' · ')}${more}`;
+}
+
+/**
+ * The verdict section from the triage findings of every run that had one.
+ *
+ * @param {Object} params
+ * @param {Array<{lane: string, findings?: Array, counts?: {flaky?: number}}>} params.triage - findings files
+ * @param {boolean} params.onMain
+ * @param {Object|null} [params.changes] - see formatChanges
+ * @param {string} [params.repository]
+ * @param {Array} [params.legs] - buildLegSummaries rows, to name runs that failed with no triage verdict
+ * @returns {string[]}
+ */
+function formatTriageVerdict({triage, onMain, changes = null, repository = 'mattermost/mattermost-mobile', legs = []}) {
+    const entries = [];
+    for (const lane of triage || []) {
+        for (const row of lane.findings || []) {
+            entries.push({lane: lane.lane, row, verdict: verdictOf(row, onMain)});
+        }
+    }
+    const lines = [];
+    for (const {key, title} of VERDICT_SECTIONS) {
+        const group = entries.filter((e) => e.verdict.key === key);
+        if (!group.length) {
+            continue;
+        }
+        lines.push(`${title} (${group.length})`);
+        if (key === 'new') {
+            lines.push(formatChanges(changes, repository));
+        }
+        for (const {lane, row, verdict} of group.slice(0, MAX_PER_VERDICT)) {
+            // A Maestro flow's full title is its file path again: its own title says it.
+            const name = row.full_title && !row.full_title.startsWith(row.file || '\0') ? row.full_title : row.title;
+            lines.push(`- ${laneName(lane)} ${name || 'unnamed test'}${verdict.reason ? ` — ${verdict.reason}` : ''}`);
+        }
+        if (group.length > MAX_PER_VERDICT) {
+            lines.push(`- …and ${group.length - MAX_PER_VERDICT} more in the run`);
+        }
+        lines.push('');
+    }
+
+    // Tests that failed a try and passed the next are in no list above: they are flaky, not failures.
+    const retried = (triage || []).filter((lane) => (lane.counts?.flaky || 0) > 0);
+    if (retried.length) {
+        const total = retried.reduce((n, lane) => n + lane.counts.flaky, 0);
+        lines.push(`🔁 **Passed on retry, not product bugs:** ${total} test${total === 1 ? '' : 's'} (${retried.map((lane) => `${laneName(lane.lane)} ${lane.counts.flaky}`).join(', ')})`, '');
+    }
+
+    // A run that failed but left no verdict was not checked: say so instead of guessing.
+    const judged = new Set((triage || []).map((lane) => parseMobileJobName(lane.lane)).filter(Boolean).map((p) => `${p.framework}-${p.platform}`));
+    const unchecked = (legs || []).filter((leg) => leg.failed > 0 && !judged.has(`${leg.framework}-${leg.platform}`));
+    if (unchecked.length) {
+        lines.push(`⚙️ **Not checked:** ${unchecked.map((leg) => formatLegName(leg)).join(', ')} — the triage job left no verdict; look at the run`, '');
+    }
+    return lines;
+}
+
 function reportTitleForIdentity(compositeIdentity) {
     const {webhookBucketForReportName} = require('./build-tsio-job-config');
     const bucket = webhookBucketForReportName(
@@ -438,6 +583,8 @@ function formatCmtChannelMessage({
     baseUrl,
     perJobCounts,
     failures,
+    triage,
+    changes = null,
     upstreamJobsSucceeded = true,
     hasFailures = false,
 }) {
@@ -489,9 +636,21 @@ function formatCmtChannelMessage({
         lines.push('_No per-leg results available yet._', '');
     }
 
-    lines.push(...formatFailureJudgement(failures));
-    if ((failures || []).length > 0 && failed > failures.length) {
-        lines.push(`_Judged ${failures.length} of ${failed} failing tests; the rest have no TSIO test detail yet._`, '');
+    const massFailures = formatMassFailures(legs);
+    if (massFailures.length) {
+        lines.push(...massFailures, '');
+    }
+
+    // The triage job's verdicts when it ran; the history-and-error-text judgement only where it did not.
+    if (triage?.length) {
+        const {webhookBucketForReportName} = require('./build-tsio-job-config');
+        const onMain = webhookBucketForReportName(compositeIdentity?.run_group || compositeIdentity?.name || '') === 'mobile-main';
+        lines.push(...formatTriageVerdict({triage, onMain, changes, repository: compositeIdentity?.repository, legs}));
+    } else {
+        lines.push(...formatFailureJudgement(failures));
+        if ((failures || []).length > 0 && failed > failures.length) {
+            lines.push(`_Judged ${failures.length} of ${failed} failing tests; the rest have no TSIO test detail yet._`, '');
+        }
     }
 
     // A tracked test failure already fails the E2E job (the aggregator exits 1 by
@@ -705,6 +864,8 @@ async function notifyCmtChannel({
     runUrl,
     perJobCounts,
     failures,
+    triage,
+    changes,
     upstreamJobsSucceeded = true,
     hasFailures = false,
     webhookUrl,
@@ -729,6 +890,8 @@ async function notifyCmtChannel({
             baseUrl,
             perJobCounts: counts,
             failures,
+            triage,
+            changes,
             upstreamJobsSucceeded,
             hasFailures,
         });
@@ -748,6 +911,9 @@ module.exports = {
     formatLegResultText,
     reportTitleForIdentity,
     formatCmtChannelMessage,
+    formatTriageVerdict,
+    formatMassFailures,
+    verdictOf,
     classifyFailure,
     failuresFromConsolidated,
     fetchFailuresFromConsolidated,
