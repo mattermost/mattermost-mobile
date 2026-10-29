@@ -72,7 +72,7 @@ describe('components/categories_list', () => {
         );
 
         await waitFor(() => {
-            expect(wrapper.toJSON()).toBeTruthy();
+            expect(wrapper.getByText('Threads')).toBeTruthy();
         });
     });
 

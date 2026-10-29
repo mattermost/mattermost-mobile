@@ -22,6 +22,7 @@ import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamsLoading} from '@hooks/teams_loading';
 import PlaybooksButton from '@playbooks/components/playbooks_button';
 import {getDefaultTeamId} from '@queries/servers/team';
+import {isEncmaApp} from '@utils/branding';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -146,7 +147,7 @@ const CategoriesList = ({
     }, [isTablet, width]);
 
     const threadButtonComponent = useMemo(() => {
-        if (!isCRTEnabled) {
+        if (isEncmaApp || !isCRTEnabled) {
             return null;
         }
 
