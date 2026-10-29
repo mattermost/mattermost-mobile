@@ -83,6 +83,44 @@ describe('RootIndex WireGuard gate', () => {
         expect(mockRedirect.mock.calls[0][0].href).toEqual({pathname: '/login', params: {}});
     });
 
+    it('opens the server screen instead of a blank route when normal launch fails', async () => {
+        jest.mocked(getWireGuardState).mockResolvedValue({
+            status: WireGuardStatus.Connected,
+            message: null,
+            handshakeEpochMillis: 123456,
+            rxBytes: 128,
+            txBytes: 256,
+            applicationId: 'com.encma.hxmain',
+        });
+        jest.mocked(determineInitialExpoRoute).mockRejectedValue(new Error('launch initialization failed'));
+
+        render(<RootIndex/>);
+
+        await waitFor(() => expect(mockRedirect).toHaveBeenCalled());
+        expect(mockRedirect.mock.calls[0][0].href).toEqual({
+            pathname: '/(unauthenticated)/server',
+            params: {launchError: true},
+        });
+    });
+
+    it('shows a loading indicator while normal launch is pending', async () => {
+        jest.mocked(getWireGuardState).mockResolvedValue({
+            status: WireGuardStatus.Connected,
+            message: null,
+            handshakeEpochMillis: 123456,
+            rxBytes: 128,
+            txBytes: 256,
+            applicationId: 'com.encma.hxmain',
+        });
+        jest.mocked(determineInitialExpoRoute).mockReturnValue(new Promise<never>(() => undefined));
+
+        const {getByTestId} = render(<RootIndex/>);
+
+        await waitFor(() => expect(determineInitialExpoRoute).toHaveBeenCalled());
+        expect(getByTestId('launch.loading')).toBeTruthy();
+        expect(mockRedirect).not.toHaveBeenCalled();
+    });
+
     it('does not invoke the Android gate on other platforms', async () => {
         jest.mocked(isWireGuardRequired).mockReturnValue(false);
 
