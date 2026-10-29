@@ -67,6 +67,7 @@ jobs:
             app/init/credentials.test.ts \
             app/hooks/use_has_credentials.test.ts \
             app/database/components/index.test.tsx \
+            app/init/launch.test.ts \
             app/init/launch_with_fallback.test.ts \
             app/routes/index.test.tsx \
             app/screens/vpn/index.test.tsx \

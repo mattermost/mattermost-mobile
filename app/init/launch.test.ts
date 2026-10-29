@@ -3,14 +3,16 @@
 
 import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getServerCredentials} from '@init/credentials';
+import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import {getLastViewedTeamIdAndServer} from '@queries/app/global';
 import {getServer} from '@queries/app/servers';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {queryMyTeams} from '@queries/servers/team';
 
-import {determineRouteFromLaunchProps} from './launch';
+import {determinePostWireGuardRoute, determineRouteFromLaunchProps} from './launch';
 
+import type {Database} from '@nozbe/watermelondb';
+import type {ServerDatabase} from '@typings/database/database';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {LaunchProps} from '@typings/launch';
 
@@ -69,5 +71,50 @@ describe('determineRouteFromLaunchProps', () => {
         const result = await determineRouteFromLaunchProps(props);
 
         expect(result).toEqual({route: '/(authenticated)/(home)', params: props});
+    });
+});
+
+describe('determinePostWireGuardRoute', () => {
+    const serverUrl = 'https://server-1.com';
+
+    beforeEach(() => {
+        jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
+        jest.mocked(getServerCredentials).mockResolvedValue({token: 'token1'} as ServerCredential);
+        jest.mocked(getThemeForCurrentTeam).mockResolvedValue(undefined);
+        jest.mocked(getServer).mockResolvedValue({persistenceFlag: 'default'} as unknown as ServersModel);
+        jest.mocked(getLastViewedTeamIdAndServer).mockResolvedValue(undefined);
+        DatabaseManager.serverDatabases = {};
+    });
+
+    it('uses the existing team decision without running cold-start routing', async () => {
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as Database} as ServerDatabase;
+        DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({database: {}, operator: {}});
+        jest.mocked(queryMyTeams).mockReturnValue({fetch: jest.fn().mockResolvedValue([{id: 'team1'}])} as unknown as ReturnType<typeof queryMyTeams>);
+
+        const result = await determinePostWireGuardRoute();
+
+        expect(result).toEqual({
+            route: '/(authenticated)/(home)',
+            params: {launchType: Launch.Normal, coldStart: false, serverUrl},
+        });
+    });
+
+    it('returns to the server form when the active database is unavailable', async () => {
+        const result = await determinePostWireGuardRoute();
+
+        expect(result).toEqual({
+            route: '/(unauthenticated)/server',
+            params: {launchType: Launch.Normal, coldStart: false, serverUrl},
+        });
+        expect(getServerCredentials).not.toHaveBeenCalled();
+    });
+
+    it('returns to the server form when there is no active server', async () => {
+        jest.mocked(getActiveServerUrl).mockResolvedValue(undefined);
+
+        const result = await determinePostWireGuardRoute();
+
+        expect(result.route).toBe('/(unauthenticated)/server');
+        expect(result.params.serverUrl).toBeUndefined();
     });
 });

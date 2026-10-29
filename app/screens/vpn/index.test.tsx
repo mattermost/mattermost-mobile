@@ -5,7 +5,8 @@ import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import {router} from 'expo-router';
 import React from 'react';
 
-import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
+import {appEntry} from '@actions/remote/entry/app';
+import {determinePostWireGuardRouteWithFallback} from '@init/launch_with_fallback';
 import {
     WireGuardStatus,
     addWireGuardStateListener,
@@ -31,8 +32,12 @@ jest.mock('@react-native-documents/picker', () => ({
     types: {allFiles: 'allFiles'},
 }));
 
+jest.mock('@actions/remote/entry/app', () => ({
+    appEntry: jest.fn(),
+}));
+
 jest.mock('@init/launch_with_fallback', () => ({
-    determineInitialExpoRouteWithFallback: jest.fn(),
+    determinePostWireGuardRouteWithFallback: jest.fn(),
 }));
 
 jest.mock('@managers/wireguard_manager', () => ({
@@ -91,10 +96,11 @@ describe('VpnScreen', () => {
         jest.mocked(saveWireGuardConfig).mockResolvedValue(undefined);
         jest.mocked(clearWireGuardConfig).mockResolvedValue(undefined);
         jest.mocked(readWireGuardConfig).mockResolvedValue('private-test-configuration');
-        jest.mocked(determineInitialExpoRouteWithFallback).mockResolvedValue({
+        jest.mocked(determinePostWireGuardRouteWithFallback).mockResolvedValue({
             route: '/(unauthenticated)/server',
             params: {},
         });
+        jest.mocked(appEntry).mockResolvedValue({});
     });
 
     it('saves only after verified connect and then replaces VPN with the resolved destination', async () => {
@@ -146,6 +152,25 @@ describe('VpnScreen', () => {
         expect(connectWireGuard).not.toHaveBeenCalled();
         expect(publishWireGuardState).toHaveBeenCalledWith(connectedState);
         expect(router.replace).not.toHaveBeenCalledWith('/');
+    });
+
+    it('resumes server entry only after replacing VPN for an authenticated session', async () => {
+        jest.mocked(getWireGuardState).mockResolvedValue(connectedState);
+        jest.mocked(determinePostWireGuardRouteWithFallback).mockResolvedValue({
+            route: '/(authenticated)/(home)',
+            params: {serverUrl: 'https://server.example'},
+        });
+
+        renderWithIntlAndTheme(<VpnScreen/>);
+
+        await waitFor(() => expect(router.replace).toHaveBeenCalledWith({
+            pathname: '/(authenticated)/(home)',
+            params: {serverUrl: JSON.stringify('https://server.example')},
+        }));
+        await waitFor(() => expect(appEntry).toHaveBeenCalledWith('https://server.example'));
+        expect(jest.mocked(router.replace).mock.invocationCallOrder[0]).toBeLessThan(
+            jest.mocked(appEntry).mock.invocationCallOrder[0],
+        );
     });
 
     it('reconnects a securely saved config without exposing it in the summary', async () => {
