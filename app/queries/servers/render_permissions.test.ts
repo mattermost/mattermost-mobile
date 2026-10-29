@@ -4,11 +4,12 @@
 import {RedactionInvalidationReason, invalidateChannelRedaction} from '@actions/local/redaction';
 import {fetchRenderPermissions} from '@actions/remote/render_permissions';
 import {RenderPermissionAction} from '@constants/access_control';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import RenderPermissionsStore, {RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 
-import {observeRenderPermission, observeShouldFetchRenderPermissions} from './render_permissions';
+import {isChannelAccessEnforced, observeRenderPermission, observeShouldFetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -129,5 +130,34 @@ describe('render permission observables', () => {
         expect(searchChannelActionDecisions).toHaveBeenCalledTimes(2);
         expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.decisions).toEqual(denied);
         subscription.unsubscribe();
+    });
+
+    describe('isChannelAccessEnforced', () => {
+        const storeAccessSettings = async (channelPermissionActions: string, skuShortName: string) => {
+            await operator.handleConfigs({
+                configs: [{id: 'FeatureFlagChannelPermissionActions', value: channelPermissionActions}],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: skuShortName}}],
+                prepareRecordsOnly: false,
+            });
+        };
+
+        it('should be enforced with the ChannelPermissionActions flag on an Enterprise Advanced license', async () => {
+            await storeAccessSettings('true', 'advanced');
+            expect(await isChannelAccessEnforced(operator.database)).toBe(true);
+        });
+
+        it('should not be enforced while the ChannelPermissionActions flag is off', async () => {
+            await storeAccessSettings('false', 'advanced');
+            expect(await isChannelAccessEnforced(operator.database)).toBe(false);
+        });
+
+        it('should not be enforced below an Enterprise Advanced license', async () => {
+            await storeAccessSettings('true', 'professional');
+            expect(await isChannelAccessEnforced(operator.database)).toBe(false);
+        });
     });
 });
