@@ -328,6 +328,8 @@
   "channel_list.dms_category": "Direct messages",
   "channel_list.favorites_category": "Favorites",
   "channel_list.find_channels": "Find channels...",
+  "channel_list.unread_filter.only_unreads": "Show unread channels only",
+  "channel_list.unread_filter.show_all": "Show all channels",
   "channel_loader.someone": "Someone",
   "channel_modal.descriptionHelp": "Describe how this channel should be used.",
   "channel_modal.header": "Header",

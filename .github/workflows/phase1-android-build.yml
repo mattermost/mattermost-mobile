@@ -33,6 +33,9 @@ jobs:
           NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand \
             app/components/encma_auth_header/index.test.tsx \
             app/screens/server/header.test.tsx \
+            app/screens/home/channel_list/categories_list/subheader/search_field/index.test.tsx \
+            app/screens/home/channel_list/categories_list/subheader/search_field/encma.test.tsx \
+            app/screens/home/channel_list/categories_list/subheader/unread_filter/unread_filter.test.tsx \
             app/client/rest/channels.test.ts \
             app/actions/remote/channel.test.ts \
             app/queries/servers/role.test.ts \
@@ -121,7 +124,7 @@ jobs:
       - name: Upload installable arm64 APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: phase5-encma-wireguard-arm64-release-auth-ui
+          name: phase5-encma-wireguard-arm64-release-channel-list-ui
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30

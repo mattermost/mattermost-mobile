@@ -11,6 +11,14 @@ The server-connection and login screens now share an ENCMA authentication header
 - No new network request, backend contract, permission, or stored credential is introduced.
 - This is an authentication UI increment, not a claim that every ENCMA screen has been redesigned.
 
-## Device acceptance still required
+## Channel-list controls increment
 
-Verify the server and login screens on Android hardware in light and dark themes, including a narrow phone and a tablet. Confirm that the header does not obscure inputs, validation errors, SSO options, or keyboard behavior. These layout checks are not established by component tests or the CI release build alone.
+The channel-list **Find channels** and unread-filter controls now use a more rounded surface with a subtle border for the ENCMA application ID. Their existing 40 dp dimensions, spacing, navigation, and filtering behavior are retained. ENCMA screen-reader labels identify the search action and whether the unread filter will be enabled or cleared.
+
+Other application IDs retain the original visual styling; the existing Mattermost search-field snapshot remains part of the focused test selection. This is another contained UI increment, not a whole-app redesign.
+
+## Device acceptance
+
+The authentication-header increment was reported working on the user's Android device. Broader light/dark, narrow-phone, tablet, validation-error, SSO, and keyboard layout coverage remains good practice for subsequent UI increments.
+
+The channel-list controls increment still requires device review. Confirm that both controls remain visible and easy to use with and without the unread filter, and verify the actual filter results and Find channels navigation. Component tests and the CI release build do not establish that visual acceptance.
