@@ -548,6 +548,9 @@ export default function PlaybookRun({
                         </View>
                         <ChecklistList
                             checklists={checklists}
+
+                            // A persisted run's rows observe the events themselves.
+                            timelineEvents={'timelineEvents' in playbookRun ? undefined : playbookRun.timeline_events ?? undefined}
                             channelId={channelId}
                             playbookRunId={playbookRun.id}
                             playbookRunName={playbookRun.name}
