@@ -193,6 +193,43 @@ describe('tsio-channel-notify-rollup', () => {
             assert.deepEqual(await findChangesSinceLastRun({baseUrl: BASE_URL, identity, fetchImpl}), {from: 'cccc', to: 'cccc', prs: []});
         });
 
+        it('selects the current report by run ID and attempt when another dispatch has the same commit', async () => {
+            const currentIdentity = {...identity, gh_run_id: 'current-run', gh_run_attempt: '2'};
+            const listedReports = [
+                {commit: 'cccc', branch: 'main', created_at: '2026-10-28T23:10:00Z', gh_run_id: 'other-run', gh_run_attempt: '1'},
+                {commit: 'cccc', branch: 'main', created_at: '2026-10-28T22:50:00Z', gh_run_id: 'current-run', gh_run_attempt: '1'},
+                {commit: 'cccc', branch: 'main', created_at: '2026-10-28T22:10:00Z', gh_run_id: 'current-run', gh_run_attempt: '2'},
+                {commit: 'bbbb', branch: 'main', created_at: '2026-10-28T21:10:00Z', gh_run_id: 'previous-run', gh_run_attempt: '1'},
+            ];
+            let compared = false;
+            const fetchImpl = async (url) => {
+                if (url.startsWith(BASE_URL)) {
+                    return {ok: true, json: async () => ({reports: listedReports})};
+                }
+                compared = true;
+                assert.equal(url, 'https://api.github.com/repos/mattermost/mattermost-mobile/compare/bbbb...cccc');
+                return {ok: true, json: async () => ({commits: []})};
+            };
+
+            const changes = await findChangesSinceLastRun({baseUrl: BASE_URL, identity: currentIdentity, fetchImpl});
+            assert.equal(compared, true);
+            assert.deepEqual(changes, {from: 'bbbb', to: 'cccc', prs: [], partial: false});
+        });
+
+        it('uses the latest same-commit report as the previous run when the current run is missing', async () => {
+            const currentIdentity = {...identity, gh_run_id: 'missing-run', gh_run_attempt: '1'};
+            const listedReports = [
+                {commit: 'cccc', branch: 'main', created_at: '2026-10-28T23:10:00Z', gh_run_id: 'previous-run', gh_run_attempt: '1'},
+                {commit: 'bbbb', branch: 'main', created_at: '2026-10-28T21:10:00Z', gh_run_id: 'older-run', gh_run_attempt: '1'},
+            ];
+            const fetchImpl = async (url) => {
+                assert.ok(url.startsWith(BASE_URL), 'no compare when the previous report has the same commit');
+                return {ok: true, json: async () => ({reports: listedReports})};
+            };
+
+            assert.deepEqual(await findChangesSinceLastRun({baseUrl: BASE_URL, identity: currentIdentity, fetchImpl}), {from: 'cccc', to: 'cccc', prs: []});
+        });
+
         it('says when GitHub lists only some of the commits merged', async () => {
             const compare = {ok: true, json: async () => ({total_commits: 300, commits: [{commit: {message: 'Fix login (#10300)'}}]})};
             const changes = await findChangesSinceLastRun({baseUrl: BASE_URL, identity, fetchImpl: fetchFor(compare)});

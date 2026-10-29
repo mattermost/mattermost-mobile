@@ -107,10 +107,15 @@ async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fe
         filter((r) => r.branch === identity.branch && r.commit && r.created_at).
         sort((a, b) => b.created_at.localeCompare(a.created_at));
 
-    // This run's report is the newest of its commit; the previous run is the one before it, even on the same
-    // commit (a second dispatch of the same version), in which case nothing was merged in between.
-    const current = reports.find((r) => r.commit === identity.commit_sha);
-    const earlier = reports.find((r) => r !== current && (!current || r.created_at < current.created_at));
+    // Prefer this workflow run and attempt over another dispatch of the same commit.
+    const current = identity.gh_run_id ? reports.find((r) => String(r.gh_run_id) === String(identity.gh_run_id) &&
+        (!identity.gh_run_attempt || !(r.gh_run_attempt ?? r.run_attempt) ||
+            String(r.gh_run_attempt ?? r.run_attempt) === String(identity.gh_run_attempt))) :
+        reports.find((r) => r.commit === identity.commit_sha);
+    // If this run has not reported yet, the latest report for this commit is the previous run.
+    const earlier = current ?
+        reports.find((r) => r !== current && r.created_at < current.created_at) :
+        reports.find((r) => r.commit === identity.commit_sha) || reports[0];
     if (!earlier) {
         return null;
     }
