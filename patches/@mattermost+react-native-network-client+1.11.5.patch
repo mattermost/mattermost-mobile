@@ -1,0 +1,545 @@
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
+index 0a40e4b..59e7e14 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
+@@ -143,6 +143,13 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+     private fun applyGenericClientBuilderConfiguration() {
+         builder.followRedirects(true)
+         builder.followSslRedirects(true)
++
++        // Generic requests (including the initial server probe) need the same
++        // application-private CA store as API and WebSocket clients.
++        val trustManager = TrustManagerHelper.buildTrustManager(context)
++        val sslContext = javax.net.ssl.SSLContext.getInstance("TLS")
++        sslContext.init(null, arrayOf(trustManager), java.security.SecureRandom())
++        builder.sslSocketFactory(sslContext.socketFactory, trustManager)
+     }
+ 
+     private fun applyClientBuilderConfiguration(options: ReadableMap?, cookieJar: CookieJar?) {
+@@ -664,7 +671,7 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+             clientCertKeyStore?.first,
+             clientCertKeyStore?.second
+         )
+-        val trustManager = getTrustManager(TrustManagerHelper.buildTrustManager())
++        val trustManager = getTrustManager(TrustManagerHelper.buildTrustManager(context))
+         val sslContext = javax.net.ssl.SSLContext.getInstance("TLS")
+         sslContext.init(keyManagers, arrayOf(trustManager), java.security.SecureRandom())
+         return Pair(sslContext.socketFactory, trustManager)
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/RCTOkHttpClientFactory.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/RCTOkHttpClientFactory.kt
+index eacc9ae..725b446 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/RCTOkHttpClientFactory.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/RCTOkHttpClientFactory.kt
+@@ -1,14 +1,23 @@
+ package com.mattermost.networkclient
+ 
++import android.content.Context
+ import com.facebook.react.modules.network.OkHttpClientFactory
++import com.mattermost.networkclient.helpers.TrustManagerHelper
+ import com.mattermost.networkclient.interceptors.RCTClientRequestInterceptor
+ import okhttp3.OkHttpClient
++import java.security.SecureRandom
++import javax.net.ssl.SSLContext
+ 
+-class RCTOkHttpClientFactory : OkHttpClientFactory {
++class RCTOkHttpClientFactory(private val context: Context) : OkHttpClientFactory {
+     override fun createNewNetworkModuleClient(): OkHttpClient {
++        val trustManager = TrustManagerHelper.buildTrustManager(context)
++        val sslContext = SSLContext.getInstance("TLS")
++        sslContext.init(null, arrayOf(trustManager), SecureRandom())
++
+         return OkHttpClient()
+                 .newBuilder()
+                 .cookieJar(ApiClientModuleImpl.cookieJar)
++                .sslSocketFactory(sslContext.socketFactory, trustManager)
+                 .addInterceptor(RCTClientRequestInterceptor())
+                 .build()
+     }
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/ServerCertificateStore.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/ServerCertificateStore.kt
+new file mode 100644
+index 0000000..a57bd09
+--- /dev/null
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/ServerCertificateStore.kt
+@@ -0,0 +1,347 @@
++package com.mattermost.networkclient.helpers
++
++import android.content.Context
++import android.net.Uri
++import android.util.AtomicFile
++import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
++import java.io.ByteArrayOutputStream
++import java.io.File
++import java.io.FileOutputStream
++import java.io.IOException
++import java.security.MessageDigest
++import java.security.cert.CertificateException
++import java.security.cert.CertificateFactory
++import java.security.cert.X509Certificate
++
++class ServerCertificateException(val code: String, message: String) : Exception(message)
++
++data class StoredServerCertificate(
++    val host: String,
++    val fileName: String,
++    val certificate: X509Certificate,
++)
++
++/**
++ * Application-private CA certificates imported for Mattermost servers.
++ *
++ * Only validated certificate bytes are persisted. The original document, which could
++ * accidentally contain other PEM blocks, is never copied into application storage.
++ */
++object ServerCertificateStore {
++    private const val DIRECTORY_NAME = "server_ca_certificates"
++    private const val PREFERENCES_NAME = "ServerCertificateStore"
++    private const val FILE_NAME_PREFIX = "file_name:"
++    private const val DEFAULT_FILE_NAME = "cert.crt"
++    private const val MAX_CERTIFICATE_BYTES = 64 * 1024
++
++    @Volatile
++    private var generation = 0
++
++    private val cacheLock = Any()
++    private var cachedGeneration = -1
++    private var cachedCertificates: List<X509Certificate> = emptyList()
++
++    @Synchronized
++    fun importCertificate(
++        context: Context,
++        serverUrl: String,
++        uri: String,
++        requestedFileName: String?,
++    ): StoredServerCertificate {
++        val appContext = context.applicationContext
++        val host = serverHost(serverUrl)
++        val bytes = readDocument(appContext, uri)
++        val certificate = parseCertificate(bytes)
++        val fileName = safeFileName(requestedFileName)
++
++        try {
++            writeCertificate(certificateFile(appContext, host), certificate.encoded)
++            val saved = preferences(appContext)
++                .edit()
++                .putString(FILE_NAME_PREFIX + hostKey(host), fileName)
++                .commit()
++            if (!saved) {
++                certificateFile(appContext, host).delete()
++                throw ServerCertificateException(
++                    "E_CERTIFICATE_STORAGE",
++                    "The certificate could not be saved in application storage.",
++                )
++            }
++        } catch (error: ServerCertificateException) {
++            throw error
++        } catch (_: Exception) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_STORAGE",
++                "The certificate could not be saved in application storage.",
++            )
++        }
++
++        generation += 1
++        return StoredServerCertificate(host, fileName, certificate)
++    }
++
++    @Synchronized
++    fun getCertificate(context: Context, serverUrl: String): StoredServerCertificate? {
++        val appContext = context.applicationContext
++        val host = serverHost(serverUrl)
++        val file = certificateFile(appContext, host)
++        if (!file.isFile) return null
++
++        val certificate = try {
++            readCertificate(file)
++        } catch (_: Exception) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_READ",
++                "The saved certificate could not be read. Import it again.",
++            )
++        }
++        val fileName = preferences(appContext)
++            .getString(FILE_NAME_PREFIX + hostKey(host), DEFAULT_FILE_NAME)
++            ?: DEFAULT_FILE_NAME
++        return StoredServerCertificate(host, fileName, certificate)
++    }
++
++    @Synchronized
++    fun removeCertificate(context: Context, serverUrl: String): Boolean {
++        val appContext = context.applicationContext
++        val host = serverHost(serverUrl)
++        val file = certificateFile(appContext, host)
++        val existed = file.isFile
++        try {
++            if (existed && !file.delete()) {
++                throw IOException("Could not delete certificate")
++            }
++            val saved = preferences(appContext)
++                .edit()
++                .remove(FILE_NAME_PREFIX + hostKey(host))
++                .commit()
++            if (!saved) throw IOException("Could not update certificate metadata")
++        } catch (_: Exception) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_STORAGE",
++                "The certificate could not be removed. Try again.",
++            )
++        }
++
++        if (existed) generation += 1
++        return existed
++    }
++
++    /** Moves the management association after a server URL or redirect changes hostname. */
++    @Synchronized
++    fun reassignCertificate(
++        context: Context,
++        previousServerUrl: String,
++        newServerUrl: String,
++    ): StoredServerCertificate {
++        val appContext = context.applicationContext
++        val previousHost = serverHost(previousServerUrl)
++        val newHost = serverHost(newServerUrl)
++        val previous = getCertificate(appContext, previousServerUrl)
++            ?: throw ServerCertificateException(
++                "E_CERTIFICATE_NOT_FOUND",
++                "The previously imported certificate is no longer available.",
++            )
++        if (previousHost == newHost) return previous
++
++        try {
++            writeCertificate(certificateFile(appContext, newHost), previous.certificate.encoded)
++            val previousKey = hostKey(previousHost)
++            val newKey = hostKey(newHost)
++            val saved = preferences(appContext)
++                .edit()
++                .putString(FILE_NAME_PREFIX + newKey, previous.fileName)
++                .remove(FILE_NAME_PREFIX + previousKey)
++                .commit()
++            if (!saved) throw IOException("Could not update certificate metadata")
++            if (!certificateFile(appContext, previousHost).delete()) {
++                throw IOException("Could not remove previous certificate association")
++            }
++        } catch (_: Exception) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_STORAGE",
++                "The certificate could not be associated with the connected server.",
++            )
++        }
++
++        generation += 1
++        return StoredServerCertificate(newHost, previous.fileName, previous.certificate)
++    }
++
++    /** Returns a stable cached list until the store changes or a certificate expires. */
++    fun getTrustedCertificates(context: Context): List<X509Certificate> {
++        val appContext = context.applicationContext
++        synchronized(cacheLock) {
++            while (true) {
++                val loadingGeneration = generation
++                if (cachedGeneration != loadingGeneration) {
++                    val certificates = directory(appContext).listFiles()
++                        ?.filter { it.isFile && it.name.endsWith(".der") }
++                        ?.mapNotNull { file ->
++                            try {
++                                readCertificate(file)
++                            } catch (_: Exception) {
++                                // A damaged or expired entry is never used as a trust anchor.
++                                null
++                            }
++                        }
++                        .orEmpty()
++
++                    // An import may finish while the directory is being read. Retry instead of
++                    // marking a potentially stale list as belonging to the new generation.
++                    if (loadingGeneration == generation) {
++                        cachedCertificates = certificates
++                        cachedGeneration = loadingGeneration
++                    }
++                    continue
++                }
++
++                val validCertificates = cachedCertificates.filter { certificate ->
++                    try {
++                        certificate.checkValidity()
++                        true
++                    } catch (_: CertificateException) {
++                        false
++                    }
++                }
++                if (validCertificates.size != cachedCertificates.size) {
++                    cachedCertificates = validCertificates
++                }
++                if (loadingGeneration == generation) return cachedCertificates
++            }
++        }
++    }
++
++    fun parseCertificate(bytes: ByteArray): X509Certificate {
++        if (bytes.isEmpty()) {
++            throw ServerCertificateException("E_CERTIFICATE_INVALID", "The selected certificate file is empty.")
++        }
++
++        val certificate = try {
++            val parsed = CertificateFactory.getInstance("X.509")
++                .generateCertificates(bytes.inputStream())
++            if (parsed.size != 1) {
++                throw ServerCertificateException(
++                    "E_CERTIFICATE_INVALID",
++                    "Select a file containing exactly one X.509 CA certificate.",
++                )
++            }
++            parsed.single() as X509Certificate
++        } catch (error: ServerCertificateException) {
++            throw error
++        } catch (_: Exception) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_INVALID",
++                "The selected file is not a valid PEM or DER X.509 certificate.",
++            )
++        }
++
++        if (certificate.basicConstraints < 0) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_NOT_CA",
++                "The selected certificate is not a CA certificate. Choose the issuing root CA.",
++            )
++        }
++
++        try {
++            certificate.checkValidity()
++        } catch (_: CertificateException) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_INVALID",
++                "The selected CA certificate is expired or is not valid yet.",
++            )
++        }
++        return certificate
++    }
++
++    fun fingerprint(certificate: X509Certificate): String {
++        return MessageDigest.getInstance("SHA-256")
++            .digest(certificate.encoded)
++            .joinToString(":") { "%02X".format(it) }
++    }
++
++    private fun serverHost(serverUrl: String): String {
++        val parsed = serverUrl.toHttpUrlOrNull() ?: throw ServerCertificateException(
++            "E_CERTIFICATE_SERVER_URL",
++            "Enter a valid server URL before importing a certificate.",
++        )
++        return parsed.host
++    }
++
++    private fun readDocument(context: Context, uri: String): ByteArray {
++        try {
++            val input = context.contentResolver.openInputStream(Uri.parse(uri))
++                ?: throw IOException("Document provider returned no stream")
++            return input.use { stream ->
++                val output = ByteArrayOutputStream()
++                val buffer = ByteArray(8192)
++                while (true) {
++                    val count = stream.read(buffer)
++                    if (count < 0) break
++                    if (output.size() + count > MAX_CERTIFICATE_BYTES) {
++                        throw ServerCertificateException(
++                            "E_CERTIFICATE_INVALID",
++                            "The certificate file is too large. Choose a PEM or DER file no larger than 64 KB.",
++                        )
++                    }
++                    output.write(buffer, 0, count)
++                }
++                output.toByteArray()
++            }
++        } catch (error: ServerCertificateException) {
++            throw error
++        } catch (_: Exception) {
++            throw ServerCertificateException(
++                "E_CERTIFICATE_READ",
++                "The selected certificate file could not be read.",
++            )
++        }
++    }
++
++    private fun readCertificate(file: File): X509Certificate {
++        val bytes = file.inputStream().use { input ->
++            if (file.length() > MAX_CERTIFICATE_BYTES) throw IOException("Certificate too large")
++            input.readBytes()
++        }
++        return parseCertificate(bytes)
++    }
++
++    private fun writeCertificate(file: File, bytes: ByteArray) {
++        file.parentFile?.let { parent ->
++            if (!parent.isDirectory && !parent.mkdirs()) throw IOException("Could not create certificate directory")
++        }
++        val atomicFile = AtomicFile(file)
++        var output: FileOutputStream? = null
++        try {
++            output = atomicFile.startWrite()
++            output.write(bytes)
++            atomicFile.finishWrite(output)
++            output = null
++        } catch (error: Exception) {
++            output?.let { atomicFile.failWrite(it) }
++            throw error
++        }
++    }
++
++    private fun safeFileName(fileName: String?): String {
++        val cleaned = fileName
++            ?.replace(Regex("[\\p{Cntrl}]"), "")
++            ?.trim()
++            ?.take(160)
++        return if (cleaned.isNullOrEmpty()) DEFAULT_FILE_NAME else cleaned
++    }
++
++    private fun preferences(context: Context) =
++        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
++
++    private fun directory(context: Context) = File(context.filesDir, DIRECTORY_NAME)
++
++    private fun certificateFile(context: Context, host: String) =
++        File(directory(context), hostKey(host) + ".der")
++
++    private fun hostKey(host: String): String {
++        return MessageDigest.getInstance("SHA-256")
++            .digest(host.toByteArray(Charsets.UTF_8))
++            .joinToString("") { "%02x".format(it) }
++    }
++}
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/ServerTrustManager.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/ServerTrustManager.kt
+new file mode 100644
+index 0000000..8048172
+--- /dev/null
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/ServerTrustManager.kt
+@@ -0,0 +1,96 @@
++package com.mattermost.networkclient.helpers
++
++import java.security.KeyStore
++import java.security.cert.CertificateException
++import java.security.cert.X509Certificate
++import javax.net.ssl.TrustManagerFactory
++import javax.net.ssl.X509TrustManager
++
++/**
++ * Uses the platform trust manager first and then ENCMA's application-private CAs.
++ * No certificate or hostname checks are bypassed.
++ */
++class ServerTrustManager(
++    private val platformTrustManager: X509TrustManager,
++    private val importedCertificatesProvider: () -> List<X509Certificate>,
++) : X509TrustManager {
++    @Volatile
++    private var importedCertificates: List<X509Certificate>? = null
++
++    @Volatile
++    private var importedTrustManager: X509TrustManager? = null
++
++    override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {
++        try {
++            platformTrustManager.checkClientTrusted(chain, authType)
++            return
++        } catch (platformError: CertificateException) {
++            checkImportedClientTrusted(chain, authType, platformError)
++        }
++    }
++
++    override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
++        try {
++            platformTrustManager.checkServerTrusted(chain, authType)
++            return
++        } catch (platformError: CertificateException) {
++            checkImportedServerTrusted(chain, authType, platformError)
++        }
++    }
++
++    override fun getAcceptedIssuers(): Array<X509Certificate> {
++        val imported = currentImportedTrustManager()?.acceptedIssuers.orEmpty()
++        return platformTrustManager.acceptedIssuers + imported
++    }
++
++    private fun checkImportedClientTrusted(
++        chain: Array<X509Certificate>,
++        authType: String,
++        platformError: CertificateException,
++    ) {
++        val imported = currentImportedTrustManager() ?: throw platformError
++        try {
++            imported.checkClientTrusted(chain, authType)
++        } catch (importedError: CertificateException) {
++            importedError.addSuppressed(platformError)
++            throw importedError
++        }
++    }
++
++    private fun checkImportedServerTrusted(
++        chain: Array<X509Certificate>,
++        authType: String,
++        platformError: CertificateException,
++    ) {
++        val imported = currentImportedTrustManager() ?: throw platformError
++        try {
++            imported.checkServerTrusted(chain, authType)
++        } catch (importedError: CertificateException) {
++            importedError.addSuppressed(platformError)
++            throw importedError
++        }
++    }
++
++    @Synchronized
++    private fun currentImportedTrustManager(): X509TrustManager? {
++        val certificates = importedCertificatesProvider()
++        if (certificates === importedCertificates) return importedTrustManager
++
++        importedCertificates = certificates
++        importedTrustManager = if (certificates.isEmpty()) {
++            null
++        } else {
++            val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
++                load(null)
++                certificates.forEachIndexed { index, certificate ->
++                    setCertificateEntry("encma-imported-$index", certificate)
++                }
++            }
++            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).run {
++                init(keyStore)
++                trustManagers.filterIsInstance<X509TrustManager>().first()
++            }
++        }
++        return importedTrustManager
++    }
++}
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/TrustManagerHelper.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/TrustManagerHelper.kt
+index ac3cd63..e2bbca7 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/TrustManagerHelper.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/helpers/TrustManagerHelper.kt
+@@ -1,5 +1,6 @@
+ package com.mattermost.networkclient.helpers
+ 
++import android.content.Context
+ import android.os.Build
+ import java.security.KeyStore
+ import javax.net.ssl.KeyManager
+@@ -10,11 +11,18 @@ import javax.net.ssl.X509TrustManager
+ object TrustManagerHelper {
+ 
+     /**
+-     * Builds an X509TrustManager that trusts both system and user-installed root CAs (#9337).
+-     * AndroidCAStore on API 24+ includes certificates installed via Settings → Security →
+-     * Install certificate (e.g. corporate CAs deployed by MDM).
++     * Builds an X509TrustManager that trusts platform roots and application-private
++     * CA certificates imported for ENCMA servers. Hostname verification is separate
++     * and remains enabled in every client.
+      */
+-    fun buildTrustManager(): X509TrustManager {
++    fun buildTrustManager(context: Context): X509TrustManager {
++        val appContext = context.applicationContext
++        return ServerTrustManager(buildPlatformTrustManager()) {
++            ServerCertificateStore.getTrustedCertificates(appContext)
++        }
++    }
++
++    private fun buildPlatformTrustManager(): X509TrustManager {
+         val trustManagerFactory = TrustManagerFactory.getInstance(
+             TrustManagerFactory.getDefaultAlgorithm()
+         )

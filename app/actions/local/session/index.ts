@@ -17,6 +17,7 @@ import {getAllServerCredentials, removeServerCredentials} from '@init/credential
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import RedactionRevalidationManager from '@managers/redaction_revalidation_manager';
+import {removeServerCertificate} from '@managers/server_certificate_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpiredSession} from '@queries/servers/system';
@@ -189,6 +190,9 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
             if (result && typeof result === 'object' && 'error' in result) {
                 throw result.error;
             }
+        }, false);
+        await safeExecute('removeServerCertificate', async () => {
+            await removeServerCertificate(serverUrl);
         }, false);
     }
 

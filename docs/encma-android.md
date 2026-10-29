@@ -27,3 +27,5 @@ Before a production release, the release owner must:
 4. Configure the Mattermost push notification service for the ENCMA Android app and verify token registration, foreground/background delivery, and notification actions on a device.
 
 No Firebase console or Mattermost push-backend change was available or performed in Phase 3.
+
+The mobile app already registers its FCM device token with the Mattermost server. A self-hosted deployment can use **Mattermost server → self-hosted Mattermost push proxy → FCM → ENCMA**; the push-proxy URL belongs in the Mattermost server's push-notification configuration, not in a per-user app field. This removes dependence on Mattermost's hosted proxy but still uses Google FCM. Eliminating Google entirely would require a different push transport, backend support, and an Android background-delivery implementation with battery/Doze testing; a notification URL text field alone cannot provide that behavior.

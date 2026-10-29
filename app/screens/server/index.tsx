@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
+import {errorCodes, isErrorWithCode, pick, types} from '@react-native-documents/picker';
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {Alert, BackHandler, View} from 'react-native';
+import {Alert, BackHandler, Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
 import urlParse from 'url-parse';
@@ -21,10 +22,12 @@ import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
+import {getServerCertificate, importServerCertificate, reassignServerCertificate, removeServerCertificate, type ServerCertificateInfo} from '@managers/server_certificate_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {isEncmaApp} from '@utils/branding';
 import {getErrorMessage, preauthSecretInvalidMessage} from '@utils/errors';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {getLoginScreen, loginOptions} from '@utils/server';
@@ -48,6 +51,14 @@ const defaultServerUrlMessage = defineMessage({
     id: 'mobile.server_url.empty',
     defaultMessage: 'Please enter a valid server URL',
 });
+
+const getCertificateErrorMessage = (error: unknown, fallback: string) => {
+    const candidate = error as {code?: unknown; message?: unknown};
+    if (typeof candidate?.code === 'string' && candidate.code.startsWith('E_CERTIFICATE') && typeof candidate.message === 'string') {
+        return candidate.message;
+    }
+    return fallback;
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
@@ -81,9 +92,13 @@ const Server = ({
     const navigation = useNavigation();
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const [certificate, setCertificate] = useState<ServerCertificateInfo>();
+    const [certificateError, setCertificateError] = useState<string>();
+    const [certificateServerUrl, setCertificateServerUrl] = useState<string>();
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [importingCertificate, setImportingCertificate] = useState(false);
     const [preauthSecret, setPreauthSecret] = useState<string>('');
     const [url, setUrl] = useState<string>('');
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
@@ -93,6 +108,7 @@ const Server = ({
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
+    const certificateImportEnabled = Platform.OS === 'android' && isEncmaApp;
     const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
 
     const animatedStyles = useScreenTransitionAnimation(animated);
@@ -140,12 +156,36 @@ const Server = ({
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
-        if (url && displayName && !urlError && !preauthSecretError) {
+        let active = true;
+        const configuredUrl = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        if (certificateImportEnabled && configuredUrl) {
+            const normalizedUrl = sanitizeUrl(configuredUrl);
+            getServerCertificate(normalizedUrl).then((storedCertificate) => {
+                if (active && storedCertificate) {
+                    setCertificate(storedCertificate);
+                    setCertificateServerUrl(normalizedUrl);
+                }
+            }).catch((error) => {
+                if (active) {
+                    setCertificateError(getCertificateErrorMessage(error, formatMessage({
+                        id: 'mobile.server.certificate.load_failed',
+                        defaultMessage: 'The saved CA certificate could not be read. Import it again.',
+                    })));
+                }
+            });
+        }
+        return () => {
+            active = false;
+        };
+    }, [certificateImportEnabled, defaultServerUrl, formatMessage, managedConfig?.serverUrl]);
+
+    useEffect(() => {
+        if (url && displayName && !urlError && !preauthSecretError && !importingCertificate) {
             setButtonDisabled(false);
         } else {
             setButtonDisabled(true);
         }
-    }, [url, displayName, urlError, preauthSecretError]);
+    }, [url, displayName, urlError, preauthSecretError, importingCertificate]);
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('beforeRemove', (e) => {
@@ -270,6 +310,7 @@ const Server = ({
     }, []);
 
     const handleUrlTextChanged = useCallback((text: string) => {
+        setCertificateError(undefined);
         setUrlError(undefined);
         setUrl(text);
     }, []);
@@ -285,6 +326,58 @@ const Server = ({
             setPreauthSecretError(undefined);
         }
     }, [urlError, preauthSecretError]);
+
+    const handleImportCertificate = useCallback(async () => {
+        setCertificateError(undefined);
+        if (!url.trim()) {
+            setCertificateError(formatMessage({
+                id: 'mobile.server.certificate.server_url_required',
+                defaultMessage: 'Enter the server URL before importing its CA certificate.',
+            }));
+            return;
+        }
+
+        setImportingCertificate(true);
+        try {
+            const [selected] = await pick({allowMultiSelection: false, type: [types.allFiles]});
+            if (!selected) {
+                return;
+            }
+            const normalizedUrl = sanitizeUrl(url);
+            const importedCertificate = await importServerCertificate(normalizedUrl, selected.uri, selected.name || undefined);
+            setCertificate(importedCertificate);
+            setCertificateServerUrl(normalizedUrl);
+        } catch (error) {
+            if (!isErrorWithCode(error) || error.code !== errorCodes.OPERATION_CANCELED) {
+                setCertificateError(getCertificateErrorMessage(error, formatMessage({
+                    id: 'mobile.server.certificate.import_failed',
+                    defaultMessage: 'The CA certificate could not be imported. Choose a valid public root .crt or PEM file.',
+                })));
+            }
+        } finally {
+            setImportingCertificate(false);
+        }
+    }, [formatMessage, url]);
+
+    const handleRemoveCertificate = useCallback(async () => {
+        if (!certificateServerUrl) {
+            return;
+        }
+        setCertificateError(undefined);
+        setImportingCertificate(true);
+        try {
+            await removeServerCertificate(certificateServerUrl);
+            setCertificate(undefined);
+            setCertificateServerUrl(undefined);
+        } catch (error) {
+            setCertificateError(getCertificateErrorMessage(error, formatMessage({
+                id: 'mobile.server.certificate.remove_failed',
+                defaultMessage: 'The CA certificate could not be removed. Try again.',
+            })));
+        } finally {
+            setImportingCertificate(false);
+        }
+    }, [certificateServerUrl, formatMessage]);
 
     const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
@@ -420,6 +513,23 @@ const Server = ({
             return;
         }
 
+        if (certificate && certificateServerUrl) {
+            try {
+                const associatedCertificate = await reassignServerCertificate(certificateServerUrl, headRequest.url);
+                if (canceled) {
+                    return;
+                }
+                setCertificate(associatedCertificate);
+                setCertificateServerUrl(headRequest.url);
+            } catch (error) {
+                setCertificateError(getCertificateErrorMessage(error, formatMessage({
+                    id: 'mobile.server.certificate.association_failed',
+                    defaultMessage: 'The CA certificate could not be associated with this server. Try again.',
+                })));
+                return;
+            }
+        }
+
         displayLogin(headRequest.url, data.config!, data.license!);
 
         // Fire the push-proxy verification alert AFTER the RNN transition to
@@ -468,18 +578,24 @@ const Server = ({
                     <ServerForm
                         autoFocus={additionalServer}
                         buttonDisabled={buttonDisabled}
+                        certificate={certificate}
+                        certificateError={certificateError}
                         connecting={connecting}
                         displayName={displayName}
                         displayNameError={displayNameError}
                         disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
+                        handleImportCertificate={handleImportCertificate}
                         handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
+                        handleRemoveCertificate={handleRemoveCertificate}
                         handleUrlTextChanged={handleUrlTextChanged}
+                        importingCertificate={importingCertificate}
                         preauthSecret={preauthSecret}
                         preauthSecretError={preauthSecretError}
                         setShowAdvancedOptions={setShowAdvancedOptions}
                         showAdvancedOptions={showAdvancedOptions}
+                        showCertificateImport={certificateImportEnabled}
                         theme={theme}
                         url={url}
                         urlError={urlError}

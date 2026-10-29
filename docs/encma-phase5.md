@@ -41,7 +41,7 @@ The focused CI selection includes the new ENCMA tests and the affected existing 
 
 The authentication-header increment was reported working on the user's Android device. Broader light/dark, narrow-phone, tablet, validation-error, SSO, and keyboard layout coverage remains good practice for subsequent UI increments.
 
-The channel-list controls increment and the navigation/branding increment still require device review. For the latter, confirm that:
+The channel-list controls increment and broader branding sweep still require device review. The replacement custom-tab-bar hotfix was reported working on the user's Android device on 2026-10-29, confirming that the previous five-button regression was resolved. For the remaining navigation/branding review, confirm that:
 
 1. Only Channels and Account appear in the bottom bar; channels and conversations still open, and Find channels remains available without a Threads result.
 2. Onboarding, invitations, calls/security prompts, and the system avatar show ENCMA rather than the old product branding.

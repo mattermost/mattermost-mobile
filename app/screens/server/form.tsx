@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Pressable, View} from 'react-native';
+import {Keyboard, Pressable, Text, View} from 'react-native';
 import Animated, {FlipInEasyX, FlipOutXUp, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Button from '@components/button';
@@ -13,21 +13,29 @@ import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {ServerCertificateInfo} from '@managers/server_certificate_manager';
+
 type Props = {
     autoFocus?: boolean;
     buttonDisabled: boolean;
+    certificate?: ServerCertificateInfo;
+    certificateError?: string;
     connecting: boolean;
     displayName?: string;
     displayNameError?: string;
     disableServerUrl: boolean;
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
+    handleImportCertificate: () => void;
     handlePreauthSecretTextChanged: (text: string) => void;
+    handleRemoveCertificate: () => void;
     handleUrlTextChanged: (text: string) => void;
+    importingCertificate: boolean;
     preauthSecret?: string;
     preauthSecretError?: string;
     setShowAdvancedOptions: React.Dispatch<React.SetStateAction<boolean>>;
     showAdvancedOptions: boolean;
+    showCertificateImport: boolean;
     theme: Theme;
     url?: string;
     urlError?: string;
@@ -67,6 +75,42 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     advancedOptionsContent: {
         width: '100%',
     },
+    certificateActions: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 12,
+        width: '100%',
+    },
+    certificateButtonContainer: {
+        flex: 1,
+    },
+    certificateContainer: {
+        marginTop: 16,
+        width: '100%',
+    },
+    certificateError: {
+        color: theme.errorTextColor,
+        marginTop: 8,
+        ...typography('Body', 75, 'Regular'),
+    },
+    certificateHelp: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        marginTop: 4,
+        ...typography('Body', 75, 'Regular'),
+    },
+    certificateRemove: {
+        padding: 12,
+    },
+    certificateSelected: {
+        color: theme.centerChannelColor,
+        marginTop: 12,
+        ...typography('Body', 75, 'SemiBold'),
+    },
+    certificateTitle: {
+        color: theme.centerChannelColor,
+        ...typography('Body', 100, 'SemiBold'),
+    },
     connectButtonContainer: {
         width: '100%',
         marginTop: 32,
@@ -103,6 +147,30 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.sharedSecretHelp',
         defaultMessage: 'The authentication secret shared by the administrator',
     },
+    certificateTitle: {
+        id: 'mobile.components.select_server_view.caCertificate',
+        defaultMessage: 'Server CA certificate (optional)',
+    },
+    certificateHelp: {
+        id: 'mobile.components.select_server_view.caCertificateHelp',
+        defaultMessage: 'For a private certificate authority, import its public root .crt or PEM file. It is trusted only inside ENCMA; hostname verification stays enabled.',
+    },
+    importCertificate: {
+        id: 'mobile.components.select_server_view.importCaCertificate',
+        defaultMessage: 'Import CA certificate',
+    },
+    replaceCertificate: {
+        id: 'mobile.components.select_server_view.replaceCaCertificate',
+        defaultMessage: 'Replace CA certificate',
+    },
+    removeCertificate: {
+        id: 'mobile.components.select_server_view.removeCaCertificate',
+        defaultMessage: 'Remove CA certificate',
+    },
+    selectedCertificate: {
+        id: 'mobile.components.select_server_view.selectedCaCertificate',
+        defaultMessage: '{fileName} · {host}',
+    },
 });
 
 const ADVANCED_OPTIONS_EXPANDED = 114;
@@ -111,18 +179,24 @@ const ADVANCED_OPTIONS_COLLAPSED = 40;
 const ServerForm = ({
     autoFocus = false,
     buttonDisabled,
+    certificate,
+    certificateError,
     connecting,
     displayName = '',
     displayNameError,
     disableServerUrl,
     handleConnect,
     handleDisplayNameTextChanged,
+    handleImportCertificate,
     handlePreauthSecretTextChanged,
+    handleRemoveCertificate,
     handleUrlTextChanged,
+    importingCertificate,
     preauthSecret = '',
     preauthSecretError,
     setShowAdvancedOptions,
     showAdvancedOptions,
+    showCertificateImport,
     theme,
     url = '',
     urlError,
@@ -221,6 +295,69 @@ const ServerForm = ({
                 testID={'server_form.display_help'}
             />
             }
+
+            {showCertificateImport && (
+                <View
+                    style={styles.certificateContainer}
+                    testID='server_form.certificate.container'
+                >
+                    <FormattedText
+                        {...messages.certificateTitle}
+                        style={styles.certificateTitle}
+                    />
+                    <FormattedText
+                        {...messages.certificateHelp}
+                        style={styles.certificateHelp}
+                        testID='server_form.certificate.help'
+                    />
+                    <View style={styles.certificateActions}>
+                        <Button
+                            buttonContainerStyle={styles.certificateButtonContainer}
+                            disabled={importingCertificate || connecting}
+                            emphasis='secondary'
+                            iconName='upload-outline'
+                            onPress={handleImportCertificate}
+                            showLoader={importingCertificate}
+                            testID='server_form.certificate.import'
+                            text={formatMessage(certificate ? messages.replaceCertificate : messages.importCertificate)}
+                            theme={theme}
+                        />
+                        {certificate && (
+                            <Pressable
+                                accessibilityLabel={formatMessage(messages.removeCertificate)}
+                                accessibilityRole='button'
+                                disabled={importingCertificate || connecting}
+                                onPress={handleRemoveCertificate}
+                                style={styles.certificateRemove}
+                                testID='server_form.certificate.remove'
+                            >
+                                <CompassIcon
+                                    color={theme.errorTextColor}
+                                    name='trash-can-outline'
+                                    size={22}
+                                />
+                            </Pressable>
+                        )}
+                    </View>
+                    {certificate && (
+                        <FormattedText
+                            {...messages.selectedCertificate}
+                            numberOfLines={2}
+                            style={styles.certificateSelected}
+                            testID='server_form.certificate.selected'
+                            values={{fileName: certificate.fileName, host: certificate.host}}
+                        />
+                    )}
+                    {certificateError && (
+                        <Text
+                            style={styles.certificateError}
+                            testID='server_form.certificate.error'
+                        >
+                            {certificateError}
+                        </Text>
+                    )}
+                </View>
+            )}
 
             <Animated.View style={[styles.advancedOptionsContainer, advancedOptionsStyle]}>
                 <Pressable
