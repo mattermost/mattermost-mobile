@@ -14,5 +14,7 @@ export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChec
 };
 
 export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: PlaybookChecklistItemModel, raw: PartialChecklistItem): boolean => {
-    return Boolean(existingRecord.updateAt !== raw.update_at || (raw && 'state_event_id' in raw && (!existingRecord.stateEventLinkKnown || existingRecord.stateEventId !== raw.state_event_id)));
+    return Boolean(existingRecord.updateAt !== raw.update_at ||
+        (raw && 'state_event_id' in raw && (!existingRecord.stateEventLinkKnown || existingRecord.stateEventId !== raw.state_event_id)) ||
+        (raw && 'state_event_link_known' in raw && raw.state_event_link_known === false && existingRecord.stateEventLinkKnown));
 };

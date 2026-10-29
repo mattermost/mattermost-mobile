@@ -189,6 +189,25 @@ describe('fetchPlaybookRunsForChannel', () => {
         expect(result).toBeDefined();
         expect((result.error as Error).message).toBe('Handle error');
     });
+
+    it('should refetch only the runs that failed and still sync the channel', async () => {
+        jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({data: [], error: new Error('Task activity baseline requires full run recovery'), failedRunIds: [mockPlaybookRun2.id]});
+        mockClient.fetchPlaybookRuns.mockResolvedValueOnce({
+            items: [mockPlaybookRun, mockPlaybookRun2],
+            has_more: false,
+        });
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockPlaybookRun2);
+        EphemeralStore.clearChannelPlaybooksSynced(serverUrl);
+
+        const result = await fetchPlaybookRunsForChannel(serverUrl, channelId);
+
+        expect(result.error).toBeUndefined();
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledTimes(1);
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(mockPlaybookRun2.id);
+        expect(handlePlaybookRuns).toHaveBeenLastCalledWith(serverUrl, [mockPlaybookRun2], false, true, true);
+        expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(true);
+        expect(updateLastPlaybookRunsFetchAt).toHaveBeenCalled();
+    });
 });
 
 describe('fetchFinishedRunsForChannel', () => {

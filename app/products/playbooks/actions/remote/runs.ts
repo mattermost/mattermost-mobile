@@ -55,8 +55,15 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
 
         if (!fetchOnly) {
             const result = await handlePlaybookRuns(serverUrl, allRuns, false, true);
-            if (result.error) {
+            if (result.error && !result.failedRunIds?.length) {
                 throw result.error;
+            }
+
+            // A run the list read cannot apply, such as one whose certificate the server has
+            // dropped, is fetched on its own so it cannot keep the rest of the channel unsynced.
+            for (const runId of result.failedRunIds ?? []) {
+                // eslint-disable-next-line no-await-in-loop
+                await ensurePlaybookRunActivityFresh(serverUrl, runId);
             }
 
             EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);

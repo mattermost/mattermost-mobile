@@ -20,6 +20,7 @@ type HandlePlaybookRunArgs = {
     removeAssociatedRecords?: boolean;
     processChildren?: boolean;
     keepFinishedRuns?: boolean;
+    force?: boolean;
     runs?: PartialPlaybookRun[];
 }
 
@@ -63,10 +64,11 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
      * @param {boolean} args.prepareRecordsOnly - If true, only prepares the records without saving them.
      * @param {boolean} [args.processChildren] - If true, process child records.
      * @param {boolean} [args.removeAssociatedRecords] - If true, remove associated records.
+     * @param {boolean} [args.force] - If true, update existing records even when update_at is unchanged.
      * @param {PlaybookRun[]} [args.runs] - The playbook run records to handle.
      * @returns {Promise<any[]>} - A promise that resolves to an array of handled playbook run records.
      */
-    handlePlaybookRun = async ({runs, keepFinishedRuns, prepareRecordsOnly, processChildren, removeAssociatedRecords}: HandlePlaybookRunArgs): Promise<Model[]> => {
+    handlePlaybookRun = async ({runs, keepFinishedRuns, prepareRecordsOnly, processChildren, removeAssociatedRecords, force = false}: HandlePlaybookRunArgs): Promise<Model[]> => {
         if (!runs?.length) {
             logWarning(
                 'An empty or undefined "runs" array has been passed to the handlePlaybookRun method',
@@ -87,7 +89,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
                 res.push(raw);
-            } else if (shouldUpdatePlaybookRunRecord(existingRecord, raw)) {
+            } else if (force || shouldUpdatePlaybookRunRecord(existingRecord, raw)) {
                 res.push(raw);
             }
 

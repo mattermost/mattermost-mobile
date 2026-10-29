@@ -172,6 +172,10 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
                 }],
                 prepareRecordsOnly: true,
                 processChildren: false,
+
+                // The server sends the fields a certified delta leaves out in a second update from
+                // the same write, so both carry the same timestamp.
+                force: true,
             });
 
             models.push(...runModels);
@@ -198,7 +202,7 @@ const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUp
         if (data.changed_fields.checklists) {
             const promises = [];
             for (const checklist of data.changed_fields.checklists) {
-                promises.push(handlePlaybookChecklistUpdated(serverUrl, checklist, data.id));
+                promises.push(handlePlaybookChecklistUpdated(serverUrl, checklist, data.id, Boolean(sync)));
             }
             const checklistModels = await Promise.all(promises);
             models.push(...checklistModels.flat());
@@ -278,7 +282,7 @@ const hasValidDeltaLinks = async (database: Database, data: PlaybookRunUpdate) =
     });
 };
 
-const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate: PlaybookChecklistUpdate, runId: string) => {
+const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate: PlaybookChecklistUpdate, runId: string, certified: boolean) => {
     const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
     const existingChecklist = await database.get<PlaybookChecklistModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).query(Q.where('id', checklistUpdate.id)).fetch();
@@ -322,7 +326,12 @@ const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate
         const promises = [];
         for (const item of checklistUpdate.item_inserts.filter((value) => !deletedItems.has(value.id))) {
             promises.push(operator.handlePlaybookChecklistItem({
-                items: [{...item, checklist_id: checklistUpdate.id, update_at: checklistUpdate.checklist_updated_at}],
+                items: [{
+                    ...item,
+                    checklist_id: checklistUpdate.id,
+                    update_at: checklistUpdate.checklist_updated_at,
+                    ...(certified ? {} : {state_event_link_known: false}),
+                }],
                 prepareRecordsOnly: true,
             }));
         }
@@ -333,7 +342,7 @@ const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate
     if (checklistUpdate.item_updates) {
         const promises = [];
         for (const item of checklistUpdate.item_updates.filter((value) => !deletedItems.has(value.id))) {
-            promises.push(handlePlaybookChecklistItemUpdated(serverUrl, item, checklistUpdate.id));
+            promises.push(handlePlaybookChecklistItemUpdated(serverUrl, item, checklistUpdate.id, certified));
         }
         const checklistItemModels = await Promise.all(promises);
         models.push(...checklistItemModels.flat());
@@ -350,11 +359,21 @@ const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate
     return models;
 };
 
-const handlePlaybookChecklistItemUpdated = async (serverUrl: string, itemUpdate: PlaybookChecklistItemUpdate, checklistId: string) => {
+const handlePlaybookChecklistItemUpdated = async (serverUrl: string, itemUpdate: PlaybookChecklistItemUpdate, checklistId: string, certified: boolean) => {
     const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
+    // Only a certified update says which event set a task's state. After any other state change
+    // the stored link describes an earlier state, so fall back to matching events by item.
+    const fields = itemUpdate.fields;
+    const changesState = 'state' in fields || 'state_modified' in fields || 'state_event_id' in fields;
     return operator.handlePlaybookChecklistItem({
-        items: [{...itemUpdate.fields, id: itemUpdate.id, checklist_id: checklistId, update_at: itemUpdate.checklist_item_updated_at}],
+        items: [{
+            ...fields,
+            id: itemUpdate.id,
+            checklist_id: checklistId,
+            update_at: itemUpdate.checklist_item_updated_at,
+            ...(!certified && changesState ? {state_event_link_known: false} : {}),
+        }],
         prepareRecordsOnly: true,
     });
 };

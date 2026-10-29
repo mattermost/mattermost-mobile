@@ -18,6 +18,7 @@ import {
 } from './runs';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 
 const serverUrl = 'baseHandler.test.com';
 
@@ -482,6 +483,65 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(checklists).toHaveLength(0);
         expect(items).toHaveLength(0);
         expect((await getPlaybookRunById(operator.database, playbookRunId))?.taskActivityRevision).toBe('43');
+    });
+
+    it('applies the uncertified update that follows a certified delta with the same timestamp', async () => {
+        await operator.handlePlaybookRun({
+            runs: [{...mockPlaybookRun, task_activity_sync: {version: 1, epoch: 'epoch-a', revision: '42', complete: true}}],
+            prepareRecordsOnly: false,
+            processChildren: false,
+        });
+        const updatedAt = 5000;
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: updatedAt,
+            changed_fields: {items_order: mockPlaybookRun.items_order},
+            task_activity_sync: {version: 1, epoch: 'epoch-a', base_revision: '42', revision: '43', complete: false},
+        });
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: updatedAt,
+            changed_fields: {participant_ids: ['new-participant'], owner_user_id: 'new-owner'},
+        });
+
+        const stored = await getPlaybookRunById(operator.database, playbookRunId);
+        expect(stored?.taskActivityRevision).toBe('43');
+        expect(stored?.participantIds).toEqual(['new-participant']);
+        expect(stored?.ownerUserId).toBe('new-owner');
+    });
+
+    it('treats a task link as unknown after an uncertified state change', async () => {
+        const checklist = mockPlaybookRun.checklists[0];
+        await operator.handlePlaybookRun({
+            runs: [{
+                ...mockPlaybookRun,
+                checklists: [{...checklist, items: checklist.items.map((item) => ({...item, state_event_id: 'event-a'}))}],
+            }],
+            prepareRecordsOnly: false,
+            processChildren: true,
+        });
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: mockPlaybookRun.update_at + 1,
+            changed_fields: {
+                checklists: [{
+                    id: checklist.id,
+                    checklist_updated_at: mockPlaybookRun.update_at + 1,
+                    item_updates: [{
+                        id: checklistItemId,
+                        checklist_item_updated_at: mockPlaybookRun.update_at + 1,
+                        fields: {state: 'closed', state_modified: 30},
+                    }],
+                }],
+            },
+        });
+
+        const item = await operator.database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(checklistItemId);
+        expect(item.state).toBe('closed');
+        expect(item.stateEventLinkKnown).toBe(false);
+        expect(item.stateEventId).toBeNull();
     });
 
     it('keeps the certificate when a task links to the wrong event', async () => {

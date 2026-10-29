@@ -3,12 +3,14 @@
 
 import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {queryPlaybookTimelineEventsForRun} from '@playbooks/database/queries/timeline_event';
 import TestHelper from '@test/test_helper';
 
 import {handlePlaybookRuns, setOwner, updatePlaybookRun} from './run';
 
 import type {Database} from '@nozbe/watermelondb';
+import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 const serverUrl = 'baseHandler.test.com';
@@ -129,6 +131,54 @@ describe('handlePlaybookRuns', () => {
         expect((await handlePlaybookRuns(serverUrl, [next], false, true)).error).toBeUndefined();
         expect((await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(run.id)).taskActivityRevision).toBe('43');
         expect((await queryPlaybookTimelineEventsForRun(database, run.id).fetch()).map((record) => record.id)).toEqual(['event-b']);
+    });
+
+    it('should store the other runs in a batch when one run fails', async () => {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const [failing, healthy] = TestHelper.createPlaybookRuns(2, 1, 1, true);
+        const malformed = certified(failing, '1', [{...event(failing.id, 'event-a'), details: 1 as unknown as string}]);
+
+        const result = await handlePlaybookRuns(serverUrl, [malformed, certified(healthy, '1', [])], false, true);
+
+        expect(result.error).toBeDefined();
+        expect(result.failedRunIds).toEqual([failing.id]);
+        expect(await getPlaybookRunById(database, healthy.id)).toBeDefined();
+    });
+
+    it('should mark only the tasks with an invalid state-event link as unknown', async () => {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const run = TestHelper.createPlaybookRuns(1, 1, 2, true)[0];
+        const snapshot = certified(run, '7', []);
+        const [copied, untouched] = snapshot.checklists[0].items;
+        snapshot.checklists[0].items[0] = {...copied, state: 'closed', state_modified: 100, state_event_id: 'event-of-another-task'};
+
+        const result = await handlePlaybookRuns(serverUrl, [snapshot], false, true);
+
+        expect(result.error).toBeUndefined();
+        const items = database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM);
+        const invalid = await items.find(copied.id);
+        expect(invalid.stateEventLinkKnown).toBe(false);
+        expect(invalid.stateEventId).toBeNull();
+        expect((await items.find(untouched.id)).stateEventLinkKnown).toBe(true);
+        expect((await getPlaybookRunById(database, run.id))?.taskActivityRevision).toBe('7');
+    });
+
+    it('should treat state-event links in an uncertified read as unknown', async () => {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const run = TestHelper.createPlaybookRuns(1, 1, 1, true)[0];
+        const uncertified = {
+            ...run,
+            timeline_events: [],
+            checklists: run.checklists.map((checklist) => ({
+                ...checklist,
+                items: checklist.items.map((item) => ({...item, state: 'closed' as ChecklistItemState, state_modified: 100, state_event_id: null})),
+            })),
+        };
+
+        expect((await handlePlaybookRuns(serverUrl, [uncertified], false, true)).error).toBeUndefined();
+
+        const item = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(run.checklists[0].items[0].id);
+        expect(item.stateEventLinkKnown).toBe(false);
     });
 });
 
