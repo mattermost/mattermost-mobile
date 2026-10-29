@@ -21,6 +21,7 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
+import {parseTaskActivitySync} from '@playbooks/utils/task_activity_sync';
 import {areDefaultTaskFilters, DEFAULT_TASK_FILTERS, type TaskFilters} from '@playbooks/utils/task_filters';
 import {bottomSheet, navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -246,10 +247,13 @@ export default function PlaybookRun({
             return undefined;
         }
 
+        // Without a complete certificate the response's state-event links are not authoritative:
+        // tasks checked before the server recorded links arrive with null. Match events by item.
+        const certified = Boolean(parseTaskActivitySync(playbookRun.task_activity_sync, true));
         const activities: Record<string, TaskActivity | undefined> = {};
         for (const checklist of playbookRun.checklists) {
             for (const item of checklist.items) {
-                activities[item.id] = getTaskActivity(item, playbookRun.timeline_events, playbookRun.id);
+                activities[item.id] = getTaskActivity(certified ? item : {...item, stateEventLinkKnown: false}, playbookRun.timeline_events, playbookRun.id);
             }
         }
         return activities;

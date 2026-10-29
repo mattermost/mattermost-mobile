@@ -532,6 +532,24 @@ describe('PlaybookRun', () => {
         });
     });
 
+    it('should match API-only activity by item when the run is not certified', () => {
+        const props = getBaseProps();
+        props.playbookRun = TestHelper.fakePlaybookRun({
+            id: 'run-1',
+            name: 'Test Playbook Run',
+            timeline_events: [{...timelineEvent, details: '{"action":"check","item_id":"item-1"}'}],
+            checklists: [TestHelper.fakePlaybookChecklist('run-1', {
+                items: [TestHelper.fakePlaybookChecklistItem('checklist-1', {id: 'item-1', state: 'closed', state_modified: 1000, state_event_id: null})],
+            })],
+        });
+
+        const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        expect(getByTestId('checklist-list').props.apiActivityByItemId).toEqual({
+            'item-1': {action: 'check', actorUserId: 'user-1', timestamp: 1000},
+        });
+    });
+
     it('handles channel_id from API type', () => {
         const props = getBaseProps();
         const apiRun = TestHelper.fakePlaybookRun({
