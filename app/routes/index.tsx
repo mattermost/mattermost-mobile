@@ -5,13 +5,10 @@ import {Redirect, type Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
-import {determineInitialExpoRoute, type ExpoRouterLaunchResult} from '@init/launch';
+import {type ExpoRouterLaunchResult} from '@init/launch';
+import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
 import {getWireGuardState, isWireGuardRequired, WireGuardStatus} from '@managers/wireguard_manager';
 import {propsToParams} from '@screens/navigation';
-import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
-
-const LAUNCH_TIMEOUT_MS = 15000;
 
 const styles = StyleSheet.create({
     loading: {
@@ -26,7 +23,6 @@ export default function RootIndex() {
 
     useEffect(() => {
         let active = true;
-        let launchTimeout: ReturnType<typeof setTimeout> | undefined;
 
         async function initializeLaunch() {
             if (isWireGuardRequired()) {
@@ -48,34 +44,15 @@ export default function RootIndex() {
                 }
             }
 
-            try {
-                const timeoutPromise = new Promise<never>((_, reject) => {
-                    launchTimeout = setTimeout(() => reject(new Error('Initial route determination timed out')), LAUNCH_TIMEOUT_MS);
-                });
-                const result = await Promise.race([determineInitialExpoRoute(), timeoutPromise]);
-                if (active) {
-                    setLaunchResult(result);
-                }
-            } catch (error) {
-                // A verified VPN must not strand the user on a blank root route when ordinary
-                // launch routing fails. The server screen remains behind the same VPN gate.
-                logError('Unable to determine the initial route after launch', getFullErrorMessage(error));
-                if (active) {
-                    setLaunchResult({route: '/(unauthenticated)/server', params: {launchError: true}});
-                }
-            } finally {
-                if (launchTimeout) {
-                    clearTimeout(launchTimeout);
-                }
+            const result = await determineInitialExpoRouteWithFallback();
+            if (active) {
+                setLaunchResult(result);
             }
         }
 
         initializeLaunch();
         return () => {
             active = false;
-            if (launchTimeout) {
-                clearTimeout(launchTimeout);
-            }
         };
     }, []);
 

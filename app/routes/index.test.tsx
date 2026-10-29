@@ -5,7 +5,7 @@ import {render, waitFor} from '@testing-library/react-native';
 import {Redirect} from 'expo-router';
 import React from 'react';
 
-import {determineInitialExpoRoute} from '@init/launch';
+import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
 import {getWireGuardState, isWireGuardRequired, WireGuardStatus} from '@managers/wireguard_manager';
 
 import RootIndex from './index';
@@ -14,8 +14,8 @@ jest.mock('expo-router', () => ({
     Redirect: jest.fn(() => null),
 }));
 
-jest.mock('@init/launch', () => ({
-    determineInitialExpoRoute: jest.fn(),
+jest.mock('@init/launch_with_fallback', () => ({
+    determineInitialExpoRouteWithFallback: jest.fn(),
 }));
 
 jest.mock('@managers/wireguard_manager', () => ({
@@ -46,7 +46,7 @@ describe('RootIndex WireGuard gate', () => {
             txBytes: 0,
             applicationId: 'com.mattermost.rnbeta',
         });
-        jest.mocked(determineInitialExpoRoute).mockResolvedValue({route: '/login', params: {}});
+        jest.mocked(determineInitialExpoRouteWithFallback).mockResolvedValue({route: '/login', params: {}});
     });
 
     it('redirects to VPN before normal launch when the tunnel is disconnected', async () => {
@@ -54,7 +54,7 @@ describe('RootIndex WireGuard gate', () => {
 
         await waitFor(() => expect(mockRedirect).toHaveBeenCalled());
         expect(mockRedirect.mock.calls[0][0].href).toEqual({pathname: '/vpn', params: {}});
-        expect(determineInitialExpoRoute).not.toHaveBeenCalled();
+        expect(determineInitialExpoRouteWithFallback).not.toHaveBeenCalled();
     });
 
     it('fails closed when the native VPN state cannot be read', async () => {
@@ -64,7 +64,7 @@ describe('RootIndex WireGuard gate', () => {
 
         await waitFor(() => expect(mockRedirect).toHaveBeenCalled());
         expect(mockRedirect.mock.calls[0][0].href).toEqual({pathname: '/vpn', params: {}});
-        expect(determineInitialExpoRoute).not.toHaveBeenCalled();
+        expect(determineInitialExpoRouteWithFallback).not.toHaveBeenCalled();
     });
 
     it('continues normal launch only after native connected state', async () => {
@@ -79,11 +79,11 @@ describe('RootIndex WireGuard gate', () => {
 
         render(<RootIndex/>);
 
-        await waitFor(() => expect(determineInitialExpoRoute).toHaveBeenCalled());
+        await waitFor(() => expect(determineInitialExpoRouteWithFallback).toHaveBeenCalled());
         expect(mockRedirect.mock.calls[0][0].href).toEqual({pathname: '/login', params: {}});
     });
 
-    it('opens the server screen instead of a blank route when normal launch fails', async () => {
+    it('opens the server screen instead of a blank route when normal launch falls back', async () => {
         jest.mocked(getWireGuardState).mockResolvedValue({
             status: WireGuardStatus.Connected,
             message: null,
@@ -92,7 +92,10 @@ describe('RootIndex WireGuard gate', () => {
             txBytes: 256,
             applicationId: 'com.encma.hxmain',
         });
-        jest.mocked(determineInitialExpoRoute).mockRejectedValue(new Error('launch initialization failed'));
+        jest.mocked(determineInitialExpoRouteWithFallback).mockResolvedValue({
+            route: '/(unauthenticated)/server',
+            params: {launchError: true},
+        });
 
         render(<RootIndex/>);
 
@@ -112,11 +115,11 @@ describe('RootIndex WireGuard gate', () => {
             txBytes: 256,
             applicationId: 'com.encma.hxmain',
         });
-        jest.mocked(determineInitialExpoRoute).mockReturnValue(new Promise<never>(() => undefined));
+        jest.mocked(determineInitialExpoRouteWithFallback).mockReturnValue(new Promise<never>(() => undefined));
 
         const {getByTestId} = render(<RootIndex/>);
 
-        await waitFor(() => expect(determineInitialExpoRoute).toHaveBeenCalled());
+        await waitFor(() => expect(determineInitialExpoRouteWithFallback).toHaveBeenCalled());
         expect(getByTestId('launch.loading')).toBeTruthy();
         expect(mockRedirect).not.toHaveBeenCalled();
     });
@@ -126,7 +129,7 @@ describe('RootIndex WireGuard gate', () => {
 
         render(<RootIndex/>);
 
-        await waitFor(() => expect(determineInitialExpoRoute).toHaveBeenCalled());
+        await waitFor(() => expect(determineInitialExpoRouteWithFallback).toHaveBeenCalled());
         expect(getWireGuardState).not.toHaveBeenCalled();
     });
 });

@@ -11,6 +11,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
+import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
 import {
     WireGuardStatus,
     addWireGuardStateListener,
@@ -26,6 +27,7 @@ import {
     type WireGuardConfigSummary,
     type WireGuardState,
 } from '@managers/wireguard_manager';
+import {propsToParams} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 import getStyleSheet from './styles';
@@ -122,6 +124,11 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
         }, {rxBytes: state.rxBytes, txBytes: state.txBytes});
     }
 
+    const continueToApp = useCallback(async () => {
+        const launchResult = await determineInitialExpoRouteWithFallback();
+        router.replace({pathname: launchResult.route, params: propsToParams(launchResult.params)});
+    }, []);
+
     const connectConfig = useCallback(async (value: string) => {
         if (connectingRef.current) {
             return;
@@ -153,7 +160,7 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
             setEditing(false);
             setState(connectedState);
             if (!management) {
-                router.replace('/');
+                await continueToApp();
             }
         } catch (error) {
             const message = getErrorMessage(error);
@@ -169,7 +176,7 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
         } finally {
             connectingRef.current = false;
         }
-    }, [intl, management]);
+    }, [continueToApp, intl, management]);
 
     useEffect(() => {
         let active = true;
@@ -202,7 +209,7 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
 
                 if (currentState.status === WireGuardStatus.Connected) {
                     if (!management) {
-                        router.replace('/');
+                        await continueToApp();
                     }
                     return;
                 }
@@ -226,7 +233,7 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
             removeListener();
             setWireGuardSecureScreen(false);
         };
-    }, [connectConfig, management]);
+    }, [connectConfig, continueToApp, management]);
 
     const handleImport = useCallback(async () => {
         setImporting(true);

@@ -14,7 +14,7 @@ Android backend state `UP` is not treated as a usable login connection. The nati
 
 Android startup and subsequent route changes fail closed to `/vpn` until the native module reports `connected`. Normal launch and login route determination do not run while the gate is closed. A saved configuration is reconnected automatically from the VPN screen. iOS does not use this Android-only gate.
 
-After the gate opens, the root launcher shows a loading indicator rather than a blank screen. If ordinary launch routing rejects or does not finish within 15 seconds, it falls back to the server screen with a logged launch error. This fallback does not bypass the WireGuard gate or turn a failed tunnel into a verified one.
+After the gate opens, the root launcher shows a loading indicator rather than a blank screen. A successful in-app VPN connection resolves the same ordinary launch destination and replaces the VPN screen with it directly, without a second root-route redirect. If ordinary launch routing rejects or does not finish within 15 seconds, it falls back to the server screen with a logged launch error. This fallback does not bypass the WireGuard gate or turn a failed tunnel into a verified one.
 
 The probe and statistics prove WireGuard negotiation and received tunnel traffic at connection time. They do not, by themselves, prove that a particular Mattermost server is reachable or that every destination will remain reachable later.
 

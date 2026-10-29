@@ -5,6 +5,7 @@ import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import {router} from 'expo-router';
 import React from 'react';
 
+import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
 import {
     WireGuardStatus,
     addWireGuardStateListener,
@@ -27,6 +28,10 @@ jest.mock('@react-native-documents/picker', () => ({
     isErrorWithCode: jest.fn(),
     pick: jest.fn(),
     types: {allFiles: 'allFiles'},
+}));
+
+jest.mock('@init/launch_with_fallback', () => ({
+    determineInitialExpoRouteWithFallback: jest.fn(),
 }));
 
 jest.mock('@managers/wireguard_manager', () => ({
@@ -84,9 +89,13 @@ describe('VpnScreen', () => {
         jest.mocked(saveWireGuardConfig).mockResolvedValue(undefined);
         jest.mocked(clearWireGuardConfig).mockResolvedValue(undefined);
         jest.mocked(readWireGuardConfig).mockResolvedValue('private-test-configuration');
+        jest.mocked(determineInitialExpoRouteWithFallback).mockResolvedValue({
+            route: '/(unauthenticated)/server',
+            params: {},
+        });
     });
 
-    it('saves only after verified connect and then continues initial routing', async () => {
+    it('saves only after verified connect and then replaces VPN with the resolved destination', async () => {
         renderWithIntlAndTheme(<VpnScreen/>);
 
         const editor = await screen.findByTestId('mobile.vpn.editor');
@@ -94,7 +103,10 @@ describe('VpnScreen', () => {
         fireEvent.press(screen.getByTestId('mobile.vpn.connect'));
 
         await waitFor(() => expect(saveWireGuardConfig).toHaveBeenCalledWith('private-test-configuration'));
-        await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'));
+        await waitFor(() => expect(router.replace).toHaveBeenCalledWith({
+            pathname: '/(unauthenticated)/server',
+            params: {},
+        }));
         expect(connectWireGuard).toHaveBeenCalledWith('private-test-configuration');
         expect(jest.mocked(connectWireGuard).mock.invocationCallOrder[0]).toBeLessThan(
             jest.mocked(saveWireGuardConfig).mock.invocationCallOrder[0],
@@ -102,7 +114,7 @@ describe('VpnScreen', () => {
         expect(jest.mocked(saveWireGuardConfig).mock.invocationCallOrder[0]).toBeLessThan(
             jest.mocked(router.replace).mock.invocationCallOrder[0],
         );
-        expect(router.replace).toHaveBeenCalledWith('/');
+        expect(router.replace).not.toHaveBeenCalledWith('/');
     });
 
     it('disconnects and fails closed if the verified config cannot be saved securely', async () => {
@@ -120,6 +132,19 @@ describe('VpnScreen', () => {
         expect(screen.getByTestId('mobile.vpn.status').props.children).toBe('Connection failed');
     });
 
+    it('continues directly to the resolved destination when the tunnel is already connected', async () => {
+        jest.mocked(getWireGuardState).mockResolvedValue(connectedState);
+
+        renderWithIntlAndTheme(<VpnScreen/>);
+
+        await waitFor(() => expect(router.replace).toHaveBeenCalledWith({
+            pathname: '/(unauthenticated)/server',
+            params: {},
+        }));
+        expect(connectWireGuard).not.toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalledWith('/');
+    });
+
     it('reconnects a securely saved config without exposing it in the summary', async () => {
         jest.mocked(loadWireGuardConfig).mockResolvedValue('private-test-configuration');
 
@@ -129,5 +154,6 @@ describe('VpnScreen', () => {
         await waitFor(() => expect(screen.getByTestId('mobile.vpn.status').props.children).toBe('Connected'));
         expect(screen.queryByText('private-test-configuration')).toBeNull();
         expect(setWireGuardSecureScreen).toHaveBeenCalledWith(true);
+        expect(router.replace).not.toHaveBeenCalled();
     });
 });

@@ -33,6 +33,7 @@ jobs:
           NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand \
             app/client/rest/channels.test.ts \
             app/actions/remote/channel.test.ts \
+            app/init/launch_with_fallback.test.ts \
             app/routes/index.test.tsx \
             app/screens/vpn/index.test.tsx \
             app/managers/wireguard_manager.test.ts \
@@ -115,7 +116,7 @@ jobs:
       - name: Upload installable arm64 APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: phase4-encma-wireguard-arm64-release-vpn-handshake-fix
+          name: phase4-encma-wireguard-arm64-release-vpn-navigation-fix
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
