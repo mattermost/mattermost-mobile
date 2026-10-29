@@ -106,6 +106,10 @@ function toTsioDetoxSuite(suite, opts = {}) {
             fullName: c.fullName || c.title || '',
             status: c.status || 'failed',
             title: c.title || c.fullName || 'unnamed',
+
+            // Earlier failed attempts of a retried test; TSIO records each as a
+            // failed attempt, so a pass on retry reads as flaky rather than clean.
+            ...(Array.isArray(c.retryReasons) && c.retryReasons.length ? {retryReasons: c.retryReasons} : {}),
         })),
     };
 
@@ -156,14 +160,49 @@ function parseExpectedSpecs(specsJson) {
 }
 
 /**
+ * The generate-specs matrix as shards: each row's spec paths.
+ *
+ * @param {string} specsJson
+ * @returns {string[][]}
+ */
+function parseShards(specsJson) {
+    if (!specsJson) {
+        return [];
+    }
+    const include = JSON.parse(specsJson)?.include;
+    if (!Array.isArray(include)) {
+        return [];
+    }
+    return include.map((row) => String(row?.specs ?? '').split(/\s+/).filter(Boolean)).filter((specs) => specs.length > 0);
+}
+
+/**
+ * Why a spec has no result. E2E triage re-runs a shard that reported nothing, and judges a spec
+ * whose shard stopped before it by its history, so the two read differently.
+ *
+ * @param {string} spec
+ * @param {string[] | undefined} shard  the specs assigned with it, when known
+ * @param {Set<string>} reported
+ * @returns {string}
+ */
+function unreportedReason(spec, shard, reported) {
+    const prefix = `${spec} was assigned to a shard but produced no result`;
+    if (!shard) {
+        return `${prefix}. The shard uploaded nothing, or its Jest process died before reaching this spec.`;
+    }
+    return shard.some((s) => reported.has(s)) ? `${prefix}: other specs of its shard reported, so its Jest process stopped before reaching this spec.` : `${prefix}: no spec of its shard reported, so the shard ran or uploaded nothing.`;
+}
+
+/**
  * Every spec generate-specs handed out must come back with a result, or a shard that
  * uploaded nothing just shrinks the suite and the gate goes green (main d943628).
  *
  * @param {{testResults: object[]}} merged
  * @param {string[]} expectedSpecs  repo-relative paths
+ * @param {string[][]} [shards]  the specs of each shard (see parseShards)
  * @returns {string[]} the specs that never reported
  */
-function appendUnreportedSpecs(merged, expectedSpecs) {
+function appendUnreportedSpecs(merged, expectedSpecs, shards = []) {
     if (expectedSpecs.length === 0) {
         return [];
     }
@@ -177,7 +216,7 @@ function appendUnreportedSpecs(merged, expectedSpecs) {
             testResults: [{
                 ancestorTitles: ['CI shard reporting'],
                 duration: 0,
-                failureMessages: [`${spec} was assigned to a shard but produced no result. The shard uploaded nothing, or its Jest process died before reaching this spec.`],
+                failureMessages: [unreportedReason(spec, shards.find((shard) => shard.includes(spec)), reported)],
                 fullName: `${spec} — spec did not run`,
                 status: 'failed',
                 title: 'spec did not run',
@@ -263,7 +302,7 @@ function main() {
     }
 
     const merged = mergeJestResultsForTsio(inputPaths, opts);
-    const missing = appendUnreportedSpecs(merged, expectedSpecs);
+    const missing = appendUnreportedSpecs(merged, expectedSpecs, parseShards(args['expected-specs']));
 
     fs.mkdirSync(path.dirname(output), {recursive: true});
     fs.writeFileSync(output, JSON.stringify(merged));
@@ -287,6 +326,7 @@ module.exports = {
     writeMergedJestResultsForTsio,
     appendUnreportedSpecs,
     parseExpectedSpecs,
+    parseShards,
     toTsioDetoxSuite,
     relativizeDetoxPath,
     resolveRepoRoots,
