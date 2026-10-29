@@ -85,7 +85,7 @@ object CallsBridge {
     private fun flushBuffered() {
         flushPosted.set(false)
         val ctx = reactContext ?: return
-        if (!ctx.hasActiveReactInstance()) return
+        if (!jsReady.get() || !ctx.hasActiveReactInstance()) return
 
         // Keep events queued when the runtime disappears between the flush
         // being posted and executed. Clearing first would lose the only

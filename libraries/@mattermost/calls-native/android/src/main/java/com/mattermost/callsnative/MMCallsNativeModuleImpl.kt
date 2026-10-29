@@ -156,7 +156,15 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
 
         // The service must be running before addCall so Android sees it before
         // the first setActive() requests microphone access.
-        MMCallsForegroundService.start(context, uuid, displayName)
+        try {
+            MMCallsForegroundService.start(context, uuid, displayName)
+        } catch (e: Exception) {
+            handle.endReason = CallRegistry.Reason.Failed
+            handle.ended = true
+            CallRegistry.remove(uuid)
+            promise?.reject(E_TELECOM_UNAVAILABLE, "Unable to start call service", e)
+            return
+        }
 
         handle.job = scope.launch(CoroutineName("Call-$uuid")) {
             var terminalReason: CallRegistry.Reason? = null

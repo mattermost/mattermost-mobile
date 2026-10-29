@@ -57,10 +57,20 @@ class MMCallsForegroundService : Service() {
             startServiceWith(context, ACTION_RING, uuid, callerName)
 
         fun refresh(context: Context, uuid: String) =
-            startServiceWith(context, ACTION_REFRESH, uuid, null)
+            startServiceSafely(context, ACTION_REFRESH, uuid)
 
         fun stop(context: Context, uuid: String) =
-            startServiceWith(context, ACTION_STOP, uuid, null)
+            startServiceSafely(context, ACTION_STOP, uuid)
+
+        private fun startServiceSafely(context: Context, action: String, uuid: String) {
+            try {
+                startServiceWith(context, action, uuid, null)
+            } catch (e: Exception) {
+                // Teardown and metadata refreshes must not abort call cleanup
+                // if the app no longer has background service-start access.
+                TurboLogger.w(TAG, "$action failed for $uuid: ${e.message}")
+            }
+        }
 
         private fun startServiceWith(context: Context, action: String, uuid: String, name: String?) {
             val intent = Intent(context, MMCallsForegroundService::class.java).apply {
