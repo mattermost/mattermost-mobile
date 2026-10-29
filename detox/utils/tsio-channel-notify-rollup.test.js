@@ -180,7 +180,23 @@ describe('tsio-channel-notify-rollup', () => {
                 from: 'bbbb',
                 to: 'cccc',
                 prs: [{number: 10266, title: '[MM-71089] Log websocket client creation errors'}],
+                partial: false,
             });
+        });
+
+        it('finds a previous run of the same commit, and then no change was merged', async () => {
+            const again = [{commit: 'cccc', branch: 'main', created_at: '2026-10-28T23:10:00Z'}, ...reports];
+            const fetchImpl = async (url) => {
+                assert.ok(url.startsWith(BASE_URL), 'no compare for the same commit');
+                return {ok: true, json: async () => ({reports: again})};
+            };
+            assert.deepEqual(await findChangesSinceLastRun({baseUrl: BASE_URL, identity, fetchImpl}), {from: 'cccc', to: 'cccc', prs: []});
+        });
+
+        it('says when GitHub lists only some of the commits merged', async () => {
+            const compare = {ok: true, json: async () => ({total_commits: 300, commits: [{commit: {message: 'Fix login (#10300)'}}]})};
+            const changes = await findChangesSinceLastRun({baseUrl: BASE_URL, identity, fetchImpl: fetchFor(compare)});
+            assert.equal(changes.partial, true);
         });
 
         it('is unknown when GitHub cannot compare the two commits', async () => {

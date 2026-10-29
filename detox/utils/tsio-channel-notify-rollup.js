@@ -95,7 +95,7 @@ function loadTriageFindings(dir, warn = console.warn) {
  * @param {{repository: string, name: string, branch: string, commit_sha: string}} params.identity - one run's identity
  * @param {string} [params.token] - GitHub token
  * @param {Function} [params.fetchImpl]
- * @returns {Promise<{from: string, to: string, prs: Array<{number: number, title: string}>} | null>}
+ * @returns {Promise<{from: string, to: string, prs: Array<{number: number, title: string}>, partial?: boolean} | null>}
  */
 async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fetch}) {
     const query = new URLSearchParams({repository: identity.repository, name: identity.name, limit: '20'});
@@ -103,13 +103,19 @@ async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fe
     if (!res.ok) {
         return null;
     }
-    const reports = ((await res.json())?.reports || []).filter((r) => r.branch === identity.branch && r.commit && r.created_at);
+    const reports = ((await res.json())?.reports || []).
+        filter((r) => r.branch === identity.branch && r.commit && r.created_at).
+        sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+    // This run's report is the newest of its commit; the previous run is the one before it, even on the same
+    // commit (a second dispatch of the same version), in which case nothing was merged in between.
     const current = reports.find((r) => r.commit === identity.commit_sha);
-    const earlier = reports.
-        filter((r) => r.commit !== identity.commit_sha && (!current || r.created_at < current.created_at)).
-        sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const earlier = reports.find((r) => r !== current && (!current || r.created_at < current.created_at));
     if (!earlier) {
         return null;
+    }
+    if (earlier.commit === identity.commit_sha) {
+        return {from: earlier.commit, to: identity.commit_sha, prs: []};
     }
     const compare = await fetchImpl(`https://api.github.com/repos/${identity.repository}/compare/${earlier.commit}...${identity.commit_sha}`, {
         headers: {Accept: 'application/vnd.github+json', ...(token ? {Authorization: `Bearer ${token}`} : {})},
@@ -118,15 +124,19 @@ async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fe
     if (!compare.ok) {
         return null;
     }
+    const body = await compare.json();
+    const commits = body?.commits || [];
     const prs = [];
-    for (const commit of (await compare.json())?.commits || []) {
+    for (const commit of commits) {
         const subject = (commit.commit?.message || '').split('\n')[0];
         const number = (/\(#(\d+)\)\s*$/).exec(subject)?.[1];
         if (number) {
             prs.push({number: Number(number), title: subject.replace(/\s*\(#\d+\)\s*$/, '')});
         }
     }
-    return {from: earlier.commit, to: identity.commit_sha, prs};
+
+    // GitHub lists at most 250 commits of a comparison: past that, the PRs are only some of those merged.
+    return {from: earlier.commit, to: identity.commit_sha, prs, partial: (body?.total_commits || 0) > commits.length};
 }
 
 function mergeDetails(details) {

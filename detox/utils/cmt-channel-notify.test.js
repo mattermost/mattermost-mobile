@@ -578,6 +578,8 @@ describe('cmt-channel-notify', () => {
             assert.deepEqual(verdictOf({class: 'OWNED_BY_PR', label: 'caused by PR'}, false), {key: 'product', reason: 'caused by this change'});
             assert.equal(verdictOf({class: 'OWNED_BY_PR', label: 'caused by PR'}, true).key, 'new');
             assert.deepEqual(verdictOf({class: 'INSUFFICIENT_DATA', label: 'needs investigation'}, true), {key: 'look', reason: 'not enough history to tell'});
+            assert.equal(verdictOf({class: 'REGRESSION', label: 'flaky'}, true).key, 'flaky', 'on main, triage calling it flaky wins over new');
+            assert.equal(verdictOf({class: 'REGRESSION', label: 'test bug'}, true).key, 'test', 'and so does a problem with the test');
         });
 
         it('names the change merged since the last main run for new failures, and counts retried passes as flaky', () => {
@@ -593,6 +595,10 @@ describe('cmt-channel-notify', () => {
             const legs = [{platform: 'ios', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed: 2, passed: 5}];
             const text = formatTriageVerdict({triage, onMain: true, changes: null, legs}).join('\n');
             assert.match(text, /^_Most likely broken by a change merged since the last main run\._$/m);
+            const many = formatTriageVerdict({triage, onMain: true, changes: {...changes, partial: true}}).join('\n');
+            assert.match(many, /one of the many changes merged since the last main run \(.*too many for GitHub to list them all\), among them: \[#10266\]/);
+            const same = formatTriageVerdict({triage, onMain: true, changes: {from: 'cccc000', to: 'cccc000', prs: []}}).join('\n');
+            assert.match(same, /^_No change was merged since the last main run \(same commit `cccc000`\), so no new change explains these\._$/m);
             assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 maestro-ios — the triage job left no verdict; look at the run$/m);
         });
 

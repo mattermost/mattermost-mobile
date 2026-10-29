@@ -403,7 +403,8 @@ const MAX_PER_VERDICT = 5;
 
 /**
  * Where one triage finding belongs. On main there is no PR: a test that passed every earlier main run and fails
- * now broke with a change since the last main run, so it is "new" rather than "needs a look".
+ * now broke with a change since the last main run, so it is "new" rather than "needs a look" — unless triage
+ * called it flaky or a problem with the test, which no merged change explains.
  *
  * @param {{class?: string, label?: string}} row - findings-file row
  * @param {boolean} onMain
@@ -418,9 +419,6 @@ function verdictOf(row, onMain) {
     if (label === 'caused by PR') {
         return {key: onMain ? 'new' : 'product', reason: onMain ? 'this change edited the test' : 'caused by this change'};
     }
-    if (onMain && cls === 'REGRESSION') {
-        return {key: 'new', reason: ''};
-    }
     if (cls === 'BROKEN_ON_TRUNK' || label === 'broken on main') {
         return {key: 'still', reason: ''};
     }
@@ -432,6 +430,9 @@ function verdictOf(row, onMain) {
     }
     if (TEST_PROBLEM_LABELS.has(label)) {
         return {key: 'test', reason: 'the test itself is wrong, not the app'};
+    }
+    if (onMain && cls === 'REGRESSION') {
+        return {key: 'new', reason: ''};
     }
     if (cls === 'INSUFFICIENT_DATA') {
         return {key: 'look', reason: 'not enough history to tell'};
@@ -460,7 +461,7 @@ function formatMassFailures(legs) {
 /**
  * The changes merged since the last main run, the likely cause of a test that is new on main.
  *
- * @param {{from: string, to: string, prs: Array<{number: number, title: string}>, url?: string} | null} changes
+ * @param {{from: string, to: string, prs: Array<{number: number, title: string}>, partial?: boolean} | null} changes
  * @param {string} repository
  * @returns {string}
  */
@@ -469,10 +470,16 @@ function formatChanges(changes, repository) {
         return '_Most likely broken by a change merged since the last main run._';
     }
     const range = `\`${changes.from.slice(0, 7)}\` → \`${changes.to.slice(0, 7)}\``;
+    if (changes.from === changes.to) {
+        return `_No change was merged since the last main run (same commit \`${changes.to.slice(0, 7)}\`), so no new change explains these._`;
+    }
     if (!changes.prs.length) {
         return `_Most likely broken by a change merged since the last main run (${range})._`;
     }
     const shown = changes.prs.slice(0, 5).map((pr) => `[#${pr.number}](https://github.com/${repository}/pull/${pr.number}) ${pr.title}`);
+    if (changes.partial) {
+        return `Most likely broken by one of the many changes merged since the last main run (${range}; too many for GitHub to list them all), among them: ${shown.join(' · ')}`;
+    }
     const more = changes.prs.length > 5 ? `, and ${changes.prs.length - 5} more` : '';
     return `Most likely broken by ${changes.prs.length === 1 ? 'the one change' : `one of the ${changes.prs.length} changes`} merged since the last main run (${range}): ${shown.join(' · ')}${more}`;
 }
