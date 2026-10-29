@@ -112,6 +112,7 @@ async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fe
         (!identity.gh_run_attempt || !(r.gh_run_attempt ?? r.run_attempt) ||
             String(r.gh_run_attempt ?? r.run_attempt) === String(identity.gh_run_attempt))) :
         reports.find((r) => r.commit === identity.commit_sha);
+
     // If this run has not reported yet, the latest report for this commit is the previous run.
     const earlier = current ?
         reports.find((r) => r !== current && r.created_at < current.created_at) :
