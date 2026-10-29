@@ -1,5 +1,5 @@
 ---
-name: phase4-encma-android-build
+name: phase5-encma-android-build
 
 on:
   push:
@@ -28,9 +28,11 @@ jobs:
       - name: Prepare Node dependencies
         uses: ./.github/actions/prepare-node-deps
 
-      - name: Run Phase 4 focused JavaScript tests
+      - name: Run ENCMA focused JavaScript tests
         run: |
           NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand \
+            app/components/encma_auth_header/index.test.tsx \
+            app/screens/server/header.test.tsx \
             app/client/rest/channels.test.ts \
             app/actions/remote/channel.test.ts \
             app/queries/servers/role.test.ts \
@@ -119,7 +121,7 @@ jobs:
       - name: Upload installable arm64 APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: phase4-encma-wireguard-arm64-release-vpn-mattermost-integration-fix
+          name: phase5-encma-wireguard-arm64-release-auth-ui
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30

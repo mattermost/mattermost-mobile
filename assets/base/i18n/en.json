@@ -876,6 +876,7 @@
   "mobile.edit_post.error": "There was a problem editing this message. Please try again.",
   "mobile.edit_post.save": "Save",
   "mobile.edit_post.title": "Editing Message",
+  "mobile.encma.auth_tagline": "Your team, connected.",
   "mobile.ephemeralMode.dataErased.action": "Reconnect",
   "mobile.ephemeralMode.dataErased.body": "Your organization's security policy cleared cached data for the server <b>{displayName}</b> after an extended time offline. Reconnect to restore your data.",
   "mobile.ephemeralMode.dataErased.error": "Couldn't reach the server. Check your connection and try again.",

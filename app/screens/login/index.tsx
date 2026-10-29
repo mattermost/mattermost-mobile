@@ -7,6 +7,7 @@ import {Text, useWindowDimensions, View, type LayoutChangeEvent} from 'react-nat
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
 
+import EncmaAuthHeader from '@components/encma_auth_header';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -208,6 +209,7 @@ const LoginOptions = ({
                         onLayout={onLayout}
                         style={styles.centered}
                     >
+                        <EncmaAuthHeader theme={theme}/>
                         {title}
                         {description}
                         {hasLoginForm &&

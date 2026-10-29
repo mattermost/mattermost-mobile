@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import EncmaAuthHeader from '@components/encma_auth_header';
 import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -65,6 +66,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
 
     return (
         <View style={styles.textContainer}>
+            <EncmaAuthHeader theme={theme}/>
             {title}
             <FormattedText
                 defaultMessage="A server is your team's communication hub accessed using a unique URL"
