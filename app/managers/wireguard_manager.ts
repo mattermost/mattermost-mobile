@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NativeEventEmitter, NativeModules, Platform} from 'react-native';
+import {DeviceEventEmitter, NativeEventEmitter, NativeModules, Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import {WIREGUARD_KEYCHAIN_ACCOUNT, WIREGUARD_KEYCHAIN_SERVICE} from '@constants/wireguard';
@@ -69,12 +69,23 @@ export async function readWireGuardConfig(uri: string): Promise<string> {
     return getNativeModule().readConfigFile(uri);
 }
 
+export function publishWireGuardState(state: WireGuardState): void {
+    // The native promise/read is the source of truth for this verified state.
+    // Re-publish it on the same JS event channel so a dropped native event or a
+    // queued state read cannot leave the root gate thinking the tunnel is down.
+    DeviceEventEmitter.emit(STATE_EVENT, state);
+}
+
 export async function connectWireGuard(config: string): Promise<WireGuardState> {
-    return getNativeModule().connect(config);
+    const state = await getNativeModule().connect(config);
+    publishWireGuardState(state);
+    return state;
 }
 
 export async function disconnectWireGuard(): Promise<WireGuardState> {
-    return getNativeModule().disconnect();
+    const state = await getNativeModule().disconnect();
+    publishWireGuardState(state);
+    return state;
 }
 
 export function setWireGuardSecureScreen(enabled: boolean): void {

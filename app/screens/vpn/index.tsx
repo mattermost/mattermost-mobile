@@ -20,6 +20,7 @@ import {
     disconnectWireGuard,
     getWireGuardState,
     loadWireGuardConfig,
+    publishWireGuardState,
     readWireGuardConfig,
     saveWireGuardConfig,
     setWireGuardSecureScreen,
@@ -208,6 +209,7 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
                 }
 
                 if (currentState.status === WireGuardStatus.Connected) {
+                    publishWireGuardState(currentState);
                     if (!management) {
                         await continueToApp();
                     }

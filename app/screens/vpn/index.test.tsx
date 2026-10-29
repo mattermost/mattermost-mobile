@@ -14,6 +14,7 @@ import {
     disconnectWireGuard,
     getWireGuardState,
     loadWireGuardConfig,
+    publishWireGuardState,
     readWireGuardConfig,
     saveWireGuardConfig,
     setWireGuardSecureScreen,
@@ -47,6 +48,7 @@ jest.mock('@managers/wireguard_manager', () => ({
     disconnectWireGuard: jest.fn(),
     getWireGuardState: jest.fn(),
     loadWireGuardConfig: jest.fn(),
+    publishWireGuardState: jest.fn(),
     readWireGuardConfig: jest.fn(),
     saveWireGuardConfig: jest.fn(),
     setWireGuardSecureScreen: jest.fn(),
@@ -142,6 +144,7 @@ describe('VpnScreen', () => {
             params: {},
         }));
         expect(connectWireGuard).not.toHaveBeenCalled();
+        expect(publishWireGuardState).toHaveBeenCalledWith(connectedState);
         expect(router.replace).not.toHaveBeenCalledWith('/');
     });
 
