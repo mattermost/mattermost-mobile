@@ -1,5 +1,5 @@
 ---
-name: phase5-encma-android-build
+name: phase6-encma-android-build
 
 on:
   push:
@@ -61,6 +61,11 @@ jobs:
             app/init/managed_app.test.ts \
             app/managers/security_manager/index.test.ts \
             app/init/calls_native.test.ts \
+            app/init/headless_boot.test.ts \
+            app/init/push_notifications.test.ts \
+            app/products/calls/native_call.test.ts \
+            app/products/calls/state/actions.test.ts \
+            app/actions/remote/session.test.ts \
             app/client/rest/channels.test.ts \
             app/actions/remote/channel.test.ts \
             app/queries/servers/role.test.ts \

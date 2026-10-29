@@ -56,6 +56,8 @@ Direct needs no new Mattermost notification endpoint. The Mattermost server must
 
 Server push still requires the Mattermost administrator to configure push notifications and a push proxy with the appropriate Android/FCM credentials. The tracked `google-services.json` compatibility entry alone does not register a Firebase app or prove push delivery; see [encma-android.md](./encma-android.md).
 
+Native Android incoming calls use a separate signed `voip=true` data-push contract within Server push mode. They additionally require compatible Mattermost server/Calls and push-proxy deployments; mobile CI alone does not establish live delivery. See [encma-phase6.md](./encma-phase6.md) for the backend contract and physical-device checklist. Direct and Off do not attach the VoIP token for new logins and retain native suppression for older FCM-registered sessions.
+
 ## Verification
 
 Focused JavaScript coverage is in:
