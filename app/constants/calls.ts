@@ -58,6 +58,8 @@ const JOB_TYPE_RECORDING = 'recording';
 const JOB_TYPE_TRANSCRIBING = 'transcribing';
 const JOB_TYPE_CAPTIONING = 'captioning';
 
+const ALL_NATIVE_CALLS_ENDED_EVENT = 'all-native-calls-ended';
+
 export default {
     RefreshConfigMillis,
     RequiredServer,
@@ -75,4 +77,5 @@ export default {
     RING_LENGTH,
     RINGBACK_TONE_TIMEOUT,
     RINGTONE_DEFAULT,
+    ALL_NATIVE_CALLS_ENDED_EVENT,
 };

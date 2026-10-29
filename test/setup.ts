@@ -155,6 +155,7 @@ jest.mock('@mattermost/calls-native', () => ({
         getAudioRoute: jest.fn(() => Promise.resolve({selectedAudioDevice: 'SPEAKER_PHONE', availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE']})),
         startRingtone: jest.fn(() => Promise.resolve()),
         stopRingtone: jest.fn(() => Promise.resolve()),
+        setCallListenersReady: jest.fn(),
         onVoIPTokenUpdated: jest.fn(() => ({remove: jest.fn()})),
         onIncomingCall: jest.fn(() => ({remove: jest.fn()})),
         onCallAnswered: jest.fn(() => ({remove: jest.fn()})),

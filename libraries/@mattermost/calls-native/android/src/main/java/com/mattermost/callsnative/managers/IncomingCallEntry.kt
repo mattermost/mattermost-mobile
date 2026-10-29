@@ -69,9 +69,21 @@ object IncomingCallEntry {
         handle.channelId = params.channelId
         handle.serverUrl = params.serverUrl
 
-        // Emitted up-front so the CallsBridge buffer captures it for JS when
-        // RN finishes booting. JS uses this to populate the native_call
-        // mapping so WS events can correlate.
+        // Start the visible ring before publishing the call to JS. If Android
+        // rejects the service start, the host can still use its ordinary
+        // notification fallback without leaving a phantom buffered call.
+        try {
+            MMCallsForegroundService.ring(context, uuid, displayName)
+        } catch (e: Exception) {
+            TurboLogger.e(TAG, "unable to start incoming-call service: ${e.message}")
+            handle.endReason = CallRegistry.Reason.Failed
+            handle.ended = true
+            CallRegistry.remove(uuid)
+            return null
+        }
+
+        // Emitted before RN boots so the CallsBridge buffer captures it. JS
+        // uses this to populate the native_call mapping for WS correlation.
         CallsBridge.send(
             CallsBridge.Event.IncomingCall,
             mapOf(
@@ -84,8 +96,6 @@ object IncomingCallEntry {
                 "callerName" to displayName,
             ),
         )
-
-        MMCallsForegroundService.ring(context, uuid, displayName)
 
         // The headless task runs `initialize()` so WS subscriptions
         // attach before the user reacts.

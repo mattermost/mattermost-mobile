@@ -20,17 +20,72 @@ import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.core.net.toUri
+import androidx.core.telecom.CallAttributesCompat
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.mattermost.callsnative.managers.CallRegistry
+import com.mattermost.callsnative.managers.CallsBridge
+import com.mattermost.callsnative.managers.PhoneAccountRegistrar
+import com.mattermost.callsnative.services.MMCallsForegroundService
+import com.mattermost.callsnative.utils.HostAppIcons
+import com.mattermost.callsnative.utils.TurboLogger
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
+import java.util.UUID
 
 class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
     companion object {
         const val NAME = "MMCallsNative"
         private const val EVENT_AUDIO_ROUTE_CHANGED = "AudioRouteChanged"
+        private const val TAG = "MMCalls/MMCallsNativeModuleImpl"
+        private const val E_TELECOM_UNAVAILABLE = "telecom_unavailable"
+        private const val E_UNKNOWN_CALL = "unknown_call"
+    }
+
+    // Telecom calls belong to the process, not MainActivity. In particular,
+    // destroying the React host while CallActivity is visible must not hang
+    // up an active call or remove its foreground service.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineName("MMCalls"))
+
+    init {
+        CallsBridge.attachReactContext(context)
+        context.addLifecycleEventListener(object : LifecycleEventListener {
+            override fun onHostResume() {}
+            override fun onHostPause() {}
+            override fun onHostDestroy() {
+                CallsBridge.detachReactContext(context)
+            }
+        })
+    }
+
+    private var jsListenerCount = 0
+
+    @Synchronized
+    fun addListener() {
+        jsListenerCount += 1
+    }
+
+    @Synchronized
+    fun removeListeners(count: Int) {
+        jsListenerCount = (jsListenerCount - count).coerceAtLeast(0)
+        if (jsListenerCount == 0) {
+            CallsBridge.markJSListenersGone()
+        }
+    }
+
+    fun setCallListenersReady() {
+        CallsBridge.markJSListenersReady()
     }
 
     private var audioManager: AudioManager? = null
@@ -58,43 +113,168 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
     private var btActive = false
 
     // -------------------------------------------------------------------------
-    // Call UI stubs — iOS-only (Telecom/ConnectionService not yet implemented)
+    // Self-managed Telecom call UI and its foreground service
     // -------------------------------------------------------------------------
 
-    fun reportOutgoingCall(promise: Promise?) {
+    fun reportOutgoingCall(params: ReadableMap?, promise: Promise?) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            promise?.reject(E_TELECOM_UNAVAILABLE, "androidx.core.telecom requires API 26+")
+            return
+        }
+        if (!PhoneAccountRegistrar.isUsable()) {
+            promise?.reject(E_TELECOM_UNAVAILABLE, "Telecom not registered")
+            return
+        }
+        val callsManager = PhoneAccountRegistrar.getCallsManager()
+        if (callsManager == null) {
+            promise?.reject(E_TELECOM_UNAVAILABLE, "CallsManager unavailable")
+            return
+        }
+        val channelId = params?.getString("channelId").orEmpty()
+        if (channelId.isEmpty()) {
+            promise?.reject(E_TELECOM_UNAVAILABLE, "channelId required")
+            return
+        }
+        val calleeName = params?.getString("calleeName").orEmpty()
+        val uuid = UUID.randomUUID().toString()
+
+        val handle = CallRegistry.create(uuid)
+        val displayName = calleeName.ifBlank {
+            context.getString(R.string.mobile_android_calls_incoming_call_placeholder)
+                .replace("{applicationName}", HostAppIcons.appLabel(context))
+        }
+        handle.displayName = displayName
+        handle.channelId = channelId
+        val attrs = CallAttributesCompat(
+            displayName = displayName,
+            address = "mattermost-calls:$channelId".toUri(),
+            direction = CallAttributesCompat.DIRECTION_OUTGOING,
+            callType = CallAttributesCompat.CALL_TYPE_AUDIO_CALL,
+            callCapabilities = CallAttributesCompat.SUPPORTS_SET_INACTIVE or
+                CallAttributesCompat.SUPPORTS_STREAM,
+        )
+
+        // The service must be running before addCall so Android sees it before
+        // the first setActive() requests microphone access.
+        MMCallsForegroundService.start(context, uuid, displayName)
+
+        handle.job = scope.launch(CoroutineName("Call-$uuid")) {
+            var terminalReason: CallRegistry.Reason? = null
+            try {
+                callsManager.addCall(
+                    attrs,
+                    onAnswer = { /* outbound — not invoked */ },
+                    onDisconnect = { handle.disconnectSignal.trySend(CallRegistry.Reason.LocalHangup) },
+                    onSetActive = { handle.setActiveSignal.trySend(Unit) },
+                    // We don't support hold; treat it as an end request.
+                    onSetInactive = { handle.disconnectSignal.trySend(CallRegistry.Reason.LocalHangup) },
+                ) {
+                    val callControlScope = this
+                    callControlScope.launch {
+                        while (true) {
+                            val terminal = select {
+                                handle.setActiveSignal.onReceive {
+                                    callControlScope.setActive()
+                                    null
+                                }
+                                handle.disconnectSignal.onReceive { reason -> reason }
+                            }
+                            if (terminal != null) {
+                                terminalReason = terminal
+                                callControlScope.disconnect(CallRegistry.disconnectCauseFor(terminal))
+                                break
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                TurboLogger.e(TAG, "outgoing call coroutine failed: ${e.message}")
+                terminalReason = CallRegistry.Reason.Failed
+            } finally {
+                MMCallsForegroundService.stop(context, uuid)
+                handle.endReason = terminalReason
+                handle.ended = true
+                CallRegistry.remove(uuid)
+                CallsBridge.send(CallsBridge.Event.CallEnded, mapOf("uuid" to uuid))
+            }
+        }
+
+        val result = WritableNativeMap().apply { putString("uuid", uuid) }
+        promise?.resolve(result)
+    }
+
+    fun reportConnected(uuid: String?, promise: Promise?) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            promise?.reject(E_TELECOM_UNAVAILABLE, "androidx.core.telecom requires API 26+")
+            return
+        }
+        val id = uuid.orEmpty()
+        if (!CallRegistry.setActive(id)) {
+            promise?.reject(E_UNKNOWN_CALL, "No active call")
+            return
+        }
+        CallRegistry.get(id)?.connected = true
         promise?.resolve(null)
     }
 
-    fun reportConnected(promise: Promise?) {
+    fun reportEnded(uuid: String?, reason: String?, promise: Promise?) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            promise?.reject(E_TELECOM_UNAVAILABLE, "androidx.core.telecom requires API 26+")
+            return
+        }
+        val id = uuid.orEmpty()
+        CallRegistry.disconnect(id, reasonOf(reason))
+        // Duplicate teardown is expected when JS, Telecom and the notification
+        // all observe the same end event.
         promise?.resolve(null)
     }
 
-    fun reportEnded(promise: Promise?) {
+    fun setMuted(uuid: String?, muted: Boolean, promise: Promise?) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            promise?.reject(E_TELECOM_UNAVAILABLE, "androidx.core.telecom requires API 26+")
+            return
+        }
+        val id = uuid.orEmpty()
+        val handle = CallRegistry.get(id)
+        if (handle == null) {
+            promise?.reject(E_UNKNOWN_CALL, "No active call")
+            return
+        }
+        if (handle.muted != muted) {
+            handle.muted = muted
+            MMCallsForegroundService.refresh(context, id)
+        }
         promise?.resolve(null)
     }
 
-    fun setMuted(promise: Promise?) {
-        promise?.resolve(null)
+    private fun reasonOf(raw: String?): CallRegistry.Reason = when (raw) {
+        "remoteEnded" -> CallRegistry.Reason.RemoteEnded
+        "failed" -> CallRegistry.Reason.Failed
+        "unanswered" -> CallRegistry.Reason.Unanswered
+        "declined" -> CallRegistry.Reason.Declined
+        "declinedElsewhere" -> CallRegistry.Reason.DeclinedElsewhere
+        "answeredElsewhere" -> CallRegistry.Reason.AnsweredElsewhere
+        else -> CallRegistry.Reason.LocalHangup
     }
 
-    // -------------------------------------------------------------------------
-    // Foreground service
-    // -------------------------------------------------------------------------
-
+    // Preserve the previous microphone-only service as a fallback when Telecom
+    // is unavailable. A registered Telecom call already owns a combined
+    // phoneCall|microphone service, so starting another one would duplicate
+    // notifications and foreground-service state.
     fun foregroundServiceStart(config: ReadableMap?) {
-        if (config == null) return
-        val intent = Intent(context, MMCallsForegroundService::class.java).apply {
-            putExtra(MMCallsForegroundService.EXTRA_CHANNEL_ID, config.getString("channelId"))
-            putExtra(MMCallsForegroundService.EXTRA_CHANNEL_NAME, config.getString("channelName"))
-            putExtra(MMCallsForegroundService.EXTRA_CHANNEL_DESCRIPTION, config.getString("channelDescription"))
-            putExtra(MMCallsForegroundService.EXTRA_TITLE, config.getString("title"))
-            putExtra(MMCallsForegroundService.EXTRA_TEXT, config.getString("text"))
+        if (config == null || CallRegistry.hasActiveCalls()) return
+        val intent = Intent(context, com.mattermost.callsnative.MMCallsForegroundService::class.java).apply {
+            putExtra(com.mattermost.callsnative.MMCallsForegroundService.EXTRA_CHANNEL_ID, config.getString("channelId"))
+            putExtra(com.mattermost.callsnative.MMCallsForegroundService.EXTRA_CHANNEL_NAME, config.getString("channelName"))
+            putExtra(com.mattermost.callsnative.MMCallsForegroundService.EXTRA_CHANNEL_DESCRIPTION, config.getString("channelDescription"))
+            putExtra(com.mattermost.callsnative.MMCallsForegroundService.EXTRA_TITLE, config.getString("title"))
+            putExtra(com.mattermost.callsnative.MMCallsForegroundService.EXTRA_TEXT, config.getString("text"))
         }
         context.startForegroundService(intent)
     }
 
     fun foregroundServiceStop() {
-        context.stopService(Intent(context, MMCallsForegroundService::class.java))
+        context.stopService(Intent(context, com.mattermost.callsnative.MMCallsForegroundService::class.java))
     }
 
     // -------------------------------------------------------------------------

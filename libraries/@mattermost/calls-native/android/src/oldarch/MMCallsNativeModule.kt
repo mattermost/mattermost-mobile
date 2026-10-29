@@ -13,32 +13,37 @@ class MMCallsNativeModule(context: ReactApplicationContext) : ReactContextBaseJa
 
     @ReactMethod
     fun addListener(eventType: String?) {
-        // Keep: Required for RN built in Event Emitter Calls
+        implementation.addListener()
     }
 
     @ReactMethod
     fun removeListeners(count: Double) {
-        // Keep: Required for RN built in Event Emitter Calls
+        implementation.removeListeners(count.toInt())
+    }
+
+    @ReactMethod
+    fun setCallListenersReady() {
+        implementation.setCallListenersReady()
     }
 
     @ReactMethod
     fun reportOutgoingCall(params: ReadableMap?, promise: Promise?) {
-        implementation.reportOutgoingCall(promise)
+        implementation.reportOutgoingCall(params, promise)
     }
 
     @ReactMethod
     fun reportConnected(uuid: String?, promise: Promise?) {
-        implementation.reportConnected(promise)
+        implementation.reportConnected(uuid, promise)
     }
 
     @ReactMethod
     fun reportEnded(uuid: String?, reason: String?, promise: Promise?) {
-        implementation.reportEnded(promise)
+        implementation.reportEnded(uuid, reason, promise)
     }
 
     @ReactMethod
     fun setMuted(uuid: String?, muted: Boolean, promise: Promise?) {
-        implementation.setMuted(promise)
+        implementation.setMuted(uuid, muted, promise)
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)

@@ -6,6 +6,7 @@ import android.os.Looper
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
+import com.mattermost.callsnative.utils.TurboLogger
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -15,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  *    is invoked from the TurboModule's `addListener`.
  */
 object CallsBridge {
+    private const val TAG = "MMCalls/CallsBridge"
+
     enum class Event {
         VoIPTokenUpdated,
         IncomingCall,
@@ -39,11 +42,17 @@ object CallsBridge {
         if (booted.getAndSet(true)) {
             return
         }
-        PhoneAccountRegistrar.register(context)
-        val app = (context as? android.app.Application)
-            ?: (context.applicationContext as? android.app.Application)
-        if (app != null) {
-            CallSurfaceCoordinator.initialize(app)
+        try {
+            PhoneAccountRegistrar.register(context)
+            val app = (context as? android.app.Application)
+                ?: (context.applicationContext as? android.app.Application)
+            if (app != null) {
+                CallSurfaceCoordinator.initialize(app)
+            }
+        } catch (e: Exception) {
+            // Call UI is optional at process bootstrap. An OEM Telecom or
+            // receiver failure must not prevent the rest of the app starting.
+            TurboLogger.e(TAG, "bootstrap failed: ${e.message}")
         }
     }
 

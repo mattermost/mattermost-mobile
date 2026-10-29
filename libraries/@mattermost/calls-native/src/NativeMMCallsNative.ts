@@ -31,8 +31,9 @@ export type OutgoingCallParams = Readonly<{
   calleeName: string;
 }>
 
-// Configuration for the Android foreground-service notification that keeps
-// the microphone alive during a call.
+// Configuration for the legacy Android microphone foreground service. It is
+// used only when self-managed Telecom is unavailable; native Telecom calls
+// own their combined call/microphone service instead.
 export type ForegroundNotificationConfig = Readonly<{
   channelId: string;
   channelName: string;
@@ -83,6 +84,10 @@ export interface Spec extends TurboModule {
     addListener: (eventType: string) => void;
     removeListeners: (count: number) => void;
 
+    // Android buffers native call events until the complete JS handler set is
+    // attached. iOS keeps its existing RCTEventEmitter lifecycle behavior.
+    setCallListenersReady: () => void;
+
     // JS → native: surface a call we initiated in-app into native so the
     // user gets lock-screen / control-center UI when the app backgrounds.
     reportOutgoingCall: (params: OutgoingCallParams) => Promise<CallActionPayload>;
@@ -99,8 +104,8 @@ export interface Spec extends TurboModule {
     // direction arrives via the CallMuted event).
     setMuted: (uuid: string, muted: boolean) => Promise<void>;
 
-    // JS → native: start/stop the Android foreground service that keeps the
-    // microphone alive while the app is backgrounded.
+    // Legacy microphone-service fallback when Telecom is unavailable. These
+    // are no-ops while a native Telecom call owns the foreground service.
     foregroundServiceStart: (config: ForegroundNotificationConfig) => void;
     foregroundServiceStop: () => void;
 

@@ -21,6 +21,7 @@ import com.mattermost.callsnative.ui.CallActivity
 import com.mattermost.callsnative.managers.CallRegistry
 import com.mattermost.callsnative.receivers.DeclineReceiver
 import com.mattermost.callsnative.receivers.HangupReceiver
+import com.mattermost.callsnative.utils.CallPermissions
 import com.mattermost.callsnative.utils.HostAppIcons
 import com.mattermost.callsnative.receivers.MuteReceiver
 import com.mattermost.callsnative.utils.TurboLogger
@@ -184,8 +185,10 @@ class MMCallsForegroundService : Service() {
 
     private fun promoteToForeground(uuid: String, notification: Notification) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val type = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL or
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            var type = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL
+            if (CallPermissions.isMicGranted(this)) {
+                type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            }
             startForeground(notificationIdFor(uuid), notification, type)
         } else {
             startForeground(notificationIdFor(uuid), notification)

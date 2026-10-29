@@ -68,3 +68,9 @@ export function App() {
 
 // Register with the name that iOS AppDelegate expects
 AppRegistry.registerComponent('Mattermost', () => App);
+
+// Register the Android headless task used when a native incoming call wakes
+// a killed process. It is inert until MMCallsBootTaskService starts it.
+if (Platform.OS === 'android') {
+    require('./app/init/headless_boot');
+}

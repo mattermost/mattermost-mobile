@@ -7,7 +7,7 @@ import {AppState, type AppStateStatus, Platform} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
-import {endNativeCall} from '@calls/native_call';
+import {endNativeCall, getNativeCallChannelIdsForServer} from '@calls/native_call';
 import {
     getCallsConfig,
     getCallsState,
@@ -78,9 +78,12 @@ export const setCalls = async (serverUrl: string, myUserId: string, calls: Dicti
     // Reconcile native overlays: any previously-tracked call that's no longer
     // in the authoritative server snapshot has ended (typically because we
     // missed its call_end event while the WS was disconnected). End the
-    // CallKit overlay so the user isn't stuck on a phantom ringing screen.
-    const previousCalls = getCallsState(serverUrl).calls;
-    for (const channelId of Object.keys(previousCalls)) {
+    // native call surface so the user isn't stuck on a phantom ringing screen.
+    const channelsToCheck = new Set<string>([
+        ...Object.keys(getCallsState(serverUrl).calls),
+        ...getNativeCallChannelIdsForServer(serverUrl),
+    ]);
+    for (const channelId of channelsToCheck) {
         if (!calls[channelId]) {
             endNativeCall(serverUrl, channelId, 'remoteEnded');
         }
