@@ -34,6 +34,7 @@ jobs:
             app/components/encma_auth_header/index.test.tsx \
             app/screens/server/header.test.tsx \
             'app/routes/(authenticated)/(home)/_layout.test.tsx' \
+            app/screens/home/tab_bar/encma.test.tsx \
             app/screens/home/channel_list/categories_list/index.test.tsx \
             app/screens/home/channel_list/categories_list/encma.test.tsx \
             app/screens/home/channel_list/categories_list/subheader/search_field/index.test.tsx \

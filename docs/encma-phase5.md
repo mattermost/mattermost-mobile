@@ -19,7 +19,7 @@ Other application IDs retain the original visual styling; the existing Mattermos
 
 ## Home navigation and branding increment
 
-For the ENCMA application ID, visible home navigation now contains only **Channels** and **Account**. Search, Recent Mentions, and Saved Messages no longer occupy bottom destinations. The Threads shortcut is hidden from the channel list and from Find channels results, while Channels, conversation categories, Find channels, conversation opening, and thread/reply functionality remain intact. Other application IDs retain their existing destinations and Threads shortcuts.
+For the ENCMA application ID, visible home navigation now contains only **Channels** and **Account**. Search, Recent Mentions, and Saved Messages no longer occupy bottom destinations. The custom tab bar explicitly filters registered routes as well as the route declarations, because Expo Router can continue supplying routes to the tab bar even when their optional declarations are absent. Active-tab position is calculated from the filtered list. The Threads shortcut is hidden from the channel list and from Find channels results, while Channels, conversation categories, Find channels, conversation opening, and thread/reply functionality remain intact. Other application IDs retain their existing destinations and Threads shortcuts.
 
 The ENCMA branding sweep also covers:
 
@@ -33,7 +33,7 @@ Copyright and open-source attribution remain visible. Server-provided legal text
 
 ## Validation
 
-Initial local validation for the navigation/branding increment completed with **21 focused suites, 219 passing tests, 2 pre-existing skipped tests, and 1 passing snapshot**. The exact expanded CI selection then passed locally with **40 suites, 512 passing tests, 2 pre-existing skipped tests, and 2 passing snapshots**. Full ESLint, TypeScript, and diff whitespace checks also passed. These are focused test selections, not a claim that the repository's entire Jest suite is green.
+Initial local validation for the navigation/branding increment completed with **21 focused suites, 219 passing tests, 2 pre-existing skipped tests, and 1 passing snapshot**. The exact expanded CI selection, including the tab-bar regression with all five routes registered, then passed locally with **41 suites, 513 passing tests, 2 pre-existing skipped tests, and 2 passing snapshots**. Full ESLint, TypeScript, and diff whitespace checks also passed. These are focused test selections, not a claim that the repository's entire Jest suite is green.
 
 The focused CI selection includes the new ENCMA tests and the affected existing suites, using exact test paths so route files containing parentheses cannot be skipped by regular-expression path matching.
 
