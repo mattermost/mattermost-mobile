@@ -395,3 +395,94 @@ describe('handlePlaybookRunUpdatedIncremental', () => {
         expect(spyBatchRecords).not.toHaveBeenCalled();
     });
 });
+
+describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
+    const event = (id: string, eventAt: number): TimelineEvent => ({
+        id,
+        playbook_run_id: playbookRunId,
+        create_at: eventAt,
+        event_at: eventAt,
+        event_type: 'task_state_modified',
+        summary: '',
+        details: JSON.stringify({action: 'skip', item_id: checklistItemId}),
+        post_id: '',
+        subject_user_id: 'user_1',
+        creator_user_id: '',
+    });
+
+    const seedRunWithEvents = async (events: TimelineEvent[]) => {
+        await operator.handlePlaybookRun({
+            prepareRecordsOnly: false,
+            runs: [{...mockPlaybookRun, timeline_events: events}],
+            processChildren: true,
+        });
+    };
+
+    const dispatch = async (update: PlaybookRunUpdate) => {
+        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
+        await handlePlaybookRunUpdatedIncremental(serverUrl, TestHelper.fakeWebsocketMessage({
+            data: {payload: JSON.stringify(update)},
+        }));
+    };
+
+    const storedEventIds = async () => {
+        const storedRun = await getPlaybookRunById(operator.database, playbookRunId);
+        return storedRun!.timelineEvents.map((e) => e.id);
+    };
+
+    it('should preserve previously synced events when an update delivers only a delta', async () => {
+        await seedRunWithEvents([event('a', 1), event('b', 2)]);
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: Date.now(),
+            changed_fields: {timeline_events: [event('c', 3)]},
+        });
+
+        expect(await storedEventIds()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should apply a hard delete, which the server sends without bumping the run update_at', async () => {
+        await seedRunWithEvents([event('a', 1), event('b', 2)]);
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: mockPlaybookRun.update_at,
+            changed_fields: {},
+            timeline_event_deletes: ['a'],
+        });
+
+        expect(await storedEventIds()).toEqual(['b']);
+    });
+
+    it('should keep both events when two updates for the same run interleave', async () => {
+        await seedRunWithEvents([event('a', 1)]);
+
+        await Promise.all([
+            dispatch({
+                id: playbookRunId,
+                playbook_run_updated_at: Date.now(),
+                changed_fields: {timeline_events: [event('b', 2)]},
+            }),
+            dispatch({
+                id: playbookRunId,
+                playbook_run_updated_at: Date.now() + 1,
+                changed_fields: {timeline_events: [event('c', 3)]},
+            }),
+        ]);
+
+        expect(await storedEventIds()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should leave stored events alone when an update does not concern them', async () => {
+        await seedRunWithEvents([event('a', 1), event('b', 2)]);
+
+        await dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: Date.now(),
+            changed_fields: {name: 'Renamed run'},
+        });
+
+        expect(await storedEventIds()).toEqual(['a', 'b']);
+    });
+});

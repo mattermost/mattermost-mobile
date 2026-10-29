@@ -16,6 +16,27 @@ const isValidEvent = (data: unknown) => {
     return true;
 };
 
+// Unlike other changed_fields, timeline_events is a delta: only the events just created. Deleted
+// events arrive as ids in timeline_event_deletes.
+const mergeTimelineEvents = (
+    stored: TimelineEvent[],
+    delta: TimelineEvent[] | null | undefined,
+    hardDeletes: string[] | undefined,
+): TimelineEvent[] => {
+    const byId = new Map(stored.map((event) => [event.id, event]));
+    for (const event of Array.isArray(delta) ? delta : []) {
+        byId.set(event.id, event);
+    }
+
+    for (const id of Array.isArray(hardDeletes) ? hardDeletes : []) {
+        byId.delete(id);
+    }
+
+    return Array.from(byId.values()).
+        filter((event) => !event.delete_at).
+        sort((a, b) => a.event_at - b.event_at);
+};
+
 export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocketMessage) => {
     if (!msg.data.payload) {
         return;
@@ -57,15 +78,40 @@ export const handlePlaybookRunUpdated = async (serverUrl: string, msg: WebSocket
     await handlePlaybookRuns(serverUrl, [playbookRun], false, true);
 };
 
+const runUpdateQueues = new Map<string, Promise<void>>();
+
+// Websocket handlers are not awaited, so two updates for one run can overlap. Merging the timeline is
+// a read-modify-write, and overlapping merges would drop one update's events, so they run in order.
+const serializePerRun = <T>(runId: string, apply: () => Promise<T>): Promise<T> => {
+    const previous = runUpdateQueues.get(runId) ?? Promise.resolve();
+
+    // One failed update must not block the later ones.
+    const applied = previous.then(apply, apply);
+    const settled = applied.then(() => undefined, () => undefined);
+    runUpdateQueues.set(runId, settled);
+
+    settled.then(() => {
+        if (runUpdateQueues.get(runId) === settled) {
+            runUpdateQueues.delete(runId);
+        }
+    });
+
+    return applied;
+};
+
 export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg: WebSocketMessage) => {
     if (!msg.data.payload) {
         return;
     }
     const data = safeParseJSON(msg.data.payload) as PlaybookRunUpdate;
-    if (!data || !data.changed_fields || typeof data.changed_fields !== 'object') {
+    if (!data || !data.id || !data.changed_fields || typeof data.changed_fields !== 'object') {
         return;
     }
 
+    await serializePerRun(data.id, () => applyRunUpdatedIncremental(serverUrl, data));
+};
+
+const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUpdate) => {
     const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
     const run = await getPlaybookRunById(database, data.id);
@@ -82,11 +128,19 @@ export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg
 
     const models: Model[] = [];
 
+    const touchesTimeline = 'timeline_events' in data.changed_fields || Boolean(data.timeline_event_deletes?.length);
+    const timelineEvents = touchesTimeline ? mergeTimelineEvents(
+        run.timelineEvents,
+        data.changed_fields.timeline_events,
+        data.timeline_event_deletes,
+    ) : undefined;
+
     const hasRunChangedFields = Object.keys(data.changed_fields).filter((key) => key !== 'checklists').length > 0;
-    if (hasRunChangedFields) {
+    if (hasRunChangedFields || touchesTimeline) {
         const runModels = await operator.handlePlaybookRun({
             runs: [{
                 ...data.changed_fields,
+                ...(timelineEvents ? {timeline_events: timelineEvents} : {}),
                 checklists: undefined, // Remove the checklists from the update
                 id: data.id,
                 update_at: data.playbook_run_updated_at,
@@ -96,6 +150,13 @@ export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg
         });
 
         models.push(...runModels);
+
+        // A hard delete leaves the run's update_at unchanged, so the handler skips the run as up to date.
+        if (timelineEvents && !runModels.some((model) => model.id === run.id)) {
+            models.push(run.prepareUpdate((r) => {
+                r.timelineEvents = timelineEvents;
+            }));
+        }
     }
 
     if (data.changed_fields.checklists) {
