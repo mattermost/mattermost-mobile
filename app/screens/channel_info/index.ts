@@ -13,7 +13,7 @@ import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannelAutotranslation, observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
 import {observeChannelBookmarksEnabled} from '@queries/servers/features';
-import {observeCanManageChannelAutotranslations, observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
+import {observeCanManageChannelAutotranslations, observeCanManageChannelMembers, observeCanManageChannelSettings, observeCanPermanentlyDeleteChannel, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
 import {
     observeConfigValue,
     observeCurrentChannelId,
@@ -45,6 +45,7 @@ const observeHasChannelSettingsActions = (
     channel: Observable<ChannelModel | undefined>,
     currentUser: Observable<UserModel | undefined>,
     type: Observable<ChannelType | undefined>,
+    canPermanentlyDelete: Observable<boolean>,
 ) => {
     const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
     const userId = observeCurrentUserId(database);
@@ -210,15 +211,17 @@ const observeHasChannelSettingsActions = (
         canEnableDisableCalls,
         convertGMOptionAvailable,
         canManageChannelAutotranslations,
+        canPermanentlyDelete,
     ]).pipe(
-        switchMap(([manageSettings, convert, archive, unarchive, enableCalls, convertGM, manageAutotranslations]) => {
+        switchMap(([manageSettings, convert, archive, unarchive, enableCalls, convertGM, manageAutotranslations, permanentDelete]) => {
             return of$(
                 manageSettings || // Channel info or Channel autotranslations
                 convert || // Convert to private
                 archive || unarchive || // Archive channel
                 enableCalls || // Enable/Disable calls
                 convertGM || // Convert GM to channel
-                manageAutotranslations, // Channel autotranslations
+                manageAutotranslations || // Channel autotranslations
+                permanentDelete, // Permanent channel deletion
             );
         }),
     );
@@ -241,6 +244,12 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         distinctUntilChanged(),
     );
 
+    const canPermanentlyDelete = currentUser.pipe(
+        combineLatestWith(channelId),
+        switchMap(([u, cId]) => (u ? observeCanPermanentlyDeleteChannel(database, cId, u) : of$(false))),
+        distinctUntilChanged(),
+    );
+
     const isBookmarksEnabled = observeChannelBookmarksEnabled(database);
 
     const canAddBookmarks = channelId.pipe(
@@ -260,10 +269,11 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         isCallsEnabledInChannel,
         canAddBookmarks,
         canManageMembers,
+        canPermanentlyDelete,
         isBookmarksEnabled,
         isCRTEnabled: observeIsCRTEnabled(database),
         isPlaybooksEnabled,
-        hasChannelSettingsActions: observeHasChannelSettingsActions(database, serverUrl, channelId, channel, currentUser, type),
+        hasChannelSettingsActions: observeHasChannelSettingsActions(database, serverUrl, channelId, channel, currentUser, type, canPermanentlyDelete),
         isAutotranslationEnabledForThisChannel,
         channelDisplayName,
     };

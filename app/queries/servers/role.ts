@@ -117,6 +117,27 @@ export function observeCanManageChannelSettings(database: Database, channelId: s
     );
 }
 
+export function observeCanPermanentlyDeleteChannel(database: Database, channelId: string, user: UserModel) {
+    return observeChannel(database, channelId).pipe(
+        switchMap((c) => {
+            if (!c || c.deleteAt !== 0 || isDMorGM(c) || isDefaultChannel(c)) {
+                return of$(false);
+            }
+
+            let permission: string;
+            if (c.type === General.OPEN_CHANNEL) {
+                permission = Permissions.DELETE_PUBLIC_CHANNEL;
+            } else if (c.type === General.PRIVATE_CHANNEL) {
+                permission = Permissions.DELETE_PRIVATE_CHANNEL;
+            } else {
+                return of$(false);
+            }
+            return observePermissionForChannel(database, c, user, permission, true);
+        }),
+        distinctUntilChanged(),
+    );
+}
+
 export function observeCanManageChannelAutotranslations(database: Database, channelId: string, user: UserModel) {
     const featureEnabled = observeConfigBooleanValue(database, 'EnableAutoTranslation');
     const channel = observeChannel(database, channelId);

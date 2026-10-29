@@ -8,7 +8,7 @@ No separate backend URL, API contract, credentials, or custom-server access was 
 
 ### Supported behavior
 
-The **Delete Channel Permanently** Channel Settings action is separate from **Archive Channel**. Archiving and restoring retain their existing behavior.
+For eligible channels, **Delete Channel Permanently** appears directly in Channel Info's destructive section and remains available in Channel Settings. It is separate from **Archive Channel** and **Leave Channel**; archiving and restoring retain their existing behavior. Channel Settings uses a dedicated permanent-delete permission check rather than tying this action to archive/unarchive visibility.
 
 For a non-default public or private channel, the app calls the supported Mattermost endpoint with the current session:
 

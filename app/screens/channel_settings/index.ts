@@ -9,7 +9,7 @@ import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
-import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel} from '@queries/servers/role';
+import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel, observeCanPermanentlyDeleteChannel} from '@queries/servers/role';
 import {
     observeConfigValue,
     observeConfigBooleanValue,
@@ -103,6 +103,11 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         distinctUntilChanged(),
     );
 
+    const canPermanentlyDelete = currentUser.pipe(
+        switchMap((u) => (u ? observeCanPermanentlyDeleteChannel(database, channelId, u) : of$(false))),
+        distinctUntilChanged(),
+    );
+
     // canConvert observable (for Convert to private)
     const canConvert = channel.pipe(
         combineLatestWith(currentUser),
@@ -192,6 +197,7 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         canConvert,
         canEnableDisableCalls,
         canManageSettings,
+        canPermanentlyDelete,
         canUnarchive,
         convertGMOptionAvailable,
         displayName: channel.pipe(switchMap((c) => of$(c?.displayName || ''))),

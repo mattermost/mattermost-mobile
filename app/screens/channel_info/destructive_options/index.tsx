@@ -4,18 +4,30 @@
 import React from 'react';
 
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
+import PermanentDelete from '@screens/channel_settings/permanent_delete';
 
 type Props = {
+    canPermanentlyDelete: boolean;
+    channelDisplayName: string;
     channelId: string;
+    type?: ChannelType;
 }
 
-const DestructiveOptions = ({channelId}: Props) => {
+const DestructiveOptions = ({canPermanentlyDelete, channelDisplayName, channelId, type}: Props) => {
     return (
-        <LeaveChannelLabel
-            channelId={channelId}
-            isOptionItem={true}
-            testID='channel_info.options.leave_channel.option'
-        />
+        <>
+            <PermanentDelete
+                canDelete={canPermanentlyDelete}
+                channelId={channelId}
+                displayName={channelDisplayName}
+                type={type}
+            />
+            <LeaveChannelLabel
+                channelId={channelId}
+                isOptionItem={true}
+                testID='channel_info.options.leave_channel.option'
+            />
+        </>
     );
 };
 

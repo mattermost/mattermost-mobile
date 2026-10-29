@@ -16,6 +16,7 @@ import {
     observePermissionForPost,
     observeCanManageChannelMembers,
     observeCanManageChannelSettings,
+    observeCanPermanentlyDeleteChannel,
     observeCanManageChannelAutotranslations,
     observeCanManageSharedChannel,
 } from './role';
@@ -369,6 +370,58 @@ describe('Role Queries', () => {
 
             const canManage = await firstValueFrom(observeCanManageChannelSettings(database, 'channel1', mockUser));
             expect(canManage).toBe(false);
+        });
+    });
+
+    describe('observeCanPermanentlyDeleteChannel', () => {
+        const mockUser = TestHelper.fakeUserModel({
+            id: 'user1',
+            roles: 'channel_admin',
+        });
+
+        it.each([
+            ['public', General.OPEN_CHANNEL, Permissions.DELETE_PUBLIC_CHANNEL],
+            ['private', General.PRIVATE_CHANNEL, Permissions.DELETE_PRIVATE_CHANNEL],
+        ])('should allow permanent deletion of a %s channel with the applicable permission', async (_label, type, permission) => {
+            await operator.handleChannel({
+                channels: [TestHelper.fakeChannel({
+                    id: 'channel1',
+                    type,
+                    delete_at: 0,
+                })],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleRole({
+                roles: [{
+                    id: 'channel_admin',
+                    name: 'channel_admin',
+                    permissions: [permission],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const canDelete = await firstValueFrom(observeCanPermanentlyDeleteChannel(database, 'channel1', mockUser));
+            expect(canDelete).toBe(true);
+        });
+
+        it.each([
+            ['direct message', General.DM_CHANNEL, 'channel', 0],
+            ['group message', General.GM_CHANNEL, 'channel', 0],
+            ['default', General.OPEN_CHANNEL, General.DEFAULT_CHANNEL, 0],
+            ['archived', General.OPEN_CHANNEL, 'channel', 123],
+        ])('should reject permanent deletion of the %s channel', async (_label, type, name, deleteAt) => {
+            await operator.handleChannel({
+                channels: [TestHelper.fakeChannel({
+                    id: 'channel1',
+                    name,
+                    type,
+                    delete_at: deleteAt,
+                })],
+                prepareRecordsOnly: false,
+            });
+
+            const canDelete = await firstValueFrom(observeCanPermanentlyDeleteChannel(database, 'channel1', mockUser));
+            expect(canDelete).toBe(false);
         });
     });
 

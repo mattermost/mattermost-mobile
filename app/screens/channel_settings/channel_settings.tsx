@@ -24,6 +24,7 @@ type Props = {
     canConvert: boolean;
     canEnableDisableCalls: boolean;
     canManageSettings: boolean;
+    canPermanentlyDelete: boolean;
     canUnarchive: boolean;
     channelId: string;
     convertGMOptionAvailable: boolean;
@@ -56,6 +57,7 @@ const ChannelSettings = ({
     canConvert,
     canEnableDisableCalls,
     canManageSettings,
+    canPermanentlyDelete,
     canUnarchive,
     channelId,
     convertGMOptionAvailable,
@@ -111,23 +113,21 @@ const ChannelSettings = ({
                     channelDisplayName={displayName}
                 />
                 }
-                {(canArchive || canUnarchive) &&
-                <>
-                    <View style={styles.separator}/>
-                    <Archive
-                        canArchive={canArchive}
-                        canUnarchive={canUnarchive}
-                        channelId={channelId}
-                        type={type}
-                    />
-                    <PermanentDelete
-                        canDelete={canArchive}
-                        channelId={channelId}
-                        displayName={displayName}
-                        type={type}
-                    />
-                </>
+                {(canArchive || canUnarchive || canPermanentlyDelete) &&
+                <View style={styles.separator}/>
                 }
+                <Archive
+                    canArchive={canArchive}
+                    canUnarchive={canUnarchive}
+                    channelId={channelId}
+                    type={type}
+                />
+                <PermanentDelete
+                    canDelete={canPermanentlyDelete}
+                    channelId={channelId}
+                    displayName={displayName}
+                    type={type}
+                />
             </ScrollView>
         </SafeAreaView>
     );

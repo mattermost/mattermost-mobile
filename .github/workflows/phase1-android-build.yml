@@ -33,12 +33,14 @@ jobs:
           NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand \
             app/client/rest/channels.test.ts \
             app/actions/remote/channel.test.ts \
+            app/queries/servers/role.test.ts \
             app/init/credentials.test.ts \
             app/init/launch_with_fallback.test.ts \
             app/routes/index.test.tsx \
             app/screens/vpn/index.test.tsx \
             app/managers/wireguard_manager.test.ts \
             app/screens/channel_settings/permanent_delete/permanent_delete.test.tsx \
+            app/screens/channel_info/destructive_options/index.test.tsx \
             app/components/post_draft/quick_actions/quick_actions.test.tsx \
             app/components/post_draft/quick_actions/index.test.tsx \
             app/components/post_draft/quick_actions/voice_record_action/voice_record_action.test.tsx \

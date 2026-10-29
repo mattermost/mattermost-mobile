@@ -30,6 +30,7 @@ type Props = {
     isPlaybooksEnabled: boolean;
     groupCallsAllowed: boolean;
     canManageMembers: boolean;
+    canPermanentlyDelete: boolean;
     isCRTEnabled: boolean;
     type?: ChannelType;
     hasChannelSettingsActions: boolean;
@@ -57,6 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelInfo = ({
     canAddBookmarks,
     canManageMembers,
+    canPermanentlyDelete,
     channelId,
     isBookmarksEnabled,
     isCallsEnabledInChannel,
@@ -141,7 +143,10 @@ const ChannelInfo = ({
                         dismissChannelInfo={onPressed}
                     />
                     <DestructiveOptions
+                        canPermanentlyDelete={canPermanentlyDelete}
+                        channelDisplayName={channelDisplayName}
                         channelId={channelId}
+                        type={type}
                     />
                 </ScrollView>
             </SafeAreaView>
