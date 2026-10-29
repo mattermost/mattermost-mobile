@@ -27,6 +27,30 @@ const {
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
 
+const isTimelineEvent = (value: unknown): value is TimelineEvent => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const event = value as Partial<TimelineEvent>;
+    return typeof event.event_type === 'string' &&
+        typeof event.event_at === 'number' &&
+        typeof event.details === 'string' &&
+        typeof event.subject_user_id === 'string';
+};
+
+// Only task activity reads timeline events, and the column is rewritten on every update, so other
+// event types are not kept.
+const CONSUMED_EVENT_TYPES = new Set<string>(['task_state_modified']);
+
+const safeParseTimelineEvents = (value: unknown): TimelineEvent[] => {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.filter((event) => isTimelineEvent(event) && CONSUMED_EVENT_TYPES.has(event.event_type));
+};
+
 /**
  * The PlaybookRun model represents a playbook run in the Mattermost app.
  */
@@ -93,6 +117,9 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
 
     /** participant_ids : An array of user IDs that participate in the run */
     @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
+
+    /** timeline_events : The run's task state change events, not its full timeline */
+    @json('timeline_events', safeParseTimelineEvents, {memo: true}) timelineEvents!: TimelineEvent[];
 
     /** summary : Summary of the playbook run */
     @field('summary') summary!: string;

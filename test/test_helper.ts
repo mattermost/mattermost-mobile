@@ -1404,6 +1404,7 @@ class TestHelperSingleton {
             activeStage: 1,
             activeStageTitle: 'activeStageTitle',
             participantIds: [],
+            timelineEvents: [],
             summary: 'summary',
             currentStatus: 'InProgress',
             lastStatusUpdateAt: 0,
