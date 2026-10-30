@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import useFieldRefs from '@hooks/field_refs';
 import {getErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
-import {sortCustomProfileAttributes, formatOptionsForSelector, isCustomFieldSamlLinked} from '@utils/user';
+import {sortCustomProfileAttributes, formatOptionsForSelector, isCustomFieldReadOnly} from '@utils/user';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
@@ -169,12 +169,12 @@ const ProfileForm = ({
             }
         });
 
-        // Handle custom attributes - check if SAML linked
+        // Handle custom attributes that users cannot edit
         Object.keys(userInfo.customAttributes).forEach((key) => {
             const customField = customFieldsMap.get(key);
             const fieldKey = getFieldKey(key);
             if (customField && fields[fieldKey]) {
-                fields[fieldKey].isDisabled = isCustomFieldSamlLinked(customField);
+                fields[fieldKey].isDisabled = isCustomFieldReadOnly(customField);
             }
         });
 
