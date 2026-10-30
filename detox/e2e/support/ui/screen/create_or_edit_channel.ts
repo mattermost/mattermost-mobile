@@ -26,6 +26,7 @@ class CreateOrEditChannelScreen {
         purposeDescription: 'channel_info_form.purpose.description',
         headerInput: 'channel_info_form.header.input',
         headerDescription: 'channel_info_form.header.description',
+        errorText: 'edit_channel_info.error.text',
     };
 
     createOrEditChannelScreen = element(by.id(this.testID.createOrEditChannelScreen));
@@ -42,6 +43,7 @@ class CreateOrEditChannelScreen {
     purposeDescription = element(by.id(this.testID.purposeDescription));
     headerInput = element(by.id(this.testID.headerInput));
     headerDescription = element(by.id(this.testID.headerDescription));
+    errorText = element(by.id(this.testID.errorText));
 
     toBeVisible = async () => {
         await waitFor(this.createOrEditChannelScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -205,7 +207,7 @@ class CreateOrEditChannelScreen {
     // iOS simulators drop idle keep-alive connections (-1005). Create then stays on
     // this form with edit_channel_info.error.text. Retry once after the banner appears.
     tapCreateAndWaitForChannel = async () => {
-        const errorText = element(by.id('edit_channel_info.error.text'));
+        const errorText = this.errorText;
         await this.createButton.tap();
 
         if (await this.waitForChannelScreen(timeouts.TEN_SEC)) {

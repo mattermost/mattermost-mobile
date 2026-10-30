@@ -2,16 +2,26 @@
 // See LICENSE.txt for license information.
 
 import {
+    attributeTierGate,
+    canEditAttributeField,
     canMoveToOption,
-    channelInfoAttributesEqual,
+    canSetChannelAttributeOnCreate,
+    channelInfoAttributesSignature,
     compareChannelAttributeFields,
     deriveChannelAttributeBanner,
     flattenChannelAttributesToChips,
+    getAttributeEditability,
+    getCreatableChannelAttributeFields,
+    getEmptyPropertyValue,
     getPropertyFieldChangePolicy,
     getPropertyFieldLabel,
     groupChannelAttributeChipsByField,
+    hasAttributeEditor,
+    hasCreationBlockingChannelAttribute,
     isPropertyFieldRequired,
+    reachableOptions,
     isPropertyValueSet,
+    pruneStaleAttributeValues,
     renderBannerTemplate,
     renderNativeBannerText,
     resolveChannelAttributes,
@@ -20,6 +30,7 @@ import {
     stripUnresolvedTokens,
     type ChannelAttributeChipItem,
     type ChannelAttributeField,
+    type ChannelAttributePermissions,
     type ChannelAttributeValue,
     type ResolvedChannelAttribute,
 } from './channel_attributes';
@@ -52,6 +63,14 @@ describe('isPropertyValueSet', () => {
     it('should treat a non-empty value as set', () => {
         expect(isPropertyValueSet('level-secret')).toBe(true);
         expect(isPropertyValueSet(['a'])).toBe(true);
+    });
+});
+
+describe('getEmptyPropertyValue', () => {
+    it('should clear list-valued types with an empty list and every other type with an empty string', () => {
+        expect(getEmptyPropertyValue('multiselect')).toEqual([]);
+        expect(getEmptyPropertyValue('multiuser')).toEqual([]);
+        expect(getEmptyPropertyValue('select')).toBe('');
     });
 });
 
@@ -207,18 +226,97 @@ describe('selectAttributesForAction', () => {
 });
 
 describe('selectChannelInfoAttributes', () => {
-    it('should list a required attribute even when unset, and omit an optional unset one', () => {
-        const requiredUnset = field({id: '1', name: 'a', attrs: {required: true}});
-        const optionalUnset = field({id: '2', name: 'b', attrs: {}});
+    const ADMIN_PERMS: ChannelAttributePermissions = {canManageChannelProperties: true, canManageChannelRoles: true, canManageSystem: false};
+    const MEMBER_PERMS: ChannelAttributePermissions = {canManageChannelProperties: true, canManageChannelRoles: false, canManageSystem: false};
+    const NO_PROPERTIES_PERMS: ChannelAttributePermissions = {canManageChannelProperties: false, canManageChannelRoles: true, canManageSystem: true};
 
-        const resolved = resolveChannelAttributes([requiredUnset, optionalUnset], []);
-        expect(selectChannelInfoAttributes(resolved).map((a) => a.field.id)).toEqual(['1']);
+    // Fields with no display configuration (attrs.actions absent or empty) are the
+    // key case — they must still appear in Channel Info because it is the only
+    // editing surface, even when display_label_info is not set.
+    const noDesignation = field({id: '1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS}});
+    const noDesignationValue: ChannelAttributeValue = {fieldId: '1', value: 'level-secret'} as ChannelAttributeValue;
+
+    const requiredAdminTier = field({id: '2', name: 'b', permissionValues: 'admin', attrs: {options: CLASSIFICATION_OPTIONS, required: true}});
+    const requiredMemberTier = field({id: '6', name: 'f', permissionValues: 'member', attrs: {options: CLASSIFICATION_OPTIONS, required: true}});
+    const optionalNoDesignation = field({id: '3', name: 'c', attrs: {options: CLASSIFICATION_OPTIONS}});
+
+    const infoDesignated = field({id: '4', name: 'd', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_info']}});
+    const headerOnly = field({id: '5', name: 'e', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_header']}});
+    const headerOnlyValue: ChannelAttributeValue = {fieldId: '5', value: 'level-secret'} as ChannelAttributeValue;
+
+    describe('channel admin', () => {
+        it('should include an attribute with a stored value regardless of display configuration', () => {
+            const resolved = resolveChannelAttributes([noDesignation], [noDesignationValue]);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS).map((a) => a.field.id)).toEqual(['1']);
+        });
+
+        it('should include a header-only attribute that has a stored value', () => {
+            const resolved = resolveChannelAttributes([headerOnly], [headerOnlyValue]);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS).map((a) => a.field.id)).toEqual(['5']);
+        });
+
+        it('should include a required-unset attribute the admin can edit, even with no display designation', () => {
+            const resolved = resolveChannelAttributes([requiredAdminTier], []);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS).map((a) => a.field.id)).toEqual(['2']);
+        });
+
+        it('should omit a required-unset attribute when the viewer lacks manage_channel_properties, even with manage_channel_roles', () => {
+            const resolved = resolveChannelAttributes([requiredAdminTier], []);
+            expect(selectChannelInfoAttributes(resolved, NO_PROPERTIES_PERMS)).toHaveLength(0);
+        });
+
+        it('should omit an optional attribute with no stored value — reached via Add Attribute', () => {
+            const resolved = resolveChannelAttributes([optionalNoDesignation], []);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS)).toHaveLength(0);
+        });
+
+        it('should omit an info-designated optional attribute that is unset', () => {
+            const resolved = resolveChannelAttributes([infoDesignated], []);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS)).toHaveLength(0);
+        });
+    });
+
+    describe('regular member', () => {
+        it('should include an attribute with a stored value', () => {
+            const resolved = resolveChannelAttributes([noDesignation], [noDesignationValue]);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['1']);
+        });
+
+        it('should include a header-only attribute that has a stored value', () => {
+            const resolved = resolveChannelAttributes([headerOnly], [headerOnlyValue]);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['5']);
+        });
+
+        it('should omit an admin-tier required-unset attribute — a member cannot edit it', () => {
+            const resolved = resolveChannelAttributes([requiredAdminTier], []);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS)).toHaveLength(0);
+        });
+
+        it('should include a member-tier required-unset attribute — a member with channel-properties permission can edit it, without manage_channel_roles', () => {
+            const resolved = resolveChannelAttributes([requiredMemberTier], []);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['6']);
+        });
+
+        it('should omit an optional unset attribute', () => {
+            const resolved = resolveChannelAttributes([optionalNoDesignation], []);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS)).toHaveLength(0);
+        });
+    });
+
+    it('should test stored rawValue rather than displayValue for set-ness', () => {
+        // An option id that no longer resolves still counts as a stored value.
+        const staleValue: ChannelAttributeValue = {fieldId: '1', value: 'deleted-option-id'} as ChannelAttributeValue;
+        const resolved = resolveChannelAttributes([noDesignation], [staleValue]);
+
+        // displayValue resolves to the raw id (unrecognised), but rawValue is set.
+        expect(resolved[0].displayValue).toBe('deleted-option-id');
+        expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['1']);
     });
 
     it('should list a set attribute whatever its display locations', () => {
         const noLocation = field({id: 'cf-1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS, actions: []}});
         const resolved = resolveChannelAttributes([noLocation], [classificationValue]);
-        expect(selectChannelInfoAttributes(resolved).map((a) => a.field.id)).toEqual(['cf-1']);
+        expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['cf-1']);
     });
 });
 
@@ -506,6 +604,316 @@ describe('deriveChannelAttributeBanner', () => {
     });
 });
 
+describe('hasAttributeEditor', () => {
+    it('should report an editor for the four editable field types', () => {
+        for (const type of ['text', 'select', 'multiselect', 'rank']) {
+            expect(hasAttributeEditor(field({id: 'f', name: 'f', type} as Partial<ChannelAttributeField> & {id: string; name: string}))).toBe(true);
+        }
+    });
+
+    it('should report no editor for date and user field types', () => {
+        for (const type of ['date', 'user', 'multiuser']) {
+            expect(hasAttributeEditor(field({id: 'f', name: 'f', type} as Partial<ChannelAttributeField> & {id: string; name: string}))).toBe(false);
+        }
+    });
+});
+
+describe('reachableOptions', () => {
+    const rankField = field({
+        id: 'cf-1',
+        name: 'classification',
+        type: 'rank',
+        attrs: {options: CLASSIFICATION_OPTIONS, change_policy: 'raise_only'},
+    } as Partial<ChannelAttributeField> & {id: string; name: string});
+
+    it('should return every option when nothing is set, because the first write is exempt', () => {
+        expect(reachableOptions(rankField, undefined)).toHaveLength(2);
+    });
+
+    it('should narrow to the options a directional policy permits', () => {
+        const reachable = reachableOptions(rankField, 'level-public');
+        expect(reachable).toHaveLength(1);
+        expect(reachable[0].id).toBe('level-secret');
+    });
+
+    it('should return nothing when a directional policy has been exhausted', () => {
+        expect(reachableOptions(rankField, 'level-secret')).toHaveLength(0);
+    });
+
+    it('should return nothing for a field with no options', () => {
+        expect(reachableOptions(field({id: 'f', name: 'f', attrs: {}}), 'anything')).toHaveLength(0);
+    });
+});
+
+describe('attributeTierGate', () => {
+    it('should map each recognised tier to what it requires', () => {
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'sysadmin'}))).toBe('manage_system');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'admin'}))).toBe('manage_channel_roles');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'member'}))).toBe('channel_only');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'none'}))).toBe('never');
+    });
+
+    it('should fail closed on an absent, empty or unrecognised tier, matching the server', () => {
+        expect(attributeTierGate(field({id: 'f', name: 'f'}))).toBe('never');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: null}))).toBe('never');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: ''}))).toBe('never');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'everyone'}))).toBe('never');
+    });
+});
+
+describe('canSetChannelAttributeOnCreate', () => {
+    it('should permit member and admin tiers regardless of canManageSystem', () => {
+        expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'member'}), false)).toBe(true);
+        expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'admin'}), false)).toBe(true);
+    });
+
+    it('should gate the sysadmin tier on canManageSystem', () => {
+        expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'sysadmin'}), false)).toBe(false);
+        expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'sysadmin'}), true)).toBe(true);
+    });
+
+    it('should fail closed on an absent, empty or unrecognised tier, matching the server', () => {
+        expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f'}), true)).toBe(false);
+        expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'none'}), true)).toBe(false);
+        expect(canSetChannelAttributeOnCreate(field({id: 'f', name: 'f', permissionValues: 'everyone'}), true)).toBe(false);
+    });
+});
+
+describe('channel attribute fields on create', () => {
+    const ENFORCED = {requiredEnforced: true, classificationAvailable: true};
+    const NOT_ENFORCED = {requiredEnforced: false, classificationAvailable: true};
+
+    const requiredClassification = field({id: 'cf-1', name: 'classification', permissionValues: 'member', attrs: {required: true, options: CLASSIFICATION_OPTIONS}});
+    const requiredSelect = field({id: 'f-select', name: 'sensitivity', type: 'select', permissionValues: 'member', attrs: {required: true}});
+    const optionalSelect = field({id: 'f-optional', name: 'region', type: 'select', permissionValues: 'member', attrs: {required: false}});
+    const requiredDate = field({id: 'f-date', name: 'review_date', type: 'date', permissionValues: 'member', attrs: {required: true}});
+
+    describe('getCreatableChannelAttributeFields', () => {
+        it('should offer only required fields when required attributes are enforced', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect, optionalSelect, requiredDate], false, ENFORCED);
+
+            expect(fields.map((f) => f.id)).toEqual(['cf-1', 'f-select']);
+        });
+
+        it('should offer only classification, as an optional copy, when required attributes are not enforced', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect, requiredDate], false, NOT_ENFORCED);
+
+            expect(fields).toHaveLength(1);
+            expect(fields[0].id).toBe('cf-1');
+            expect(isPropertyFieldRequired(fields[0])).toBe(false);
+            expect(fields[0].attrs?.options).toEqual(CLASSIFICATION_OPTIONS);
+
+            // The source field, a WatermelonDB model in the app, is left as it was.
+            expect(isPropertyFieldRequired(requiredClassification)).toBe(true);
+        });
+
+        it('should offer nothing when required attributes are not enforced and classification is unavailable', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect], false, {requiredEnforced: false, classificationAvailable: false});
+
+            expect(fields).toHaveLength(0);
+        });
+
+        it('should not offer a required classification while classification is unavailable', () => {
+            const fields = getCreatableChannelAttributeFields([requiredClassification, requiredSelect], false, {requiredEnforced: true, classificationAvailable: false});
+
+            expect(fields.map((f) => f.id)).toEqual(['f-select']);
+        });
+
+        it('should still apply the tier to the classification exception', () => {
+            const sysadminClassification = field({...requiredClassification, permissionValues: 'sysadmin'});
+
+            expect(getCreatableChannelAttributeFields([sysadminClassification], false, NOT_ENFORCED)).toHaveLength(0);
+            expect(getCreatableChannelAttributeFields([sysadminClassification], true, NOT_ENFORCED)).toHaveLength(1);
+        });
+    });
+
+    describe('hasCreationBlockingChannelAttribute', () => {
+        it('should block on a required field with no editor when required attributes are enforced', () => {
+            expect(hasCreationBlockingChannelAttribute([requiredDate], false, ENFORCED)).toBe(true);
+        });
+
+        it('should not block on a required field with no editor when required attributes are not enforced', () => {
+            expect(hasCreationBlockingChannelAttribute([requiredDate], false, NOT_ENFORCED)).toBe(false);
+        });
+
+        it('should ignore a required classification with no editor while classification is unavailable', () => {
+            const dateClassification = field({...requiredClassification, type: 'date'});
+
+            expect(hasCreationBlockingChannelAttribute([dateClassification], false, {requiredEnforced: true, classificationAvailable: false})).toBe(false);
+        });
+    });
+});
+
+describe('canEditAttributeField', () => {
+    const permissions = (overrides: Partial<ChannelAttributePermissions> = {}): ChannelAttributePermissions => ({
+        canManageChannelProperties: true,
+        canManageChannelRoles: false,
+        canManageSystem: false,
+        ...overrides,
+    });
+
+    it('should refuse without the channel-level permission, whatever the tier says', () => {
+        const memberField = field({id: 'f', name: 'f', permissionValues: 'member'});
+        expect(canEditAttributeField(memberField, permissions({canManageChannelProperties: false}))).toBe(false);
+    });
+
+    it('should allow a member-tier field on the channel permission alone', () => {
+        expect(canEditAttributeField(field({id: 'f', name: 'f', permissionValues: 'member'}), permissions())).toBe(true);
+    });
+
+    it('should require manage_channel_roles for an admin-tier field', () => {
+        const adminField = field({id: 'f', name: 'f', permissionValues: 'admin'});
+        expect(canEditAttributeField(adminField, permissions())).toBe(false);
+        expect(canEditAttributeField(adminField, permissions({canManageChannelRoles: true}))).toBe(true);
+    });
+
+    it('should require manage_system for a sysadmin-tier field', () => {
+        const sysadminField = field({id: 'f', name: 'f', permissionValues: 'sysadmin'});
+        expect(canEditAttributeField(sysadminField, permissions({canManageChannelRoles: true}))).toBe(false);
+        expect(canEditAttributeField(sysadminField, permissions({canManageSystem: true}))).toBe(true);
+    });
+
+    it('should refuse a none-tier field to a system admin', () => {
+        const noneField = field({id: 'f', name: 'f', permissionValues: 'none'});
+        expect(canEditAttributeField(noneField, permissions({canManageChannelRoles: true, canManageSystem: true}))).toBe(false);
+    });
+});
+
+describe('getAttributeEditability', () => {
+    function selectField(overrides: Partial<PropertyFieldAttrs> = {}): ChannelAttributeField {
+        return field({
+            id: 'cf-1',
+            name: 'classification',
+            type: 'rank',
+            attrs: {options: CLASSIFICATION_OPTIONS, ...overrides},
+        } as Partial<ChannelAttributeField> & {id: string; name: string});
+    }
+
+    it('should refuse a field type with no editor before anything else', () => {
+        const dateField = field({id: 'f', name: 'f', type: 'date'} as Partial<ChannelAttributeField> & {id: string; name: string});
+        expect(getAttributeEditability(dateField, undefined, true)).toEqual({editable: false, reason: 'unsupported_type'});
+    });
+
+    it('should refuse without permission', () => {
+        expect(getAttributeEditability(selectField(), 'level-public', false)).toEqual({editable: false, reason: 'permission'});
+    });
+
+    it('should report a policy lock ahead of a permission one, because it explains the row rather than the reader', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), 'level-public', false)).toEqual({editable: false, reason: 'never'});
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-secret', false)).toEqual({editable: false, reason: 'raise_only'});
+    });
+
+    it('should report a missing editor ahead of everything, since no policy can make it editable', () => {
+        const dateField = field({
+            id: 'f',
+            name: 'f',
+            type: 'date',
+            attrs: {options: CLASSIFICATION_OPTIONS, change_policy: 'never'},
+        } as Partial<ChannelAttributeField> & {id: string; name: string});
+        expect(getAttributeEditability(dateField, 'level-public', false)).toEqual({editable: false, reason: 'unsupported_type'});
+    });
+
+    it('should allow the first write even under a never policy, so a required attribute is not stranded', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), undefined, true)).toEqual({editable: true});
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), '', true)).toEqual({editable: true});
+    });
+
+    it('should lock a set value under a never policy', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), 'level-public', true)).toEqual({editable: false, reason: 'never'});
+    });
+
+    it('should lock a set value under editable=false, which reads as never', () => {
+        expect(getAttributeEditability(selectField({editable: false}), 'level-public', true)).toEqual({editable: false, reason: 'never'});
+    });
+
+    it('should allow a change under an any policy', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'any'}), 'level-public', true)).toEqual({editable: true});
+    });
+
+    it('should allow a raise_only field that still has somewhere to go', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-public', true)).toEqual({editable: true});
+    });
+
+    it('should report the directional reason, not never, when raise_only is exhausted', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-secret', true)).toEqual({editable: false, reason: 'raise_only'});
+    });
+
+    it('should report the directional reason when lower_only is exhausted', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'lower_only'}), 'level-public', true)).toEqual({editable: false, reason: 'lower_only'});
+    });
+
+    it('should lock a text field under a directional policy, which has no ranks to compare', () => {
+        const textField = field({
+            id: 'tf-1',
+            name: 'program',
+            type: 'text',
+            attrs: {change_policy: 'raise_only'},
+        } as Partial<ChannelAttributeField> & {id: string; name: string});
+        expect(getAttributeEditability(textField, 'Aurora', true)).toEqual({editable: false, reason: 'raise_only'});
+    });
+
+    it('should treat a stored option that no longer resolves as set, and refuse to move off it', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-deleted', true)).toEqual({editable: false, reason: 'raise_only'});
+    });
+});
+
+describe('pruneStaleAttributeValues', () => {
+    const classificationSelectField = field({...classificationField, type: 'select'});
+
+    it('should keep a value whose field and option both still exist', () => {
+        const values = {'cf-1': 'level-secret'};
+        expect(pruneStaleAttributeValues([classificationSelectField], values)).toEqual(values);
+    });
+
+    it('should return the same object reference when nothing changed', () => {
+        const values = {'cf-1': 'level-secret'};
+        expect(pruneStaleAttributeValues([classificationSelectField], values)).toBe(values);
+    });
+
+    it('should drop a value whose field no longer exists', () => {
+        const result = pruneStaleAttributeValues([], {'cf-1': 'level-secret'});
+        expect(result).toEqual({});
+    });
+
+    it('should drop a select value whose option was removed', () => {
+        const result = pruneStaleAttributeValues([classificationSelectField], {'cf-1': 'level-deleted'});
+        expect(result).toEqual({});
+    });
+
+    it('should filter a multiselect value down to the options that still exist', () => {
+        const multiField = field({
+            id: 'cf-2',
+            name: 'tags',
+            type: 'multiselect',
+            attrs: {options: CLASSIFICATION_OPTIONS},
+        });
+        const result = pruneStaleAttributeValues([multiField], {'cf-2': ['level-secret', 'level-deleted']});
+        expect(result).toEqual({'cf-2': ['level-secret']});
+    });
+
+    it('should drop a multiselect value once every option it held has been removed', () => {
+        const multiField = field({
+            id: 'cf-2',
+            name: 'tags',
+            type: 'multiselect',
+            attrs: {options: CLASSIFICATION_OPTIONS},
+        });
+        const result = pruneStaleAttributeValues([multiField], {'cf-2': ['level-deleted']});
+        expect(result).toEqual({});
+    });
+
+    it('should leave a text value untouched: free text has no option list to fall out of', () => {
+        const textField = field({
+            id: 'tf-1',
+            name: 'program',
+            type: 'text',
+            attrs: {},
+        } as Partial<ChannelAttributeField> & {id: string; name: string});
+        const values = {'tf-1': 'Aurora'};
+        expect(pruneStaleAttributeValues([textField], values)).toBe(values);
+    });
+});
+
 // Builds a ResolvedChannelAttribute directly, bypassing resolveChannelAttributes, since
 // flattenChannelAttributesToChips and groupChannelAttributeChipsByField only care about
 // field identity and displayValues, not how those were resolved.
@@ -631,13 +1039,23 @@ describe('renderNativeBannerText', () => {
     });
 });
 
-describe('channelInfoAttributesEqual', () => {
+describe('channelInfoAttributesSignature', () => {
     it('should ignore a display action change but not a value change', () => {
         const headerShown = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_header']}});
         const headerHidden = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: []}});
-        const before = resolveChannelAttributes([headerShown], [classificationValue]);
+        const before = channelInfoAttributesSignature(resolveChannelAttributes([headerShown], [classificationValue]));
 
-        expect(channelInfoAttributesEqual(before, resolveChannelAttributes([headerHidden], [classificationValue]))).toBe(true);
-        expect(channelInfoAttributesEqual(before, resolveChannelAttributes([headerShown], []))).toBe(false);
+        expect(channelInfoAttributesSignature(resolveChannelAttributes([headerHidden], [classificationValue]))).toBe(before);
+        expect(channelInfoAttributesSignature(resolveChannelAttributes([headerShown], []))).not.toBe(before);
+    });
+
+    it('should change when a key the editor gates on changes', () => {
+        const anyPolicy = field({id: 'cf-1', name: 'classification', permissionValues: 'member', attrs: {options: CLASSIFICATION_OPTIONS, change_policy: 'any'}});
+        const neverPolicy = field({id: 'cf-1', name: 'classification', permissionValues: 'member', attrs: {options: CLASSIFICATION_OPTIONS, change_policy: 'never'}});
+        const adminTier = field({id: 'cf-1', name: 'classification', permissionValues: 'admin', attrs: {options: CLASSIFICATION_OPTIONS, change_policy: 'any'}});
+        const before = channelInfoAttributesSignature(resolveChannelAttributes([anyPolicy], [classificationValue]));
+
+        expect(channelInfoAttributesSignature(resolveChannelAttributes([neverPolicy], [classificationValue]))).not.toBe(before);
+        expect(channelInfoAttributesSignature(resolveChannelAttributes([adminTier], [classificationValue]))).not.toBe(before);
     });
 });

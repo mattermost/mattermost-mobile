@@ -50,6 +50,10 @@ class ChannelAttributeLabels {
         `${index === undefined ? `channel_attribute_labels.overflow_sheet.chip.${fieldName}` : `channel_attribute_labels.overflow_sheet.chip.${fieldName}.${index}`}.value`,
     ));
 
+    toBeVisible = async () => {
+        await waitFor(this.container).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    };
+
     toNotBeVisible = async () => {
         // Use waitFor rather than an immediate expect — the chip row may take a moment
         // to settle after navigation (e.g. DM channels where no chip should appear).

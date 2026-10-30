@@ -4,10 +4,20 @@
 import {Q, type Database} from '@nozbe/watermelondb';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
+import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
+
+jest.mock('@actions/remote/classification', () => ({
+    accessControlWriteLockKey: (serverUrl: string) => `access-control:${serverUrl}`,
+    fetchAccessControlAttributeFields: jest.fn(),
+    fetchChannelAttributeValues: jest.fn(),
+}));
+
+const mockedFetchChannelAttributeValues = jest.mocked(fetchChannelAttributeValues);
 
 import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 
@@ -56,6 +66,7 @@ const getStoredValues = async (database: Database, targetId: string) => {
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
+    jest.clearAllMocks();
 });
 
 afterEach(async () => {
@@ -97,6 +108,43 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
         const fields = await getStoredFields(database);
         expect(fields).toHaveLength(1);
         expect(fields[0].name).toBe('updated');
+    });
+
+    it('should force a field fetch after releasing the lock when an owned field arrives before the group id is known', async () => {
+        // The real fetch takes the same lock; if the handler awaited it while still
+        // holding the lock, this would never resolve and the test would time out.
+        jest.mocked(fetchAccessControlAttributeFields).mockImplementationOnce(() => (
+            EphemeralStore.runExclusive(`access-control:${serverUrl}`, async () => ({}))
+        ));
+
+        const field = makeField('f1', {object_type: 'channel', target_type: 'system'});
+        const msg = {
+            event: 'property_field_created',
+            data: {property_field: JSON.stringify(field), object_type: 'channel'},
+            broadcast: {},
+            seq: 1,
+        } as WebSocketMessage;
+
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+
+        expect(fetchAccessControlAttributeFields).toHaveBeenCalledTimes(1);
+        expect(fetchAccessControlAttributeFields).toHaveBeenCalledWith(serverUrl, true);
+    });
+
+    it('should not fetch fields when the group id is already known', async () => {
+        await setAccessControlGroupId(serverUrl, groupId);
+
+        const field = makeField('f1', {object_type: 'channel'});
+        const msg = {
+            event: 'property_field_created',
+            data: {property_field: JSON.stringify(field), object_type: 'channel'},
+            broadcast: {},
+            seq: 1,
+        } as WebSocketMessage;
+
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+
+        expect(fetchAccessControlAttributeFields).not.toHaveBeenCalled();
     });
 
     it('should ignore events with no property_field data', async () => {
@@ -318,7 +366,7 @@ describe('handlePropertyValuesUpdated', () => {
 
         const clearedMessage = (data: Record<string, string>) => ({
             event: 'property_values_updated',
-            data: {values: '[]', ...data},
+            data: {values: '[]', object_type: 'channel', ...data},
             broadcast: {},
             seq: 1,
         } as WebSocketMessage);
@@ -329,30 +377,38 @@ describe('handlePropertyValuesUpdated', () => {
             await setAccessControlGroupId(serverUrl, ownedGroupId);
         });
 
-        it('should prune this feature\'s values when a target is cleared', async () => {
+        // An empty-target event carries no group identity: the exact same shape is
+        // sent for "all access_control values cleared" and for "all managed
+        // channel categories values cleared" on this channel. Pruning locally here
+        // would apply someone else's clear to our data whenever the two happen to
+        // race, so the handler defers to a forced, group-scoped REST
+        // reconciliation instead of deleting anything itself.
+        it('should trigger a forced, group-scoped reconciliation instead of pruning locally when a target is cleared', async () => {
             await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
 
+            expect(mockedFetchChannelAttributeValues).toHaveBeenCalledWith(serverUrl, channelId, true);
+
+            // Nothing was deleted synchronously by the handler itself — the
+            // reconciliation (mocked here) owns that decision.
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const remaining = await getStoredValues(database, channelId);
-            expect(remaining).toHaveLength(1);
-            expect(remaining[0].id).toBe('val-foreign');
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });
 
-        it('should leave another property group\'s value on the same channel alone', async () => {
-            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
+        it('should not trigger reconciliation when a non-channel target is cleared', async () => {
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: 'user-id', object_type: 'user'}));
+
+            expect(mockedFetchChannelAttributeValues).not.toHaveBeenCalled();
 
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const foreign = await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('id', 'val-foreign')).fetch();
-            expect(foreign).toHaveLength(1);
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });
 
-        it('should prune nothing when the group id is not known yet', async () => {
+        it('should still trigger reconciliation when the group id is not known yet', async () => {
             await setAccessControlGroupId(serverUrl, '');
 
             await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
 
-            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            expect(await getStoredValues(database, channelId)).toHaveLength(2);
+            expect(mockedFetchChannelAttributeValues).toHaveBeenCalledWith(serverUrl, channelId, true);
         });
 
         it('should prune every value of a field when that field is cleared', async () => {
@@ -385,11 +441,11 @@ describe('handlePropertyValuesUpdated', () => {
             expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });
 
-        it('should no-op when the target has no access_control values to destroy', async () => {
-            // A different target has no access_control values, so destroyValues
-            // receives an empty stale list and the write should be skipped entirely.
+        it('should scope reconciliation to the event\'s own target and leave other channels alone', async () => {
             const otherTarget = 'channel-no-attributes';
             await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: otherTarget}));
+
+            expect(mockedFetchChannelAttributeValues).toHaveBeenCalledWith(serverUrl, otherTarget, true);
 
             // The original channel's values must be completely untouched.
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

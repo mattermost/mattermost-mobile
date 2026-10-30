@@ -371,15 +371,29 @@ describe('navigation', () => {
             });
         });
 
-        it('should configure bottom sheet without footer component', () => {
+        it('should clear a stale footer component when omitted', () => {
             const renderContent = jest.fn();
             const snapPoints = ['50%'];
+            const footerComponent = jest.fn();
+
+            bottomSheet(renderContent, snapPoints, footerComponent);
+            expect(BottomSheetStore.getFooterComponent()).toBe(footerComponent);
 
             bottomSheet(renderContent, snapPoints);
 
-            expect(BottomSheetStore.getSnapPoints()).toEqual(snapPoints);
-            expect(BottomSheetStore.getRenderContentCallback()).toBe(renderContent);
             expect(BottomSheetStore.getFooterComponent()).toBeUndefined();
+        });
+
+        it('should clear stale keyboard behavior when omitted', () => {
+            const renderContent = jest.fn();
+            const snapPoints = ['50%'];
+
+            bottomSheet(renderContent, snapPoints, undefined, 'interactive');
+            expect(BottomSheetStore.getKeyboardBehavior()).toBe('interactive');
+
+            bottomSheet(renderContent, snapPoints);
+
+            expect(BottomSheetStore.getKeyboardBehavior()).toBeUndefined();
         });
     });
 
