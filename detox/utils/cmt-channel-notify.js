@@ -320,7 +320,11 @@ function suiteKeyOf(title) {
     return (title || '').replace(/›?\s*MM-[A-Za-z0-9_-]+.*$/, '').trim();
 }
 
-function formatFailureJudgement(failures) {
+/**
+ * @param {Array} failures - failed tests from TSIO
+ * @returns {Array<{failure: Object, verdict: {category: string, reason: string}}>}
+ */
+function judgeFailures(failures) {
     // Corroboration for the app-bug gate: the same test failing on more than
     // one leg of this run is a second, independent observation of it.
     const jobsByTitle = new Map();
@@ -364,6 +368,11 @@ function formatFailureJudgement(failures) {
             entry.verdict = {category: 'infra', reason: 'same suite hit an environment failure in this leg — likely a cascade'};
         }
     }
+    return judged;
+}
+
+function formatFailureJudgement(failures) {
+    const judged = judgeFailures(failures);
     if (judged.length === 0) {
         return [];
     }
@@ -391,7 +400,6 @@ function formatFailureJudgement(failures) {
 // checked it against TSIO history: one judge for the run. Each test sits under what it means, in plain words.
 const VERDICT_SECTIONS = [
     {key: 'product', title: '🐞 **Product bugs**'},
-    {key: 'new', title: '🆕 **New on main** — passed every earlier main run, fail now'},
     {key: 'still', title: '↩️ **Still failing** — failed on the previous main run too'},
     {key: 'look', title: '🔎 **Needs a look**'},
     {key: 'test', title: '🧪 **Problems with the test, not product bugs**'},
@@ -452,9 +460,13 @@ function laneName(lane) {
  * @param {Array<{failed: number, passed: number}>} legs - buildLegSummaries rows
  * @returns {string[]}
  */
+function isMassFailure(leg) {
+    return leg.failed >= 5 && leg.failed * 2 >= leg.passed + leg.failed;
+}
+
 function formatMassFailures(legs) {
     return (legs || []).
-        filter((leg) => leg.failed >= 5 && leg.failed * 2 >= leg.passed + leg.failed).
+        filter(isMassFailure).
         map((leg) => `⚠️ **${formatLegName(leg)}: ${leg.failed} of ${leg.passed + leg.failed} tests failed.** When most of a run fails at once it is usually its setup (device, app build or server) or one broken screen — look at that run before the single tests.`);
 }
 
@@ -467,40 +479,41 @@ function formatMassFailures(legs) {
  */
 function formatChanges(changes, repository) {
     if (!changes) {
-        return '_Most likely broken by a change merged since the last main run._';
+        return 'most likely from a change merged since the last main run';
+    }
+    if (changes.from === changes.to) {
+        return 'no change was merged since the last main run, so no new change explains these';
     }
     const range = `\`${changes.from.slice(0, 7)}\` → \`${changes.to.slice(0, 7)}\``;
-    if (changes.from === changes.to) {
-        return `_No change was merged since the last main run (same commit \`${changes.to.slice(0, 7)}\`), so no new change explains these._`;
-    }
     if (!changes.prs.length) {
-        return `_Most likely broken by a change merged since the last main run (${range})._`;
+        return `most likely from a change merged since the last main run (${range})`;
     }
-    const shown = changes.prs.slice(0, 5).map((pr) => `[#${pr.number}](https://github.com/${repository}/pull/${pr.number}) ${pr.title}`);
+    const link = (pr) => `[#${pr.number}](https://github.com/${repository}/pull/${pr.number})`;
+    if (changes.prs.length === 1 && !changes.partial) {
+        return `most likely from ${link(changes.prs[0])} ${changes.prs[0].title}`;
+    }
+    const shown = changes.prs.slice(0, 3).map(link).join(' · ');
     if (changes.partial) {
-        return `Most likely broken by one of the many changes merged since the last main run (${range}; too many for GitHub to list them all), among them: ${shown.join(' · ')}`;
+        return `most likely from one of the many changes merged since the last main run (${range}), among them ${shown}`;
     }
-    const more = changes.prs.length > 5 ? `, and ${changes.prs.length - 5} more` : '';
-    return `Most likely broken by ${changes.prs.length === 1 ? 'the one change' : `one of the ${changes.prs.length} changes`} merged since the last main run (${range}): ${shown.join(' · ')}${more}`;
+    const more = changes.prs.length > 3 ? ` and ${changes.prs.length - 3} more` : '';
+    return `most likely from one of the ${changes.prs.length} changes merged since the last main run: ${shown}${more}`;
 }
 
 /**
- * The verdict section from the triage findings of every run that had one.
+ * The verdict section from the triage findings of every run that had one (PR and CMT runs).
  *
  * @param {Object} params
  * @param {Array<{lane: string, findings?: Array, counts?: {flaky?: number}}>} params.triage - findings files
- * @param {boolean} params.onMain
- * @param {Object|null} [params.changes] - see formatChanges
- * @param {string} [params.repository]
  * @param {Array} [params.legs] - buildLegSummaries rows, to name runs that failed with no triage verdict
  * @param {Array} [params.failures] - failed tests from TSIO, judged from their error text where triage left no verdict
  * @returns {string[]}
  */
-function formatTriageVerdict({triage, onMain, changes = null, repository = 'mattermost/mattermost-mobile', legs = [], failures = []}) {
+function formatTriageVerdict({triage, legs = [], failures = []}) {
     const entries = [];
     for (const lane of triage || []) {
         for (const row of lane.findings || []) {
-            entries.push({lane: lane.lane, row, verdict: verdictOf(row, onMain)});
+            entries.push({lane: lane.lane, row, verdict: verdictOf(row, false)});
         }
     }
     const lines = [];
@@ -510,9 +523,6 @@ function formatTriageVerdict({triage, onMain, changes = null, repository = 'matt
             continue;
         }
         lines.push(`${title} (${group.length})`);
-        if (key === 'new') {
-            lines.push(formatChanges(changes, repository));
-        }
         for (const {lane, row, verdict} of group.slice(0, MAX_PER_VERDICT)) {
             // A Maestro flow's full title is its file path again: its own title says it.
             const name = row.full_title && !row.full_title.startsWith(row.file || '\0') ? row.full_title : row.title;
@@ -580,6 +590,159 @@ function legKeyOf(jobName) {
     return parsed ? legKey(parsed) : null;
 }
 
+function isMainRun(compositeIdentity) {
+    const {webhookBucketForReportName} = require('./build-tsio-job-config');
+    return webhookBucketForReportName(compositeIdentity?.run_group || compositeIdentity?.name || '') === 'mobile-main';
+}
+
+// After a merge the channel needs one answer per failed test: a possible product bug, or not one.
+const NOT_PRODUCT_BUGS = [
+    {key: 'flaky', label: 'flaky'},
+    {key: 'still', label: 'already failing on main'},
+    {key: 'test', label: 'a problem with the test'},
+    {key: 'setup', label: 'setup (device or server)'},
+];
+
+// A failed test triage did not name is judged from its error text (classifyFailure).
+const VERDICT_OF_JUDGEMENT = {'app-bug': 'product', investigate: 'look', flaky: 'flaky', known: 'still', infra: 'setup'};
+
+/**
+ * The main-run message, a few lines as on desktop: possible product bugs per run, then what is not a product bug.
+ * Null when there is nothing to post: the run passed, or every failure is flaky, already failing on main, a problem
+ * with the test or passed on retry.
+ *
+ * @param {Object} params - see formatCmtChannelMessage
+ * @returns {string|null}
+ */
+function formatMainChannelMessage({
+    compositeIdentity,
+    detail,
+    reportUrl,
+    runUrl,
+    baseUrl,
+    perJobCounts,
+    failures,
+    triage,
+    changes = null,
+    upstreamJobsSucceeded = true,
+    hasFailures = false,
+}) {
+    const stats = detail?.test_stats || {};
+    const passed = (stats.passed ?? 0) + (stats.flaky ?? 0);
+    const failed = stats.failed ?? 0;
+    const skipped = stats.skipped ?? 0;
+    const legs = buildLegSummaries(perJobCounts, detail?.reports || [], baseUrl);
+
+    // One verdict per failed test: the triage job's where a finding names it, the error text's where none does
+    // (a test that passed on retry is counted below, not judged), and "not checked" for the rest of a run's failures.
+    const verdicts = [];
+    const named = new Map();
+    for (const lane of triage || []) {
+        const leg = legKeyOf(lane.lane);
+        const names = named.get(leg) || new Set();
+        for (const row of lane.findings || []) {
+            verdicts.push({key: verdictOf(row, true).key, leg});
+            names.add(row.full_title || row.title).add(row.title);
+        }
+        named.set(leg, names);
+    }
+    const unjudged = (failures || []).filter((failure) => !failure.passedOnRetry && !named.get(legKeyOf(failure.job))?.has(failure.title));
+    for (const {failure, verdict} of judgeFailures(unjudged)) {
+        verdicts.push({key: VERDICT_OF_JUDGEMENT[verdict.category] || 'look', leg: legKeyOf(failure.job)});
+    }
+    for (const leg of legs) {
+        const key = legKey(leg);
+        const missing = leg.failed - verdicts.filter((v) => v.leg === key).length;
+        for (let i = 0; i < missing; i++) {
+            verdicts.push({key: 'look', leg: key});
+        }
+    }
+
+    const product = verdicts.filter((v) => v.key === 'product' || v.key === 'new');
+    const look = verdicts.filter((v) => v.key === 'look');
+    const setupLines = [];
+    const noResults = legs.filter((leg) => leg.status === 'missing' || leg.status === 'no-results');
+    if (noResults.length) {
+        setupLines.push(`⚙️ **No results:** ${noResults.map(formatLegName).join(', ')} — test results did not upload, or the run ran no tests; re-run to see if anything failed`);
+    } else if (detail?.status && detail.status !== 'completed') {
+        setupLines.push(`⚙️ **Results incomplete** (TSIO status \`${detail.status}\`); re-run to see if anything failed`);
+    }
+    if (!upstreamJobsSucceeded && failed === 0) {
+        setupLines.push('⚙️ A CI job failed outside the tests (install, build or teardown).');
+    }
+    const unexplained = upstreamJobsSucceeded && hasFailures && failed === 0;
+
+    const title = reportTitleForIdentity(compositeIdentity);
+    const branch = (compositeIdentity?.branch || 'main').replace(/^refs\/(heads|tags)\//, '');
+    let header;
+    if (product.length) {
+        header = `🔴 **${title} — possible product bug** on \`${branch}\``;
+    } else if (look.length || unexplained) {
+        header = `🟡 **${title} — needs investigation** on \`${branch}\``;
+    } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
+        header = `🟡 **${title} — setup problem** on \`${branch}\``;
+    } else {
+        return null;
+    }
+
+    // Each run once, with its count; a run where most tests failed at once is flagged where it first appears.
+    const flagged = new Set();
+    const perRun = (group) => {
+        const parts = legs.
+            map((leg) => ({leg, count: group.filter((v) => v.leg === legKey(leg)).length})).
+            filter(({count}) => count > 0).
+            map(({leg, count}) => {
+                const name = leg.reportUrl ? `[${formatLegName(leg)}](${leg.reportUrl})` : formatLegName(leg);
+                let note = '';
+                if (isMassFailure(leg) && !flagged.has(leg)) {
+                    flagged.add(leg);
+                    note = ` (${leg.failed} of ${leg.passed + leg.failed} tests failed: check that run's setup first)`;
+                }
+                return {text: `${name} ${count}${note}`, count};
+            });
+        const other = group.length - parts.reduce((n, part) => n + part.count, 0);
+        return [...parts.map((part) => part.text), ...(other > 0 ? [`other runs ${other}`] : [])].join(' · ');
+    };
+
+    const shortSha = (compositeIdentity?.commit_sha || '').slice(0, 7);
+    const newOnMain = product.some((v) => v.key === 'new');
+    const lines = [
+        header,
+        [shortSha && `\`${shortSha}\``, newOnMain && formatChanges(changes, compositeIdentity?.repository || 'mattermost/mattermost-mobile')].filter(Boolean).join(' · '),
+        `**${failed} failed** · ${passed} passed · ${skipped} skipped`,
+    ].filter(Boolean);
+    if (product.length) {
+        lines.push(`🐞 **Possible product bugs (${product.length}):** ${perRun(product)}`);
+    }
+    if (look.length) {
+        lines.push(`🔎 **Needs investigation (${look.length}):** ${perRun(look)} — triage could not tell; see the report`);
+    }
+    if (unexplained) {
+        lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
+    }
+
+    // Tests that failed a try and passed the next count as flaky, not as failures.
+    const retried = Object.values(perJobCounts || {}).reduce((n, counts) => n + (counts.flaky || 0), 0) ||
+        (triage || []).reduce((n, lane) => n + (lane.counts?.flaky || 0), 0);
+    const notProduct = NOT_PRODUCT_BUGS.
+        map(({key, label}) => ({label, count: verdicts.filter((v) => v.key === key).length})).
+        filter(({count}) => count > 0).
+        map(({label, count}) => `${count} ${label}`);
+    if (retried) {
+        notProduct.push(`${retried} passed on retry`);
+    }
+    if (notProduct.length) {
+        lines.push(`🔁 **Not product bugs:** ${notProduct.join(' · ')}`);
+    }
+    lines.push(...setupLines);
+
+    const links = [reportUrl && `[Full report](${reportUrl})`, runUrl && `[Workflow run](${runUrl})`].filter(Boolean).join(' · ');
+    if (links) {
+        lines.push(`➡️ ${links}`);
+    }
+    return lines.join('\n') + '\n';
+}
+
 function reportTitleForIdentity(compositeIdentity) {
     const {webhookBucketForReportName} = require('./build-tsio-job-config');
     const bucket = webhookBucketForReportName(
@@ -621,21 +784,24 @@ function formatMetaLine(compositeIdentity) {
 
 /**
  * @param {Object} params
- * @returns {string}
+ * @returns {string|null} null when a main run has nothing to post (see formatMainChannelMessage)
  */
-function formatCmtChannelMessage({
-    compositeIdentity,
-    detail,
-    reportUrl,
-    runUrl,
-    baseUrl,
-    perJobCounts,
-    failures,
-    triage,
-    changes = null,
-    upstreamJobsSucceeded = true,
-    hasFailures = false,
-}) {
+function formatCmtChannelMessage(params) {
+    if (isMainRun(params.compositeIdentity)) {
+        return formatMainChannelMessage(params);
+    }
+    const {
+        compositeIdentity,
+        detail,
+        reportUrl,
+        runUrl,
+        baseUrl,
+        perJobCounts,
+        failures,
+        triage,
+        upstreamJobsSucceeded = true,
+        hasFailures = false,
+    } = params;
     const stats = detail?.test_stats || {};
 
     const passed = (stats.passed ?? 0) + (stats.flaky ?? 0);
@@ -691,9 +857,7 @@ function formatCmtChannelMessage({
 
     // The triage job's verdicts when it ran; the history-and-error-text judgement only where it did not.
     if (triage?.length) {
-        const {webhookBucketForReportName} = require('./build-tsio-job-config');
-        const onMain = webhookBucketForReportName(compositeIdentity?.run_group || compositeIdentity?.name || '') === 'mobile-main';
-        lines.push(...formatTriageVerdict({triage, onMain, changes, repository: compositeIdentity?.repository, legs, failures}));
+        lines.push(...formatTriageVerdict({triage, legs, failures}));
     } else {
         lines.push(...formatFailureJudgement(failures));
         if ((failures || []).length > 0 && failed > failures.length) {
@@ -968,6 +1132,10 @@ async function notifyCmtChannel({
             upstreamJobsSucceeded,
             hasFailures,
         });
+        if (!text) {
+            core.info('Mobile Main E2E: no possible product bug or setup problem — skipping channel notify');
+            return;
+        }
 
         await postMattermostWebhook({core, webhookUrl: resolvedWebhook, text});
     } catch (error) {
@@ -984,6 +1152,7 @@ module.exports = {
     formatLegResultText,
     reportTitleForIdentity,
     formatCmtChannelMessage,
+    formatMainChannelMessage,
     formatTriageVerdict,
     formatMassFailures,
     verdictOf,

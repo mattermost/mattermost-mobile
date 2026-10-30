@@ -12,6 +12,7 @@ const {
     buildLegSummaries,
     formatLegResultText,
     formatCmtChannelMessage,
+    formatMainChannelMessage,
     formatTriageVerdict,
     formatMassFailures,
     verdictOf,
@@ -213,9 +214,9 @@ describe('cmt-channel-notify', () => {
         it('marks overall failed when hasFailures is set without test failures', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {
-                    branch: 'main',
+                    branch: 'feature',
                     commit_sha: 'a1b2c3d4e5f678901234567890abcdef12345678',
-                    name: 'mobile-main',
+                    name: 'mobile-pr',
                 },
                 detail: {
                     status: 'completed',
@@ -228,14 +229,14 @@ describe('cmt-channel-notify', () => {
                 upstreamJobsSucceeded: true,
                 hasFailures: true,
             });
-            assert.match(text, /^## ❌ Mobile Main E2E\n/);
+            assert.match(text, /^## ❌ Mobile PR E2E\n/);
             assert.match(text, /\| \*\*Overall\*\* \| \*\*100\*\* \| \*\*0\*\* \| \*\*0\*\* \| ❌ Failed \|/);
             assert.match(text, /TSIO reported failed shard\(s\) not reflected in the test totals/);
         });
 
         it('does not blame CI when the failing jobs are explained by failing tests', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                compositeIdentity: {branch: 'feature', commit_sha: 'a1b2c3d', name: 'mobile-pr'},
                 detail: {
                     status: 'incomplete',
                     test_stats: {passed: 100, failed: 3, skipped: 0, total: 103},
@@ -245,13 +246,13 @@ describe('cmt-channel-notify', () => {
                 upstreamJobsSucceeded: false,
                 hasFailures: true,
             });
-            assert.match(text, /^## ❌ Mobile Main E2E\n/);
+            assert.match(text, /^## ❌ Mobile PR E2E\n/);
             assert.doesNotMatch(text, /outside tracked tests/);
         });
 
         it('still flags CI failures outside tracked tests when no test failed', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                compositeIdentity: {branch: 'feature', commit_sha: 'a1b2c3d', name: 'mobile-pr'},
                 detail: {
                     status: 'completed',
                     test_stats: {passed: 100, failed: 0, skipped: 0, total: 100},
@@ -265,7 +266,7 @@ describe('cmt-channel-notify', () => {
 
         it('links the CI run separately from the TSIO report', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                compositeIdentity: {branch: 'feature', commit_sha: 'a1b2c3d', name: 'mobile-pr'},
                 detail: {status: 'completed', test_stats: {passed: 1}, reports: []},
                 runUrl: 'https://github.com/mattermost/mattermost-mobile/actions/runs/30424009936',
                 perJobCounts: {},
@@ -453,7 +454,7 @@ describe('cmt-channel-notify', () => {
 
         it('renders no judgement section without failures', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                compositeIdentity: {branch: 'feature', commit_sha: 'a1b2c3d', name: 'mobile-pr'},
                 detail: {status: 'completed', test_stats: {passed: 1, failed: 0}, reports: []},
                 perJobCounts: {},
             });
@@ -464,11 +465,11 @@ describe('cmt-channel-notify', () => {
     describe('notifyCmtChannel', () => {
         const identity = {
             repository: 'mattermost/mattermost-mobile',
-            branch: 'refs/heads/main',
+            branch: 'refs/heads/feature',
             commit_sha: 'a1b2c3d4e5f6',
             gh_run_id: '30424009936',
-            name: 'mobile-main',
-            run_group: 'mobile-main',
+            name: 'mobile-pr',
+            run_group: 'mobile-pr',
         };
         const detail = {
             status: 'completed',
@@ -565,7 +566,6 @@ describe('cmt-channel-notify', () => {
                     row('call_ui_permission', 'FLAKY_ON_TRUNK', 'flaky', 'detox/maestro/flows/calls/call_ui_permission.yml'),
                 ]},
         ];
-        const changes = {from: '39272432327c8ce7c8bf074f86db656ca9be4b20', to: '0ec1413a1a8bd595c2f70f144d7de02051d382e7', prs: [{number: 10266, title: '[MM-71089] Log websocket client creation errors'}]};
 
         it('puts each test under what it means, in plain words', () => {
             assert.deepEqual(verdictOf({class: 'REGRESSION', label: 'needs investigation'}, true).key, 'new', 'on main, a test that passed every earlier run is new');
@@ -582,44 +582,19 @@ describe('cmt-channel-notify', () => {
             assert.equal(verdictOf({class: 'REGRESSION', label: 'test bug'}, true).key, 'test', 'and so does a problem with the test');
         });
 
-        it('names the change merged since the last main run for new failures, and counts retried passes as flaky', () => {
-            const text = formatTriageVerdict({triage, onMain: true, changes}).join('\n');
-            assert.match(text, /^🆕 \*\*New on main\*\* — passed every earlier main run, fail now \(2\)$/m);
-            assert.match(text, /^Most likely broken by the one change merged since the last main run \(`3927243` → `0ec1413`\): \[#10266\]\(https:\/\/github\.com\/mattermost\/mattermost-mobile\/pull\/10266\) \[MM-71089\] Log websocket client creation errors$/m);
-            assert.match(text, /^- 🤖 maestro-android clock_display$/m, 'a Maestro flow is named by its title, not its file path');
+        it('names each failed test of a PR run under its verdict, and counts retried passes as flaky', () => {
+            const text = formatTriageVerdict({triage}).join('\n');
+            assert.match(text, /^- 🤖 maestro-android clock_display — the cause is not clear$/m, 'a Maestro flow is named by its title, not its file path');
             assert.match(text, /^- 🤖 maestro-android call_ui_permission — failed by chance; it passes on retry or on other runs$/m);
             assert.match(text, /^🔁 \*\*Passed on retry, not product bugs:\*\* 5 tests \(🤖 detox-android 4, 📱 detox-ios 1\)$/m);
-        });
-
-        it('says when the changes since the last main run are unknown, and names a failed run with no verdict', () => {
             const legs = [{platform: 'ios', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed: 2, passed: 5}];
-            const text = formatTriageVerdict({triage, onMain: true, changes: null, legs}).join('\n');
-            assert.match(text, /^_Most likely broken by a change merged since the last main run\._$/m);
-            const many = formatTriageVerdict({triage, onMain: true, changes: {...changes, partial: true}}).join('\n');
-            assert.match(many, /one of the many changes merged since the last main run \(.*too many for GitHub to list them all\), among them: \[#10266\]/);
-            const same = formatTriageVerdict({triage, onMain: true, changes: {from: 'cccc000', to: 'cccc000', prs: []}}).join('\n');
-            assert.match(same, /^_No change was merged since the last main run \(same commit `cccc000`\), so no new change explains these\._$/m);
-            assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 maestro-ios — the triage job left no verdict; look at the run$/m);
+            assert.match(formatTriageVerdict({triage, legs}).join('\n'), /^⚙️ \*\*Not checked:\*\* 📱 maestro-ios — the triage job left no verdict; look at the run$/m);
         });
 
         it('calls out a run where most tests failed at once', () => {
             const leg = (failed, passed) => ({platform: 'android', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed, passed});
             assert.deepEqual(formatMassFailures([leg(9, 2)]), ['⚠️ **🤖 maestro-android: 9 of 11 tests failed.** When most of a run fails at once it is usually its setup (device, app build or server) or one broken screen — look at that run before the single tests.']);
             assert.deepEqual(formatMassFailures([leg(4, 1), leg(9, 20)]), [], 'a few failures, or a minority of the run, are judged one by one');
-        });
-
-        it('uses the triage verdict instead of the error-text judgement when the triage jobs left one', () => {
-            const params = {
-                compositeIdentity: {repository: 'mattermost/mattermost-mobile', name: 'mobile-main', run_group: 'mobile-main', branch: 'main', commit_sha: '0ec1413a1'},
-                detail: {status: 'completed', test_stats: {passed: 2, failed: 1, skipped: 0}, reports: []},
-                perJobCounts: {'maestro-android-e2e': {passed: 2, failed: 1, skipped: 0}},
-                failures: [{title: 'clock_display', job: 'maestro-android-e2e', error: 'Element not found'}],
-            };
-            const withTriage = formatCmtChannelMessage({...params, triage, changes});
-            assert.match(withTriage, /🆕 \*\*New on main\*\*/);
-            assert.doesNotMatch(withTriage, /Failure judgement/);
-            const without = formatCmtChannelMessage(params);
-            assert.match(without, /Failure judgement/, 'with no triage verdict the earlier judgement still runs');
         });
 
         it('judges from the error text the failed runs whose triage named no test', () => {
@@ -639,7 +614,7 @@ describe('cmt-channel-notify', () => {
                 {title: 'Channels MM-T1 - should open', job: 'detox-android', error: 'Element not found'},
                 {title: 'Search MM-T2 - should find', job: 'detox-ios', error: 'Element not found'},
             ];
-            const text = formatTriageVerdict({triage: lanes, onMain: true, changes, legs, failures}).join('\n');
+            const text = formatTriageVerdict({triage: lanes, legs, failures}).join('\n');
             assert.match(text, /Failure judgement/);
             assert.match(text, /^- 🤖 detox-android Channels MM-T1 - should open — /m, 'a run whose triage failed is judged from the error text');
             assert.match(text, /^- 📱 detox-ios Search MM-T2 - should find — /m, 'a run with no findings file is judged from the error text');
@@ -655,7 +630,7 @@ describe('cmt-channel-notify', () => {
                 {title: 'spec did not run', job: 'detox-ios', error: 'was assigned to a shard but produced no result'},
                 {title: 'Search MM-T9 - should find', job: 'detox-ios', error: 'Element not found', passedOnRetry: true},
             ];
-            const text = formatTriageVerdict({triage: lanes, onMain: false, legs, failures}).join('\n');
+            const text = formatTriageVerdict({triage: lanes, legs, failures}).join('\n');
             assert.match(text, /^- 📱 detox-ios spec did not run — /m, 'a failure with no finding is judged from its error text');
             assert.equal(text.match(/Login MM-T3/g).length, 1);
             assert.doesNotMatch(text, /MM-T9/, 'a test that passed on retry is in the retry count, not a failure');
@@ -683,9 +658,94 @@ describe('cmt-channel-notify', () => {
                 {platform: 'ios', framework: 'detox', kind: 'cmt', serverVersion: '11.9.0', failed: 1, passed: 5},
                 {platform: 'ios', framework: 'detox', kind: 'cmt', serverVersion: '10.11.0', failed: 1, passed: 5},
             ];
-            const text = formatTriageVerdict({triage: lanes, onMain: false, legs}).join('\n');
+            const text = formatTriageVerdict({triage: lanes, legs}).join('\n');
             assert.match(text, /^⚙️ \*\*Not checked:\*\* .*10\.11\.0.* — the triage job left no verdict; look at the run$/m);
             assert.doesNotMatch(text, /Not checked:.*11\.9\.0/);
+        });
+    });
+
+    // Main run 40764686027: 11 failed — 10 new on main (2 detox-android, 8 of maestro-android's 9), 1 flaky — and 5
+    // passed on retry.
+    describe('main-run message', () => {
+        const row = (title, cls, label) => ({title, full_title: title, class: cls, label});
+        const identity = {repository: 'mattermost/mattermost-mobile', name: 'mobile-main', run_group: 'mobile-main', branch: 'main', commit_sha: '0ec1413a1a8bd595c2f70f144d7de02051d382e7'};
+        const newOnMain = (n) => Array.from({length: n}, (_, i) => row(`test ${i}`, 'REGRESSION', 'needs investigation'));
+        const triage = [
+            {lane: 'detox-ios', counts: {flaky: 1}, findings: []},
+            {lane: 'detox-android', counts: {flaky: 4}, findings: newOnMain(2)},
+            {lane: 'maestro-android-e2e', counts: {flaky: 0}, findings: [...newOnMain(8), row('call_ui_permission', 'FLAKY_ON_TRUNK', 'flaky')]},
+        ];
+        const perJobCounts = {
+            'detox-ios': {passed: 616, failed: 0, skipped: 43, flaky: 1},
+            'detox-android': {passed: 614, failed: 2, skipped: 43, flaky: 4},
+            'detox-ipad': {passed: 19, failed: 0, skipped: 0, flaky: 0},
+            'maestro-ios-e2e': {passed: 7, failed: 0, skipped: 1, flaky: 0},
+            'maestro-android-e2e': {passed: 2, failed: 9, skipped: 2, flaky: 0},
+        };
+        const detail = {status: 'completed', test_stats: {passed: 1258, flaky: 5, failed: 11, skipped: 89}, reports: []};
+        const changes = {from: '39272432327c8ce7c8bf074f86db656ca9be4b20', to: identity.commit_sha, prs: [{number: 10266, title: '[MM-71089] Log websocket client creation failures'}], partial: false};
+        const runUrl = 'https://github.com/mattermost/mattermost-mobile/actions/runs/40764686027';
+        const message = (overrides) => formatCmtChannelMessage({compositeIdentity: identity, detail, perJobCounts, triage, changes, runUrl, failures: [], ...overrides});
+
+        it('says in a few lines which failures may be product bugs and which are not', () => {
+            assert.equal(message(), [
+                '🔴 **Mobile Main E2E — possible product bug** on `main`',
+                '`0ec1413` · most likely from [#10266](https://github.com/mattermost/mattermost-mobile/pull/10266) [MM-71089] Log websocket client creation failures',
+                '**11 failed** · 1263 passed · 89 skipped',
+                "🐞 **Possible product bugs (10):** 🤖 detox-android 2 · 🤖 maestro-android 8 (9 of 11 tests failed: check that run's setup first)",
+                '🔁 **Not product bugs:** 1 flaky · 5 passed on retry',
+                `➡️ [Workflow run](${runUrl})`,
+                '',
+            ].join('\n'));
+        });
+
+        it('posts nothing when the run passed, or when no failure is a product bug', () => {
+            assert.equal(message({detail: {status: 'completed', test_stats: {passed: 1263, failed: 0, skipped: 89}, reports: []}, perJobCounts: {'detox-ios': {passed: 1263, failed: 0, skipped: 89}}, triage: []}), null);
+            const cleared = [
+                {lane: 'detox-android', counts: {flaky: 4}, findings: [row('a', 'FLAKY_ON_TRUNK', 'flaky'), row('b', 'BROKEN_ON_TRUNK', 'broken on main')]},
+                {lane: 'maestro-android-e2e', counts: {flaky: 0}, findings: [row('c', 'REGRESSION', 'test bug')]},
+            ];
+            const counts = {'detox-android': {passed: 614, failed: 2, skipped: 0, flaky: 4}, 'maestro-android-e2e': {passed: 10, failed: 1, skipped: 0}};
+            assert.equal(message({triage: cleared, perJobCounts: counts, detail: {...detail, test_stats: {passed: 624, failed: 3, skipped: 0}}}), null);
+        });
+
+        it('names which change most likely broke a test new on main', () => {
+            const second = (changed) => message({changes: changed}).split('\n')[1];
+            assert.equal(second(null), '`0ec1413` · most likely from a change merged since the last main run');
+            assert.equal(second({from: identity.commit_sha, to: identity.commit_sha, prs: []}), '`0ec1413` · no change was merged since the last main run, so no new change explains these');
+            const prs = [10300, 10301, 10302, 10303].map((number) => ({number, title: 'x'}));
+            assert.match(second({...changes, prs}), /^`0ec1413` · most likely from one of the 4 changes merged since the last main run: \[#10300\]\(.*\) · \[#10301\]\(.*\) · \[#10302\]\(.*\) and 1 more$/);
+            assert.match(second({...changes, prs, partial: true}), /^`0ec1413` · most likely from one of the many changes merged since the last main run \(`3927243` → `0ec1413`\), among them \[#10300\]/);
+            const appBug = [{lane: 'detox-android', counts: {flaky: 0}, findings: [row('a', 'REGRESSION', 'app bug')]}];
+            assert.equal(message({triage: appBug, perJobCounts: {'detox-android': {passed: 5, failed: 1}}}).split('\n')[1], '`0ec1413`', 'no change is named for a bug that is not new on main');
+        });
+
+        it('needs investigation when triage could not tell, or left no verdict', () => {
+            const lanes = [{lane: 'detox-android', counts: {flaky: 0}, findings: [row('a', 'INSUFFICIENT_DATA', 'needs investigation')]}];
+            const counts = {'detox-android': {passed: 5, failed: 1}, 'detox-ios': {passed: 5, failed: 2}};
+            const text = message({triage: lanes, perJobCounts: counts, detail: {...detail, test_stats: {passed: 10, failed: 3, skipped: 0}}});
+            assert.match(text, /^🟡 \*\*Mobile Main E2E — needs investigation\*\* on `main`$/m);
+            assert.match(text, /^🔎 \*\*Needs investigation \(3\):\*\* 📱 detox-ios 2 · 🤖 detox-android 1 — triage could not tell; see the report$/m);
+        });
+
+        it('judges from the error text a failed test triage did not name', () => {
+            const failures = [{title: 'Login MM-T1 - should log in', job: 'detox-ios', error: 'connect ECONNREFUSED 127.0.0.1:8065'}];
+            const text = message({triage: [], failures, perJobCounts: {'detox-ios': {passed: 5, failed: 1}}, detail: {...detail, test_stats: {passed: 5, failed: 1, skipped: 0}}});
+            assert.match(text, /^🟡 \*\*Mobile Main E2E — setup problem\*\* on `main`$/m);
+            assert.match(text, /^🔁 \*\*Not product bugs:\*\* 1 setup \(device or server\)$/m);
+        });
+
+        it('calls a run with no results, or a CI failure outside the tests, a setup problem', () => {
+            const noResults = message({triage: [], perJobCounts: {'detox-ios': {passed: 5, failed: 0}}, detail: {status: 'completed', test_stats: {passed: 5, failed: 0}, reports: [{gh_job_name: 'maestro-ios-e2e', status: 'complete'}]}});
+            assert.match(noResults, /^🟡 \*\*Mobile Main E2E — setup problem\*\*/);
+            assert.match(noResults, /^⚙️ \*\*No results:\*\* 📱 maestro-ios — test results did not upload, or the run ran no tests; re-run to see if anything failed$/m);
+            const ci = message({triage: [], perJobCounts: {'detox-ios': {passed: 5, failed: 0}}, detail: {status: 'completed', test_stats: {passed: 5, failed: 0}, reports: []}, upstreamJobsSucceeded: false});
+            assert.match(ci, /^⚙️ A CI job failed outside the tests \(install, build or teardown\)\.$/m);
+        });
+
+        it('is what the PR and CMT messages are not', () => {
+            assert.equal(formatMainChannelMessage({compositeIdentity: identity, detail, perJobCounts, triage, changes, failures: []}), message({runUrl: undefined}));
+            assert.match(formatCmtChannelMessage({compositeIdentity: {...identity, name: 'mobile-pr', run_group: 'mobile-pr'}, detail, perJobCounts, triage, failures: []}), /^## ❌ Mobile PR E2E/);
         });
     });
 });
