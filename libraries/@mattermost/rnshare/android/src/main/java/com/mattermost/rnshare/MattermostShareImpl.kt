@@ -134,8 +134,8 @@ class MattermostShareImpl(private val reactContext: ReactApplicationContext) {
     }
 
     private fun createNotificationChannel(context: Context) {
-        val name = "Share Channel"
-        val descriptionText = "Channel for sharing content notifications"
+        val name = context.getString(R.string.mm_share_channel_name)
+        val descriptionText = context.getString(R.string.mm_share_channel_description)
         val importance = NotificationManager.IMPORTANCE_DEFAULT
         val channel = NotificationChannel("SHARE_CHANNEL", name, importance).apply {
             description = descriptionText

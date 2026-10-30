@@ -14,21 +14,23 @@ enum PDFError: Error {
     var description: String {
         switch self {
         case .fileCorrupted:
-            return "The PDF file appears to be corrupted or damaged."
+            return NSLocalizedString("native.ios.pdf.file_corrupted", bundle: .main, value: "The PDF file appears to be corrupted or damaged.", comment: "PDF loading error")
         case .fileNotPDF:
-            return "The file is not a valid PDF document."
+            return NSLocalizedString("native.ios.pdf.file_not_pdf", bundle: .main, value: "The file is not a valid PDF document.", comment: "PDF loading error")
         case .fileTooLarge(let size, let limit):
             let sizeInMB = Double(size) / (1024 * 1024)
             let limitInMB = Double(limit) / (1024 * 1024)
-            return "The PDF file is too large to process: \(String(format: "%.1f", sizeInMB)) MB. Maximum supported size is \(String(format: "%.0f", limitInMB)) MB."
+            return NSLocalizedString("native.ios.pdf.file_too_large", bundle: .main, value: "The PDF file is too large to process: {size} MB. Maximum supported size is {limit} MB.", comment: "PDF size limit")
+                .replacingOccurrences(of: "{size}", with: String(format: "%.1f", locale: Locale.current, sizeInMB))
+                .replacingOccurrences(of: "{limit}", with: String(format: "%.0f", locale: Locale.current, limitInMB))
         case .memoryError:
-            return "Not enough memory to load the PDF file."
+            return NSLocalizedString("native.ios.pdf.memory_error", bundle: .main, value: "Not enough memory to load the PDF file.", comment: "PDF loading error")
         case .incompatibleFormat:
-            return "This PDF uses unsupported features or an incompatible format."
+            return NSLocalizedString("native.ios.pdf.incompatible_format", bundle: .main, value: "This PDF uses unsupported features or an incompatible format.", comment: "PDF loading error")
         case .unknownError:
-            return "An unknown error occurred while opening the PDF file."
+            return NSLocalizedString("native.ios.pdf.unknown_error", bundle: .main, value: "An unknown error occurred while opening the PDF file.", comment: "PDF loading error")
         case .internalError(let error):
-            return "An internal error occurred while opening the PDF file.\n\(error.localizedDescription)"
+            return NSLocalizedString("native.ios.pdf.internal_error", bundle: .main, value: "An internal error occurred while opening the PDF file.", comment: "PDF loading error") + "\n" + error.localizedDescription
         }
     }
 }

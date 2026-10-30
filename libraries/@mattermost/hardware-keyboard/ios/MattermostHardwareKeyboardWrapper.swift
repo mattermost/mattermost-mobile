@@ -29,12 +29,12 @@ import Foundation
         let shiftEnter = UIKeyCommand(input: "\r", modifierFlags: .shift, action: shiftEnterPressed)
         let findChannels = UIKeyCommand(input: "k", modifierFlags: .command, action: findChannels)
         
-        enter.title = "Send message"
-        enter.discoverabilityTitle = "Send message"
-        shiftEnter.title = "Add new line"
-        shiftEnter.discoverabilityTitle = "Add new line"
-        findChannels.title = "Find channels"
-        findChannels.discoverabilityTitle = "Find channels"
+        enter.title = NSLocalizedString("native.ios.hardware_keyboard.send_message", bundle: .main, value: "Send message", comment: "Hardware keyboard shortcut")
+        enter.discoverabilityTitle = enter.title
+        shiftEnter.title = NSLocalizedString("native.ios.hardware_keyboard.new_line", bundle: .main, value: "Add new line", comment: "Hardware keyboard shortcut")
+        shiftEnter.discoverabilityTitle = shiftEnter.title
+        findChannels.title = NSLocalizedString("native.ios.hardware_keyboard.find_channels", bundle: .main, value: "Find channels", comment: "Hardware keyboard shortcut")
+        findChannels.discoverabilityTitle = findChannels.title
         enter.wantsPriorityOverSystemBehavior = true
         shiftEnter.wantsPriorityOverSystemBehavior = true
         findChannels.wantsPriorityOverSystemBehavior = true
