@@ -94,6 +94,28 @@ describe('WebSocketClient', () => {
         expect(logInfo).toHaveBeenCalledWith('websocket connecting to wss://example.com/api/v4/websocket');
     });
 
+    it('should send the preauth secret header over wss', async () => {
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
+        mockedGetConfigValue.mockResolvedValueOnce('wss://example.com');
+        const secretClient = new WebSocketClient(serverUrl, token, 'test-secret');
+
+        await secretClient.initialize();
+
+        expect(mockedGetOrCreateWebSocketClient).toHaveBeenLastCalledWith('wss://example.com/api/v4/websocket', {headers: {origin: 'wss://example.com', 'X-Mattermost-Preauth-Secret': 'test-secret'}, timeoutInterval: 30000});
+        secretClient.close(true);
+    });
+
+    it('should not send the preauth secret header over ws', async () => {
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
+        mockedGetConfigValue.mockResolvedValueOnce('ws://example.com');
+        const secretClient = new WebSocketClient(serverUrl, token, 'test-secret');
+
+        await secretClient.initialize();
+
+        expect(mockedGetOrCreateWebSocketClient).toHaveBeenLastCalledWith('ws://example.com/api/v4/websocket', {headers: {origin: 'ws://example.com'}, timeoutInterval: 30000});
+        secretClient.close(true);
+    });
+
     it('should log an error when creating the WebSocket client fails', async () => {
         DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
         const error = new Error('"wss://example.com/api/v4/websocket" is not a valid WebSocket URL');
