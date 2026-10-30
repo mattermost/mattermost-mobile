@@ -23,6 +23,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
 import {navigateBack} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
+import {getDisplayProductName} from '@utils/branding';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -91,7 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const TermsOfService = ({
-    siteName = 'Mattermost',
+    siteName,
     showToS,
 }: TermsOfServiceProps) => {
     const theme = useTheme();
@@ -104,6 +105,7 @@ const TermsOfService = ({
     const [getTermsError, setGetTermError] = useState(false);
     const [termsId, setTermsId] = useState('');
     const [termsText, setTermsText] = useState('');
+    const displaySiteName = getDisplayProductName(siteName);
 
     const getTerms = useCallback(async () => {
         setLoading(true);
@@ -127,7 +129,7 @@ const TermsOfService = ({
 
     const alertError = useCallback((retry: () => void) => {
         Alert.alert(
-            siteName,
+            displaySiteName,
             intl.formatMessage({
                 id: 'terms_of_service.api_error',
                 defaultMessage: 'Unable to complete the request. If this issue persists, contact your System Administrator.',
@@ -141,7 +143,7 @@ const TermsOfService = ({
                 onPress: retry,
             }],
         );
-    }, [siteName, intl, closeTermsAndLogout]);
+    }, [displaySiteName, intl, closeTermsAndLogout]);
 
     const alertDecline = useCallback(() => {
         Alert.alert(

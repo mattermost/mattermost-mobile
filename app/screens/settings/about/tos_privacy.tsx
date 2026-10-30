@@ -6,6 +6,7 @@ import {Text} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {isEncmaApp} from '@utils/branding';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -35,8 +36,10 @@ const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPriv
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const hasTermsOfServiceLink = Boolean(config.TermsOfServiceLink);
-    const hasPrivacyPolicyLink = Boolean(config.PrivacyPolicyLink);
+    // ENCMA has no replacement legal-site destinations yet. Keep the copyright
+    // and open-source notices below, but do not route users to upstream sites.
+    const hasTermsOfServiceLink = !isEncmaApp && Boolean(config.TermsOfServiceLink);
+    const hasPrivacyPolicyLink = !isEncmaApp && Boolean(config.PrivacyPolicyLink);
 
     return (
         <>

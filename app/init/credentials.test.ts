@@ -4,8 +4,12 @@
 import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
+import {WIREGUARD_KEYCHAIN_SERVICE} from '@constants/wireguard';
+import DatabaseManager from '@database/manager';
+
 import {
     LEGACY_PREAUTH_SECRET_ACCOUNT,
+    getActiveServerUrl,
     getAllServerCredentials,
     getLegacyPreauthSecret,
     getPreauthSecret,
@@ -533,12 +537,13 @@ describe('credentials', () => {
             expect((KeyChain as any).getAllInternetPasswordServers).not.toHaveBeenCalled();
         });
 
-        it('should ignore pre-auth and legacy aliases when listing Android services', async () => {
+        it('should ignore pre-auth, legacy, and WireGuard aliases when listing Android services', async () => {
             Platform.OS = 'android';
 
             jest.mocked(KeyChain.getAllGenericPasswordServices).mockResolvedValue([
                 'https://server1.com',
                 'preauth-secret::https://server1.com',
+                WIREGUARD_KEYCHAIN_SERVICE,
                 '',
             ]);
             jest.mocked(KeyChain.getInternetCredentials).mockResolvedValue({
@@ -602,6 +607,20 @@ describe('credentials', () => {
             expect(KeyChain.getAllGenericPasswordServices).not.toHaveBeenCalled();
         });
 
+        it('should reject a persisted WireGuard alias from known Android server URLs', async () => {
+            Platform.OS = 'android';
+            jest.mocked(KeyChain.getInternetCredentials).mockResolvedValue({
+                username: 'wireguard-config',
+                password: 'private-test-configuration',
+                service: WIREGUARD_KEYCHAIN_SERVICE,
+                storage: 'keychain' as any,
+            });
+
+            await expect(getAllServerCredentials([WIREGUARD_KEYCHAIN_SERVICE])).resolves.toEqual([]);
+            expect(KeyChain.getInternetCredentials).not.toHaveBeenCalled();
+            expect(KeyChain.getAllGenericPasswordServices).not.toHaveBeenCalled();
+        });
+
         it('should fall back to listing when known URLs is empty', async () => {
             jest.mocked((KeyChain as any).getAllInternetPasswordServers).mockResolvedValue([mockServerUrl]);
             jest.mocked(KeyChain.getInternetCredentials).mockResolvedValue({
@@ -639,6 +658,24 @@ describe('credentials', () => {
             expect(one).toEqual(first[0]);
             expect((KeyChain as any).getAllInternetPasswordServers).not.toHaveBeenCalled();
             expect(KeyChain.getInternetCredentials).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getActiveServerUrl', () => {
+        it('should ignore a persisted WireGuard alias as the active server on Android', async () => {
+            Platform.OS = 'android';
+            jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValueOnce(WIREGUARD_KEYCHAIN_SERVICE);
+            jest.mocked(KeyChain.getAllGenericPasswordServices).mockResolvedValue([]);
+
+            await expect(getActiveServerUrl()).resolves.toBeUndefined();
+        });
+
+        it('should not fall back to the WireGuard configuration as a server URL on Android', async () => {
+            Platform.OS = 'android';
+            jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValueOnce(undefined);
+            jest.mocked(KeyChain.getAllGenericPasswordServices).mockResolvedValue([WIREGUARD_KEYCHAIN_SERVICE]);
+
+            await expect(getActiveServerUrl()).resolves.toBeUndefined();
         });
     });
 

@@ -12,6 +12,7 @@ import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
+import VoiceRecordAction from './voice_record_action';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -81,6 +82,7 @@ export default function QuickActions({
     const slashInputActionTestID = `${testID}.slash_input_action`;
     const emojiActionTestID = `${testID}.emoji_action`;
     const attachmentActionTestID = `${testID}.attachment_action`;
+    const voiceRecordActionTestID = `${testID}.voice_record_action`;
     const aiRewriteActionTestID = `${testID}.ai_rewrite_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
     const borPriorityActionTestID = `${testID}.bor_action`;
@@ -102,6 +104,11 @@ export default function QuickActions({
             <AttachmentAction
                 testID={attachmentActionTestID}
                 {...uploadProps}
+            />
+            <VoiceRecordAction
+                testID={voiceRecordActionTestID}
+                disabled={!canUploadFiles || fileCount >= maxFileCount}
+                onUploadFiles={addFiles}
             />
             <InputAction
                 testID={atInputActionTestID}

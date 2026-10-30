@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withObservables} from '@nozbe/watermelondb/react';
+import {applicationId} from 'expo-application';
 import {type ImageSource} from 'expo-image';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
@@ -28,7 +29,7 @@ interface NotificationIconProps {
 }
 
 const IMAGE_SIZE = 36;
-const logo = require('@assets/images/icon.png');
+const logo = applicationId === 'com.encma.hxmain' ? require('@assets/images/encma-icon.png') : require('@assets/images/icon.png');
 
 const styles = StyleSheet.create({
     icon: {

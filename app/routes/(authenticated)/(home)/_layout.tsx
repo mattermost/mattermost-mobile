@@ -7,6 +7,7 @@ import React from 'react';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import TabBar from '@screens/home/tab_bar';
+import {isEncmaApp} from '@utils/branding';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -44,33 +45,39 @@ export default function TabLayout() {
                     animation: 'none',
                 }}
             />
-            <Tabs.Screen
-                name={Screens.SEARCH}
-                options={{
-                    title: 'Search',
-                    href: null,
-                    tabBarButtonTestID: 'tab_bar.search.tab',
-                    freezeOnBlur: true,
-                }}
-            />
-            <Tabs.Screen
-                name={Screens.MENTIONS}
-                options={{
-                    title: 'Mentions',
-                    href: null,
-                    tabBarButtonTestID: 'tab_bar.mentions.tab',
-                    freezeOnBlur: true,
-                }}
-            />
-            <Tabs.Screen
-                name={Screens.SAVED_MESSAGES}
-                options={{
-                    title: 'Saved',
-                    href: null,
-                    tabBarButtonTestID: 'tab_bar.saved_messages.tab',
-                    freezeOnBlur: true,
-                }}
-            />
+            {!isEncmaApp && (
+                <Tabs.Screen
+                    name={Screens.SEARCH}
+                    options={{
+                        title: 'Search',
+                        href: null,
+                        tabBarButtonTestID: 'tab_bar.search.tab',
+                        freezeOnBlur: true,
+                    }}
+                />
+            )}
+            {!isEncmaApp && (
+                <Tabs.Screen
+                    name={Screens.MENTIONS}
+                    options={{
+                        title: 'Mentions',
+                        href: null,
+                        tabBarButtonTestID: 'tab_bar.mentions.tab',
+                        freezeOnBlur: true,
+                    }}
+                />
+            )}
+            {!isEncmaApp && (
+                <Tabs.Screen
+                    name={Screens.SAVED_MESSAGES}
+                    options={{
+                        title: 'Saved',
+                        href: null,
+                        tabBarButtonTestID: 'tab_bar.saved_messages.tab',
+                        freezeOnBlur: true,
+                    }}
+                />
+            )}
             <Tabs.Screen
                 name={Screens.ACCOUNT}
                 options={{

@@ -104,13 +104,19 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     namespace "com.mattermost.rnbeta"
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
+    }
+
     lintOptions {
         checkReleaseBuilds false
         abortOnError false
     }
 
     defaultConfig {
-        applicationId "com.mattermost.rnbeta"
+        applicationId "com.encma.hxmain"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 834
@@ -248,6 +254,11 @@ dependencies {
     runtimeOnly('io.jsonwebtoken:jjwt-orgjson:0.12.5') {
         exclude(group: 'org.json', module: 'json') //provided by Android natively
     }
+
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    implementation 'com.wireguard.android:tunnel:1.0.20260102'
+
+    testImplementation 'junit:junit:4.13.2'
 }
 
 configurations.all {

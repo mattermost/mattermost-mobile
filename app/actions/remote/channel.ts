@@ -25,7 +25,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
-import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
+import {generateChannelNameFromDisplayName, getDirectChannelName, isDefaultChannel, isDMorGM} from '@utils/channel';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
@@ -1407,6 +1407,39 @@ export const archiveChannel = async (serverUrl: string, channelId: string) => {
         return {};
     } catch (error) {
         logDebug('error on archiveChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    } finally {
+        EphemeralStore.removeArchivingChannel(channelId);
+    }
+};
+
+export const permanentlyDeleteChannel = async (serverUrl: string, channelId: string) => {
+    try {
+        EphemeralStore.addArchivingChannel(channelId);
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channel = await getChannelById(database, channelId);
+        if (!channel || isDefaultChannel(channel) || (channel.type !== General.OPEN_CHANNEL && channel.type !== General.PRIVATE_CHANNEL)) {
+            throw new Error('This conversation cannot be permanently deleted through the Mattermost API');
+        }
+
+        await client.deleteChannelPermanently(channelId);
+
+        const {error: cleanupError} = await removeCurrentUserFromChannel(serverUrl, channelId);
+        if (cleanupError) {
+            // The server has already deleted the channel. Do not misreport the remote result;
+            // a later synchronization can reconcile any local records left behind.
+            logError('error cleaning up permanently deleted channel', getFullErrorMessage(cleanupError));
+        }
+
+        if (channel.teamId) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, channel.teamId, channelId);
+        }
+
+        return {};
+    } catch (error) {
+        logDebug('error on permanentlyDeleteChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     } finally {

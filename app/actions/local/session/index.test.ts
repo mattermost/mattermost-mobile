@@ -11,6 +11,7 @@ import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import {removeServerCertificate} from '@managers/server_certificate_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpiredSession} from '@queries/servers/system';
@@ -51,6 +52,9 @@ jest.mock('@init/push_notifications', () => ({
 }));
 jest.mock('@managers/network_manager', () => ({
     invalidateClient: jest.fn(),
+}));
+jest.mock('@managers/server_certificate_manager', () => ({
+    removeServerCertificate: jest.fn(),
 }));
 jest.mock('@managers/websocket_manager', () => ({
     invalidateClient: jest.fn(),
@@ -283,6 +287,7 @@ describe('session actions', () => {
             expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(removePushDisabledInServerAcknowledged).toHaveBeenCalledWith(encodedServerUrl);
             expect(removePushSigningKey).toHaveBeenCalledWith(mockServerUrl);
+            expect(removeServerCertificate).toHaveBeenCalledWith(mockServerUrl);
             expect(DatabaseManager.destroyServerDatabase).toHaveBeenCalledWith(mockServerUrl);
             expect(resetMomentLocale).toHaveBeenCalled();
             expect(clearCookiesForServer).toHaveBeenCalledWith(mockServerUrl);
@@ -298,6 +303,7 @@ describe('session actions', () => {
             expect(DatabaseManager.destroyServerDatabase).not.toHaveBeenCalled();
             expect(removePushDisabledInServerAcknowledged).not.toHaveBeenCalled();
             expect(removePushSigningKey).not.toHaveBeenCalled();
+            expect(removeServerCertificate).not.toHaveBeenCalled();
         });
 
         it('should clear cookies for server', async () => {

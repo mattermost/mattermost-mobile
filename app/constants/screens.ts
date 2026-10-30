@@ -88,6 +88,7 @@ const THREAD = 'thread';
 const THREAD_OPTIONS = 'thread_options';
 const USER_PROFILE = 'user_profile';
 const SHOW_TRANSLATION = 'show_translation';
+const VPN = 'vpn';
 
 export default {
     ABOUT,
@@ -175,6 +176,7 @@ export default {
     THREAD_OPTIONS,
     USER_PROFILE,
     SHOW_TRANSLATION,
+    VPN,
     ...PLAYBOOKS_SCREENS,
     ...AGENTS_SCREENS,
 } as const;

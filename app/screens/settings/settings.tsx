@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {router} from 'expo-router';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
@@ -14,6 +15,7 @@ import {useServerDisplayName, useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack, navigateToSettingsScreen} from '@screens/navigation';
+import {getDisplayProductName, isEncmaApp, isMattermostWebsite} from '@utils/branding';
 
 import ReportProblem from './report_problem';
 
@@ -28,7 +30,8 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
     const serverUrl = useServerUrl();
     const serverDisplayName = useServerDisplayName();
 
-    const serverName = siteName || serverDisplayName;
+    const serverName = getDisplayProductName(siteName || serverDisplayName);
+    const canOpenHelp = showHelp && (!isEncmaApp || !isMattermostWebsite(helpLink));
 
     useAndroidHardwareBackHandler(Screens.SETTINGS, navigateBack);
 
@@ -50,11 +53,15 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
         navigateToSettingsScreen(Screens.SETTINGS_ADVANCED);
     }, []));
 
+    const goToVpn = usePreventDoubleTap(useCallback(() => {
+        router.push({pathname: '/vpn', params: {management: 'true'}});
+    }, []));
+
     const openHelp = usePreventDoubleTap(useCallback(() => {
-        if (helpLink) {
+        if (canOpenHelp) {
             handleGotoLocation(serverUrl, intl, helpLink);
         }
-    }, [helpLink, intl, serverUrl]));
+    }, [canOpenHelp, helpLink, intl, serverUrl]));
 
     return (
         <SettingContainer testID='settings'>
@@ -68,6 +75,13 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
                 optionName='display'
                 testID='settings.display.option'
             />
+            {Platform.OS === 'android' && (
+                <SettingItem
+                    onPress={goToVpn}
+                    optionName='vpn'
+                    testID='settings.vpn.option'
+                />
+            )}
             <SettingItem
                 onPress={goToAdvancedSettings}
                 optionName='advanced_settings'
@@ -81,7 +95,7 @@ const Settings = ({helpLink, showHelp, siteName}: SettingsProps) => {
                 testID='settings.about.option'
             />
             {Platform.OS === 'android' && <MenuDivider/>}
-            {showHelp &&
+            {canOpenHelp &&
                 <SettingItem
                     onPress={openHelp}
                     optionName='help'

@@ -8,6 +8,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
 import {useWindowDimensions} from '@hooks/device';
+import {isEncmaApp} from '@utils/branding';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Account from './account';
@@ -63,10 +64,16 @@ const TabComponents: Record<string, any> = {
     [Screens.SEARCH]: Search,
 };
 
+const ENCMA_VISIBLE_TABS = new Set<string>([Screens.CHANNEL_LIST, Screens.ACCOUNT]);
+
 function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {theme: Theme}) {
     const [visible, setVisible] = useState<boolean|undefined>();
     const {width} = useWindowDimensions();
-    const tabs = useMemo(() => state.routes.filter((route) => route.name !== 'index'), [state.routes]);
+    const tabs = useMemo(() => state.routes.filter((route) => {
+        return route.name !== 'index' && (!isEncmaApp || ENCMA_VISIBLE_TABS.has(route.name));
+    }), [state.routes]);
+    const focusedRouteKey = state.routes[state.index]?.key;
+    const focusedTabIndex = Math.max(0, tabs.findIndex((route) => route.key === focusedRouteKey));
     const tabWidth = width / tabs.length;
     const style = getStyleSheet(theme);
     const safeareaInsets = useSafeAreaInsets();
@@ -112,11 +119,11 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     }, [navigation, state]);
 
     const transform = useAnimatedStyle(() => {
-        const translateX = withTiming(state.index * tabWidth, {duration: 150});
+        const translateX = withTiming(focusedTabIndex * tabWidth, {duration: 150});
         return {
             transform: [{translateX}],
         };
-    }, [state.index, tabWidth]);
+    }, [focusedTabIndex, tabWidth]);
 
     const animatedStyle = useAnimatedStyle(() => {
         if (visible === undefined) {
@@ -145,7 +152,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                     {tabs.map((route, index) => {
                         const {options} = descriptors[route.key];
 
-                        const isFocused = state.index === index;
+                        const isFocused = route.key === focusedRouteKey;
 
                         const onPress = () => {
                             const lastTab = state.history[state.history.length - 1];

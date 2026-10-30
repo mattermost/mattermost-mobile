@@ -44,6 +44,7 @@ import {
     showMAMEnrollmentRequiredAlert,
     showNotSecuredAlert,
 } from '@utils/alerts';
+import {getDisplayProductName} from '@utils/branding';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
@@ -777,7 +778,7 @@ class SecurityManagerSingleton {
 
         try {
             await Emm.authenticate({
-                reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
+                reason: translations[messages.securedBy.id].replace('{vendor}', getDisplayProductName(siteName || config?.siteName)),
                 fallback: true,
                 supressEnterPassword: false,
                 blurOnAuthenticate: this.shouldBlurOnAuthenticate(server),

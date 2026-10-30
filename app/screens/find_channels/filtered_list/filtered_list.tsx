@@ -17,6 +17,7 @@ import UserItem from '@components/user_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDebounce} from '@hooks/utils';
+import {isEncmaApp} from '@utils/branding';
 import {sortChannelsByDisplayName} from '@utils/channel';
 import {displayUsername} from '@utils/user';
 
@@ -267,7 +268,7 @@ const FilteredList = ({
         const items: ResultItem[] = [];
 
         // Add threads item to show it on the top of the list
-        if (isCRTEnabled) {
+        if (!isEncmaApp && isCRTEnabled) {
             const isThreadTerm = threadLabel.indexOf(term.toLowerCase()) === 0;
             if (isThreadTerm) {
                 items.push('thread');

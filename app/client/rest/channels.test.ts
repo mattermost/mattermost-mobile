@@ -75,6 +75,16 @@ describe('ClientChannels', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('deleteChannelPermanently', async () => {
+        const channelId = 'channel1';
+        const expectedUrl = `${client.getChannelRoute(channelId)}?permanent=true`;
+        const expectedOptions = {method: 'delete'};
+
+        await client.deleteChannelPermanently(channelId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('unarchiveChannel', async () => {
         const channelId = 'channel1';
         const expectedUrl = `${client.getChannelRoute(channelId)}/restore`;

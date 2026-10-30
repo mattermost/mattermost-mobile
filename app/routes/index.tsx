@@ -3,24 +3,68 @@
 
 import {Redirect, type Href} from 'expo-router';
 import {useEffect, useState} from 'react';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
-import {determineInitialExpoRoute, type ExpoRouterLaunchResult} from '@init/launch';
+import {type ExpoRouterLaunchResult} from '@init/launch';
+import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
+import {getWireGuardState, isWireGuardRequired, WireGuardStatus} from '@managers/wireguard_manager';
 import {propsToParams} from '@screens/navigation';
+
+const styles = StyleSheet.create({
+    loading: {
+        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center',
+    },
+});
 
 export default function RootIndex() {
     const [launchResult, setLaunchResult] = useState<ExpoRouterLaunchResult | null>(null);
 
     useEffect(() => {
+        let active = true;
+
         async function initializeLaunch() {
-            const result = await determineInitialExpoRoute();
-            setLaunchResult(result);
+            if (isWireGuardRequired()) {
+                try {
+                    const vpnState = await getWireGuardState();
+                    if (!active) {
+                        return;
+                    }
+                    if (vpnState.status !== WireGuardStatus.Connected) {
+                        setLaunchResult({route: '/vpn', params: {}});
+                        return;
+                    }
+                } catch {
+                    // Fail closed: the normal server/login flow requires a verified tunnel.
+                    if (active) {
+                        setLaunchResult({route: '/vpn', params: {}});
+                    }
+                    return;
+                }
+            }
+
+            const result = await determineInitialExpoRouteWithFallback();
+            if (active) {
+                setLaunchResult(result);
+            }
         }
 
         initializeLaunch();
+        return () => {
+            active = false;
+        };
     }, []);
 
     if (!launchResult) {
-        return null; // Still determining initial route
+        return (
+            <View
+                style={styles.loading}
+                testID='launch.loading'
+            >
+                <ActivityIndicator/>
+            </View>
+        );
     }
 
     // Redirect to the determined route with params

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">ENCMA adaptive icon foreground</title>
+  <g>
+    <rect x="282" y="232" width="132" height="560" rx="36" fill="#F8FAFC"/>
+    <rect x="282" y="232" width="460" height="132" rx="36" fill="#F8FAFC"/>
+    <rect x="282" y="446" width="364" height="132" rx="36" fill="#2DD4BF"/>
+    <rect x="282" y="660" width="460" height="132" rx="36" fill="#F8FAFC"/>
+  </g>
+</svg>

@@ -57,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: -5,
     },
     button: {
-        borderRadius: 8,
+        borderRadius: theme.centerChannelBg === '#0C122D' ? 14 : 8,
         flex: 1,
         height: 72,
         justifyContent: 'center',
@@ -66,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         alignItems: 'center',
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-        borderRadius: 8,
+        borderRadius: theme.centerChannelBg === '#0C122D' ? 14 : 8,
         flexDirection: 'row',
         height: 72,
         marginBottom: 12,
@@ -77,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     logout: {
         backgroundColor: theme.centerChannelBg,
-        borderRadius: 8,
+        borderRadius: theme.centerChannelBg === '#0C122D' ? 14 : 8,
         height: 18,
         left: 42,
         position: 'absolute',

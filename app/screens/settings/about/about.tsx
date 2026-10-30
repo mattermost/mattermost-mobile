@@ -5,7 +5,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Image, Text, View} from 'react-native';
 
 import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
@@ -22,6 +22,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack} from '@screens/navigation';
+import {isEncmaApp} from '@utils/branding';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -34,11 +35,16 @@ import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
+const encmaLogo = require('@assets/images/encma-icon.png');
 
 const TABLET_EXTRA_PADDING = 20;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        logo: {
+            height: 80,
+            width: 80,
+        },
         logoContainer: {
             alignItems: 'center',
             marginTop: 20,
@@ -209,12 +215,21 @@ const About = ({config, license}: AboutProps) => {
         <SettingContainer testID='about'>
             <View style={isTablet ? styles.tabletContentWrapper : undefined}>
                 <View style={styles.logoContainer}>
-                    <CompassIcon
-                        color={theme.centerChannelColor}
-                        name='mattermost'
-                        size={80}
-                        testID='about.logo'
-                    />
+                    {isEncmaApp ? (
+                        <Image
+                            resizeMode='contain'
+                            source={encmaLogo}
+                            style={styles.logo}
+                            testID='about.logo'
+                        />
+                    ) : (
+                        <CompassIcon
+                            color={theme.centerChannelColor}
+                            name='mattermost'
+                            size={80}
+                            testID='about.logo'
+                        />
+                    )}
                     <Title
                         config={config}
                         license={license}
@@ -321,12 +336,14 @@ const About = ({config, license}: AboutProps) => {
                             />
                         </View>
                     )}
-                    <LearnMore
-                        config={config}
-                        license={license}
-                        onPress={handleAboutTeam}
-                    />
-                    {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
+                    {!isEncmaApp && (
+                        <LearnMore
+                            config={config}
+                            license={license}
+                            onPress={handleAboutTeam}
+                        />
+                    )}
+                    {!isEncmaApp && !MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
                         defaultMessage='{site} is powered by Mattermost'
                         id={'settings.about.powered_by'}

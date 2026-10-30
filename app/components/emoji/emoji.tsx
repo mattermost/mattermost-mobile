@@ -13,13 +13,16 @@ import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {observeConfigBooleanValue} from '@queries/servers/system';
+import {isEncmaApp} from '@utils/branding';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 import {isUnicodeEmoji} from '@utils/emoji/helpers';
 
 import type {EmojiProps} from '@typings/components/emoji';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const assetImages = new Map([['mattermost.png', require('@assets/images/emojis/mattermost.png')]]);
+// Keep the upstream emoji alias for message compatibility, but never show its
+// old product artwork inside ENCMA.
+const assetImages = new Map([['mattermost.png', isEncmaApp ? require('@assets/images/encma-icon.png') : require('@assets/images/emojis/mattermost.png')]]);
 
 const Emoji = (props: EmojiProps) => {
     const {

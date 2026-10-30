@@ -14,12 +14,14 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.modules.network.OkHttpClientProvider
+import com.mattermost.certificates.ServerCertificatePackage
 import com.mattermost.networkclient.RCTOkHttpClientFactory
 import com.mattermost.networkclient.sessionattributes.SessionAttributes
 import com.mattermost.rnshare.ShareWorker
 import com.mattermost.rnshare.helpers.RealPathUtil
 import com.mattermost.turbolog.TurboLog
 import com.mattermost.turbolog.ConfigureOptions
+import com.mattermost.wireguard.WireGuardPackage
 import io.sentry.react.RNSentrySDK
 import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage
 import com.wix.reactnativenotifications.core.AppLaunchHelper
@@ -43,6 +45,8 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         ExpoReactHostFactory.getDefaultReactHost(
             context = applicationContext,
             packageList = PackageList(this).packages.apply {
+                add(WireGuardPackage())
+                add(ServerCertificatePackage())
                 add(WatermelonDBJSIPackage())
             },
             jsMainModulePath = "index"
@@ -65,8 +69,8 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         // Tells React Native to use our RCTOkHttpClientFactory which builds an OKHttpClient
         // with a cookie jar defined in APIClientModule and an interceptor to intercept all
         // requests that originate from React Native's OKHttpClient
-        OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory())
-        ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory().createNewNetworkModuleClient()
+        OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory(applicationContext))
+        ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory(applicationContext).createNewNetworkModuleClient()
 
         // ShareWorker can run without React Native loaded, so ApiClientModuleImpl may never
         // initialize the session attributes engine.

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Button as ElementButton, type ButtonProps} from '@rneui/base';
+import {LinearGradient} from 'expo-linear-gradient';
 import React, {useMemo, type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
@@ -150,6 +151,16 @@ const Button = ({
             disabled={disabled}
             hitSlop={hitSlop}
         >
+            {theme.centerChannelBg === '#0C122D' && (!emphasis || emphasis === 'primary') && !disabled && !isDestructive && !isInverted && (
+                <LinearGradient
+                    testID='encma_button_gradient'
+                    colors={['#3478F6', '#00E4CC']}
+                    start={{x: 0, y: 0.5}}
+                    end={{x: 1, y: 0.5}}
+                    pointerEvents='none'
+                    style={StyleSheet.absoluteFill}
+                />
+            )}
             <View
                 style={styles.container}
                 testID={`${testID}-text-container`}

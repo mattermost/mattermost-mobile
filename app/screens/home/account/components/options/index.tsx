@@ -43,6 +43,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         group: {
             paddingLeft: 16,
+            marginHorizontal: theme.centerChannelBg === '#0C122D' ? 16 : 0,
+            paddingVertical: theme.centerChannelBg === '#0C122D' ? 8 : 0,
+            backgroundColor: theme.centerChannelBg === '#0C122D' ? '#18203F' : undefined,
+            borderRadius: theme.centerChannelBg === '#0C122D' ? 16 : 0,
         },
     };
 });

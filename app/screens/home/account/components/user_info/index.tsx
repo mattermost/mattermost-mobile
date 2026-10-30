@@ -18,7 +18,11 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            backgroundColor: theme.sidebarBg,
+            backgroundColor: theme.centerChannelBg === '#0C122D' ? '#151F40' : theme.sidebarBg,
+            alignItems: theme.centerChannelBg === '#0C122D' ? 'center' as const : undefined,
+            borderBottomLeftRadius: theme.centerChannelBg === '#0C122D' ? 28 : 0,
+            borderBottomRightRadius: theme.centerChannelBg === '#0C122D' ? 28 : 0,
+            paddingRight: theme.centerChannelBg === '#0C122D' ? 20 : 0,
             paddingBottom: 20,
             top: 0,
             paddingTop: 22,

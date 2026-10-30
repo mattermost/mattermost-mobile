@@ -1,0 +1,158 @@
+---
+name: phase5-encma-android-build
+
+on:
+  push:
+    branches:
+      - arena/1485ca55-mattermost-mobile
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  build-wireguard-android-apk:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Check Android release script syntax
+        run: ruby -c fastlane/Fastfile
+
+      - name: Prepare Node dependencies
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Run ENCMA focused JavaScript tests
+        run: |
+          NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand --runTestsByPath \
+            app/context/theme/default.test.ts \
+            app/components/button/index.test.tsx \
+            app/utils/buttonStyles.test.ts \
+            app/components/encma_auth_header/index.test.tsx \
+            app/screens/server/header.test.tsx \
+            app/screens/server/form.test.tsx \
+            app/managers/server_certificate_manager.test.ts \
+            app/actions/local/session/index.test.ts \
+            'app/routes/(authenticated)/(home)/_layout.test.tsx' \
+            app/screens/home/tab_bar/encma.test.tsx \
+            app/screens/home/channel_list/categories_list/index.test.tsx \
+            app/screens/home/channel_list/categories_list/encma.test.tsx \
+            app/screens/home/channel_list/categories_list/subheader/search_field/index.test.tsx \
+            app/screens/home/channel_list/categories_list/subheader/search_field/encma.test.tsx \
+            app/screens/home/channel_list/categories_list/subheader/unread_filter/unread_filter.test.tsx \
+            app/i18n/index.test.ts \
+            app/i18n/encma.test.ts \
+            app/utils/branding.test.ts \
+            app/components/system_avatar/encma.test.tsx \
+            app/screens/settings/about/title.test.tsx \
+            app/screens/settings/about/encma.test.tsx \
+            app/screens/settings/encma.test.tsx \
+            app/screens/settings/notifications/send_test_notification_notice/send_test_notification_notice.test.tsx \
+            app/screens/settings/notifications/send_test_notification_notice/encma.test.tsx \
+            app/screens/report_a_problem/report_problem.test.tsx \
+            app/screens/report_a_problem/encma.test.tsx \
+            app/utils/share_logs.test.ts \
+            app/utils/alerts/index.test.ts \
+            app/utils/reviews.test.ts \
+            app/utils/server/index.test.ts \
+            app/init/managed_app.test.ts \
+            app/managers/security_manager/index.test.ts \
+            app/init/calls_native.test.ts \
+            app/client/rest/channels.test.ts \
+            app/actions/remote/channel.test.ts \
+            app/queries/servers/role.test.ts \
+            app/init/credentials.test.ts \
+            app/init/launch_with_fallback.test.ts \
+            app/routes/index.test.tsx \
+            app/screens/vpn/index.test.tsx \
+            app/managers/wireguard_manager.test.ts \
+            app/screens/channel_settings/permanent_delete/permanent_delete.test.tsx \
+            app/screens/channel_info/destructive_options/index.test.tsx \
+            app/components/post_draft/quick_actions/quick_actions.test.tsx \
+            app/components/post_draft/quick_actions/index.test.tsx \
+            app/components/post_draft/quick_actions/voice_record_action/voice_record_action.test.tsx \
+            app/utils/voice_message.test.ts
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Jetify Android libraries
+        run: ./node_modules/.bin/jetify
+
+      - name: Run Android unit tests
+        id: unit_tests
+        working-directory: android
+        run: |
+          set -o pipefail
+          : > "$RUNNER_TEMP/wireguard-unit-tests.log"
+          for attempt in 1 2; do
+            echo "Native unit-test attempt $attempt" | tee -a "$RUNNER_TEMP/wireguard-unit-tests.log"
+            if ./gradlew :app:testReleaseUnitTest -PreactNativeArchitectures=arm64-v8a --stacktrace 2>&1 | tee -a "$RUNNER_TEMP/wireguard-unit-tests.log"; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 2 ]; then
+              exit 1
+            fi
+            echo "Retrying after a transient dependency or test failure." | tee -a "$RUNNER_TEMP/wireguard-unit-tests.log"
+          done
+
+      - name: Publish native unit-test failure diagnostics
+        if: failure() && steps.unit_tests.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          tail -c 50000 "$RUNNER_TEMP/wireguard-unit-tests.log" > "$RUNNER_TEMP/wireguard-unit-tests-tail.txt"
+          node - <<'NODE'
+          const fs = require('fs');
+          const temp = process.env.RUNNER_TEMP;
+          const payload = {
+            name: 'wireguard-native-unit-test-diagnostics',
+            head_sha: process.env.HEAD_SHA,
+            status: 'completed',
+            conclusion: 'neutral',
+            details_url: process.env.RUN_URL,
+            output: {
+              title: 'Native unit-test failure diagnostics',
+              summary: 'Final Gradle output from the failed Android unit-test step.',
+              text: fs.readFileSync(`${temp}/wireguard-unit-tests-tail.txt`, 'utf8'),
+            },
+          };
+          fs.writeFileSync(`${temp}/wireguard-check-run.json`, JSON.stringify(payload));
+          NODE
+          gh api "repos/$GH_REPO/check-runs" --method POST --input "$RUNNER_TEMP/wireguard-check-run.json"
+
+      - name: Build ENCMA Android application with per-app WireGuard
+        working-directory: android
+        run: ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --stacktrace
+
+      - name: Verify ENCMA APK identity and output
+        run: |
+          apk="android/app/build/outputs/apk/release/app-release.apk"
+          test -s "$apk"
+          aapt_bin="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          test -x "$aapt_bin"
+          "$aapt_bin" dump badging "$apk" > "$RUNNER_TEMP/encma-apk-badging.txt"
+          grep -F "package: name='com.encma.hxmain'" "$RUNNER_TEMP/encma-apk-badging.txt"
+          grep -F "application: label='ENCMA'" "$RUNNER_TEMP/encma-apk-badging.txt"
+          ls -lh "$apk"
+          sha256sum "$apk"
+
+      - name: Upload installable arm64 APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: encma-wireguard-arm64-release-server-ca-import
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 30

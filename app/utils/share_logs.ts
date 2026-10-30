@@ -5,6 +5,7 @@ import {defineMessages} from 'react-intl';
 import {Alert} from 'react-native';
 import Share from 'react-native-share';
 
+import {getDisplayProductName} from '@utils/branding';
 import {pathWithPrefix} from '@utils/file';
 
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
@@ -24,7 +25,7 @@ export const shareLogs = async (metadata: ReportAProblemMetadata, siteName: stri
         const logPaths = await TurboLogger.getLogPaths();
         const attachments = excludeLogs ? [] : logPaths.map((path) => pathWithPrefix('file://', path));
         await Share.open({
-            subject: `Problem with ${siteName || 'Mattermost'} mobile app`,
+            subject: `Problem with ${getDisplayProductName(siteName)} mobile app`,
             email: reportAProblemMail,
             failOnCancel: false,
             urls: attachments.length ? attachments : undefined,
@@ -41,7 +42,7 @@ export const emailLogs = async (metadata: ReportAProblemMetadata, siteName: stri
         const attachments = excludeLogs ? [] : logPaths.map((path) => pathWithPrefix('file://', path));
         await Share.shareSingle({
             social: Share.Social.EMAIL as any, // The type is not correct in the library
-            subject: `Problem with ${siteName || 'Mattermost'} mobile app`,
+            subject: `Problem with ${getDisplayProductName(siteName)} mobile app`,
             email: reportAProblemMail,
             urls: attachments.length ? attachments : undefined,
             message: buildEmailBody(metadata),

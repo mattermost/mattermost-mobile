@@ -84,9 +84,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingHorizontal: 16,
         color: theme.centerChannelColor,
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderRadius: 4,
+        borderRadius: theme.centerChannelBg === '#0C122D' ? 12 : 4,
         borderWidth: BORDER_DEFAULT_WIDTH,
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: theme.centerChannelBg === '#0C122D' ? '#171F3D' : theme.centerChannelBg,
         gap: 8,
     },
 }));

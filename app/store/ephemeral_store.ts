@@ -6,7 +6,7 @@ import {BehaviorSubject} from 'rxjs';
 
 import {Events} from '@constants';
 import {CLASSIFICATION_BANNER_CACHE_TTL} from '@constants/classification';
-import {getDefaultThemeByAppearance} from '@context/theme';
+import {getDefaultThemeByAppearance} from '@context/theme/default';
 import {toMilliseconds} from '@utils/datetime';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
