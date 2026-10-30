@@ -997,7 +997,7 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: User
     //  When you leave a call, you will lose the reactions you were tracking.
     //  We can revisit this if it causes UX issues.
     const currentCall = getCurrentCall();
-    if (currentCall?.channelId !== channelId) {
+    if (currentCall?.channelId !== channelId || !reaction.emoji?.name) {
         return;
     }
 

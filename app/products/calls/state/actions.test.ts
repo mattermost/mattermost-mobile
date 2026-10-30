@@ -84,7 +84,7 @@ import {getCurrentUser, getUserById} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
-import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
+import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 jest.mock('@calls/native_call', () => ({
@@ -1261,6 +1261,22 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current, {...newConfig, pluginEnabled: true});
         act(() => setPluginEnabled('server1', false));
         assert.deepEqual(result.current, {...newConfig, pluginEnabled: false});
+    });
+
+    it('ignores a reaction without an emoji name', () => {
+        const callsState = {...DefaultCallsState, serverUrl: 'server1', calls: {'channel-1': call1}};
+        const currentCall: CurrentCall = {...DefaultCurrentCall, serverUrl: 'server1', ...call1};
+        const {result} = renderHook(() => useCurrentCall());
+        act(() => {
+            setCallsState('server1', callsState);
+            setCurrentCall(currentCall);
+        });
+
+        act(() => {
+            userReacted('server1', 'channel-1', {user_id: 'user-1', session_id: 'session1', timestamp: 1} as UserReactionData);
+        });
+
+        assert.deepEqual(result.current, currentCall);
     });
 
     it('user reactions', () => {

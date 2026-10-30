@@ -31,6 +31,7 @@ const PluginId = 'com.mattermost.calls';
 
 const REACTION_TIMEOUT = 10000;
 const REACTION_LIMIT = 20;
+const REACTION_MIN_INTERVAL_MS = 200;
 const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
 const CAPTION_TIMEOUT = 5000;
 const RING_LENGTH = 30000;
@@ -66,6 +67,7 @@ export default {
     PluginId,
     REACTION_TIMEOUT,
     REACTION_LIMIT,
+    REACTION_MIN_INTERVAL_MS,
     MessageBarType,
     CALL_QUALITY_RESET_MS,
     CAPTION_TIMEOUT,
