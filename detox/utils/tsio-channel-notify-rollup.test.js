@@ -216,6 +216,27 @@ describe('tsio-channel-notify-rollup', () => {
             assert.deepEqual(changes, {from: 'bbbb', to: 'cccc', prs: [], partial: false});
         });
 
+        it('does not take an earlier attempt of the same run as the previous run', async () => {
+            const currentIdentity = {...identity, gh_run_id: 'current-run', gh_run_attempt: '2'};
+            const attempt2 = {commit: 'cccc', branch: 'main', created_at: '2026-10-28T23:10:00Z', gh_run_id: 'current-run', gh_run_attempt: '2'};
+            const attempt1 = {commit: 'cccc', branch: 'main', created_at: '2026-10-28T22:10:00Z', gh_run_id: 'current-run', gh_run_attempt: '1'};
+            const previous = {commit: 'bbbb', branch: 'main', created_at: '2026-10-28T21:10:00Z', gh_run_id: 'previous-run', gh_run_attempt: '1'};
+            const fetchFrom = (listedReports) => async (url) => {
+                if (url.startsWith(BASE_URL)) {
+                    return {ok: true, json: async () => ({reports: listedReports})};
+                }
+                assert.equal(url, 'https://api.github.com/repos/mattermost/mattermost-mobile/compare/bbbb...cccc');
+                return {ok: true, json: async () => ({commits: [{commit: {message: 'Fix login (#10300)'}}]})};
+            };
+            const expected = {from: 'bbbb', to: 'cccc', prs: [{number: 10300, title: 'Fix login'}], partial: false};
+
+            // Attempt 2 has reported.
+            assert.deepEqual(await findChangesSinceLastRun({baseUrl: BASE_URL, identity: currentIdentity, fetchImpl: fetchFrom([attempt2, attempt1, previous])}), expected);
+
+            // Attempt 2 has not reported yet.
+            assert.deepEqual(await findChangesSinceLastRun({baseUrl: BASE_URL, identity: currentIdentity, fetchImpl: fetchFrom([attempt1, previous])}), expected);
+        });
+
         it('uses the latest same-commit report as the previous run when the current run is missing', async () => {
             const currentIdentity = {...identity, gh_run_id: 'missing-run', gh_run_attempt: '1'};
             const listedReports = [

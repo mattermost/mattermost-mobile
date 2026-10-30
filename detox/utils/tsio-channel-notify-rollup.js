@@ -113,10 +113,13 @@ async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fe
             String(r.gh_run_attempt ?? r.run_attempt) === String(identity.gh_run_attempt))) :
         reports.find((r) => r.commit === identity.commit_sha);
 
+    // An earlier attempt of this workflow run is not a previous run.
+    const otherRuns = identity.gh_run_id ? reports.filter((r) => String(r.gh_run_id) !== String(identity.gh_run_id)) : reports;
+
     // If this run has not reported yet, the latest report for this commit is the previous run.
     const earlier = current ?
-        reports.find((r) => r !== current && r.created_at < current.created_at) :
-        reports.find((r) => r.commit === identity.commit_sha) || reports[0];
+        otherRuns.find((r) => r.created_at < current.created_at) :
+        otherRuns.find((r) => r.commit === identity.commit_sha) || otherRuns[0];
     if (!earlier) {
         return null;
     }
