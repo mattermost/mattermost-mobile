@@ -6,7 +6,7 @@ import {getScheme} from '@utils/url';
 
 import type {LiveKitSessionResponse} from '@calls/types/calls';
 
-// Room URL must be wss, or ws only when the server itself is plain http.
+// LiveKit maps https to wss and http to ws; the insecure forms are allowed only when the server itself is plain http.
 function isAllowedRoomUrl(roomUrl: string, serverUrl: string) {
     const scheme = getScheme(roomUrl)?.toLowerCase();
 
@@ -15,7 +15,10 @@ function isAllowedRoomUrl(roomUrl: string, serverUrl: string) {
         return false;
     }
 
-    return scheme === 'wss' || (scheme === 'ws' && getScheme(serverUrl)?.toLowerCase() === 'http');
+    const isSecure = scheme === 'wss' || scheme === 'https';
+    const isInsecure = scheme === 'ws' || scheme === 'http';
+
+    return isSecure || (isInsecure && getScheme(serverUrl)?.toLowerCase() === 'http');
 }
 
 export function isLiveKitSessionResponse(v: unknown, serverUrl: string): v is LiveKitSessionResponse {

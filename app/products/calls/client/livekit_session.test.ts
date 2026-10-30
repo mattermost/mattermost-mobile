@@ -28,8 +28,20 @@ describe('isLiveKitSessionResponse', () => {
         expect(isLiveKitSessionResponse(makeResponse({url: 'evil wss://livekit.example/'}), 'https://server.example')).toBe(false);
     });
 
+    it('accepts an https room url', () => {
+        expect(isLiveKitSessionResponse(makeResponse({url: 'https://livekit.example/'}), 'https://server.example')).toBe(true);
+    });
+
+    it('rejects an http room url when the server is https', () => {
+        expect(isLiveKitSessionResponse(makeResponse({url: 'http://evil.example/'}), 'https://server.example')).toBe(false);
+    });
+
+    it('accepts an http room url when the server is http', () => {
+        expect(isLiveKitSessionResponse(makeResponse({url: 'http://livekit.example/'}), 'http://server.example')).toBe(true);
+    });
+
     it('rejects a room url with another scheme', () => {
-        expect(isLiveKitSessionResponse(makeResponse({url: 'https://livekit.example/'}), 'https://server.example')).toBe(false);
+        expect(isLiveKitSessionResponse(makeResponse({url: 'ftp://livekit.example/'}), 'https://server.example')).toBe(false);
     });
 
     it.each([
