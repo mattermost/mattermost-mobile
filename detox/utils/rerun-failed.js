@@ -31,11 +31,8 @@ const MAX_SPECS_PER_LANE = 10;
 const RERUN_KEYS = new Set(['product', 'new', 'look']);
 const ARTIFACT_PREFIX = 'e2e-rerun-results-';
 
-// Every spec and flow lives under detox/; a finding's file may carry the test root in front of it.
-function repoPath(file) {
-    const at = file.startsWith('detox/') ? 0 : file.indexOf('/detox/') + 1;
-    return at > 0 || file.startsWith('detox/') ? file.slice(at) : null;
-}
+// Every spec and flow lives under detox/ (triage's test-root is the repo).
+const inRepo = (row) => (row.file || '').startsWith('detox/');
 
 /**
  * A CMT build's spec that differs from main's is out of date on that release branch: re-running it on the old build
@@ -69,13 +66,12 @@ function planRerun(triage, {isStale = () => false, stale: known = {}} = {}) {
     const stale = {};
     for (const lane of triage || []) {
         const uncleared = (lane.findings || []).filter((row) => RERUN_KEYS.has(judgeFinding(row, lane)));
-        const outdated = uncleared.filter((row) => known[lane.lane]?.includes(row.title) ||
-            (row.file && repoPath(row.file) && isStale(repoPath(row.file))));
+        const outdated = uncleared.filter((row) => known[lane.lane]?.includes(row.title) || (inRepo(row) && isStale(row.file)));
         if (outdated.length) {
             stale[lane.lane] = outdated.map((row) => row.title);
         }
         const rows = uncleared.filter((row) => !outdated.includes(row));
-        const files = [...new Set(rows.map((row) => row.file && repoPath(row.file)).filter(Boolean))];
+        const files = [...new Set(rows.filter(inRepo).map((row) => row.file))];
         if (!files.length) {
             continue;
         }

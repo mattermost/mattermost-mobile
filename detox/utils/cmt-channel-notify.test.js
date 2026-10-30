@@ -12,7 +12,6 @@ const {
     buildLegSummaries,
     formatLegResultText,
     formatCmtChannelMessage,
-    formatMainChannelMessage,
     formatTriageVerdict,
     judgeFinding,
     formatMassFailures,
@@ -810,8 +809,7 @@ describe('cmt-channel-notify', () => {
             assert.match(ci, /^⚙️ A CI job failed outside the tests \(install, build or teardown\)\.$/m);
         });
 
-        it('is what the PR and CMT messages are not', () => {
-            assert.equal(formatMainChannelMessage({compositeIdentity: identity, detail, perJobCounts, triage, changes, failures: []}), message({runUrl: undefined}));
+        it('leaves a PR run on the detailed message', () => {
             assert.match(formatCmtChannelMessage({compositeIdentity: {...identity, name: 'mobile-pr', run_group: 'mobile-pr'}, detail, perJobCounts, triage, failures: []}), /^## ❌ Mobile PR E2E/);
         });
     });

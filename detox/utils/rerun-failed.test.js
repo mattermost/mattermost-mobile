@@ -26,7 +26,7 @@ describe('rerun-failed', () => {
                         row('MM-T5 - device died', 'detox/e2e/test/d.e2e.ts', 'INFRA_ERROR'),
                         row('MM-T6 - broken before', 'detox/e2e/test/e.e2e.ts', 'BROKEN_ON_TRUNK', 'broken on main'),
                     ]},
-                {lane: 'maestro-android-e2e', findings: [row('clock_display', '/home/runner/work/mobile/detox/maestro/flows/timezone/clock_display.yml')]},
+                {lane: 'maestro-android-e2e', findings: [row('clock_display', 'detox/maestro/flows/timezone/clock_display.yml')]},
                 {lane: 'detox-ios', findings: [row('no file', '')]},
             ]);
             assert.deepEqual(plan, {

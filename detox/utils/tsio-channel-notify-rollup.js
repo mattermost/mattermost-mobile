@@ -59,29 +59,18 @@ function loadTriageFindings(dir, warn = console.warn) {
         return [];
     }
     const out = [];
-    const walk = (current) => {
-        for (const entry of fs.readdirSync(current, {withFileTypes: true})) {
-            const file = path.join(current, entry.name);
-            if (entry.isDirectory()) {
-                walk(file);
-                continue;
+    for (const file of fs.readdirSync(dir, {recursive: true}).filter((name) => name.endsWith('.json')).map((name) => path.join(dir, name))) {
+        try {
+            const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+            if (parsed?.schema === 2 && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
+                out.push(parsed);
+            } else {
+                warn(`tsio-channel-notify-rollup: ${file} is not a schema 2 findings file — skipped`);
             }
-            if (!entry.name.endsWith('.json')) {
-                continue;
-            }
-            try {
-                const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-                if (parsed?.schema === 2 && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
-                    out.push(parsed);
-                } else {
-                    warn(`tsio-channel-notify-rollup: ${file} is not a schema 2 findings file — skipped`);
-                }
-            } catch (err) {
-                warn(`tsio-channel-notify-rollup: could not read ${file}: ${err.message}`);
-            }
+        } catch (err) {
+            warn(`tsio-channel-notify-rollup: could not read ${file}: ${err.message}`);
         }
-    };
-    walk(dir);
+    }
     return out;
 }
 
@@ -337,13 +326,8 @@ async function main() {
     if (['mobile-main', 'mobile-release'].includes(webhookBucketForReportName(rollupIdentity.name))) {
         const {planRerun, loadRerunResults} = require('./rerun-failed');
 
-        // The same plan as the planner job: CMT tests whose spec differs from main are left out of it.
-        let stale = {};
-        try {
-            stale = JSON.parse(process.env.RERUN_STALE || '{}');
-        } catch {
-            stale = {};
-        }
+        // The same plan as the planner job: CMT tests whose spec differs from main (its `stale` output) are left out.
+        const stale = JSON.parse(process.env.RERUN_STALE || '{}');
         rerun = {...planRerun(triage, {stale}), results: loadRerunResults(args['rerun-results-dir'] || process.env.RERUN_RESULTS_DIR || '')};
     }
     let changes = null;

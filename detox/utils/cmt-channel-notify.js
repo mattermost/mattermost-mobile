@@ -1290,7 +1290,6 @@ module.exports = {
     formatLegResultText,
     reportTitleForIdentity,
     formatCmtChannelMessage,
-    formatMainChannelMessage,
     formatTriageVerdict,
     judgeFinding,
     formatMassFailures,
