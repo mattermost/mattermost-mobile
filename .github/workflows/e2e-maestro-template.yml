@@ -32,6 +32,13 @@ on:
         required: false
         type: string
         default: ""
+      results-artifact:
+        description: >
+          Artifact name for this run's Maestro JUnit report: a re-run of failed flows (flow-path),
+          with an empty tsio-config and run-type NONE, reports only to the channel message.
+        required: false
+        type: string
+        default: ""
       record_tests_in_zephyr:
         description: "Record Maestro test results in Zephyr Scale (release/main runs)"
         required: false
@@ -381,7 +388,8 @@ jobs:
           fi
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
           set -a
@@ -450,7 +458,8 @@ jobs:
         # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
         # of its own, so the patch and the trap restore live here. continue-on-error so
         # the main batch report stays authoritative.
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
           set -a
@@ -540,7 +549,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: maestro-ios-results-${{ github.run_id }}
+          # A re-run of failed flows runs in the same workflow run: its own name.
+          name: maestro-ios-results-${{ github.run_id }}${{ inputs.results-artifact != '' && '-rerun' || '' }}
           path: build/
 
       - name: Parse Maestro Report
@@ -594,6 +604,16 @@ jobs:
 
       # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
       # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      # A re-run of failed flows hands its per-flow results to the channel message.
+      - name: Upload re-run results
+        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.results-artifact }}
+          path: build/maestro-report.xml
+          retention-days: 1
+
       - name: Collect triage evidence
         if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
         continue-on-error: true
@@ -650,7 +670,7 @@ jobs:
       # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@18a0baa05c20060a4036d38ccdb030c5e53051be # release-0.15.0 / main@18a0baa
         with:
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
@@ -718,7 +738,8 @@ jobs:
           BUILD_ID: maestro-ios-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
-        if: always()
+        # A re-run of failed flows reports only to the channel message, not over the run's report.
+        if: always() && inputs.results-artifact == ''
         run: |
           cd detox
           node -e "
@@ -1056,7 +1077,8 @@ jobs:
         # restores it in onFlowComplete, so it must not share a batch with attach_logs.yml.
         # continue-on-error keeps the main batch report authoritative.
         # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
@@ -1133,7 +1155,8 @@ jobs:
         # Isolated step: clear Gmail, patch ReportAProblemType=email, run the
         # mail-mode flow, restore on exit. Android-only — iOS simulators have no
         # Mail app. continue-on-error so the main report stays authoritative.
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
@@ -1202,7 +1225,8 @@ jobs:
         # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
         # of its own, so the patch and the trap restore live here. continue-on-error so
         # the main batch report stays authoritative.
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
@@ -1275,7 +1299,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: maestro-android-results-${{ github.run_id }}
+          # A re-run of failed flows runs in the same workflow run: its own name.
+          name: maestro-android-results-${{ github.run_id }}${{ inputs.results-artifact != '' && '-rerun' || '' }}
           path: build/
 
       - name: Parse Maestro Report
@@ -1328,6 +1353,16 @@ jobs:
 
       # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
       # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      # A re-run of failed flows hands its per-flow results to the channel message.
+      - name: Upload re-run results
+        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.results-artifact }}
+          path: build/maestro-report.xml
+          retention-days: 1
+
       - name: Collect triage evidence
         if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
         continue-on-error: true
@@ -1384,7 +1419,7 @@ jobs:
       # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@18a0baa05c20060a4036d38ccdb030c5e53051be # release-0.15.0 / main@18a0baa
         with:
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
@@ -1452,7 +1487,8 @@ jobs:
           BUILD_ID: maestro-android-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
-        if: always()
+        # A re-run of failed flows reports only to the channel message, not over the run's report.
+        if: always() && inputs.results-artifact == ''
         run: |
           cd detox
           node -e "

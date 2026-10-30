@@ -78,6 +78,17 @@ runs:
         anthropic-api-key: ${{ inputs.anthropic-api-key }}
         mode: ${{ inputs.mode }}
         answers-cache: e2e-triage-answers.json
+        findings-file: e2e-triage-findings.json
+    # The verdict on each failed test, which the channel message reads (tsio-channel-notify).
+    - name: Upload triage findings
+      if: always() && hashFiles('e2e-triage-findings.json') != ''
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        # One artifact per attempt: the channel message of a re-run reads only that attempt's verdicts.
+        name: e2e-triage-findings-${{ inputs.job-key }}-a${{ github.run_attempt }}
+        path: e2e-triage-findings.json
+        retention-days: 1
     - name: Save triage answers
       if: always() && hashFiles('e2e-triage-answers.json') != ''
       continue-on-error: true

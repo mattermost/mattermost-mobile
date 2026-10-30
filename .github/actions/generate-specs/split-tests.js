@@ -182,6 +182,18 @@ class Specs {
     };
   }
 
+  /**
+   * Use exactly these spec files (a re-run of failed specs) instead of walking searchPath.
+   * Only existing *.e2e.ts files under searchPath are kept, so a stale or crafted path runs nothing.
+   */
+  useFiles(files) {
+    const root = path.resolve(this.searchPath);
+    this.rawFiles = [...new Set(files)].filter((file) => {
+      const full = path.resolve(file);
+      return /\.e2e\.ts$/.test(full) && full.startsWith(root + path.sep) && fs.existsSync(full);
+    }).map(toRepoRelative);
+  }
+
   findFiles() {
     const dirPath = path.join(this.searchPath);
 
@@ -371,7 +383,15 @@ function main() {
   };
   const specs = new Specs(searchPath, parallelism, deviceInfo, durations, mutation);
 
-  specs.findFiles();
+  const specFiles = (process.env.SPEC_FILES || '').split(/\s+/).filter(Boolean);
+  if (specFiles.length) {
+    specs.useFiles(specFiles);
+    if (!specs.rawFiles.length) {
+      throw new Error(`none of SPEC_FILES is a spec under ${searchPath}: ${specFiles.join(' ')}`);
+    }
+  } else {
+    specs.findFiles();
+  }
   if (specs.rawFiles.length < parallelism) {
     console.error(
       `Warning: ${specs.rawFiles.length} spec(s) < parallelism ${parallelism}; some shards will be empty`,
