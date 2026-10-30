@@ -230,9 +230,8 @@ describe('selectChannelInfoAttributes', () => {
     const MEMBER_PERMS: ChannelAttributePermissions = {canManageChannelProperties: true, canManageChannelRoles: false, canManageSystem: false};
     const NO_PROPERTIES_PERMS: ChannelAttributePermissions = {canManageChannelProperties: false, canManageChannelRoles: true, canManageSystem: true};
 
-    // Fields with no display configuration (attrs.actions absent or empty) are the
-    // key case — they must still appear in Channel Info because it is the only
-    // editing surface, even when display_label_info is not set.
+    // Fields with no display config must still show in Channel Info, the only place
+    // to edit them.
     const noDesignation = field({id: '1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS}});
     const noDesignationValue: ChannelAttributeValue = {fieldId: '1', value: 'level-secret'} as ChannelAttributeValue;
 
@@ -304,11 +303,9 @@ describe('selectChannelInfoAttributes', () => {
     });
 
     it('should test stored rawValue rather than displayValue for set-ness', () => {
-        // An option id that no longer resolves still counts as a stored value.
         const staleValue: ChannelAttributeValue = {fieldId: '1', value: 'deleted-option-id'} as ChannelAttributeValue;
         const resolved = resolveChannelAttributes([noDesignation], [staleValue]);
 
-        // displayValue resolves to the raw id (unrecognised), but rawValue is set.
         expect(resolved[0].displayValue).toBe('deleted-option-id');
         expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['1']);
     });
@@ -703,7 +700,6 @@ describe('channel attribute fields on create', () => {
             expect(isPropertyFieldRequired(fields[0])).toBe(false);
             expect(fields[0].attrs?.options).toEqual(CLASSIFICATION_OPTIONS);
 
-            // The source field, a WatermelonDB model in the app, is left as it was.
             expect(isPropertyFieldRequired(requiredClassification)).toBe(true);
         });
 

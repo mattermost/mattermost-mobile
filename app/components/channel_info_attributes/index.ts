@@ -19,14 +19,10 @@ type Props = WithDatabaseArgs & {
 const EMPTY: ResolvedChannelAttribute[] = [];
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
-    // Resolved once for the channel rather than once per row: three permission
-    // subscriptions regardless of how many attributes the server defines.
     const permissions = observeChannelAttributePermissions(database, channelId);
 
-    // Channel Info lists by role, not by display configuration. An attribute the
-    // admin did not designate for the info panel still needs a row here so that a
-    // channel admin can correct or fill its value — hiding it would strand the
-    // channel with no editing affordance for that attribute.
+    // Listed by role, not display config: an attribute hidden from the info panel still needs
+    // a row here so a channel admin can edit its value.
     const attributes = combineLatest([
         observeChannelAttributesEnabled(database).pipe(
             switchMap((enabled) => (enabled ? observeResolvedChannelAttributes(database, channelId) : of$(EMPTY))),
@@ -34,9 +30,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
         permissions,
     ]).pipe(
 
-        // Snapshotted at emission time for the same reason as in
-        // observeResolvedChannelAttributes: the field models are updated in place,
-        // so comparing two lists after the fact would see the new attrs on both.
+        // Snapshot; see resolvedAttributesSignature.
         map(([resolved, perms]) => {
             const listed = selectChannelInfoAttributes(resolved, perms);
             return {listed, signature: channelInfoAttributesSignature(listed)};

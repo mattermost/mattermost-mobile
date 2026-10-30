@@ -30,11 +30,7 @@ const FIELD_OPTIONS = [
     {id: OPTION_IDS.high, name: 'HIGH', color: '#FF0000', rank: 2},
 ];
 
-// One required, member-settable field; one required, sysadmin-only field; one
-// optional field. All three ever created by this suite, so cleanup can target
-// them by name regardless of which test created which.
-// Suite-unique suffix: on the shared servers only optional fields named <name>_<6 hex> may be
-// created (detox/e2e/support/server_api/pool_guard.ts), so runs never touch each other's fields.
+// Shared servers only allow optional fields named <name>_<6 hex> (see server_api/pool_guard.ts).
 const FIELD_SUFFIX = getRandomId(6);
 const REQUIRED_FIELD_NAME = `createrequired_${FIELD_SUFFIX}`;
 const SYSADMIN_FIELD_NAME = `createsysadmin_${FIELD_SUFFIX}`;
@@ -49,10 +45,8 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
     }
 }
 
-// Creates required attributes, which are server-wide, so this runs alone on the mutation server
-// (detox/e2e/server_mutation_specs.json).
-// FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
-// so the server baseline cannot turn it on.
+// Required attributes are server-wide, so this spec runs alone on the mutation server.
+// Skipped below v12.0, where FeatureFlagChannelAttributes does not exist.
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Setting values at channel creation', () => {
     const serverOneDisplayName = 'Server 1';
     let testUser: any;
@@ -62,8 +56,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
     beforeAll(async () => {
         requireMutationServer('channel_attributes_creation');
 
-        // A prior interrupted run may have left a required field behind, which would
-        // block channel creation before any of these tests got started.
+        // An interrupted run may have left a required field that blocks channel creation.
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
         await assertServerBaseline(siteOneUrl, ['FeatureFlags.ChannelAttributes']);
         await setChannelAttributesRequired(siteOneUrl, true);
@@ -88,7 +81,6 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
 
         if (canMutateServer) {
             try {
-                // Hand the server back at baseline for the next spec on it.
                 await setChannelAttributesRequired(siteOneUrl, false);
             } catch (error) {
                 cleanupError ??= error;
@@ -130,21 +122,8 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         }
     });
 
-    /**
-     * Creates one channel-attribute field and reloads the app so it is actually
-     * picked up before the next screen opens.
-     *
-     * fetchAccessControlAttributeFields caches its result for an hour
-     * (EphemeralStore.shouldFetchClassificationBanner) and only force-refetches on
-     * a websocket reconnect, or on a create/update event for a field arriving
-     * while the access-control group id is still unknown locally. Once another
-     * suite sharing this app install has already learned the group id — which the
-     * shared advisory lock makes likely in a real run — a field created here would
-     * otherwise sit uncollected behind that cache for up to an hour. Reloading
-     * forces the reconnect path (see fetchAccessControlAttributeFields(serverUrl,
-     * true) in @actions/websocket/index.ts), the same way setupChannelWithAttribute
-     * does in channel_attributes_editing.e2e.ts.
-     */
+    // The app caches attribute fields for an hour and only refetches on reconnect, so reload
+    // to make a newly created field show up.
     async function setupChannelAttributeField(opts: Parameters<typeof Properties.apiSetupChannelAttributeField>[1]) {
         const result = await Properties.apiSetupChannelAttributeField(siteOneUrl, opts);
         await device.reloadReactNative();
@@ -166,9 +145,6 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         }
     }
 
-    /**
-     * Fills the display name and taps Create, waiting for the channel screen.
-     */
     async function createChannelWithDisplayName(displayName: string) {
         await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
         await tapCreateAndWaitForChannelWithAttributes();
@@ -193,17 +169,13 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         await CreateOrEditChannelScreen.openCreateChannel();
         await ChannelAttributeForm.toBeVisible();
 
-        // * The row sits above Purpose: both are on screen without scrolling past
-        // one another, and the attribute row renders unset.
+        // * The row sits above Purpose and renders unset.
         await expect(CreateOrEditChannelScreen.purposeInput).toBeVisible();
         await waitFor(ChannelAttributeForm.getNotSet(REQUIRED_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await CreateOrEditChannelScreen.displayNameInput.replaceText('created-town-square');
 
-        // * Create stays disabled: a valid name is not enough while the required
-        // attribute is unset. Tapping it is a no-op — the screen does not dismiss
-        // and no request was even sent (the screen remaining visible alone would
-        // not rule out a server rejection producing the same outcome).
+        // * Create stays disabled while the required attribute is unset; no request is sent.
         await CreateOrEditChannelScreen.createButton.tap();
         await wait(timeouts.ONE_SEC);
         await expect(CreateOrEditChannelScreen.createOrEditChannelScreen).toExist();
@@ -223,8 +195,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
         }
         testChannel = channel;
 
-        // * The created channel already carries the value: in the header chip and
-        // in Channel Info, with no extra edit needed.
+        // * The created channel carries the value in the header chip and Channel Info.
         await waitFor(ChannelAttributeLabels.getChip(REQUIRED_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelAttributeLabels.getChipValue(REQUIRED_FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
 
@@ -239,9 +210,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
     });
 
     it('MM-T6330_4 - should not offer any attribute when the feature is disabled', async () => {
-        // The field exists server-side, same as it would the moment after an
-        // administrator disables the feature with configured attributes already
-        // in place — only the client-side gate is under test here.
+        // The field still exists server-side; only the client-side flag gate is under test.
         await setupChannelAttributeField({
             fieldName: REQUIRED_FIELD_NAME,
             options: FIELD_OPTIONS,
@@ -250,7 +219,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
             required: true,
         });
 
-        // Off for this test only; the finally hands the next test the flag back on.
+        // Flag is server-wide; the finally turns it back on for the next test.
         if (!await disableChannelAttributes(siteOneUrl)) {
             throw new Error('MM-T6330_4 could not disable ChannelAttributes');
         }
@@ -280,13 +249,10 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
 
         await CreateOrEditChannelScreen.openCreateChannel();
 
-        // * No attribute section at all: an optional attribute is reachable later
-        // from Channel Info, not offered here.
+        // * No attribute section: optional attributes are not offered at creation.
         await ChannelAttributeForm.toNotBeVisible();
         await expect(CreateOrEditChannelScreen.purposeInput).toBeVisible();
 
-        // "New channel" is dismissed with its own close (X) button, not the native
-        // back arrow — there is no "Navigate up" affordance on this screen.
         await CreateOrEditChannelScreen.close();
     });
 
@@ -301,9 +267,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
 
         await CreateOrEditChannelScreen.openCreateChannel();
 
-        // * The sysadmin-only field never appears: an ordinary member cannot
-        // satisfy it, and the server itself skips it for a caller who cannot set
-        // it, so creation must not be gated on it either.
+        // * The server skips fields the creator cannot set, so creation is not gated on them.
         await ChannelAttributeForm.toNotBeVisible();
 
         const channel = await createChannelWithDisplayName('created-no-sysadmin');
