@@ -1092,6 +1092,113 @@ jobs:
 
   # One Mattermost channel rollup (best-effort). Per-job finalize leaves channel
   # notify off so N legs do not spam; this job posts a single summary.
+  # Main only: re-run, on fresh devices, the failed specs triage could not clear (new on main, a product bug, or
+  # not enough history), so the channel message can say for certain whether each is a product bug: one that
+  # fails again on the same commit and servers is real; one that passes is not. Up to 10 specs per lane; more
+  # than that failing at once is the run's setup, and is not re-run.
+  plan-rerun:
+    name: Plan re-run of failed specs
+    runs-on: ubuntu-24.04
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.tsio-triage.result != 'skipped'
+    needs:
+      - tsio-triage
+    permissions:
+      contents: read
+    outputs:
+      detox-specs: ${{ steps.plan.outputs.detox-specs }}
+      maestro-flows: ${{ steps.plan.outputs.maestro-flows }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/rerun-failed.js
+            detox/utils/tsio-channel-notify-rollup.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
+            detox/utils/build-tsio-job-config.js
+            detox/utils/cli-args.js
+      - name: Download triage findings
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
+          path: triage-findings
+      - name: Plan the re-run
+        id: plan
+        run: node detox/utils/rerun-failed.js --findings-dir triage-findings
+
+  rerun-detox:
+    name: Re-run failed Detox specs
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - resolve-server-topology
+      - plan-rerun
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun.result == 'success' &&
+      needs.plan-rerun.outputs.detox-specs != '' &&
+      needs.plan-rerun.outputs.detox-specs != '{}'
+    uses: ./.github/workflows/e2e-detox.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ${{ inputs.PLATFORM }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+      run_type: ${{ inputs.run_type }}
+      artifact_run_id: ${{ github.run_id }}
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      rerun-specs: ${{ needs.plan-rerun.outputs.detox-specs }}
+    secrets: inherit
+
+  rerun-maestro:
+    name: Re-run failed Maestro flows
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - resolve-server-topology
+      - plan-rerun
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun.result == 'success' &&
+      needs.plan-rerun.outputs.maestro-flows != '' &&
+      needs.plan-rerun.outputs.maestro-flows != '{}'
+    uses: ./.github/workflows/e2e-maestro-pr.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ${{ inputs.PLATFORM }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+      run_type: ${{ inputs.run_type }}
+      artifact_run_id: ${{ github.run_id }}
+      record_tests_in_zephyr: false
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      rerun-flows: ${{ needs.plan-rerun.outputs.maestro-flows }}
+    secrets: inherit
+
   tsio-channel-notify:
     name: Post Mattermost E2E channel rollup
     runs-on: ubuntu-24.04
@@ -1101,7 +1208,7 @@ jobs:
       needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       needs.calculate-tsio-identity.result == 'success' &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
-    # After triage, so the message carries its verdict on each failed test.
+    # After triage and the re-run of failed specs, so the message carries the verdict on each failed test.
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
@@ -1110,6 +1217,8 @@ jobs:
       - run-maestro-ios
       - run-maestro-android
       - tsio-triage
+      - rerun-detox
+      - rerun-maestro
     permissions:
       contents: read
       id-token: write
@@ -1124,17 +1233,27 @@ jobs:
             detox/utils/cmt-channel-notify.js
             detox/utils/build-tsio-job-config.js
             detox/utils/cli-args.js
-      # The triage jobs' verdicts (none when no run failed, or triage did not finish).
+            detox/utils/rerun-failed.js
+      # This attempt's triage verdicts (none when no run failed, or triage did not finish); an earlier attempt's
+      # are not this run's.
       - name: Download triage findings
         continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: e2e-triage-findings-*
+          pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
           path: triage-findings
+      # The re-run's result per test (main only; none when nothing was re-run).
+      - name: Download re-run results
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-rerun-results-*-a${{ github.run_attempt }}
+          path: rerun-results
       - name: Aggregate per-job TSIO groups and notify channel
         env:
           JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
           TRIAGE_FINDINGS_DIR: triage-findings
+          RERUN_RESULTS_DIR: rerun-results
           GITHUB_TOKEN: ${{ github.token }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}

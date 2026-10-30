@@ -219,8 +219,13 @@ async function collectPerJobCounts({
         try {
             counts = await fetchCounts(baseUrl, identity, detail);
         } catch (err) {
-            warn(`tsio-channel-notify-rollup: no per-leg counts for ${identity.name}: ${err.message}`);
-            continue;
+            // The group's own totals, so a slow per-test fetch never drops a run's failures from the message.
+            const job = (detail.reports || []).map((r) => r.gh_job_name || r.display_name).find(Boolean);
+            warn(`tsio-channel-notify-rollup: no per-test counts for ${identity.name} (${err.message})${job ? '; using the group totals' : ''}`);
+            if (!job || !detail.test_stats) {
+                continue;
+            }
+            counts = {[job]: detail.test_stats};
         }
 
         for (const [job, jobCounts] of Object.entries(counts || {})) {
@@ -325,6 +330,14 @@ async function main() {
 
     // The triage jobs' verdicts, and on main the changes since the last main run, which the new failures point to.
     const triage = loadTriageFindings(args['findings-dir'] || process.env.TRIAGE_FINDINGS_DIR || '');
+
+    // Main and CMT re-run the failures triage could not clear on fresh devices (rerun-failed.js): the same plan
+    // names what was re-run, and each re-run test's result decides whether it is a product bug.
+    let rerun = null;
+    if (['mobile-main', 'mobile-release'].includes(webhookBucketForReportName(rollupIdentity.name))) {
+        const {planRerun, loadRerunResults} = require('./rerun-failed');
+        rerun = {...planRerun(triage), results: loadRerunResults(args['rerun-results-dir'] || process.env.RERUN_RESULTS_DIR || '')};
+    }
     let changes = null;
     if (triage.length && webhookBucketForReportName(rollupIdentity.name) === 'mobile-main') {
         try {
@@ -356,6 +369,7 @@ async function main() {
         failures,
         triage,
         changes,
+        rerun,
         upstreamJobsSucceeded: upstreamSucceeded,
         hasFailures,
         webhookUrl,

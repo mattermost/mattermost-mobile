@@ -32,6 +32,13 @@ on:
         required: false
         type: string
         default: ""
+      results-artifact:
+        description: >
+          Artifact name for this run's Maestro JUnit report: a re-run of failed flows (flow-path),
+          with an empty tsio-config and run-type NONE, reports only to the channel message.
+        required: false
+        type: string
+        default: ""
       record_tests_in_zephyr:
         description: "Record Maestro test results in Zephyr Scale (release/main runs)"
         required: false
@@ -540,8 +547,19 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: maestro-ios-results-${{ github.run_id }}
+          # A re-run of failed flows runs in the same workflow run: its own name.
+          name: maestro-ios-results-${{ github.run_id }}${{ inputs.results-artifact != '' && '-rerun' || '' }}
           path: build/
+
+      # A re-run of failed flows hands its per-flow results to the channel message.
+      - name: Upload re-run results
+        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.results-artifact }}
+          path: build/maestro-report.xml
+          retention-days: 1
 
       - name: Parse Maestro Report
         id: summary
@@ -1275,8 +1293,19 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: maestro-android-results-${{ github.run_id }}
+          # A re-run of failed flows runs in the same workflow run: its own name.
+          name: maestro-android-results-${{ github.run_id }}${{ inputs.results-artifact != '' && '-rerun' || '' }}
           path: build/
+
+      # A re-run of failed flows hands its per-flow results to the channel message.
+      - name: Upload re-run results
+        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.results-artifact }}
+          path: build/maestro-report.xml
+          retention-days: 1
 
       - name: Parse Maestro Report
         id: summary

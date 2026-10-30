@@ -14,6 +14,7 @@ const {
     formatCmtChannelMessage,
     formatMainChannelMessage,
     formatTriageVerdict,
+    judgeFinding,
     formatMassFailures,
     verdictOf,
     notifyCmtChannel,
@@ -145,7 +146,7 @@ describe('cmt-channel-notify', () => {
     });
 
     describe('formatCmtChannelMessage', () => {
-        it('renders one combined table with overall + per-leg rows and consolidated link', () => {
+        it('posts the short message for a CMT run, one entry per platform and server', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {
                     branch: 'release-2.40',
@@ -169,21 +170,14 @@ describe('cmt-channel-notify', () => {
                 upstreamJobsSucceeded: true,
             });
 
-            assert.match(text, /^## ❌ Mobile CMT\n/);
-            assert.match(text, /\*\*Branch:\*\* `release-2\.40` · \*\*Commit:\*\* `55afc0b`/);
-            assert.match(text, /🔴 \*\*1 failing test\*\*/);
-            assert.doesNotMatch(text, /#### Detailed results/);
-            assert.doesNotMatch(text, /<details>/);
-            assert.match(text, /\| \*\*Overall\*\* \| \*\*460\*\* \| \*\*1\*\* \| \*\*40\*\* \| ❌ Failed \|/);
-            assert.match(
-                text,
-                /\| \[📱 detox-ios \(11\.9\.0\)\]\(https:\/\/test-io\.test\.mattermost\.com\/reports\/r\/rid-ios\) \| 231 \| 0 \| 20 \| ✅ 231\/231 \|/,
-            );
-            assert.match(
-                text,
-                /\| \[🤖 detox-android \(11\.9\.0\)\]\(https:\/\/test-io\.test\.mattermost\.com\/reports\/r\/rid-android\) \| 230 \| 1 \| 20 \| ❌ 230\/231 \|/,
-            );
-            assert.match(text, /➡️ \*\*Consolidated report:\*\* https:\/\/test-io\.test\.mattermost\.com\/reports\/mattermost-mobile\/release-2\.40\/55afc0b\/mobile-release/);
+            assert.equal(text, [
+                '🟡 **Mobile CMT — no product bug confirmed** on `release-2.40`',
+                '`55afc0b`',
+                '**1 failed** · 461 passed · 40 skipped',
+                '🔎 **Not confirmed (1) — not re-run, or the re-run gave no result:** [🤖 detox-android (11.9.0)](https://test-io.test.mattermost.com/reports/r/rid-android) 1',
+                '➡️ [Full report](https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/55afc0b/mobile-release)',
+                '',
+            ].join('\n'));
         });
 
         it('renders a passed PR report with PR link and no failure banner', () => {
@@ -393,7 +387,7 @@ describe('cmt-channel-notify', () => {
     describe('formatCmtChannelMessage failure judgement', () => {
         it('renders grouped judgements when failures are supplied', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
                 detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
                 perJobCounts: {},
                 failures: [
@@ -411,7 +405,7 @@ describe('cmt-channel-notify', () => {
 
         it('promotes a direct assertion that failed on two legs to suspected app bug', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
                 detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
                 perJobCounts: {},
                 failures: [
@@ -425,7 +419,7 @@ describe('cmt-channel-notify', () => {
 
         it('does not promote a direct assertion when only one leg has a job name', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
                 detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
                 perJobCounts: {},
                 failures: [
@@ -439,7 +433,7 @@ describe('cmt-channel-notify', () => {
 
         it('does not cascade failures whose job or suite is unknown', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-release'},
+                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
                 detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
                 perJobCounts: {},
                 failures: [
@@ -687,16 +681,55 @@ describe('cmt-channel-notify', () => {
         const runUrl = 'https://github.com/mattermost/mattermost-mobile/actions/runs/40764686027';
         const message = (overrides) => formatCmtChannelMessage({compositeIdentity: identity, detail, perJobCounts, triage, changes, runUrl, failures: [], ...overrides});
 
-        it('says in a few lines which failures may be product bugs and which are not', () => {
-            assert.equal(message(), [
-                '🔴 **Mobile Main E2E — possible product bug** on `main`',
+        // The re-run on fresh devices: detox-android's test 0 failed again, every other new failure passed.
+        const results = (failedAgain) => ({
+            'detox-android': new Map([['test 0', failedAgain ? 'failed' : 'passed'], ['test 1', 'passed']]),
+            'maestro-android-e2e': new Map(newOnMain(8).map((r) => [r.title, 'passed'])),
+        });
+        const rerun = (failedAgain = true) => ({lanes: {}, tooMany: {}, results: results(failedAgain)});
+
+        it('calls a failure a product bug only when it failed again on a fresh device', () => {
+            assert.equal(message({rerun: rerun()}), [
+                '🔴 **Mobile Main E2E — product bug** on `main`',
                 '`0ec1413` · most likely from [#10266](https://github.com/mattermost/mattermost-mobile/pull/10266) [MM-71089] Log websocket client creation failures',
                 '**11 failed** · 1263 passed · 89 skipped',
-                "🐞 **Possible product bugs (10):** 🤖 detox-android 2 · 🤖 maestro-android 8 (9 of 11 tests failed: check that run's setup first)",
+                '🐞 **Product bugs (1) — failed again on a fresh device:** 🤖 detox-android 1',
+                '- 🤖 detox-android test 0',
+                '🔁 **Not product bugs:** 9 passed on a fresh device · 1 flaky · 5 passed on retry',
+                `➡️ [Workflow run](${runUrl})`,
+                '',
+            ].join('\n'));
+        });
+
+        it('posts nothing when every failure passed on a fresh device', () => {
+            assert.equal(message({rerun: rerun(false)}), null);
+        });
+
+        it('takes the fresh-device re-run over a retry that passed with the same error', () => {
+            const error = 'Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “login.screen”) TIMEOUT(10s)';
+            const lanes = [{lane: 'detox-android', counts: {flaky: 1}, findings: [{...row('MM-T1 - logs in', 'REGRESSION', 'needs investigation'), error_first_line: error}]}];
+            const params = {
+                triage: lanes,
+                perJobCounts: {'detox-android': {passed: 600, failed: 1, skipped: 0, flaky: 1}},
+                failures: [{title: 'Login › MM-T2 - logs out', job: 'detox-android', error, passedOnRetry: true}],
+            };
+            assert.equal(message(params), null, 'the same error passed on retry: flaky');
+            const again = message({...params, rerun: {lanes: {}, tooMany: {}, results: {'detox-android': new Map([['MM-T1 - logs in', 'failed']])}}});
+            assert.match(again, /^🔴 \*\*Mobile Main E2E — product bug\*\* on `main`$/m);
+        });
+
+        it('confirms nothing that was not re-run', () => {
+            assert.equal(message(), [
+                '🟡 **Mobile Main E2E — no product bug confirmed** on `main`',
+                '`0ec1413`',
+                '**11 failed** · 1263 passed · 89 skipped',
+                "🔎 **Not confirmed (10) — not re-run, or the re-run gave no result:** 🤖 detox-android 2 · 🤖 maestro-android 8 (9 of 11 tests failed: check that run's setup first)",
                 '🔁 **Not product bugs:** 1 flaky · 5 passed on retry',
                 `➡️ [Workflow run](${runUrl})`,
                 '',
             ].join('\n'));
+            const tooMany = message({rerun: {lanes: {}, tooMany: {'maestro-android-e2e': 12}, results: {}}});
+            assert.match(tooMany, /🤖 maestro-android 8 \(12 failed at once, too many to re-run: check that run's setup first\)$/m);
         });
 
         it('posts nothing when the run passed, or when no failure is a product bug', () => {
@@ -710,22 +743,23 @@ describe('cmt-channel-notify', () => {
         });
 
         it('names which change most likely broke a test new on main', () => {
-            const second = (changed) => message({changes: changed}).split('\n')[1];
+            const second = (changed) => message({changes: changed, rerun: rerun()}).split('\n')[1];
             assert.equal(second(null), '`0ec1413` · most likely from a change merged since the last main run');
             assert.equal(second({from: identity.commit_sha, to: identity.commit_sha, prs: []}), '`0ec1413` · no change was merged since the last main run, so no new change explains these');
             const prs = [10300, 10301, 10302, 10303].map((number) => ({number, title: 'x'}));
             assert.match(second({...changes, prs}), /^`0ec1413` · most likely from one of the 4 changes merged since the last main run: \[#10300\]\(.*\) · \[#10301\]\(.*\) · \[#10302\]\(.*\) and 1 more$/);
             assert.match(second({...changes, prs, partial: true}), /^`0ec1413` · most likely from one of the many changes merged since the last main run \(`3927243` → `0ec1413`\), among them \[#10300\]/);
             const appBug = [{lane: 'detox-android', counts: {flaky: 0}, findings: [row('a', 'REGRESSION', 'app bug')]}];
-            assert.equal(message({triage: appBug, perJobCounts: {'detox-android': {passed: 5, failed: 1}}}).split('\n')[1], '`0ec1413`', 'no change is named for a bug that is not new on main');
+            const again = {lanes: {}, tooMany: {}, results: {'detox-android': new Map([['a', 'failed']])}};
+            assert.equal(message({triage: appBug, rerun: again, perJobCounts: {'detox-android': {passed: 5, failed: 1}}}).split('\n')[1], '`0ec1413`', 'no change is named for a bug that is not new on main');
         });
 
-        it('needs investigation when triage could not tell, or left no verdict', () => {
+        it('confirms nothing when triage could not tell, or left no verdict', () => {
             const lanes = [{lane: 'detox-android', counts: {flaky: 0}, findings: [row('a', 'INSUFFICIENT_DATA', 'needs investigation')]}];
             const counts = {'detox-android': {passed: 5, failed: 1}, 'detox-ios': {passed: 5, failed: 2}};
             const text = message({triage: lanes, perJobCounts: counts, detail: {...detail, test_stats: {passed: 10, failed: 3, skipped: 0}}});
-            assert.match(text, /^🟡 \*\*Mobile Main E2E — needs investigation\*\* on `main`$/m);
-            assert.match(text, /^🔎 \*\*Needs investigation \(3\):\*\* 📱 detox-ios 2 · 🤖 detox-android 1 — triage could not tell; see the report$/m);
+            assert.match(text, /^🟡 \*\*Mobile Main E2E — no product bug confirmed\*\* on `main`$/m);
+            assert.match(text, /^🔎 \*\*Not confirmed \(3\) — not re-run, or the re-run gave no result:\*\* 📱 detox-ios 2 · 🤖 detox-android 1$/m);
         });
 
         it('judges from the error text a failed test triage did not name', () => {
@@ -746,6 +780,48 @@ describe('cmt-channel-notify', () => {
         it('is what the PR and CMT messages are not', () => {
             assert.equal(formatMainChannelMessage({compositeIdentity: identity, detail, perJobCounts, triage, changes, failures: []}), message({runUrl: undefined}));
             assert.match(formatCmtChannelMessage({compositeIdentity: {...identity, name: 'mobile-pr', run_group: 'mobile-pr'}, detail, perJobCounts, triage, failures: []}), /^## ❌ Mobile PR E2E/);
+        });
+    });
+
+    // Error lines from main runs 39227310405, 39245443446, 39295124902 and 40764686027: none was a product bug.
+    describe('judgeFinding', () => {
+        const finding = (error, cls = 'REGRESSION', label = 'needs investigation') => ({title: 't', class: cls, label, error_first_line: error});
+        const lane = (findings, counts = {passed: 600, failed: findings.length}) => ({findings, counts});
+        const judge = (error) => {
+            const row = finding(error);
+            return judgeFinding(row, lane([row]));
+        };
+
+        it('clears a failure whose error is the setup, the harness, the device or the test code', () => {
+            assert.equal(judge('Error: thrown: "Exceeded timeout of 300000 ms for a hook.'), 'setup');
+            assert.equal(judge('Error: thrown: "Exceeded timeout of 360000 ms for a test.'), 'setup');
+            assert.equal(judge('Error: Failed to enable ABAC: {"message":"No response from server: timeout of 45000ms exceeded.'), 'setup');
+            assert.equal(judge('Error: [beforeAll] Failed to create regular bot: {"id":"api.context.invalid_param.app_error","message":"Invalid post.channel_id"}'), 'setup');
+            assert.equal(judge('AllowDownloadLogs=false never reached the client config; the flow\'s pre-condition was not in force'), 'setup');
+            assert.equal(judge('maestro.android.DeviceServerDiedException: Device server died during \'viewHierarchy\' on emulator-5554'), 'setup');
+            assert.equal(judge('Detox can\'t seem to connect to the test app(s)!'), 'setup');
+            assert.equal(judge('TypeError: Cannot read properties of undefined (reading \'id\')'), 'test');
+        });
+
+        it('leaves an app assertion to the re-run, and never touches what triage cleared', () => {
+            assert.equal(judge('Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “login.screen”) TIMEOUT(10s)'), 'new');
+            assert.equal(judge(''), 'new');
+            const flaky = finding('Error: thrown: "Exceeded timeout of 300000 ms for a hook.', 'FLAKY_ON_TRUNK', 'flaky');
+            assert.equal(judgeFinding(flaky, lane([flaky])), 'flaky');
+        });
+
+        it('calls it the run when most tests that ran failed with the same error', () => {
+            const rows = Array.from({length: 9}, () => finding('Assertion is false: id: login_form.forgot_password.button is visible'));
+            assert.equal(judgeFinding(rows[0], lane(rows, {passed: 2, failed: 9})), 'setup', '9 of 11 Maestro flows');
+            assert.equal(judgeFinding(rows[0], lane(rows, {passed: 600, failed: 9})), 'new', 'a minority of the lane is judged one by one');
+            assert.equal(judgeFinding(rows[0], lane(rows.slice(0, 2), {passed: 0, failed: 2})), 'new', 'two tests are too few to call it the run');
+        });
+
+        it('calls it flaky when a test failed with the same error and passed its retry', () => {
+            const error = 'Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “login.screen”) TIMEOUT(10s)';
+            const row = finding(error);
+            assert.equal(judgeFinding(row, lane([row]), new Set([error])), 'flaky');
+            assert.equal(judgeFinding(row, lane([row]), new Set(['Test Failed: something else'])), 'new');
         });
     });
 });

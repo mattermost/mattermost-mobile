@@ -41,6 +41,15 @@ on:
         description: "JSON map of per-platform TSIO configs from parent calculate-tsio-identity"
         required: true
         type: string
+      rerun-specs:
+        description: >
+          Re-run of failed specs: JSON map of lane (detox-ios, detox-android, detox-ipad) to
+          space-separated spec files. Only those lanes run, on fresh devices, and report only
+          to the channel message (no TSIO, Zephyr, durations, commit status or webhook).
+          "{}" is the normal run.
+        required: false
+        type: string
+        default: "{}"
 
 permissions:
   contents: read
@@ -55,21 +64,25 @@ env:
 
 jobs:
   run-ios-tests:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    if: (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (inputs.rerun-specs == '{}' || fromJSON(inputs.rerun-specs)['detox-ios'] != null)
     name: iOS
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
-      run-type: ${{ inputs.run_type || 'PR' }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-ios']) }}
-      tsio-shard-name: detox-ios
-      durations_key: detox-ios
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      run-type: ${{ inputs.rerun-specs != '{}' && 'NONE' || inputs.run_type || 'PR' }}
+      tsio-config: ${{ inputs.rerun-specs == '{}' && toJSON(fromJSON(inputs.tsio-job-configs)['detox-ios']) || '' }}
+      tsio-shard-name: ${{ inputs.rerun-specs == '{}' && 'detox-ios' || '' }}
+      durations_key: ${{ inputs.rerun-specs == '{}' && 'detox-ios' || '' }}
+      record_tests_in_zephyr: ${{ inputs.rerun-specs == '{}' && (inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_OTHER_PLATFORM_POOL_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.IOS_SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
+      spec_files: ${{ inputs.rerun-specs != '{}' && fromJSON(inputs.rerun-specs)['detox-ios'] || '' }}
+      results-artifact: ${{ inputs.rerun-specs != '{}' && format('e2e-rerun-results-detox-ios-a{0}', github.run_attempt) || '' }}
+      # The failed specs of a re-run run one after another on one fresh device (mutation specs on their own).
+      parallelism: ${{ inputs.rerun-specs != '{}' && '1' || '32' }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -85,22 +98,26 @@ jobs:
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
 
   run-android-tests:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    if: (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (inputs.rerun-specs == '{}' || fromJSON(inputs.rerun-specs)['detox-android'] != null)
     name: Android
     uses: ./.github/workflows/e2e-android-template.yml
     with:
       run-android-tests: true
-      run-type: ${{ inputs.run_type || 'PR' }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-android']) }}
-      tsio-shard-name: detox-android
-      durations_key: detox-android
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      run-type: ${{ inputs.rerun-specs != '{}' && 'NONE' || inputs.run_type || 'PR' }}
+      tsio-config: ${{ inputs.rerun-specs == '{}' && toJSON(fromJSON(inputs.tsio-job-configs)['detox-android']) || '' }}
+      tsio-shard-name: ${{ inputs.rerun-specs == '{}' && 'detox-android' || '' }}
+      durations_key: ${{ inputs.rerun-specs == '{}' && 'detox-android' || '' }}
+      record_tests_in_zephyr: ${{ inputs.rerun-specs == '{}' && (inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_OTHER_PLATFORM_POOL_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.ANDROID_SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
+      spec_files: ${{ inputs.rerun-specs != '{}' && fromJSON(inputs.rerun-specs)['detox-android'] || '' }}
+      results-artifact: ${{ inputs.rerun-specs != '{}' && format('e2e-rerun-results-detox-android-a{0}', github.run_attempt) || '' }}
+      # The failed specs of a re-run run one after another on one fresh device (mutation specs on their own).
+      parallelism: ${{ inputs.rerun-specs != '{}' && '1' || '32' }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -116,14 +133,14 @@ jobs:
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
 
   run-ios-ipad-tests:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    if: (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (inputs.rerun-specs == '{}' || fromJSON(inputs.rerun-specs)['detox-ipad'] != null)
     name: iOS iPad
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
-      run-type: ${{ inputs.run_type || 'PR' }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-ipad']) }}
-      tsio-shard-name: detox-ipad
-      durations_key: detox-ipad
+      run-type: ${{ inputs.rerun-specs != '{}' && 'NONE' || inputs.run_type || 'PR' }}
+      tsio-config: ${{ inputs.rerun-specs == '{}' && toJSON(fromJSON(inputs.tsio-job-configs)['detox-ipad']) || '' }}
+      tsio-shard-name: ${{ inputs.rerun-specs == '{}' && 'detox-ipad' || '' }}
+      durations_key: ${{ inputs.rerun-specs == '{}' && 'detox-ipad' || '' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_OTHER_PLATFORM_POOL_URL: ${{ inputs.ANDROID_SITE_1_URL }}
@@ -135,6 +152,8 @@ jobs:
       parallelism: "1"
       detox_config: "ios.ipad.debug"
       artifact_run_id: ${{ inputs.artifact_run_id }}
+      spec_files: ${{ inputs.rerun-specs != '{}' && fromJSON(inputs.rerun-specs)['detox-ipad'] || '' }}
+      results-artifact: ${{ inputs.rerun-specs != '{}' && format('e2e-rerun-results-detox-ipad-a{0}', github.run_attempt) || '' }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}

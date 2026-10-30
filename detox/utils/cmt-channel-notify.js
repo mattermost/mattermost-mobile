@@ -14,6 +14,9 @@ const PLATFORM_ORDER = {ios: 0, android: 1, ipad: 2};
 const FRAMEWORK_ORDER = {detox: 0, maestro: 1};
 const FETCH_TIMEOUT_MS = 15_000;
 
+// The consolidated report of a full Detox run takes TSIO about 20s to build.
+const CONSOLIDATED_TIMEOUT_MS = 90_000;
+
 /**
  * Fetch with an abort timeout that stays armed until `readBody` finishes.
  *
@@ -562,7 +565,7 @@ function formatTriageVerdict({triage, legs = [], failures = []}) {
     }
     const unjudged = (failures || []).filter((failure) => {
         const names = named.get(legKeyOf(failure.job));
-        return !names?.has(failure.title) && !(names && failure.passedOnRetry);
+        return !(names && namedIn(names, failure.title)) && !(names && failure.passedOnRetry);
     });
     lines.push(...formatFailureJudgement(unjudged));
     const unchecked = [];
@@ -580,6 +583,13 @@ function formatTriageVerdict({triage, legs = [], failures = []}) {
     return lines;
 }
 
+// TSIO names a failed test "Suite › test"; a triage finding names it by its title ("test") and full title
+// ("Suite test", or a Maestro flow's file path).
+function namedIn(names, title) {
+    const text = title || '';
+    return names.has(text) || names.has(text.split(' › ').pop()) || names.has(text.replace(/ › /g, ' '));
+}
+
 // One key per run: CMT runs of the same framework and platform differ by server version.
 function legKey({framework, platform, serverVersion}) {
     return `${framework}-${platform}-${serverVersion}`;
@@ -590,28 +600,97 @@ function legKeyOf(jobName) {
     return parsed ? legKey(parsed) : null;
 }
 
-function isMainRun(compositeIdentity) {
+function bucketOf(compositeIdentity) {
     const {webhookBucketForReportName} = require('./build-tsio-job-config');
-    return webhookBucketForReportName(compositeIdentity?.run_group || compositeIdentity?.name || '') === 'mobile-main';
+    return webhookBucketForReportName(compositeIdentity?.run_group || compositeIdentity?.name || '');
 }
 
-// After a merge the channel needs one answer per failed test: a possible product bug, or not one.
+// Main and CMT runs answer one question per failed test; a PR run keeps the detailed message.
+function postsShortMessage(compositeIdentity) {
+    return ['mobile-main', 'mobile-release'].includes(bucketOf(compositeIdentity));
+}
+
+// After a merge the channel needs one answer per failed test: a product bug, or not one. Only a test that fails
+// again on a fresh device (rerun-failed.js) is a product bug; what was not re-run is not confirmed either way.
 const NOT_PRODUCT_BUGS = [
+    {key: 'fresh-pass', label: 'passed on a fresh device'},
     {key: 'flaky', label: 'flaky'},
-    {key: 'still', label: 'already failing on main'},
+    {key: 'still', label: 'already failing before this run'},
     {key: 'test', label: 'a problem with the test'},
     {key: 'setup', label: 'setup (device or server)'},
 ];
 
 // A failed test triage did not name is judged from its error text (classifyFailure).
 const VERDICT_OF_JUDGEMENT = {'app-bug': 'product', investigate: 'look', flaky: 'flaky', known: 'still', infra: 'setup'};
+const UNCLEARED = new Set(['product', 'new', 'look']);
+const MAX_NAMED_BUGS = 5;
+
+// Mobile's judge of a failure triage left uncleared, from what the error text alone proves. The app runs in its own
+// process, so none of these is the app failing: a call the test's setup made to the server, a Jest hook or test
+// timeout (the setup or the harness never finished), the device layer, or a JavaScript error in the test's code.
+// Checked against 303 failures of 13 main runs: every one these patterns matched was not a product bug.
+const SETUP_ERRORS = [
+    /Exceeded timeout of \d+ ?ms for a (hook|test)/,
+    /No response from server|socket hang up|\{"(id|message)":"/,
+    /never (became|reached)|could not (confirm|enable)|did not attach file|seed failed|server baseline|apiCheckSystemHealth/,
+    /DeviceServerDied|DeviceUnreachable|Detox can't seem to connect to the test app|"reactNativeReload"/,
+];
+const TEST_CODE_ERRORS = /^(TypeError|ReferenceError|SyntaxError):/;
+
+// The same failure, whatever its numbers and ids.
+function errorSignature(text) {
+    return (text || '').split('\n')[0].replace(/[0-9a-f]{8,}|\d+/gi, '#').trim();
+}
+
+function causeOfError(text) {
+    const line = (text || '').split('\n')[0];
+    if (TEST_CODE_ERRORS.test(line)) {
+        return 'test';
+    }
+    return SETUP_ERRORS.some((pattern) => pattern.test(line)) ? 'setup' : null;
+}
 
 /**
- * The main-run message, a few lines as on desktop: possible product bugs per run, then what is not a product bug.
- * Null when there is nothing to post: the run passed, or every failure is flaky, already failing on main, a problem
- * with the test or passed on retry.
+ * A finding's verdict after mobile's judge: triage's, unless the failure is one triage left uncleared and
+ *   - its error is setup, the harness, the device or the test's code (causeOfError);
+ *   - at least half of the tests that ran in the lane, and 3 or more, failed with the same error: the run, not each test;
+ *   - a test in the lane failed with the same error and passed on its retry (retried, from TSIO): flaky.
  *
- * @param {Object} params - see formatCmtChannelMessage
+ * @param {Object} row - finding (schema 2)
+ * @param {{findings?: Array, counts?: Object}} lane - its findings file
+ * @param {Iterable<string>} [retried] - errors of the lane's tests that failed and then passed their retry
+ * @returns {string} verdict key
+ */
+function judgeFinding(row, lane, retried) {
+    const key = verdictOf(row, true).key;
+    if (!UNCLEARED.has(key)) {
+        return key;
+    }
+    const cause = causeOfError(row.error_first_line);
+    if (cause) {
+        return cause;
+    }
+    const signature = errorSignature(row.error_first_line);
+    if (signature) {
+        const same = (lane.findings || []).filter((other) => errorSignature(other.error_first_line) === signature).length;
+        const counts = lane.counts || {};
+        const ran = (counts.passed || 0) + (counts.failed || 0) + (counts.flaky || 0);
+        if (same >= 3 && same * 2 >= ran) {
+            return 'setup';
+        }
+        if ([...(retried || [])].some((error) => errorSignature(error) === signature)) {
+            return 'flaky';
+        }
+    }
+    return key;
+}
+
+/**
+ * The main and CMT message, a few lines as on desktop: product bugs (failed again on a fresh device), failures not
+ * confirmed either way, then what is not a product bug. Null when there is nothing to post: the run passed, or every
+ * failure is flaky, passed on a fresh device or on retry, already failing before, a problem with the test or setup.
+ *
+ * @param {Object} params - see formatCmtChannelMessage; `rerun` is {lanes, tooMany, results} from rerun-failed.js
  * @returns {string|null}
  */
 function formatMainChannelMessage({
@@ -624,14 +703,18 @@ function formatMainChannelMessage({
     failures,
     triage,
     changes = null,
+    rerun = null,
     upstreamJobsSucceeded = true,
     hasFailures = false,
 }) {
-    const stats = detail?.test_stats || {};
-    const passed = (stats.passed ?? 0) + (stats.flaky ?? 0);
-    const failed = stats.failed ?? 0;
-    const skipped = stats.skipped ?? 0;
     const legs = buildLegSummaries(perJobCounts, detail?.reports || [], baseUrl);
+
+    // Each test once (the per-test counts): TSIO's group totals count every failed entry of a test.
+    const stats = detail?.test_stats || {};
+    const sum = (field) => legs.reduce((n, leg) => n + leg[field], 0);
+    const passed = legs.length ? sum('passed') : (stats.passed ?? 0) + (stats.flaky ?? 0);
+    const failed = legs.length ? sum('failed') : stats.failed ?? 0;
+    const skipped = legs.length ? sum('skipped') : stats.skipped ?? 0;
 
     // One verdict per failed test: the triage job's where a finding names it, the error text's where none does
     // (a test that passed on retry is counted below, not judged), and "not checked" for the rest of a run's failures.
@@ -640,13 +723,30 @@ function formatMainChannelMessage({
     for (const lane of triage || []) {
         const leg = legKeyOf(lane.lane);
         const names = named.get(leg) || new Set();
+        const retried = (failures || []).
+            filter((failure) => failure.passedOnRetry && legKeyOf(failure.job) === leg).
+            map((failure) => failure.error);
         for (const row of lane.findings || []) {
-            verdicts.push({key: verdictOf(row, true).key, leg});
+            // What the error text leaves uncleared, the fresh-device re-run decides: failed again is a product
+            // bug, passed is not one. Only without a re-run result does a retry of the same error clear it.
+            let key = judgeFinding(row, lane);
+            const again = UNCLEARED.has(key) ? rerun?.results?.[lane.lane]?.get(row.title) : undefined;
+            if (again === 'failed') {
+                key = 'confirmed';
+            } else if (again === 'passed') {
+                key = 'fresh-pass';
+            } else if (UNCLEARED.has(key)) {
+                key = judgeFinding(row, lane, retried);
+            }
+            verdicts.push({key, leg, lane: lane.lane, title: row.title, new: verdictOf(row, true).key === 'new'});
             names.add(row.full_title || row.title).add(row.title);
         }
         named.set(leg, names);
     }
-    const unjudged = (failures || []).filter((failure) => !failure.passedOnRetry && !named.get(legKeyOf(failure.job))?.has(failure.title));
+    const unjudged = (failures || []).filter((failure) => {
+        const names = named.get(legKeyOf(failure.job));
+        return !failure.passedOnRetry && !(names && namedIn(names, failure.title));
+    });
     for (const {failure, verdict} of judgeFailures(unjudged)) {
         verdicts.push({key: VERDICT_OF_JUDGEMENT[verdict.category] || 'look', leg: legKeyOf(failure.job)});
     }
@@ -658,14 +758,12 @@ function formatMainChannelMessage({
         }
     }
 
-    const product = verdicts.filter((v) => v.key === 'product' || v.key === 'new');
-    const look = verdicts.filter((v) => v.key === 'look');
+    const confirmed = verdicts.filter((v) => v.key === 'confirmed');
+    const unconfirmed = verdicts.filter((v) => UNCLEARED.has(v.key));
     const setupLines = [];
     const noResults = legs.filter((leg) => leg.status === 'missing' || leg.status === 'no-results');
     if (noResults.length) {
         setupLines.push(`⚙️ **No results:** ${noResults.map(formatLegName).join(', ')} — test results did not upload, or the run ran no tests; re-run to see if anything failed`);
-    } else if (detail?.status && detail.status !== 'completed') {
-        setupLines.push(`⚙️ **Results incomplete** (TSIO status \`${detail.status}\`); re-run to see if anything failed`);
     }
     if (!upstreamJobsSucceeded && failed === 0) {
         setupLines.push('⚙️ A CI job failed outside the tests (install, build or teardown).');
@@ -673,14 +771,15 @@ function formatMainChannelMessage({
     const unexplained = upstreamJobsSucceeded && hasFailures && failed === 0;
 
     const title = reportTitleForIdentity(compositeIdentity);
-    const branch = (compositeIdentity?.branch || 'main').replace(/^refs\/(heads|tags)\//, '');
+    const branch = (compositeIdentity?.branch || '').replace(/^refs\/(heads|tags)\//, '');
+    const on = branch ? ` on \`${branch}\`` : '';
     let header;
-    if (product.length) {
-        header = `🔴 **${title} — possible product bug** on \`${branch}\``;
-    } else if (look.length || unexplained) {
-        header = `🟡 **${title} — needs investigation** on \`${branch}\``;
+    if (confirmed.length) {
+        header = `🔴 **${title} — product bug**${on}`;
+    } else if (unconfirmed.length || unexplained) {
+        header = `🟡 **${title} — no product bug confirmed**${on}`;
     } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
-        header = `🟡 **${title} — setup problem** on \`${branch}\``;
+        header = `🟡 **${title} — setup problem**${on}`;
     } else {
         return null;
     }
@@ -694,9 +793,11 @@ function formatMainChannelMessage({
             map(({leg, count}) => {
                 const name = leg.reportUrl ? `[${formatLegName(leg)}](${leg.reportUrl})` : formatLegName(leg);
                 let note = '';
-                if (isMassFailure(leg) && !flagged.has(leg)) {
+                const tooMany = Object.entries(rerun?.tooMany || {}).find(([lane]) => legKeyOf(lane) === legKey(leg))?.[1];
+                if ((tooMany || isMassFailure(leg)) && !flagged.has(leg)) {
                     flagged.add(leg);
-                    note = ` (${leg.failed} of ${leg.passed + leg.failed} tests failed: check that run's setup first)`;
+                    const what = tooMany ? `${tooMany} failed at once, too many to re-run` : `${leg.failed} of ${leg.passed + leg.failed} tests failed`;
+                    note = ` (${what}: check that run's setup first)`;
                 }
                 return {text: `${name} ${count}${note}`, count};
             });
@@ -705,17 +806,23 @@ function formatMainChannelMessage({
     };
 
     const shortSha = (compositeIdentity?.commit_sha || '').slice(0, 7);
-    const newOnMain = product.some((v) => v.key === 'new');
+    const newOnMain = bucketOf(compositeIdentity) === 'mobile-main' && confirmed.some((v) => v.new);
     const lines = [
         header,
         [shortSha && `\`${shortSha}\``, newOnMain && formatChanges(changes, compositeIdentity?.repository || 'mattermost/mattermost-mobile')].filter(Boolean).join(' · '),
         `**${failed} failed** · ${passed} passed · ${skipped} skipped`,
     ].filter(Boolean);
-    if (product.length) {
-        lines.push(`🐞 **Possible product bugs (${product.length}):** ${perRun(product)}`);
+    if (confirmed.length) {
+        lines.push(`🐞 **Product bugs (${confirmed.length}) — failed again on a fresh device:** ${perRun(confirmed)}`);
+        for (const v of confirmed.slice(0, MAX_NAMED_BUGS)) {
+            lines.push(`- ${laneName(v.lane)} ${v.title}`);
+        }
+        if (confirmed.length > MAX_NAMED_BUGS) {
+            lines.push(`- …and ${confirmed.length - MAX_NAMED_BUGS} more in the report`);
+        }
     }
-    if (look.length) {
-        lines.push(`🔎 **Needs investigation (${look.length}):** ${perRun(look)} — triage could not tell; see the report`);
+    if (unconfirmed.length) {
+        lines.push(`🔎 **Not confirmed (${unconfirmed.length}) — not re-run, or the re-run gave no result:** ${perRun(unconfirmed)}`);
     }
     if (unexplained) {
         lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
@@ -787,7 +894,7 @@ function formatMetaLine(compositeIdentity) {
  * @returns {string|null} null when a main run has nothing to post (see formatMainChannelMessage)
  */
 function formatCmtChannelMessage(params) {
-    if (isMainRun(params.compositeIdentity)) {
+    if (postsShortMessage(params.compositeIdentity)) {
         return formatMainChannelMessage(params);
     }
     const {
@@ -1033,6 +1140,7 @@ async function fetchConsolidated(baseUrl, compositeIdentity) {
             }
             return res.json();
         },
+        CONSOLIDATED_TIMEOUT_MS,
     );
 }
 
@@ -1103,6 +1211,7 @@ async function notifyCmtChannel({
     failures,
     triage,
     changes,
+    rerun,
     upstreamJobsSucceeded = true,
     hasFailures = false,
     webhookUrl,
@@ -1129,6 +1238,7 @@ async function notifyCmtChannel({
             failures,
             triage,
             changes,
+            rerun,
             upstreamJobsSucceeded,
             hasFailures,
         });
@@ -1154,6 +1264,7 @@ module.exports = {
     formatCmtChannelMessage,
     formatMainChannelMessage,
     formatTriageVerdict,
+    judgeFinding,
     formatMassFailures,
     verdictOf,
     classifyFailure,

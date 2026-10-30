@@ -116,6 +116,19 @@ on:
         required: false
         type: string
         default: ""
+      spec_files:
+        description: >
+          Space-separated spec files to run instead of every spec under search_path:
+          a re-run of failed specs. Pair it with an empty tsio-config, run-type NONE and
+          results-artifact, so the re-run reports only to the channel message.
+        required: false
+        type: string
+        default: ""
+      results-artifact:
+        description: "Artifact name for this run's merged per-test results (a re-run of failed specs); empty uploads none"
+        required: false
+        type: string
+        default: ""
       durations_key:
         description: >
           Spec-duration manifest key (e.g. detox-android). Enables duration-aware
@@ -237,6 +250,7 @@ jobs:
         with:
           parallelism: ${{ inputs.parallelism }}
           search_path: ${{ inputs.search_path }}
+          spec_files: ${{ inputs.spec_files }}
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
           durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
@@ -712,6 +726,16 @@ jobs:
             exit 0
           fi
           echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      # A re-run of failed specs hands its per-test results to the channel message.
+      - name: Upload re-run results
+        if: always() && inputs.results-artifact != '' && steps.tsio-merge.outputs.skip == 'false'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.results-artifact }}
+          path: detox/artifacts/jest-results-merged.json
+          retention-days: 1
 
       - name: Write TSIO failure stub when Detox JSON is missing
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'

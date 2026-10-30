@@ -46,6 +46,14 @@ on:
         description: "JSON map of per-platform TSIO configs from parent calculate-tsio-identity"
         required: true
         type: string
+      rerun-flows:
+        description: >
+          Re-run of failed flows: JSON map of lane (maestro-ios-e2e, maestro-android-e2e) to
+          space-separated flow files. Only those lanes run, on fresh devices, and report only
+          to the channel message (no TSIO, Zephyr, commit status or webhook). "{}" is the normal run.
+        required: false
+        type: string
+        default: "{}"
 
 # Least-privilege defaults; the TSIO upload (in the nested maestro template)
 # needs id-token: write to mint an OIDC token and actions: read to resolve
@@ -71,30 +79,34 @@ env:
 jobs:
   run-maestro-ios:
     name: Maestro iOS
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    if: (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (inputs.rerun-flows == '{}' || fromJSON(inputs.rerun-flows)['maestro-ios-e2e'] != null)
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
       platform: ios
-      run-type: ${{ inputs.run_type || 'PR' }}
+      run-type: ${{ inputs.rerun-flows != '{}' && 'NONE' || inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
-      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-ios-e2e']) }}
-      tsio-shard-name: maestro-ios-e2e
+      record_tests_in_zephyr: ${{ inputs.rerun-flows == '{}' && inputs.record_tests_in_zephyr }}
+      tsio-config: ${{ inputs.rerun-flows == '{}' && toJSON(fromJSON(inputs.tsio-job-configs)['maestro-ios-e2e']) || '' }}
+      tsio-shard-name: ${{ inputs.rerun-flows == '{}' && 'maestro-ios-e2e' || '' }}
+      flow-path: ${{ inputs.rerun-flows != '{}' && fromJSON(inputs.rerun-flows)['maestro-ios-e2e'] || '' }}
+      results-artifact: ${{ inputs.rerun-flows != '{}' && format('e2e-rerun-results-maestro-ios-e2e-a{0}', github.run_attempt) || '' }}
     secrets: inherit
 
   run-maestro-android:
     name: Maestro Android
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    if: (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (inputs.rerun-flows == '{}' || fromJSON(inputs.rerun-flows)['maestro-android-e2e'] != null)
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
       platform: android
-      run-type: ${{ inputs.run_type || 'PR' }}
+      run-type: ${{ inputs.rerun-flows != '{}' && 'NONE' || inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
-      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-android-e2e']) }}
-      tsio-shard-name: maestro-android-e2e
+      record_tests_in_zephyr: ${{ inputs.rerun-flows == '{}' && inputs.record_tests_in_zephyr }}
+      tsio-config: ${{ inputs.rerun-flows == '{}' && toJSON(fromJSON(inputs.tsio-job-configs)['maestro-android-e2e']) || '' }}
+      tsio-shard-name: ${{ inputs.rerun-flows == '{}' && 'maestro-android-e2e' || '' }}
+      flow-path: ${{ inputs.rerun-flows != '{}' && fromJSON(inputs.rerun-flows)['maestro-android-e2e'] || '' }}
+      results-artifact: ${{ inputs.rerun-flows != '{}' && format('e2e-rerun-results-maestro-android-e2e-a{0}', github.run_attempt) || '' }}
     secrets: inherit
