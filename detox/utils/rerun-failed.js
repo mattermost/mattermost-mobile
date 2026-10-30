@@ -58,17 +58,19 @@ function differsFrom(ref) {
 
 /**
  * @param {Array<{lane: string, findings?: Array}>} triage - findings files (schema 2)
- * @param {{isStale?: (file: string) => boolean}} [options]
+ * @param {{isStale?: (file: string) => boolean, stale?: Record<string, string[]>}} [options] - which specs differ from main:
+ *   checked per file, or already known per lane (the planner job's `stale` output, for the channel message)
  * @returns {{lanes: Record<string, {files: string[], titles: string[]}>, tooMany: Record<string, number>, stale: Record<string, string[]>}}
  *   tooMany: failed tests per lane not re-run; stale: tests per lane whose spec differs from main, not re-run
  */
-function planRerun(triage, {isStale = () => false} = {}) {
+function planRerun(triage, {isStale = () => false, stale: known = {}} = {}) {
     const lanes = {};
     const tooMany = {};
     const stale = {};
     for (const lane of triage || []) {
         const uncleared = (lane.findings || []).filter((row) => RERUN_KEYS.has(judgeFinding(row, lane)));
-        const outdated = uncleared.filter((row) => row.file && repoPath(row.file) && isStale(repoPath(row.file)));
+        const outdated = uncleared.filter((row) => known[lane.lane]?.includes(row.title) ||
+            (row.file && repoPath(row.file) && isStale(repoPath(row.file))));
         if (outdated.length) {
             stale[lane.lane] = outdated.map((row) => row.title);
         }

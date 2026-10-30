@@ -57,6 +57,14 @@ describe('rerun-failed', () => {
             assert.deepEqual(plan.lanes, {'detox-ios-Server_12.0.0-rc3': {files: ['detox/e2e/test/a.e2e.ts'], titles: ['MM-T1 - logs in']}});
             assert.deepEqual(plan.stale, {'detox-ios-Server_12.0.0-rc3': ['MM-T4896_1 - markdown image']});
         });
+
+        it('leaves out the tests already known to differ from main, so they do not count toward the limit', () => {
+            const findings = Array.from({length: MAX_SPECS_PER_LANE + 1}, (_, i) => row(`t${i}`, `detox/e2e/test/s${i}.e2e.ts`));
+            const plan = planRerun([{lane: 'detox-android-Server_12.0.1', findings}], {stale: {'detox-android-Server_12.0.1': ['t0', 't1']}});
+            assert.deepEqual(plan.tooMany, {});
+            assert.equal(plan.lanes['detox-android-Server_12.0.1'].files.length, MAX_SPECS_PER_LANE - 1);
+            assert.deepEqual(plan.stale, {'detox-android-Server_12.0.1': ['t0', 't1']});
+        });
     });
 
     it('re-runs a CMT lane against its own server', () => {

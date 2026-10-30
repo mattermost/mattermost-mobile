@@ -336,12 +336,15 @@ async function main() {
     let rerun = null;
     if (['mobile-main', 'mobile-release'].includes(webhookBucketForReportName(rollupIdentity.name))) {
         const {planRerun, loadRerunResults} = require('./rerun-failed');
-        rerun = {...planRerun(triage), results: loadRerunResults(args['rerun-results-dir'] || process.env.RERUN_RESULTS_DIR || '')};
+
+        // The same plan as the planner job: CMT tests whose spec differs from main are left out of it.
+        let stale = {};
         try {
-            rerun.stale = JSON.parse(process.env.RERUN_STALE || '{}');
+            stale = JSON.parse(process.env.RERUN_STALE || '{}');
         } catch {
-            rerun.stale = {};
+            stale = {};
         }
+        rerun = {...planRerun(triage, {stale}), results: loadRerunResults(args['rerun-results-dir'] || process.env.RERUN_RESULTS_DIR || '')};
     }
     let changes = null;
     if (triage.length && webhookBucketForReportName(rollupIdentity.name) === 'mobile-main') {
