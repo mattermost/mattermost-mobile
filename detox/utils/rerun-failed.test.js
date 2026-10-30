@@ -43,6 +43,38 @@ describe('rerun-failed', () => {
             });
         });
 
+        it('leaves isolated report-problem flows out of main and CMT re-runs', () => {
+            const mail = 'detox/maestro/flows/account/report_problem_mail_mode.yml';
+            const link = 'detox/maestro/flows/account/report_problem_link_mode.yml';
+            const ordinary = 'detox/maestro/flows/account/report_problem_action.yml';
+            const findings = [row('mail', mail), row('link', link), row('action', ordinary)];
+            const plan = planRerun([
+                {lane: 'maestro-ios-e2e', findings: [row('link', link)]},
+                {lane: 'maestro-android-e2e', findings},
+                {lane: 'maestro-android-Server_12.0.1', findings},
+            ]);
+
+            assert.deepEqual(plan.lanes, {
+                'maestro-android-e2e': {files: [ordinary], titles: ['action']},
+                'maestro-android-Server_12.0.1': {files: [ordinary], titles: ['action']},
+            });
+            assert.deepEqual(mainInputs(plan).maestro['maestro-android-e2e'], ordinary);
+            assert.deepEqual(cmtMatrices(plan, {server: [{version: '12.0.1'}]})['maestro-android'], {
+                server: [{version: '12.0.1', specs: ordinary}],
+            });
+        });
+
+        it('does not count isolated flows toward the lane limit', () => {
+            const findings = Array.from({length: MAX_SPECS_PER_LANE}, (_, i) => row(`t${i}`, `detox/maestro/flows/account/f${i}.yml`));
+            findings.push(row('mail', 'detox/maestro/flows/account/report_problem_mail_mode.yml'));
+            findings.push(row('link', 'detox/maestro/flows/account/report_problem_link_mode.yml'));
+            const plan = planRerun([{lane: 'maestro-android-e2e', findings}]);
+
+            assert.deepEqual(plan.tooMany, {});
+            assert.equal(plan.lanes['maestro-android-e2e'].files.length, MAX_SPECS_PER_LANE);
+            assert.equal(plan.lanes['maestro-android-e2e'].titles.length, MAX_SPECS_PER_LANE);
+        });
+
         it('does not re-run a lane where too many specs failed at once', () => {
             const findings = Array.from({length: MAX_SPECS_PER_LANE + 1}, (_, i) => row(`t${i}`, `detox/e2e/test/s${i}.e2e.ts`));
             assert.deepEqual(planRerun([{lane: 'detox-android', findings}]), {lanes: {}, tooMany: {'detox-android': MAX_SPECS_PER_LANE + 1}, stale: {}});

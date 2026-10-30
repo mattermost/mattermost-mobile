@@ -31,6 +31,12 @@ const MAX_SPECS_PER_LANE = 10;
 const RERUN_KEYS = new Set(['product', 'new', 'look']);
 const ARTIFACT_PREFIX = 'e2e-rerun-results-';
 
+// These flows need isolated server configuration and verification, which the re-run workflow skips.
+const ISOLATED_FLOWS = new Set([
+    'detox/maestro/flows/account/report_problem_mail_mode.yml',
+    'detox/maestro/flows/account/report_problem_link_mode.yml',
+]);
+
 // Every spec and flow lives under detox/ (triage's test-root is the repo).
 const inRepo = (row) => (row.file || '').startsWith('detox/');
 
@@ -70,7 +76,7 @@ function planRerun(triage, {isStale = () => false, stale: known = {}} = {}) {
         if (outdated.length) {
             stale[lane.lane] = outdated.map((row) => row.title);
         }
-        const rows = uncleared.filter((row) => !outdated.includes(row));
+        const rows = uncleared.filter((row) => !outdated.includes(row) && !ISOLATED_FLOWS.has(row.file));
         const files = [...new Set(rows.filter(inRepo).map((row) => row.file))];
         if (!files.length) {
             continue;
