@@ -88,6 +88,8 @@ runs:
         name: e2e-triage-findings-${{ inputs.job-key }}
         path: e2e-triage-findings.json
         retention-days: 1
+        # A re-run replaces the first attempt's verdicts, so the channel message never posts stale ones.
+        overwrite: true
     - name: Save triage answers
       if: always() && hashFiles('e2e-triage-answers.json') != ''
       continue-on-error: true
