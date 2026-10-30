@@ -436,7 +436,7 @@ describe('DialogRouter', () => {
             },
         ];
 
-        it('keeps earlier steps values in the final submission', async () => {
+        it('should keep earlier steps values in the final submission', async () => {
             // Step 1 submit returns a new form (multiform continues).
             mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
                 data: {
@@ -484,7 +484,7 @@ describe('DialogRouter', () => {
             });
         });
 
-        it('uses the latest declaration when a field is redeclared in a later step', async () => {
+        it('should use the latest declaration when a field is redeclared in a later step', async () => {
             // Step 2 redeclares first_name as a bool, so the accumulated string value
             // must convert using the NEWER element definition.
             mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
@@ -529,6 +529,42 @@ describe('DialogRouter', () => {
             expect(finalCall[1].submission).toEqual({
                 first_name: true,
                 nickname: 'Adie',
+            });
+        });
+
+        it('should keep values from fields a refresh removed in the final submission', async () => {
+            // The refresh returns a form without first_name.
+            mockSubmitInteractiveDialog.mockResolvedValueOnce({
+                data: {
+                    type: 'form',
+                    form: {...stepOneConfig.dialog, elements: stepTwoElements},
+                },
+            });
+            mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
+                data: {type: 'ok'},
+            } as any);
+
+            renderWithIntl(
+                <DialogRouter
+                    config={stepOneConfig}
+                    channelId='channel-id-1'
+                />,
+            );
+
+            const refreshOnSelect = mockAppsFormComponent.mock.calls[0][0].refreshOnSelect;
+            await act(async () => {
+                await refreshOnSelect({name: 'first_name'} as AppField, {first_name: 'Ada'});
+            });
+
+            const submit = mockAppsFormComponent.mock.calls[mockAppsFormComponent.mock.calls.length - 1][0].submit;
+            await act(async () => {
+                await submit({confirmed: true});
+            });
+
+            const finalCall = mockSubmitInteractiveDialog.mock.calls[mockSubmitInteractiveDialog.mock.calls.length - 1];
+            expect(finalCall[1].submission).toEqual({
+                first_name: 'Ada',
+                confirmed: true,
             });
         });
     });

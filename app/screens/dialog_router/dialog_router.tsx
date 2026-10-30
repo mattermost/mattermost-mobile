@@ -69,6 +69,12 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     // State to accumulate values across multiform steps
     const [accumulatedValues, setAccumulatedValues] = useState<AppFormValues>({});
 
+    // Element definitions from the multiform steps already completed.
+    //
+    // Needed for correctness: convertAppFormValuesToDialogSubmission looks every value
+    // up by element name and DROPS any it cannot find. Each step's server response
+    // replaces dialog.elements wholesale, so converting the accumulated values against
+    // only the final step's elements silently discarded every earlier step's answers.
     const [accumulatedElements, setAccumulatedElements] = useState<DialogElement[]>([]);
 
     // Union of element definitions, later steps winning on a name collision so the most
@@ -309,6 +315,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 // Accumulate values from field refresh for preservation
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
+                setAccumulatedElements(mergeElements(accumulatedElements, currentConfig.dialog.elements || []));
 
                 const {submission: refreshedSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
                 setAccumulatedFileFields(mergeFileFieldValues(accumulatedFileFields, refreshedSubmission as {[x: string]: string}, currentConfig.dialog.elements));
@@ -356,7 +363,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, accumulatedFileFields]);
+    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, accumulatedElements, mergeElements, accumulatedFileFields]);
 
     if (!appForm || !appForm.fields) {
         return null;
