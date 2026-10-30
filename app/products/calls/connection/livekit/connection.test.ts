@@ -140,6 +140,7 @@ describe('newLiveKitConnection', () => {
             session_id: SESSION_ID,
             token: LIVEKIT_TOKEN,
             url: LIVEKIT_URL,
+            bot_user_id: 'botuser',
             call_state: callState,
         });
         jest.mocked(getCurrentCall).mockReturnValue({...DefaultCurrentCall, channelId: CHANNEL_ID});
@@ -300,14 +301,14 @@ describe('newLiveKitConnection', () => {
         expect(reseedOrder).toBeLessThan(joinedOrder);
     });
 
-    it('should populate the roster from participants present at connect and those joining later, excluding bots', async () => {
+    it('should populate the roster from participants present at connect and those joining later, excluding the bot', async () => {
         await connect([
             participant('userA', 'sessionA'),
-            participant('botuser', 'botsession', {bot: true}),
+            participant('botuser', 'botsession'),
         ]);
 
         roomHandlers[RoomEvent.ParticipantConnected](participant('userC', 'sessionC'));
-        roomHandlers[RoomEvent.ParticipantConnected](participant('botuser', 'botsession2', {bot: true}));
+        roomHandlers[RoomEvent.ParticipantConnected](participant('botuser', 'botsession2'));
 
         expect(jest.mocked(userJoinedCall).mock.calls).toEqual([
             [SERVER_URL, CHANNEL_ID, 'myuser', SESSION_ID],
@@ -320,6 +321,12 @@ describe('newLiveKitConnection', () => {
             [SERVER_URL, ['userC']],
         ]);
         expect(setUserMuted).not.toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'botsession', expect.anything());
+    });
+
+    it('should keep a participant that sets the bot attribute on itself in the roster', async () => {
+        await connect([participant('userA', 'sessionA', {bot: true})]);
+
+        expect(userJoinedCall).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'userA', 'sessionA');
     });
 
     it('should remove the session of a participant leaving the room', async () => {

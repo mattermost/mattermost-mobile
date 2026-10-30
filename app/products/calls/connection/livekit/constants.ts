@@ -8,10 +8,6 @@ export const USER_ID_SESSION_ID_SEPARATOR = '___';
 
 export const CALL_ATTRIBUTES = {
     RAISED_HAND: 'raised_hand',
-
-    // Server-set on the recording/transcribing bot's token grant, so the bot can be
-    // kept out of the participant list however it is discovered.
-    BOT: 'bot',
 } as const;
 
 export const CALL_MESSAGE_TOPICS = {
