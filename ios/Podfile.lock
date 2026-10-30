@@ -4496,7 +4496,7 @@ SPEC CHECKSUMS:
   fmt: 530618a01105dae0fa3a2f27c81ae11fa8f67eac
   Gekidou: 9ac6db6670ad1377704998069c8a2f9e1a0ee2b4
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: f069ae87099ec6027a727dbebbd48a208405d92d
+  hermes-engine: b535fca2fe101b43d48d398d642f9d1c41a6c64b
   KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   livekit-react-native: fdecaea86ea91c7943c56ada4ab4bf9f22ee6ff3

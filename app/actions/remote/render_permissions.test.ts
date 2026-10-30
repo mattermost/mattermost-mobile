@@ -2,13 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {RedactionInvalidationReason, invalidateRedactionGlobally} from '@actions/local/redaction';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import RenderPermissionsStore, {RENDER_PERMISSIONS_RETRY_MS, RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 
+import {handleChannelAccessDenied} from './channel';
 import {fetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+
+jest.mock('./channel', () => ({
+    handleChannelAccessDenied: jest.fn(),
+}));
 
 const serverUrl = 'render-permissions.test.com';
 const channelId = 'channelid1';
@@ -37,6 +43,16 @@ const enforcedOnServer = (version: string) => storeConfig({
     FeatureFlagPermissionPolicies: 'true',
     EnableAttributeBasedAccessControl: 'true',
 });
+
+// Channel access actions are enforced on top of ABAC only behind their flag, on Enterprise Advanced.
+const channelAccessEnforcedOnServer = async (channelPermissionActions: string) => {
+    await enforcedOnServer('12.0.0');
+    await storeConfig({FeatureFlagChannelPermissionActions: channelPermissionActions});
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: 'advanced'}}],
+        prepareRecordsOnly: false,
+    });
+};
 
 describe('fetchRenderPermissions', () => {
     beforeAll(() => {
@@ -126,6 +142,56 @@ describe('fetchRenderPermissions', () => {
         await fetchRenderPermissions(serverUrl, channelId);
 
         expect(RenderPermissionsStore.setEntry).toHaveBeenLastCalledWith(serverUrl, channelId, expect.any(Object), RENDER_PERMISSIONS_TTL_MS);
+    });
+
+    it('should drop the channel when a policy denies its read access', async () => {
+        await channelAccessEnforcedOnServer('true');
+        mockClient.searchChannelActionDecisions.mockResolvedValue({
+            ...allowed,
+            decisions: {channel_read_access: {allowed: false, evaluated: true}},
+        });
+
+        await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(handleChannelAccessDenied).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should keep the channel on a read access deny while the ChannelPermissionActions flag is off', async () => {
+        await channelAccessEnforcedOnServer('false');
+        mockClient.searchChannelActionDecisions.mockResolvedValue({
+            ...allowed,
+            decisions: {channel_read_access: {allowed: false, evaluated: true}},
+        });
+
+        await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(handleChannelAccessDenied).not.toHaveBeenCalled();
+    });
+
+    it('should keep the channel when an ABAC change revokes the request in flight', async () => {
+        await enforcedOnServer('12.0.0');
+        mockClient.searchChannelActionDecisions.mockImplementationOnce(async () => {
+            // Evaluated under the policy the change replaced.
+            RenderPermissionsStore.revokeFetches(serverUrl, channelId);
+            return {...allowed, decisions: {channel_read_access: {allowed: false, evaluated: true}}};
+        });
+
+        await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(handleChannelAccessDenied).not.toHaveBeenCalled();
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)).toBeUndefined();
+    });
+
+    it('should keep the channel on a fail-closed read access deny', async () => {
+        await enforcedOnServer('12.0.0');
+        mockClient.searchChannelActionDecisions.mockResolvedValue({
+            ...allowed,
+            decisions: {channel_read_access: {allowed: false, evaluated: true, reason: 'restricted_by_policy'}},
+        });
+
+        await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(handleChannelAccessDenied).not.toHaveBeenCalled();
     });
 
     it('should store nothing and leave the next call free to ask when the failure is not the request', async () => {

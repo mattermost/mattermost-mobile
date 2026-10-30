@@ -164,6 +164,26 @@ describe('EphemeralStore', () => {
         });
     });
 
+    describe('linked post fetch attempts', () => {
+        const serverUrl = 'linked-post-server';
+        const otherServerUrl = 'linked-post-server-2';
+
+        afterEach(() => {
+            EphemeralStore.clearLinkedPostFetchAttempts(serverUrl);
+            EphemeralStore.clearLinkedPostFetchAttempts(otherServerUrl);
+        });
+
+        it('should clear only the given server, so a new session can fetch again', () => {
+            EphemeralStore.addLinkedPostFetchAttempt(serverUrl, 'post-1|missing|2');
+            EphemeralStore.addLinkedPostFetchAttempt(otherServerUrl, 'post-1|missing|2');
+
+            EphemeralStore.clearLinkedPostFetchAttempts(serverUrl);
+
+            expect(EphemeralStore.hasLinkedPostFetchAttempt(serverUrl, 'post-1|missing|2')).toBe(false);
+            expect(EphemeralStore.hasLinkedPostFetchAttempt(otherServerUrl, 'post-1|missing|2')).toBe(true);
+        });
+    });
+
     describe('pendingPreauthSecret', () => {
         const serverUrl = 'https://example.com';
 

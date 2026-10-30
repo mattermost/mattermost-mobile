@@ -4,13 +4,14 @@
 import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
-import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {isRedactionEnforced, observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {License} from '@constants';
 import {RENDER_PERMISSIONS_VERSION} from '@constants/versions';
 import RenderPermissionsStore from '@store/render_permissions_store';
-import {isMinimumServerVersion} from '@utils/helpers';
+import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
 
-import {observeConfigValue} from './system';
+import {getConfigValue, getLicense, observeConfigValue} from './system';
 
 import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';
@@ -50,6 +51,25 @@ export const observeRenderPermission = (
         map(([enforced, entry]) => resolveRenderPermission(enforced, entry, action, allowWhenUnenforced, allowWhenNotEvaluated)),
         distinctUntilChanged(),
     );
+};
+
+// The server only enforces channel access actions behind the ChannelPermissionActions feature flag, on
+// Enterprise Advanced.
+const isChannelAccessActive = (enforced: boolean, license: ClientLicense | undefined, flag: boolean) => {
+    return enforced && flag && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+};
+
+/**
+ * Mirrors channelReadAccessEnforcementActive (server app/channel_read_access.go): ABAC enforced, the
+ * ChannelPermissionActions flag on, and an Enterprise Advanced license.
+ */
+export const isChannelAccessEnforced = async (database: Database) => {
+    const [enforced, license, flag] = await Promise.all([
+        isRedactionEnforced(database),
+        getLicense(database),
+        getConfigValue(database, 'FeatureFlagChannelPermissionActions'),
+    ]);
+    return isChannelAccessActive(enforced, license, flag === 'true');
 };
 
 /**
