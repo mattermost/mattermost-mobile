@@ -8,7 +8,7 @@ import CallsNative, {
     type VoIPTokenUpdated,
 } from '@mattermost/calls-native';
 import {defineMessages} from 'react-intl';
-import {type EmitterSubscription} from 'react-native';
+import {Platform, type EmitterSubscription} from 'react-native';
 
 defineMessages({
     incomingCallPlaceholder: {
@@ -40,9 +40,14 @@ import {logDebug, logError, logInfo} from '@utils/log';
 
 class CallsNativeSingleton {
     subscriptions?: EmitterSubscription[];
-    private pendingIncomingCalls = new Map<string, Promise<void>>();
 
     init() {
+        if (Platform.OS !== 'ios') {
+            // The Android side of @mattermost/calls-native is a no-op
+            // stub for Phase 1.
+            return;
+        }
+
         this.subscriptions?.forEach((s) => s.remove());
         this.subscriptions = [
             CallsNative.onVoIPTokenUpdated(this.onVoIPTokenUpdated),
@@ -52,7 +57,6 @@ class CallsNativeSingleton {
             CallsNative.onCallEnded(this.onCallEnded),
             CallsNative.onMuteChanged(this.onMuteChanged),
         ];
-        CallsNative.setCallListenersReady();
     }
 
     cleanup() {
@@ -78,21 +82,7 @@ class CallsNativeSingleton {
         logInfo('VoIP device token stored');
     };
 
-    private onIncomingCall = (payload: IncomingCallPayload): Promise<void> => {
-        const pending = this.handleIncomingCall(payload).catch((error) => {
-            logError('onIncomingCall failed', error);
-            CallsNative.reportEnded(payload.uuid, 'failed');
-        });
-        this.pendingIncomingCalls.set(payload.uuid, pending);
-        pending.then(() => {
-            if (this.pendingIncomingCalls.get(payload.uuid) === pending) {
-                this.pendingIncomingCalls.delete(payload.uuid);
-            }
-        });
-        return pending;
-    };
-
-    private handleIncomingCall = async (payload: IncomingCallPayload) => {
+    private onIncomingCall = async (payload: IncomingCallPayload) => {
         const {uuid, serverId, channelId, postId, threadId} = payload;
 
         if (!serverId) {
@@ -130,10 +120,6 @@ class CallsNativeSingleton {
 
     private onCallAnswered = async (event: CallActionPayload) => {
         const {uuid} = event;
-        const pendingIncoming = this.pendingIncomingCalls.get(uuid);
-        if (pendingIncoming) {
-            await pendingIncoming;
-        }
         const mapping = getNativeCallMapping(uuid);
         if (!mapping) {
             // No mapping means we can't route the answer anywhere; tell
@@ -193,10 +179,6 @@ class CallsNativeSingleton {
 
     private onCallDeclined = async (event: CallActionPayload) => {
         const {uuid} = event;
-        const pendingIncoming = this.pendingIncomingCalls.get(uuid);
-        if (pendingIncoming) {
-            await pendingIncoming;
-        }
         const mapping = getNativeCallMapping(uuid);
         clearNativeCallMapping(uuid);
         if (!mapping) {
@@ -205,12 +187,8 @@ class CallsNativeSingleton {
         await dismissIncomingCall(mapping.serverUrl, mapping.channelId);
     };
 
-    private onCallEnded = async (event: CallActionPayload) => {
+    private onCallEnded = (event: CallActionPayload) => {
         const {uuid} = event;
-        const pendingIncoming = this.pendingIncomingCalls.get(uuid);
-        if (pendingIncoming) {
-            await pendingIncoming;
-        }
         const mapping = getNativeCallMapping(uuid);
         clearNativeCallMapping(uuid);
         if (!mapping) {

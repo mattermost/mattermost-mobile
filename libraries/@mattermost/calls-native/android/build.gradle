@@ -55,12 +55,4 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native'
-    implementation 'androidx.core:core-telecom:1.0.1'
-    implementation 'androidx.core:core:1.15.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'com.google.android.material:material:1.13.0'
-    implementation 'androidx.activity:activity-ktx:1.10.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
-    implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
 }

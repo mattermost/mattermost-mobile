@@ -180,31 +180,6 @@ const determineRoute = async (props: LaunchProps): Promise<ExpoRouterLaunchResul
 };
 
 /**
- * Resolve the destination after the user explicitly connects WireGuard.
- * This is deliberately separate from cold-start routing: deep links, initial
- * notifications, and appEntry belong to their respective launch/navigation
- * paths and must not hold the VPN continuation screen hostage.
- */
-export async function determinePostWireGuardRoute(): Promise<ExpoRouterLaunchResult> {
-    // Initialization has already selected the active server in the app DB.
-    // Do not fall back to enumerating Android Keystore aliases here: on a
-    // fresh install only the VPN secret exists and no login can be resumed.
-    const serverUrl = await DatabaseManager.getActiveServerUrl();
-    if (serverUrl && !DatabaseManager.serverDatabases[serverUrl]?.database) {
-        return {
-            route: '/(unauthenticated)/server',
-            params: {launchType: Launch.Normal, coldStart: false, serverUrl},
-        };
-    }
-
-    return determineRouteFromLaunchProps({
-        launchType: Launch.Normal,
-        coldStart: false,
-        serverUrl,
-    });
-}
-
-/**
  * Core logic to determine route based on launch props
  * This replicates the logic from app/init/launch.ts but returns Expo Router routes
  */

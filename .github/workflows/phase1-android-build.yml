@@ -1,5 +1,5 @@
 ---
-name: phase6-encma-android-build
+name: phase5-encma-android-build
 
 on:
   push:
@@ -61,25 +61,14 @@ jobs:
             app/init/managed_app.test.ts \
             app/managers/security_manager/index.test.ts \
             app/init/calls_native.test.ts \
-            app/init/headless_boot.test.ts \
-            app/init/push_notifications.test.ts \
-            app/products/calls/native_call.test.ts \
-            app/products/calls/state/actions.test.ts \
-            app/actions/remote/session.test.ts \
             app/client/rest/channels.test.ts \
             app/actions/remote/channel.test.ts \
             app/queries/servers/role.test.ts \
             app/init/credentials.test.ts \
-            app/hooks/use_has_credentials.test.ts \
-            app/database/components/index.test.tsx \
-            app/init/launch.test.ts \
             app/init/launch_with_fallback.test.ts \
             app/routes/index.test.tsx \
             app/screens/vpn/index.test.tsx \
             app/managers/wireguard_manager.test.ts \
-            app/managers/direct_notification/filter.test.ts \
-            app/managers/direct_notification/mode.test.ts \
-            app/managers/direct_notification/handler.test.ts \
             app/screens/channel_settings/permanent_delete/permanent_delete.test.tsx \
             app/screens/channel_info/destructive_options/index.test.tsx \
             app/components/post_draft/quick_actions/quick_actions.test.tsx \
@@ -164,5 +153,3 @@ jobs:
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
-
-# Build latest ENCMA startup fixes.

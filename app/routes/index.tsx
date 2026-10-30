@@ -7,7 +7,7 @@ import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 import {type ExpoRouterLaunchResult} from '@init/launch';
 import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
-import {getWireGuardState, isWireGuardRequired, publishWireGuardState, WireGuardStatus} from '@managers/wireguard_manager';
+import {getWireGuardState, isWireGuardRequired, WireGuardStatus} from '@managers/wireguard_manager';
 import {propsToParams} from '@screens/navigation';
 
 const styles = StyleSheet.create({
@@ -35,7 +35,6 @@ export default function RootIndex() {
                         setLaunchResult({route: '/vpn', params: {}});
                         return;
                     }
-                    publishWireGuardState(vpnState);
                 } catch {
                     // Fail closed: the normal server/login flow requires a verified tunnel.
                     if (active) {

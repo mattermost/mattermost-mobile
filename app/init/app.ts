@@ -9,8 +9,6 @@ import {getAllServerCredentials} from '@init/credentials';
 import {migrateLegacyPreauthSecret} from '@init/credentials_migration';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
-import DirectNotificationManager from '@managers/direct_notification';
-import {isServerPushNotificationServer} from '@managers/direct_notification/mode';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
@@ -64,18 +62,10 @@ export async function initialize() {
 
             flushOrphanedAuditQueues(serverCredentials);
 
-            // Load per-server notification modes before any background-close
-            // decision is made, then initialize the WebSocket clients.
-            await DirectNotificationManager.init(serverCredentials);
-
             // EphemeralModeManager init runs before WS init so any pending wipes
             // complete before WebSocket clients start populating server databases.
             await EphemeralModeManager.init(serverCredentials);
             await WebsocketManager.init(serverCredentials);
-
-            // appEntry opens the initial sockets after the splash is hidden.
-            // Awaiting Direct reconciliation here would also await its first
-            // full server sync and can leave the ENCMA logo up indefinitely.
         } catch (error) {
             baseAppInitialized = false;
             throw error;
@@ -96,7 +86,7 @@ export async function initialize() {
     CallsManager.initialize();
     CallsNative.init();
 
-    PushNotifications.init(serverCredentials.some(({serverUrl}) => isServerPushNotificationServer(serverUrl)));
+    PushNotifications.init(serverCredentials.length > 0);
 }
 
 export function cleanup() {
@@ -107,6 +97,5 @@ export function cleanup() {
     CallsManager.cleanup();
     CallsNative.cleanup();
     PushNotifications.cleanup();
-    DirectNotificationManager.cleanup();
     EphemeralModeManager.cleanup();
 }

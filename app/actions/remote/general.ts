@@ -6,7 +6,6 @@ import {defineMessage} from 'react-intl';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_VERIFIED, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
-import {getNotificationDeliveryMode, NotificationDeliveryMode} from '@managers/direct_notification/mode';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
@@ -22,11 +21,6 @@ import type {ClientResponse} from '@mattermost/react-native-network-client';
 
 async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
     if (!checkDeviceId) {
-        return undefined;
-    }
-
-    const deliveryMode = await getNotificationDeliveryMode(serverUrl);
-    if (deliveryMode !== NotificationDeliveryMode.SERVER_PUSH) {
         return undefined;
     }
 

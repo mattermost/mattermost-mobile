@@ -89,7 +89,6 @@ import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
 jest.mock('@calls/alerts');
 jest.mock('@calls/native_call', () => ({
     endNativeCall: jest.fn(),
-    getNativeCallChannelIdsForServer: jest.fn(() => []),
 }));
 
 jest.mock('@constants/calls', () => {
@@ -614,51 +613,6 @@ describe('useCallsState', () => {
         await act(async () => setCalls('server1', 'myId', {'channel-1': call1, 'channel-2': call2}, {}));
 
         expect(endNativeCall).not.toHaveBeenCalled();
-    });
-
-    it('setCalls ends the native overlay for a channel only tracked by the native mapping (cold-launch race)', async () => {
-        const {endNativeCall, getNativeCallChannelIdsForServer} = require('@calls/native_call');
-        jest.clearAllMocks();
-
-        // Cold-launch race: JS has no prior state for channel-3 (the process
-        // just started), but a native incoming-call surface is still tracked
-        // for it. The server snapshot doesn't include it (caller hung up).
-        // The native mapping is the only source of truth for the orphan.
-        getNativeCallChannelIdsForServer.mockReturnValue(['channel-3']);
-
-        await act(async () => setCalls('server1', 'myId', {}, {}));
-
-        expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-3', 'remoteEnded');
-    });
-
-    it('setCalls does not end the native overlay when the native-tracked channel is still in the server snapshot', async () => {
-        const {endNativeCall, getNativeCallChannelIdsForServer} = require('@calls/native_call');
-        jest.clearAllMocks();
-
-        getNativeCallChannelIdsForServer.mockReturnValue(['channel-1']);
-
-        await act(async () => setCalls('server1', 'myId', {'channel-1': call1}, {}));
-
-        expect(endNativeCall).not.toHaveBeenCalled();
-    });
-
-    it('setCalls dedupes channels tracked by both JS state and native mapping', async () => {
-        const {endNativeCall, getNativeCallChannelIdsForServer} = require('@calls/native_call');
-        jest.clearAllMocks();
-
-        act(() => {
-            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1, 'channel-2': call2}});
-            setChannelsWithCalls('server1', {'channel-1': true, 'channel-2': true});
-        });
-
-        // channel-2 appears in both — endNativeCall should fire once for it,
-        // not twice.
-        getNativeCallChannelIdsForServer.mockReturnValue(['channel-2']);
-
-        await act(async () => setCalls('server1', 'myId', {'channel-1': call1}, {}));
-
-        expect(endNativeCall).toHaveBeenCalledTimes(1);
-        expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-2', 'remoteEnded');
     });
 
     it('callStarted', async () => {

@@ -14,7 +14,6 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.modules.network.OkHttpClientProvider
-import com.mattermost.callsnative.managers.CallsBridge
 import com.mattermost.certificates.ServerCertificatePackage
 import com.mattermost.networkclient.RCTOkHttpClientFactory
 import com.mattermost.networkclient.sessionattributes.SessionAttributes
@@ -48,7 +47,6 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
             packageList = PackageList(this).packages.apply {
                 add(WireGuardPackage())
                 add(ServerCertificatePackage())
-                add(DirectNotificationsPackage())
                 add(WatermelonDBJSIPackage())
             },
             jsMainModulePath = "index"
@@ -81,11 +79,6 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
 
         loadReactNative(this)
         ApplicationLifecycleDispatcher.onApplicationCreate(this)
-
-        // Register self-managed Telecom before an outgoing call or an FCM
-        // driven incoming ring. Registration failures are contained by the
-        // calls library and do not prevent normal application startup.
-        CallsBridge.bootstrap(this)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

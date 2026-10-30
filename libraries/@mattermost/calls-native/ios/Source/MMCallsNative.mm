@@ -64,13 +64,6 @@ RCT_EXPORT_MODULE(MMCallsNative)
 
 #pragma mark - Module methods
 
-// Android uses this explicit signal to flush its cold-start event buffer only
-// after every call handler is attached. iOS retains its existing
-// RCTEventEmitter startObserving/stopObserving lifecycle.
-RCT_EXPORT_METHOD(setCallListenersReady) {
-    // no-op on iOS
-}
-
 #ifndef RCT_NEW_ARCH_ENABLED
 RCT_EXPORT_METHOD(reportOutgoingCall:(NSDictionary *)params
                   resolver:(RCTPromiseResolveBlock)resolve

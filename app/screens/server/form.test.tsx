@@ -5,13 +5,11 @@ import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
-import {renderWithEverything} from '@test/intl-test-helper';
-import TestHelper from '@test/test_helper';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ServerForm from './form';
 
 import type {ServerCertificateInfo} from '@managers/server_certificate_manager';
-import type Database from '@nozbe/watermelondb/Database';
 
 const certificate: ServerCertificateInfo = {
     host: 'chat.example.test',
@@ -20,12 +18,6 @@ const certificate: ServerCertificateInfo = {
     fingerprint: 'AA:BB',
     notAfter: 1,
 };
-
-let database: Database;
-
-beforeAll(async () => {
-    database = (await TestHelper.setupServerDatabase()).database;
-});
 
 function renderForm(overrides: Partial<React.ComponentProps<typeof ServerForm>> = {}) {
     const props: React.ComponentProps<typeof ServerForm> = {
@@ -45,7 +37,7 @@ function renderForm(overrides: Partial<React.ComponentProps<typeof ServerForm>> 
         theme: Preferences.THEMES.denim,
         ...overrides,
     };
-    renderWithEverything(<ServerForm {...props}/>, {database});
+    renderWithIntlAndTheme(<ServerForm {...props}/>);
     return props;
 }
 
@@ -77,21 +69,6 @@ describe('ServerForm CA certificate import', () => {
         fireEvent.press(screen.getByTestId('server_form.certificate.remove'));
         expect(props.handleImportCertificate).toHaveBeenCalledTimes(1);
         expect(props.handleRemoveCertificate).toHaveBeenCalledTimes(1);
-    });
-
-    it('offers the three delivery modes before advanced options', () => {
-        const props = renderForm({
-            showNotificationDelivery: true,
-            handleDeliveryModeChange: jest.fn(),
-        });
-
-        expect(screen.getByTestId('server_form.notification_delivery.radio.direct.button')).toBeTruthy();
-        expect(screen.getByTestId('server_form.notification_delivery.radio.server_push.button')).toBeTruthy();
-        expect(screen.getByTestId('server_form.notification_delivery.radio.off.button')).toBeTruthy();
-        expect(screen.getByTestId('server_form.advanced_options.toggle')).toBeTruthy();
-
-        fireEvent.press(screen.getByTestId('server_form.notification_delivery.radio.direct.button'));
-        expect(props.handleDeliveryModeChange).toHaveBeenCalledWith('direct');
     });
 
     it('presents a safe import error without hiding the server form', () => {

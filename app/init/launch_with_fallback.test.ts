@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {determineInitialExpoRoute, determinePostWireGuardRoute} from '@init/launch';
+import {determineInitialExpoRoute} from '@init/launch';
 
-import {determineInitialExpoRouteWithFallback, determinePostWireGuardRouteWithFallback, INITIAL_LAUNCH_TIMEOUT_MS} from './launch_with_fallback';
+import {determineInitialExpoRouteWithFallback, INITIAL_LAUNCH_TIMEOUT_MS} from './launch_with_fallback';
 
 jest.mock('@init/launch', () => ({
     determineInitialExpoRoute: jest.fn(),
-    determinePostWireGuardRoute: jest.fn(),
 }));
 
 jest.mock('@utils/log', () => ({
@@ -30,27 +29,6 @@ describe('determineInitialExpoRouteWithFallback', () => {
         jest.mocked(determineInitialExpoRoute).mockRejectedValue(new Error('launch initialization failed'));
 
         await expect(determineInitialExpoRouteWithFallback()).resolves.toEqual({
-            route: '/(unauthenticated)/server',
-            params: {launchError: true},
-        });
-    });
-
-    it('uses the dedicated post-WireGuard resolver', async () => {
-        const launchResult = {route: '/(unauthenticated)/server', params: {coldStart: false}};
-        jest.mocked(determinePostWireGuardRoute).mockResolvedValue(launchResult);
-
-        await expect(determinePostWireGuardRouteWithFallback()).resolves.toEqual(launchResult);
-        expect(determineInitialExpoRoute).not.toHaveBeenCalled();
-    });
-
-    it('returns the server destination when post-VPN routing stalls', async () => {
-        jest.useFakeTimers({doNotFake: ['nextTick']});
-        jest.mocked(determinePostWireGuardRoute).mockReturnValue(new Promise<never>(() => undefined));
-
-        const result = determinePostWireGuardRouteWithFallback();
-        jest.advanceTimersByTime(INITIAL_LAUNCH_TIMEOUT_MS);
-
-        await expect(result).resolves.toEqual({
             route: '/(unauthenticated)/server',
             params: {launchError: true},
         });

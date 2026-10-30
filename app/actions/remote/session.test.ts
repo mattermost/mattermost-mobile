@@ -5,7 +5,6 @@ import {createIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, Platform} from 'react-native';
 
 import {cancelSessionNotification, findSession} from '@actions/local/session';
-import {doPing} from '@actions/remote/general';
 import {Events} from '@constants';
 import {GLOBAL_IDENTIFIERS, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -13,7 +12,6 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import TestHelper from '@test/test_helper';
 import {logWarning} from '@utils/log';
-import {getServerUrlAfterRedirect} from '@utils/url';
 
 import {
     addPushProxyVerificationStateFromLogin,
@@ -21,7 +19,6 @@ import {
     fetchSessions,
     login,
     logout,
-    magicLinkLogin,
     nativeEntraLogin,
     scheduleSessionNotification,
     sendPasswordResetEmail,
@@ -50,7 +47,6 @@ const throwFunc = () => {
 const mockClient = {
     login: jest.fn(() => user1),
     loginByIntune: jest.fn().mockResolvedValue(user1),
-    loginByMagicLinkLogin: jest.fn().mockResolvedValue(user1),
     setCSRFToken: jest.fn(),
     setClientCredentials: jest.fn(),
     getClientConfigOld: jest.fn(() => ({})),
@@ -82,22 +78,6 @@ jest.mock('@queries/app/global', () => {
         ...original,
         getDeviceToken: jest.fn().mockResolvedValue('apple_rn-v2:standard-token'),
         getVoIPDeviceToken: jest.fn().mockResolvedValue('apple_rn-v2:voip-token'),
-    };
-});
-
-jest.mock('@actions/remote/general', () => {
-    const original = jest.requireActual('@actions/remote/general');
-    return {
-        ...original,
-        doPing: jest.fn(),
-    };
-});
-
-jest.mock('@utils/url', () => {
-    const original = jest.requireActual('@utils/url');
-    return {
-        ...original,
-        getServerUrlAfterRedirect: jest.fn(),
     };
 });
 
@@ -143,28 +123,20 @@ jest.mock('@utils/log', () => {
 });
 
 describe('Session Actions', () => {
-    const originalPlatform = Platform.OS;
-
     beforeAll(() => {
     // @ts-ignore
         NetworkManager.getClient = () => mockClient;
-
-        // @ts-ignore
-        NetworkManager.createClient = async () => mockClient;
 
         // @ts-ignore
         WebsocketManager.getClient = () => mockWebsocketClient;
     });
 
     beforeEach(async () => {
-        jest.mocked(doPing).mockResolvedValue({});
-        jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({url: serverUrl});
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
     });
 
     afterEach(async () => {
-        Platform.OS = originalPlatform;
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -237,28 +209,6 @@ describe('Session Actions', () => {
             expect(result).toBeDefined();
             expect(result.error).toBeUndefined();
             expect(result.failed).toBe(false);
-        });
-
-        it('login - omits the Android VoIP token from the initial request', async () => {
-            Platform.OS = 'android';
-            mockClient.login.mockClear();
-
-            const result = await login(serverUrl, {
-                config: {DiagnosticId: 'diagnosticid'},
-                loginId: user1.username,
-                password: 'password',
-                mfaToken: 'mfa-token',
-            } as LoginArgs);
-
-            expect(result.failed).toBe(false);
-            expect(mockClient.login).toHaveBeenCalledWith(
-                user1.username,
-                'password',
-                'mfa-token',
-                'apple_rn-v2:standard-token',
-                '',
-                false,
-            );
         });
 
         it('login - handle throw on login request', async () => {
@@ -374,21 +324,6 @@ describe('Session Actions', () => {
             expect(result).toBeDefined();
             expect(result.error).toBeUndefined();
             expect(result.failed).toBe(false);
-        });
-
-        it('magicLinkLogin - omits the Android VoIP token from the initial request', async () => {
-            Platform.OS = 'android';
-            mockClient.loginByMagicLinkLogin.mockClear();
-            mockClient.getClientConfigOld.mockReturnValueOnce({DiagnosticId: 'diagnosticid', SiteName: 'servername'});
-
-            const result = await magicLinkLogin(serverUrl, 'magic-token');
-
-            expect(result.failed).toBe(false);
-            expect(mockClient.loginByMagicLinkLogin).toHaveBeenCalledWith(
-                'magic-token',
-                'apple_rn-v2:standard-token',
-                '',
-            );
         });
 
         it('ssoLogin - handle throw after login request', async () => {
@@ -588,9 +523,7 @@ describe('Session Actions', () => {
         let IntuneManager: any;
 
         beforeEach(() => {
-            Platform.OS = 'ios';
-
-            // Get the mocked IntuneManager
+        // Get the mocked IntuneManager
             IntuneManager = require('@managers/intune_manager').default;
 
             // Reset all mocks
@@ -618,19 +551,6 @@ describe('Session Actions', () => {
             );
             expect(mockClient.setCSRFToken).toHaveBeenCalledWith('csrfid');
             expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
-        });
-
-        it('should omit the Android VoIP token from the initial login', async () => {
-            Platform.OS = 'android';
-
-            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
-
-            expect(result.failed).toBe(false);
-            expect(mockClient.loginByIntune).toHaveBeenCalledWith(
-                mockTokens.accessToken,
-                'apple_rn-v2:standard-token',
-                '',
-            );
         });
 
         it('should handle 401 token expiration and retry with refreshed token', async () => {

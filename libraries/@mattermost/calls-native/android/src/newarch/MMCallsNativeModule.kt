@@ -10,31 +10,27 @@ class MMCallsNativeModule(reactContext: ReactApplicationContext) : NativeMMCalls
     override fun getName(): String = MMCallsNativeModuleImpl.NAME
 
     override fun addListener(eventType: String?) {
-        implementation.addListener()
+        // Keep: Required for RN built in Event Emitter Calls
     }
 
     override fun removeListeners(count: Double) {
-        implementation.removeListeners(count.toInt())
-    }
-
-    override fun setCallListenersReady() {
-        implementation.setCallListenersReady()
+        // Keep: Required for RN built in Event Emitter Calls
     }
 
     override fun reportOutgoingCall(params: ReadableMap?, promise: Promise?) {
-        implementation.reportOutgoingCall(params, promise)
+        implementation.reportOutgoingCall(promise)
     }
 
     override fun reportConnected(uuid: String?, promise: Promise?) {
-        implementation.reportConnected(uuid, promise)
+        implementation.reportConnected(promise)
     }
 
     override fun reportEnded(uuid: String?, reason: String?, promise: Promise?) {
-        implementation.reportEnded(uuid, reason, promise)
+        implementation.reportEnded(promise)
     }
 
     override fun setMuted(uuid: String?, muted: Boolean, promise: Promise?) {
-        implementation.setMuted(uuid, muted, promise)
+        implementation.setMuted(promise)
     }
 
     override fun foregroundServiceStart(config: ReadableMap?) {

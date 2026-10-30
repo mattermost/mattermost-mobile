@@ -5,7 +5,6 @@ import {Alert} from 'react-native';
 
 import {storePushDisabledInServerAcknowledged} from '@actions/app/global';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
-import {getNotificationDeliveryMode, NotificationDeliveryMode} from '@managers/direct_notification/mode';
 import {getPushDisabledInServerAcknowledged} from '@queries/app/global';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -19,11 +18,6 @@ export function pushDisabledInServerAck(serverUrl: string) {
 }
 
 export async function canReceiveNotifications(serverUrl: string, verification: string, intl: IntlShape) {
-    const deliveryMode = await getNotificationDeliveryMode(serverUrl);
-    if (deliveryMode !== NotificationDeliveryMode.SERVER_PUSH) {
-        return;
-    }
-
     const hasAckNotification = await pushDisabledInServerAck(serverUrl);
 
     switch (verification) {

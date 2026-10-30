@@ -4,7 +4,7 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {errorCodes, isErrorWithCode, pick, types} from '@react-native-documents/picker';
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {Alert, BackHandler, Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
@@ -16,12 +16,10 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Launch, DeepLink} from '@constants';
-import DatabaseManager from '@database/manager';
 import useDidMount from '@hooks/did_mount';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
-import {getNotificationDeliveryMode, NotificationDeliveryMode, persistNotificationDeliveryMode} from '@managers/direct_notification/mode';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import {getServerCertificate, importServerCertificate, reassignServerCertificate, removeServerCertificate, type ServerCertificateInfo} from '@managers/server_certificate_manager';
@@ -97,8 +95,6 @@ const Server = ({
     const [certificate, setCertificate] = useState<ServerCertificateInfo>();
     const [certificateError, setCertificateError] = useState<string>();
     const [certificateServerUrl, setCertificateServerUrl] = useState<string>();
-    const [deliveryMode, setDeliveryMode] = useState<NotificationDeliveryMode>(NotificationDeliveryMode.SERVER_PUSH);
-    const deliveryModeTouched = useRef(false);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -184,23 +180,6 @@ const Server = ({
     }, [certificateImportEnabled, defaultServerUrl, formatMessage, managedConfig?.serverUrl]);
 
     useEffect(() => {
-        if (!certificateImportEnabled || !url || deliveryModeTouched.current) {
-            return undefined;
-        }
-        let active = true;
-        getNotificationDeliveryMode(sanitizeUrl(url)).then((storedMode) => {
-            if (active && !deliveryModeTouched.current) {
-                setDeliveryMode(storedMode);
-            }
-        }).catch(() => {
-            // Server push remains the backwards-compatible default.
-        });
-        return () => {
-            active = false;
-        };
-    }, [certificateImportEnabled, url]);
-
-    useEffect(() => {
         if (url && displayName && !urlError && !preauthSecretError && !importingCertificate) {
             setButtonDisabled(false);
         } else {
@@ -235,8 +214,13 @@ const Server = ({
             return false;
         });
 
+        const registerTimeout = setTimeout(() => {
+            PushNotifications.registerIfNeeded();
+        }, 500);
+
         return () => {
             backHandler.remove();
+            clearTimeout(registerTimeout);
         };
     });
 
@@ -307,7 +291,7 @@ const Server = ({
 
         const server = await getServerByDisplayName(displayName);
         const credentials = await getServerCredentials(serverUrl);
-        if (server && server.lastActiveAt > 0 && credentials?.token && DatabaseManager.serverDatabases[server.url]?.database) {
+        if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
                 id: 'mobile.server_name.exists',
@@ -319,11 +303,6 @@ const Server = ({
 
         pingServer(serverUrl);
     };
-
-    const handleDeliveryModeChange = useCallback((mode: NotificationDeliveryMode) => {
-        deliveryModeTouched.current = true;
-        setDeliveryMode(mode);
-    }, []);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
@@ -446,7 +425,7 @@ const Server = ({
         }
         const result = await doPing(
             headRequest.url,
-            deliveryMode === NotificationDeliveryMode.SERVER_PUSH, // verifyPushProxy
+            true, // verifyPushProxy
             managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, // timeoutInterval
             preauthSecret.trim() || undefined, // preauthSecret
         );
@@ -525,7 +504,7 @@ const Server = ({
         const credentials = await getServerCredentials(headRequest.url);
         setConnecting(false);
 
-        if (server && server.lastActiveAt > 0 && credentials?.token && DatabaseManager.serverDatabases[server.url]?.database) {
+        if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setUrlError(formatMessage({
                 id: 'mobile.server_identifier.exists',
@@ -551,23 +530,6 @@ const Server = ({
             }
         }
 
-        if (certificateImportEnabled) {
-            try {
-                await persistNotificationDeliveryMode(headRequest.url, deliveryMode);
-            } catch {
-                setConnecting(false);
-                setUrlError(formatMessage({
-                    id: 'encma.notification_delivery.save_failed',
-                    defaultMessage: 'The notification delivery choice could not be saved. Try again.',
-                }));
-                return;
-            }
-        }
-
-        if (deliveryMode === NotificationDeliveryMode.SERVER_PUSH) {
-            PushNotifications.registerIfNeeded();
-        }
-
         displayLogin(headRequest.url, data.config!, data.license!);
 
         // Fire the push-proxy verification alert AFTER the RNN transition to
@@ -584,11 +546,9 @@ const Server = ({
         // persistence (via the Okay button callback in handleAlertResponse) is
         // unaffected — the alert still targets the same serverUrl, it just
         // renders on the login screen instead of the server screen.
-        if (deliveryMode === NotificationDeliveryMode.SERVER_PUSH) {
-            setTimeout(() => {
-                canReceiveNotifications(headRequest.url, pushProxyVerification, intl);
-            }, 1000);
-        }
+        setTimeout(() => {
+            canReceiveNotifications(headRequest.url, pushProxyVerification, intl);
+        }, 1000);
     };
 
     return (
@@ -621,12 +581,10 @@ const Server = ({
                         certificate={certificate}
                         certificateError={certificateError}
                         connecting={connecting}
-                        deliveryMode={deliveryMode}
                         displayName={displayName}
                         displayNameError={displayNameError}
                         disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
-                        handleDeliveryModeChange={handleDeliveryModeChange}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleImportCertificate={handleImportCertificate}
                         handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
@@ -638,7 +596,6 @@ const Server = ({
                         setShowAdvancedOptions={setShowAdvancedOptions}
                         showAdvancedOptions={showAdvancedOptions}
                         showCertificateImport={certificateImportEnabled}
-                        showNotificationDelivery={certificateImportEnabled}
                         theme={theme}
                         url={url}
                         urlError={urlError}

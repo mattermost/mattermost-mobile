@@ -45,15 +45,3 @@ export const getNativeCallUUIDForCall = (serverUrl: string, channelId: string, c
 };
 
 export const hasActiveNativeCall = (): boolean => mappings.size > 0;
-
-// Includes calls that arrived before the server snapshot, allowing the next
-// snapshot to reconcile stale native ringing surfaces as well as active calls.
-export const getNativeCallChannelIdsForServer = (serverUrl: string): string[] => {
-    const channelIds: string[] = [];
-    for (const mapping of mappings.values()) {
-        if (mapping.serverUrl === serverUrl) {
-            channelIds.push(mapping.channelId);
-        }
-    }
-    return channelIds;
-};

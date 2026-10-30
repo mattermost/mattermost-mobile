@@ -4,7 +4,6 @@
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
-import DirectNotificationManager from '@managers/direct_notification';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import IntuneManager from '@managers/intune_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
@@ -42,7 +41,6 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
             await EphemeralModeManager.addServer(serverUrl);
             await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
             await WebsocketManager.initializeClient(serverUrl, 'Login');
-            await DirectNotificationManager.onServerLoggedIn(serverUrl);
         }
 
         return {};

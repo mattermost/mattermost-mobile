@@ -17,7 +17,7 @@ import {
 } from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 
-import {storeDeviceToken, storeVoIPDeviceToken} from '@actions/app/global';
+import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import {updateThread} from '@actions/local/thread';
@@ -338,13 +338,6 @@ class PushNotificationsSingleton {
 
             const token = `${prefix}-v2:${deviceToken}`;
             storeDeviceToken(token);
-
-            // Android native calls use a high-priority VoIP data message on
-            // the same FCM token. iOS keeps its separate PushKit token.
-            if (Platform.OS === 'android') {
-                storeVoIPDeviceToken(token);
-            }
-
             const redactedDeviceId = deviceToken.substring(0, 16);
             logDebug('Notification token registered', `${prefix}-v2:${redactedDeviceId}...`);
 

@@ -6,7 +6,7 @@ import {Redirect} from 'expo-router';
 import React from 'react';
 
 import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
-import {getWireGuardState, isWireGuardRequired, publishWireGuardState, WireGuardStatus} from '@managers/wireguard_manager';
+import {getWireGuardState, isWireGuardRequired, WireGuardStatus} from '@managers/wireguard_manager';
 
 import RootIndex from './index';
 
@@ -27,7 +27,6 @@ jest.mock('@managers/wireguard_manager', () => ({
     },
     getWireGuardState: jest.fn(),
     isWireGuardRequired: jest.fn(),
-    publishWireGuardState: jest.fn(),
 }));
 
 jest.mock('@screens/navigation', () => ({
@@ -81,7 +80,6 @@ describe('RootIndex WireGuard gate', () => {
         render(<RootIndex/>);
 
         await waitFor(() => expect(determineInitialExpoRouteWithFallback).toHaveBeenCalled());
-        expect(publishWireGuardState).toHaveBeenCalledWith(expect.objectContaining({status: WireGuardStatus.Connected}));
         expect(mockRedirect.mock.calls[0][0].href).toEqual({pathname: '/login', params: {}});
     });
 

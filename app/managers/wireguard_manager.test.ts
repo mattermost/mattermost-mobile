@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, NativeModules, Platform} from 'react-native';
+import {NativeModules, Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import {
@@ -88,17 +88,6 @@ describe('WireGuardManager', () => {
 
         expect(nativeModule.validateConfig).toHaveBeenCalledWith('test-configuration');
         expect(nativeModule.connect).toHaveBeenCalledWith('test-configuration');
-    });
-
-    it('publishes the verified connection result to existing state listeners', async () => {
-        const listener = jest.fn();
-        const subscription = DeviceEventEmitter.addListener('ENCMAWireGuardStateChanged', listener);
-        try {
-            await expect(connectWireGuard('test-configuration')).resolves.toEqual(connectedState);
-            expect(listener).toHaveBeenCalledWith(connectedState);
-        } finally {
-            subscription.remove();
-        }
     });
 
     it('uses a dedicated Keychain service and secure software storage', async () => {

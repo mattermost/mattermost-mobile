@@ -84,7 +84,7 @@ const loadAndInit = () => {
         onIncomingCall: calls.onIncomingCall.mock.calls.at(-1)?.[0] as (e: IncomingCallPayload) => Promise<void>,
         onCallAnswered: calls.onCallAnswered.mock.calls.at(-1)?.[0] as (e: CallActionPayload) => Promise<void>,
         onCallDeclined: calls.onCallDeclined.mock.calls.at(-1)?.[0] as (e: CallActionPayload) => Promise<void>,
-        onCallEnded: calls.onCallEnded.mock.calls.at(-1)?.[0] as (e: CallActionPayload) => Promise<void>,
+        onCallEnded: calls.onCallEnded.mock.calls.at(-1)?.[0] as (e: CallActionPayload) => void,
         onMuteChanged: calls.onMuteChanged.mock.calls.at(-1)?.[0] as (e: CallMutePayload) => void,
     };
 };
@@ -110,19 +110,13 @@ describe('init/cleanup', () => {
         expect(CallsNative.onCallDeclined).toHaveBeenCalledTimes(1);
         expect(CallsNative.onCallEnded).toHaveBeenCalledTimes(1);
         expect(CallsNative.onMuteChanged).toHaveBeenCalledTimes(1);
-        expect(CallsNative.setCallListenersReady).toHaveBeenCalledTimes(1);
     });
 
-    it('subscribes to all six events on Android', () => {
+    it('is a no-op on Android', () => {
         Object.defineProperty(Platform, 'OS', {get: () => 'android'});
         loadAndInit();
-        expect(CallsNative.onVoIPTokenUpdated).toHaveBeenCalledTimes(1);
-        expect(CallsNative.onIncomingCall).toHaveBeenCalledTimes(1);
-        expect(CallsNative.onCallAnswered).toHaveBeenCalledTimes(1);
-        expect(CallsNative.onCallDeclined).toHaveBeenCalledTimes(1);
-        expect(CallsNative.onCallEnded).toHaveBeenCalledTimes(1);
-        expect(CallsNative.onMuteChanged).toHaveBeenCalledTimes(1);
-        expect(CallsNative.setCallListenersReady).toHaveBeenCalledTimes(1);
+        expect(CallsNative.onVoIPTokenUpdated).not.toHaveBeenCalled();
+        expect(CallsNative.onIncomingCall).not.toHaveBeenCalled();
     });
 });
 
@@ -402,42 +396,6 @@ describe('onCallAnswered', () => {
         expect(CallsNative.reportEnded).toHaveBeenCalledWith('u1', 'failed');
         expect(clearNativeCallMapping).toHaveBeenCalledWith('u1');
     });
-
-    it('waits for the incoming mapping when answer arrives during cold-start initialization', async () => {
-        let storedMapping: typeof mapping | undefined;
-        (getNativeCallMapping as jest.Mock).mockImplementation(() => storedMapping);
-        (setNativeCallMapping as jest.Mock).mockImplementation((_uuid, value) => {
-            storedMapping = value;
-        });
-        let resolveServer!: (server: {url: string} | null) => void;
-        (getServerByIdentifier as jest.Mock).mockReturnValueOnce(new Promise((resolve) => {
-            resolveServer = resolve;
-        }));
-        (getCurrentUser as jest.Mock).mockResolvedValueOnce({id: 'user1', locale: 'en'});
-        (getCurrentCall as jest.Mock).mockReturnValueOnce(null);
-        (hasMicrophonePermission as jest.Mock).mockResolvedValueOnce(true);
-        (joinCall as jest.Mock).mockResolvedValueOnce({});
-
-        const {onIncomingCall, onCallAnswered} = loadAndInit();
-        const incoming = onIncomingCall({
-            uuid: 'u1',
-            serverId: 's1',
-            channelId: 'ch1',
-            postId: 'p1',
-            threadId: 't1',
-            callerId: '',
-            callerName: '',
-        });
-        const answered = onCallAnswered({uuid: 'u1'});
-        expect(joinCall).not.toHaveBeenCalled();
-
-        resolveServer({url: SERVER_URL});
-        await Promise.all([incoming, answered]);
-
-        expect(setNativeCallMapping).toHaveBeenCalledWith('u1', expect.objectContaining({serverUrl: SERVER_URL}));
-        expect(joinCall).toHaveBeenCalled();
-        expect(CallsNative.reportConnected).toHaveBeenCalledWith('u1');
-    });
 });
 
 describe('onCallDeclined', () => {
@@ -496,37 +454,6 @@ describe('onCallEnded', () => {
         onCallEnded({uuid: 'u1'});
         expect(clearNativeCallMapping).toHaveBeenCalledWith('u1');
         expect(leaveCall).not.toHaveBeenCalled();
-    });
-
-    it('waits for the incoming mapping when a buffered end arrives during cold start', async () => {
-        let storedMapping: {serverUrl: string; channelId: string; postId: string; threadId: string} | undefined;
-        (getNativeCallMapping as jest.Mock).mockImplementation(() => storedMapping);
-        (setNativeCallMapping as jest.Mock).mockImplementation((_uuid, value) => {
-            storedMapping = value;
-        });
-        let resolveServer!: (server: {url: string} | null) => void;
-        (getServerByIdentifier as jest.Mock).mockReturnValueOnce(new Promise((resolve) => {
-            resolveServer = resolve;
-        }));
-
-        const {onIncomingCall, onCallEnded} = loadAndInit();
-        const incoming = onIncomingCall({
-            uuid: 'u1',
-            serverId: 's1',
-            channelId: 'ch1',
-            postId: 'p1',
-            threadId: 't1',
-            callerId: '',
-            callerName: '',
-        });
-        const ended = onCallEnded({uuid: 'u1'});
-        expect(clearNativeCallMapping).not.toHaveBeenCalled();
-
-        resolveServer({url: SERVER_URL});
-        await Promise.all([incoming, ended]);
-
-        expect(setNativeCallMapping).toHaveBeenCalledWith('u1', expect.objectContaining({serverUrl: SERVER_URL}));
-        expect(clearNativeCallMapping).toHaveBeenCalledWith('u1');
     });
 });
 

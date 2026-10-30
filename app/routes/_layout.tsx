@@ -115,24 +115,14 @@ export default function RootLayout() {
         }
 
         let active = true;
-        let stateReadGeneration = 0;
         const updateStatus = (newState: {status: WireGuardConnectionStatus}) => {
             if (active) {
-                // A native event is newer than any state read already in flight.
-                // Invalidate those reads before applying the event so an older
-                // Disconnected result cannot send a connected session back to VPN.
-                stateReadGeneration += 1;
                 setVpnStatus(newState.status);
             }
         };
         const removeListener = addWireGuardStateListener(updateStatus);
-        const readGeneration = ++stateReadGeneration;
-        getWireGuardState().then((newState) => {
-            if (active && readGeneration === stateReadGeneration) {
-                updateStatus(newState);
-            }
-        }).catch(() => {
-            if (active && readGeneration === stateReadGeneration) {
+        getWireGuardState().then(updateStatus).catch(() => {
+            if (active) {
                 setVpnStatus(WireGuardStatus.Failed);
             }
         });

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import NetInfo, {NetInfoStateType, type NetInfoState, type NetInfoSubscription} from '@react-native-community/netinfo';
-import {AppState, Platform, type AppStateStatus, type NativeEventSubscription} from 'react-native';
+import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
 import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
@@ -15,9 +15,7 @@ import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
-import {isDirectNotificationServer} from '@managers/direct_notification/mode';
 import SessionAttributesManager from '@managers/session_attributes_manager';
-import {getWireGuardState, WireGuardStatus} from '@managers/wireguard_manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import RenderPermissionsStore from '@store/render_permissions_store';
@@ -123,51 +121,12 @@ class WebsocketManagerSingleton {
         return this.clients[serverUrl];
     };
 
-    public closeAll = (preserveDirect = false) => {
+    public closeAll = () => {
         for (const url of Object.keys(this.clients)) {
-            if (preserveDirect && isDirectNotificationServer(url)) {
-                continue;
-            }
             const client = this.clients[url];
             client.close(true);
             this.getConnectedSubject(url).next('not_connected');
         }
-    };
-
-    public closeDirectClients = () => {
-        for (const url of Object.keys(this.clients)) {
-            if (!isDirectNotificationServer(url)) {
-                continue;
-            }
-            this.clients[url].close(true);
-            this.getConnectedSubject(url).next('not_connected');
-        }
-    };
-
-    public openDirectClients = async (groupLabel?: BaseRequestGroupLabel) => {
-        const directServerUrls = Object.keys(this.clients).filter((serverUrl) => isDirectNotificationServer(serverUrl));
-        if (!directServerUrls.length) {
-            return;
-        }
-
-        // Direct is Android/WireGuard scoped. Recheck at the reconnect point as
-        // well as in the lifecycle manager so a network callback cannot reopen
-        // a socket after the VPN has gone away.
-        if (Platform.OS !== 'android') {
-            return;
-        }
-        try {
-            const state = await getWireGuardState();
-            if (state.status !== WireGuardStatus.Connected) {
-                this.closeDirectClients();
-                return;
-            }
-        } catch {
-            this.closeDirectClients();
-            return;
-        }
-
-        await Promise.all(directServerUrls.map((serverUrl) => this.initializeClient(serverUrl, groupLabel)));
     };
 
     public openAll = async (groupLabel?: BaseRequestGroupLabel) => {
@@ -341,7 +300,6 @@ class WebsocketManagerSingleton {
 
         const wentBackground = this.previousActiveState && !currentIsActive;
         const switchedNetworks = currentIsConnected && currentNetType !== this.netType && this.netType !== 'none';
-        const regainedNetwork = !this.netConnected && currentIsConnected;
         const previousNetType = this.netType;
 
         this.previousActiveState = currentIsActive;
@@ -374,10 +332,6 @@ class WebsocketManagerSingleton {
             return;
         }
 
-        if (!currentIsActive && (switchedNetworks || regainedNetwork)) {
-            this.openDirectClients('WebSocket Reconnect');
-        }
-
         if (wentBackground) {
             this.startBackgroundCloseTimer();
         }
@@ -403,10 +357,7 @@ class WebsocketManagerSingleton {
             if (hasActiveNativeCall()) {
                 return;
             }
-
-            // Direct servers keep their authenticated sockets alive so the
-            // foreground service can turn posted events into local alerts.
-            this.closeAll(true);
+            this.closeAll();
         }, WAIT_TO_CLOSE);
     };
 

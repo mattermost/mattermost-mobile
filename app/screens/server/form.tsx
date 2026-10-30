@@ -10,9 +10,6 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import NotificationDeliveryModeSelector from '@components/notification_delivery_mode';
-import {Screens} from '@constants';
-import {NotificationDeliveryMode} from '@managers/direct_notification/mode';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -24,12 +21,10 @@ type Props = {
     certificate?: ServerCertificateInfo;
     certificateError?: string;
     connecting: boolean;
-    deliveryMode?: NotificationDeliveryMode;
     displayName?: string;
     displayNameError?: string;
     disableServerUrl: boolean;
     handleConnect: () => void;
-    handleDeliveryModeChange?: (mode: NotificationDeliveryMode) => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handleImportCertificate: () => void;
     handlePreauthSecretTextChanged: (text: string) => void;
@@ -41,7 +36,6 @@ type Props = {
     setShowAdvancedOptions: React.Dispatch<React.SetStateAction<boolean>>;
     showAdvancedOptions: boolean;
     showCertificateImport: boolean;
-    showNotificationDelivery?: boolean;
     theme: Theme;
     url?: string;
     urlError?: string;
@@ -188,12 +182,10 @@ const ServerForm = ({
     certificate,
     certificateError,
     connecting,
-    deliveryMode = NotificationDeliveryMode.SERVER_PUSH,
     displayName = '',
     displayNameError,
     disableServerUrl,
     handleConnect,
-    handleDeliveryModeChange = () => undefined,
     handleDisplayNameTextChanged,
     handleImportCertificate,
     handlePreauthSecretTextChanged,
@@ -205,7 +197,6 @@ const ServerForm = ({
     setShowAdvancedOptions,
     showAdvancedOptions,
     showCertificateImport,
-    showNotificationDelivery = false,
     theme,
     url = '',
     urlError,
@@ -366,15 +357,6 @@ const ServerForm = ({
                         </Text>
                     )}
                 </View>
-            )}
-
-            {showNotificationDelivery && (
-                <NotificationDeliveryModeSelector
-                    location={Screens.SERVER}
-                    onChange={handleDeliveryModeChange}
-                    testID='server_form.notification_delivery'
-                    value={deliveryMode}
-                />
             )}
 
             <Animated.View style={[styles.advancedOptionsContainer, advancedOptionsStyle]}>

@@ -3,7 +3,7 @@
 
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
-import {storeDeviceToken, storeVoIPDeviceToken} from '@actions/app/global';
+import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import {updateThread} from '@actions/local/thread';
@@ -127,7 +127,7 @@ describe('PushNotifications', () => {
     });
 
     describe('onRemoteNotificationsRegistered', () => {
-        it('should store device token with correct prefix for iOS and not mirror it into the VoIP slot', async () => {
+        it('should store device token with correct prefix for iOS', async () => {
             Platform.OS = 'ios';
             const deviceToken = 'test-token';
 
@@ -136,22 +136,18 @@ describe('PushNotifications', () => {
             expect(storeDeviceToken).toHaveBeenCalledWith(
                 `apple_rnbeta-v2:${deviceToken}`,
             );
-
-            // iOS's VoIP token is a separate PushKit token written by
-            // calls_native.ts's onVoIPTokenUpdated, not this handler.
-            expect(storeVoIPDeviceToken).not.toHaveBeenCalled();
         });
 
-        it('should store device token with correct prefix for Android and mirror it into the VoIP slot', async () => {
+        it('should store device token with correct prefix for Android', async () => {
             pushNotifications.configured = false;
             Platform.OS = 'android';
             const deviceToken = 'test-token';
 
             await pushNotifications.onRemoteNotificationsRegistered({deviceToken});
 
-            const expected = `${Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE}-v2:${deviceToken}`;
-            expect(storeDeviceToken).toHaveBeenCalledWith(expected);
-            expect(storeVoIPDeviceToken).toHaveBeenCalledWith(expected);
+            expect(storeDeviceToken).toHaveBeenCalledWith(
+                `${Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE}-v2:${deviceToken}`,
+            );
         });
     });
 

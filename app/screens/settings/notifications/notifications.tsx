@@ -3,12 +3,9 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Alert, Platform} from 'react-native';
 import {Notifications as RNNotifications} from 'react-native-notifications';
 
-import {setExtraSessionProps} from '@actions/remote/entry/common';
 import {getCallsConfig} from '@calls/state';
-import NotificationDeliveryModeSelector from '@components/notification_delivery_mode';
 import SettingContainer from '@components/settings/container';
 import SettingItem from '@components/settings/item';
 import {General, Screens} from '@constants';
@@ -16,11 +13,7 @@ import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAppState} from '@hooks/device';
 import useNotificationProps from '@hooks/notification_props';
-import PushNotifications from '@init/push_notifications';
-import DirectNotificationManager from '@managers/direct_notification';
-import {getNotificationDeliveryMode, NotificationDeliveryMode} from '@managers/direct_notification/mode';
 import {navigateBack, navigateToSettingsScreen} from '@screens/navigation';
-import {isEncmaApp} from '@utils/branding';
 import {logError} from '@utils/log';
 import {getEmailInterval, getEmailIntervalTexts} from '@utils/user';
 
@@ -72,33 +65,12 @@ const Notifications = ({
     const notifyProps = useNotificationProps(currentUser);
     const callsRingingEnabled = useMemo(() => getCallsConfig(serverUrl).EnableRinging, [serverUrl]);
     const [isRegistered, setIsRegistered] = useState(true);
-    const [deliveryMode, setDeliveryMode] = useState<NotificationDeliveryMode>(NotificationDeliveryMode.SERVER_PUSH);
-    const showNotificationDelivery = Platform.OS === 'android' && isEncmaApp;
 
     const appState = useAppState();
 
     useEffect(() => {
-        if (!showNotificationDelivery) {
-            return undefined;
-        }
         let isCurrent = true;
-        getNotificationDeliveryMode(serverUrl).then((mode) => {
-            if (isCurrent) {
-                setDeliveryMode(mode);
-            }
-        }).catch((error) => {
-            if (isCurrent) {
-                logError('Error loading notification delivery mode:', error);
-            }
-        });
-        return () => {
-            isCurrent = false;
-        };
-    }, [serverUrl, showNotificationDelivery]);
-
-    useEffect(() => {
-        let isCurrent = true;
-        if (appState === 'active' && (!showNotificationDelivery || deliveryMode === NotificationDeliveryMode.SERVER_PUSH)) {
+        if (appState === 'active') {
             const checkNotificationStatus = async () => {
                 try {
                     const registered = await RNNotifications.isRegisteredForRemoteNotifications();
@@ -112,13 +84,11 @@ const Notifications = ({
                 }
             };
             checkNotificationStatus();
-        } else if (showNotificationDelivery && deliveryMode !== NotificationDeliveryMode.SERVER_PUSH) {
-            setIsRegistered(true);
         }
         return () => {
             isCurrent = false;
         };
-    }, [appState, deliveryMode, showNotificationDelivery]);
+    }, [appState]);
 
     const emailIntervalPref = useMemo(() =>
         getEmailInterval(
@@ -130,28 +100,6 @@ const Notifications = ({
 
     const callsNotificationsOn = useMemo(() => Boolean(notifyProps?.calls_mobile_sound ? notifyProps.calls_mobile_sound === 'true' : notifyProps?.calls_desktop_sound === 'true'),
         [notifyProps]);
-
-    const onDeliveryModeChange = useCallback(async (mode: NotificationDeliveryMode) => {
-        if (mode === deliveryMode) {
-            return;
-        }
-        const previousMode = deliveryMode;
-        setDeliveryMode(mode);
-        try {
-            await DirectNotificationManager.setMode(serverUrl, mode);
-            if (mode === NotificationDeliveryMode.SERVER_PUSH) {
-                await PushNotifications.registerIfNeeded();
-                await setExtraSessionProps(serverUrl);
-            }
-        } catch (error) {
-            setDeliveryMode(previousMode);
-            logError('Error saving notification delivery mode:', error);
-            Alert.alert(
-                intl.formatMessage({id: 'encma.notification_delivery.save_failed_title', defaultMessage: 'Notification setting not saved'}),
-                intl.formatMessage({id: 'encma.notification_delivery.save_failed', defaultMessage: 'The notification delivery choice could not be saved. Try again.'}),
-            );
-        }
-    }, [deliveryMode, intl, serverUrl]);
 
     const goToNotificationSettingsMentions = useCallback(() => {
         const message = isCRTEnabled ? mentionTexts.crtOn : mentionTexts.crtOff;
@@ -179,14 +127,7 @@ const Notifications = ({
 
     return (
         <SettingContainer testID='notification_settings'>
-            {showNotificationDelivery && (
-                <NotificationDeliveryModeSelector
-                    location={Screens.SETTINGS_NOTIFICATION}
-                    onChange={onDeliveryModeChange}
-                    value={deliveryMode}
-                />
-            )}
-            {(!showNotificationDelivery || deliveryMode === NotificationDeliveryMode.SERVER_PUSH) && !isRegistered &&
+            {!isRegistered &&
                 <NotificationsDisabledNotice
                     testID='notifications-disabled-notice'
                 />}
@@ -223,12 +164,10 @@ const Notifications = ({
                     testID='notification_settings.automatic_replies.option'
                 />
             )}
-            {(!showNotificationDelivery || deliveryMode === NotificationDeliveryMode.SERVER_PUSH) && (
-                <SendTestNotificationNotice
-                    serverVersion={serverVersion}
-                    userId={currentUser?.id || ''}
-                />
-            )}
+            <SendTestNotificationNotice
+                serverVersion={serverVersion}
+                userId={currentUser?.id || ''}
+            />
         </SettingContainer>
     );
 };

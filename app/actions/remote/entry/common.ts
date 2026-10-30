@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {nativeApplicationVersion} from 'expo-application';
-import {Platform} from 'react-native';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
 import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
@@ -19,7 +18,6 @@ import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
-import {getNotificationDeliveryMode, NotificationDeliveryMode} from '@managers/direct_notification/mode';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken, getVoIPDeviceToken} from '@queries/app/global';
 import {getChannelById, queryChannelsById, queryMyChannelsByChannelIds} from '@queries/servers/channel';
@@ -303,14 +301,6 @@ export async function entryInitialChannelId(database: Database, requestedChannel
 
 export const setExtraSessionProps = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
-        const deliveryMode = await getNotificationDeliveryMode(serverUrl);
-        if (deliveryMode !== NotificationDeliveryMode.SERVER_PUSH) {
-            // Empty device IDs do not detach an existing token on Mattermost.
-            // Avoid this call entirely for Direct/Off so reconnects cannot
-            // attach the app-global FCM token to those sessions.
-            return {};
-        }
-
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
         const deviceToken = await getDeviceToken();
@@ -324,19 +314,7 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            try {
-                await client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, voipDeviceToken || undefined, groupLabel);
-            } catch (error) {
-                if (Platform.OS !== 'android' || !voipDeviceToken) {
-                    throw error;
-                }
-
-                // Older servers can reject Android's VoIP ID. Preserve ordinary
-                // Server push registration while leaving native-call support to
-                // a compatible server; the outer catch contains a second error.
-                logDebug('error on setExtraSessionProps with Android VoIP; retrying without it', getFullErrorMessage(error));
-                await client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, undefined, groupLabel);
-            }
+            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, voipDeviceToken || undefined, groupLabel);
         }
         return {};
     } catch (error) {
@@ -346,11 +324,6 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
 };
 
 export async function verifyPushProxy(serverUrl: string, groupLabel?: RequestGroupLabel) {
-    const deliveryMode = await getNotificationDeliveryMode(serverUrl);
-    if (deliveryMode !== NotificationDeliveryMode.SERVER_PUSH) {
-        return;
-    }
-
     const deviceId = await getDeviceToken();
     if (!deviceId) {
         return;

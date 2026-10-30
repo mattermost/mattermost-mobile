@@ -116,19 +116,16 @@ describe('clearNativeCallMapping wrapper', () => {
 });
 
 describe('registerOutgoingNativeCall', () => {
-    it('runs on Android', async () => {
+    it('skips when not on iOS', async () => {
         const originalOS = Platform.OS;
         Object.defineProperty(Platform, 'OS', {get: () => 'android'});
 
-        const uuid = await registerOutgoingNativeCall(serverUrl, 'ch1');
+        const result = await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         Object.defineProperty(Platform, 'OS', {get: () => originalOS});
 
-        expect(uuid).toBeDefined();
-        expect(CallsNative.reportOutgoingCall).toHaveBeenCalledWith({
-            channelId: 'ch1',
-            calleeName: expect.any(String),
-        });
+        expect(result).toBeUndefined();
+        expect(CallsNative.reportOutgoingCall).not.toHaveBeenCalled();
     });
 
     it('skips when a mapping already exists (inbound-push case)', async () => {
@@ -319,7 +316,7 @@ describe('endNativeCall', () => {
         expect(getNativeCallMapping('uuid-a')).toBeUndefined();
     });
 
-    it('runs on Android', () => {
+    it('skips when not on iOS', () => {
         const originalOS = Platform.OS;
         Object.defineProperty(Platform, 'OS', {get: () => 'android'});
 
@@ -333,7 +330,7 @@ describe('endNativeCall', () => {
 
         Object.defineProperty(Platform, 'OS', {get: () => originalOS});
 
-        expect(CallsNative.reportEnded).toHaveBeenCalledWith('uuid-a', 'remoteEnded');
+        expect(CallsNative.reportEnded).not.toHaveBeenCalled();
     });
 });
 
@@ -370,4 +367,17 @@ describe('mirrorMuteToNativeCall', () => {
         expect(CallsNative.setMuted).not.toHaveBeenCalled();
     });
 
+    it('skips when not on iOS', () => {
+        const originalOS = Platform.OS;
+        Object.defineProperty(Platform, 'OS', {get: () => 'android'});
+
+        mirrorMuteToNativeCall(true);
+
+        Object.defineProperty(Platform, 'OS', {get: () => originalOS});
+
+        expect(CallsNative.setMuted).not.toHaveBeenCalled();
+
+        // Confirm we returned before the getCurrentCall lookup.
+        expect(getCurrentCall).not.toHaveBeenCalled();
+    });
 });

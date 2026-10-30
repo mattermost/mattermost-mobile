@@ -9,10 +9,9 @@ import {Alert, Text, TextInput, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {appEntry} from '@actions/remote/entry/app';
 import Button from '@components/button';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
-import {determinePostWireGuardRouteWithFallback} from '@init/launch_with_fallback';
+import {determineInitialExpoRouteWithFallback} from '@init/launch_with_fallback';
 import {
     WireGuardStatus,
     addWireGuardStateListener,
@@ -21,7 +20,6 @@ import {
     disconnectWireGuard,
     getWireGuardState,
     loadWireGuardConfig,
-    publishWireGuardState,
     readWireGuardConfig,
     saveWireGuardConfig,
     setWireGuardSecureScreen,
@@ -30,7 +28,6 @@ import {
     type WireGuardState,
 } from '@managers/wireguard_manager';
 import {propsToParams} from '@screens/navigation';
-import {logError} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 
 import getStyleSheet from './styles';
@@ -128,16 +125,8 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
     }
 
     const continueToApp = useCallback(async () => {
-        const launchResult = await determinePostWireGuardRouteWithFallback();
+        const launchResult = await determineInitialExpoRouteWithFallback();
         router.replace({pathname: launchResult.route, params: propsToParams(launchResult.params)});
-
-        // Keep server entry and its network work off the navigation-critical
-        // path. The local route decision above deliberately skips cold-start
-        // appEntry, so resume it after the destination has been dispatched.
-        const serverUrl = launchResult.params.serverUrl;
-        if (launchResult.route.startsWith('/(authenticated)') && typeof serverUrl === 'string') {
-            appEntry(serverUrl).catch((error) => logError('Post-WireGuard app entry failed', error));
-        }
     }, []);
 
     const connectConfig = useCallback(async (value: string) => {
@@ -219,7 +208,6 @@ export default function VpnScreen({management = false}: VpnScreenProps) {
                 }
 
                 if (currentState.status === WireGuardStatus.Connected) {
-                    publishWireGuardState(currentState);
                     if (!management) {
                         await continueToApp();
                     }

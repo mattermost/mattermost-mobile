@@ -2,9 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
-import {Redirect} from 'expo-router';
 import React, {type ComponentType, useEffect, useState} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 import DeviceInfoProvider from '@context/device';
 import ServerProvider from '@context/server';
@@ -25,23 +23,9 @@ type State = {
     persistenceFlag: PersistenceFlag;
 };
 
-type ServerDatabaseOptions = {
-    redirectToServerWhenUnavailable?: boolean;
-};
-
-const styles = StyleSheet.create({
-    loading: {
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'center',
-    },
-});
-
-export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Component: ComponentType<T>, options: ServerDatabaseOptions = {}): ComponentType<T> {
+export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Component: ComponentType<T>): ComponentType<T> {
     return function ServerDatabaseComponent(props: T) {
-        // undefined means the first active-server emission is still pending;
-        // null means that there is no usable active server/database pair.
-        const [state, setState] = useState<State | null | undefined>(undefined);
+        const [state, setState] = useState<State | undefined>();
 
         const observer = (servers: ServersModel[]) => {
             const server = servers?.length ? servers.reduce((a, b) =>
@@ -59,44 +43,21 @@ export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Comp
                         serverDisplayName: server.displayName,
                         persistenceFlag: server.persistenceFlag,
                     });
-                    return;
                 }
+            } else {
+                setState(undefined);
             }
-
-            // Do not keep rendering a previous database or leave a null tree when
-            // the active record has no corresponding initialized database.
-            setState(null);
         };
 
         useEffect(() => {
             const subscription = subscribeActiveServers(observer);
-            if (!subscription) {
-                setState(null);
-            }
 
             return () => {
                 subscription?.unsubscribe();
             };
         }, []);
 
-        if (state === undefined) {
-            if (options.redirectToServerWhenUnavailable) {
-                return (
-                    <View
-                        style={styles.loading}
-                        testID='server_database.loading'
-                    >
-                        <ActivityIndicator/>
-                    </View>
-                );
-            }
-            return null;
-        }
-
-        if (state === null) {
-            if (options.redirectToServerWhenUnavailable) {
-                return <Redirect href='/(unauthenticated)/server'/>;
-            }
+        if (!state?.database) {
             return null;
         }
 
