@@ -954,6 +954,25 @@ describe('ClientTracking', () => {
             expect(apiClientMock.invalidate).not.toHaveBeenCalled();
         });
 
+        it('should persist but not send the secret when the server URL is not https', async () => {
+            const httpClient = new ClientTracking({...apiClientMock, baseUrl: 'http://example.com'} as unknown as APIClientInterface);
+            httpClient.setClientCredentials('bearer-token', 'shared-password');
+            await new Promise(process.nextTick);
+
+            expect(httpClient.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+            expect(require('@init/credentials').setPreauthSecret).toHaveBeenCalledWith('http://example.com', 'shared-password');
+        });
+
+        it('should clear the pre-auth header on the live session when the server URL is not https', async () => {
+            const httpClient = new ClientTracking({...apiClientMock, baseUrl: 'http://example.com'} as unknown as APIClientInterface);
+            await httpClient.setPreauthSecretHeader('shared-password');
+
+            expect(httpClient.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+            expect(apiClientMock.addHeaders).toHaveBeenLastCalledWith({
+                [ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: '',
+            });
+        });
+
         it('should not set the Authorization header when the bearer token is empty', () => {
             client.setClientCredentials('', 'shared-password');
 
