@@ -1077,8 +1077,10 @@ jobs:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
           MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
           MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
+          # A re-run of failed specs runs in the same workflow run: its own report, not over the run's.
+          RERUN: ${{ inputs.results-artifact != '' && '-rerun' || '' }}
         run: |
-          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
+          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}${RERUN}"
           echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
 
       # ── Spec durations for the next run's shard packing ────────────────────

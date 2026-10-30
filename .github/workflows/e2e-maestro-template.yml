@@ -388,7 +388,8 @@ jobs:
           fi
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
           set -a
@@ -457,7 +458,8 @@ jobs:
         # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
         # of its own, so the patch and the trap restore live here. continue-on-error so
         # the main batch report stays authoritative.
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
           set -a
@@ -736,7 +738,8 @@ jobs:
           BUILD_ID: maestro-ios-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
-        if: always()
+        # A re-run of failed flows reports only to the channel message, not over the run's report.
+        if: always() && inputs.results-artifact == ''
         run: |
           cd detox
           node -e "
@@ -1074,7 +1077,8 @@ jobs:
         # restores it in onFlowComplete, so it must not share a batch with attach_logs.yml.
         # continue-on-error keeps the main batch report authoritative.
         # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
@@ -1151,7 +1155,8 @@ jobs:
         # Isolated step: clear Gmail, patch ReportAProblemType=email, run the
         # mail-mode flow, restore on exit. Android-only — iOS simulators have no
         # Mail app. continue-on-error so the main report stays authoritative.
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
@@ -1220,7 +1225,8 @@ jobs:
         # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
         # of its own, so the patch and the trap restore live here. continue-on-error so
         # the main batch report stays authoritative.
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        # A re-run of failed flows runs only those (flow-path).
+        if: always() && inputs.results-artifact == '' && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
@@ -1481,7 +1487,8 @@ jobs:
           BUILD_ID: maestro-android-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
-        if: always()
+        # A re-run of failed flows reports only to the channel message, not over the run's report.
+        if: always() && inputs.results-artifact == ''
         run: |
           cd detox
           node -e "
