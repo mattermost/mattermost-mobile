@@ -13,12 +13,12 @@ import {
     requireOption,
     TEST_FIELD_OPTIONS,
 } from '@support/channel_attributes_fixtures';
-import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
+import {disableChannelAttributes, enableChannelAttributes, setChannelAttributesRequired} from '@support/channel_attributes_test_helper';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Channel, Properties, System, Team, User} from '@support/server_api';
+import {Channel, Properties, Team, User} from '@support/server_api';
 import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
-import {ChannelAttributeLabels} from '@support/ui/component';
+import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 import {device, waitFor} from 'detox';
@@ -89,35 +89,15 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
     });
 
     describe('with a required attribute', () => {
-        // The server refuses to create a required channel attribute unless this flag is on (off by default).
-        // Read back after each write: a lost or env-pinned write still returns success.
-        const setRequiredAttributes = async (enabled: boolean) => {
-            let actual: unknown;
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                // eslint-disable-next-line no-await-in-loop -- each attempt checks the previous write
-                const {error} = await System.apiPatchFeatureFlags(siteOneUrl, {ChannelAttributesRequired: enabled});
-                if (error) {
-                    throw new Error(`Failed to set FeatureFlags.ChannelAttributesRequired=${enabled}: ${JSON.stringify(error)}`);
-                }
-                // eslint-disable-next-line no-await-in-loop -- read-back of this attempt's write
-                const {config} = await System.apiGetConfig(siteOneUrl);
-                actual = config?.FeatureFlags?.ChannelAttributesRequired;
-                if (actual === enabled) {
-                    return;
-                }
-            }
-            throw new Error(`FeatureFlags.ChannelAttributesRequired stayed ${String(actual)} after 3 writes of ${enabled}`);
-        };
-
         beforeAll(async () => {
             if (canMutateServer) {
-                await setRequiredAttributes(true);
+                await setChannelAttributesRequired(siteOneUrl, true);
             }
         });
 
         afterAll(async () => {
             if (canMutateServer) {
-                await setRequiredAttributes(false);
+                await setChannelAttributesRequired(siteOneUrl, false);
             }
         });
 
@@ -128,6 +108,9 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+
+            // Channel Info shows a required-but-unset attribute only to channel admins.
+            await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
 
             // # Now create the required field (no value set on the channel).
             await Properties.apiSetupChannelAttributeField(
@@ -262,6 +245,34 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             // * No channel attribute chips because ChannelAttributes flag is off.
             await ChannelAttributeLabels.toNotBeVisible();
 
+            await ChannelScreen.back();
+        });
+
+        it('MM-T6324_1 - should not offer editing when the ChannelAttributes flag is off', async () => {
+            const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
+                siteOneUrl,
+                {
+                    fieldName: TEST_FIELD_NAME,
+                    options: TEST_FIELD_OPTIONS,
+                    actions: ['display_label_info', 'display_label_header'],
+                    permissionValues: 'member',
+                },
+            );
+
+            const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+            testChannel = channel;
+            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+            await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
+            await device.reloadReactNative();
+
+            await ChannelListScreen.toBeVisible();
+            await openChannel(channel.name);
+            await ChannelInfoScreen.open();
+
+            // * The whole section is absent, so there is nothing to edit.
+            await ChannelInfoAttributes.toNotBeVisible();
+
+            await ChannelInfoScreen.close();
             await ChannelScreen.back();
         });
     });

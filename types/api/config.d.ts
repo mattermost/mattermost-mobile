@@ -129,6 +129,7 @@ interface ClientConfig {
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
     FeatureFlagChannelAttributes?: string;
+    FeatureFlagChannelAttributesRequired?: string;
     FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;

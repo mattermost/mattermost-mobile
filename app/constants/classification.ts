@@ -50,5 +50,10 @@ export const CLASSIFICATIONS_CHANNEL_OBJECT_TYPE = 'channel';
 // cache before the global banner mount effect will request it again (1 hour).
 export const CLASSIFICATION_BANNER_CACHE_TTL = 60 * 60 * 1000;
 
+// How long a malformed-response failure suppresses non-forced re-fetches. Much
+// shorter than the success TTL: this backs off a server sending a bad response
+// on every request, not a value worth trusting for an hour.
+export const CLASSIFICATION_BANNER_FAILURE_BACKOFF = 60 * 1000;
+
 // Feature flag config key for the classification markings system.
 export const FEATURE_FLAG_CLASSIFICATION_MARKINGS = 'FeatureFlagClassificationMarkings';
