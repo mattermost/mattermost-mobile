@@ -3,7 +3,7 @@
 
 import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
 import moment, {type Moment} from 'moment-timezone';
-import {Platform} from 'react-native';
+import {Dimensions, Platform} from 'react-native';
 
 import License from '@constants/license';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
@@ -190,6 +190,28 @@ export function isTablet() {
         return false;
     }
     return result.isTablet && !result.isSplit;
+}
+
+// The smallest width Android treats as a large screen, matching the sw600dp resource qualifier.
+const TABLET_SMALLEST_WIDTH_DP = 600;
+
+// Whether the hardware is a tablet, independent of how large the app's own window currently is.
+// isRunningInSplitView().isTablet cannot answer that on Android: it derives the answer from the
+// configuration the app is given, which shrinks with the window, so a tablet in a narrow split
+// view is reported as a phone. Screen dimensions describe the display and do not change when the
+// window is resized.
+function isTabletDevice() {
+    const {width, height} = Dimensions.get('screen');
+    return Math.min(width, height) >= TABLET_SMALLEST_WIDTH_DP;
+}
+
+// Tablets can rotate freely, even when running in split view, so only phones are locked to portrait.
+export function lockPortraitOnPhones() {
+    if (isTabletDevice()) {
+        RNUtils.unlockOrientation();
+        return;
+    }
+    RNUtils.lockPortrait();
 }
 
 export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));

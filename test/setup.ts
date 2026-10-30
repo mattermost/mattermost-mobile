@@ -366,6 +366,7 @@ jest.doMock('react-native', () => {
             saveFile: jest.fn(),
 
             unlockOrientation: jest.fn(),
+            lockPortrait: jest.fn(),
             getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
 
             deleteDatabaseDirectory: jest.fn(),
