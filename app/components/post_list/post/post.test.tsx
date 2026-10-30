@@ -46,6 +46,7 @@ describe('performance metrics', () => {
             highlightReplyBar: false,
             isEphemeral: false,
             isPostAddChannelMember: false,
+            isChannelWriteDenied: false,
             commentCount: 0,
             location: Screens.CHANNEL,
             post,
@@ -148,6 +149,7 @@ describe('ephemeral post header', () => {
             highlightReplyBar: false,
             isEphemeral: true,
             isPostAddChannelMember: false,
+            isChannelWriteDenied: false,
             commentCount: 0,
             location: Screens.CHANNEL,
             post: TestHelper.fakePostModel({

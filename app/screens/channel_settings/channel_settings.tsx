@@ -7,6 +7,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
+import ReadOnlyNotice from '@components/channel_read_only_notice';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -18,7 +19,6 @@ import Archive from './archive';
 import ChannelConfigurationOption from './channel_configuration_option';
 import ChannelInfoOption from './channel_info';
 import ConvertPrivate from './convert_private';
-import ReadOnlyNotice from './read_only_notice';
 
 type Props = {
     canArchive: boolean;

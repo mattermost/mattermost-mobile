@@ -7,11 +7,11 @@ import {useIntl} from 'react-intl';
 import {ScrollView, StyleSheet} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import ReadOnlyNotice from '@components/channel_read_only_notice';
 import NavigationHeaderTitle from '@components/navigation_header_title';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useFetchRenderPermissions} from '@hooks/render_permissions';
-import ReadOnlyNotice from '@screens/channel_settings/read_only_notice';
 import {navigateBack} from '@screens/navigation';
 
 import ChannelAutotranslation from './channel_autotranslation';

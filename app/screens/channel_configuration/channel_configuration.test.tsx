@@ -4,7 +4,7 @@
 import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
 
-import ReadOnlyNotice from '@screens/channel_settings/read_only_notice';
+import ReadOnlyNotice from '@components/channel_read_only_notice';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ChannelAutotranslation from './channel_autotranslation';
@@ -32,7 +32,7 @@ jest.mock('./share_with_connected_workspaces', () => ({
 jest.mocked(ShareWithConnectedWorkspaces).mockImplementation(
     (props: ComponentProps<typeof ShareWithConnectedWorkspaces>) => React.createElement(View, {testID: 'channel_configuration.share_workspaces', ...props}),
 );
-jest.mock('@screens/channel_settings/read_only_notice', () => ({
+jest.mock('@components/channel_read_only_notice', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
