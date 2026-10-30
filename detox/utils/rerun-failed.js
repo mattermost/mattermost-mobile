@@ -12,10 +12,11 @@
  * MAX_SPECS_PER_LANE is not re-run: that many failures at once is the run's setup, and a re-run would be the
  * whole suite again.
  *
- *   node rerun-failed.js --findings-dir <dir> [--cmt-matrix <json>]
+ *   node rerun-failed.js --findings-dir <dir> [--cmt-matrix <json> --compare-ref <main commit>]
  * writes to $GITHUB_OUTPUT:
  *   detox-specs, maestro-flows  JSON map of lane to space-separated files ("{}" when none), for main
  *   <framework>-<platform>-matrix  {"server":[...]} for CMT (one entry per server with failed specs, with `specs`)
+ *   stale                       CMT: JSON map of lane to the tests whose spec differs from main (not re-run)
  *   any                         "true" when anything is re-run
  */
 
@@ -37,14 +38,41 @@ function repoPath(file) {
 }
 
 /**
- * @param {Array<{lane: string, findings?: Array}>} triage - findings files (schema 2)
- * @returns {{lanes: Record<string, {files: string[], titles: string[]}>, tooMany: Record<string, number>}} tooMany: failed tests per lane not re-run
+ * A CMT build's spec that differs from main's is out of date on that release branch: re-running it on the old build
+ * would fail again whether or not the app is broken.
+ *
+ * @param {string} ref - main's commit, fetched
+ * @returns {(file: string) => boolean}
  */
-function planRerun(triage) {
+function differsFrom(ref) {
+    const {execFileSync} = require('child_process');
+    return (file) => {
+        try {
+            execFileSync('git', ['diff', '--quiet', ref, 'HEAD', '--', file], {stdio: 'ignore'});
+            return false;
+        } catch (err) {
+            return err.status === 1;
+        }
+    };
+}
+
+/**
+ * @param {Array<{lane: string, findings?: Array}>} triage - findings files (schema 2)
+ * @param {{isStale?: (file: string) => boolean}} [options]
+ * @returns {{lanes: Record<string, {files: string[], titles: string[]}>, tooMany: Record<string, number>, stale: Record<string, string[]>}}
+ *   tooMany: failed tests per lane not re-run; stale: tests per lane whose spec differs from main, not re-run
+ */
+function planRerun(triage, {isStale = () => false} = {}) {
     const lanes = {};
     const tooMany = {};
+    const stale = {};
     for (const lane of triage || []) {
-        const rows = (lane.findings || []).filter((row) => RERUN_KEYS.has(judgeFinding(row, lane)));
+        const uncleared = (lane.findings || []).filter((row) => RERUN_KEYS.has(judgeFinding(row, lane)));
+        const outdated = uncleared.filter((row) => row.file && repoPath(row.file) && isStale(repoPath(row.file)));
+        if (outdated.length) {
+            stale[lane.lane] = outdated.map((row) => row.title);
+        }
+        const rows = uncleared.filter((row) => !outdated.includes(row));
         const files = [...new Set(rows.map((row) => row.file && repoPath(row.file)).filter(Boolean))];
         if (!files.length) {
             continue;
@@ -55,7 +83,7 @@ function planRerun(triage) {
         }
         lanes[lane.lane] = {files, titles: rows.map((row) => row.title)};
     }
-    return {lanes, tooMany};
+    return {lanes, tooMany, stale};
 }
 
 const isMaestro = (lane) => lane.startsWith('maestro-');
@@ -157,14 +185,15 @@ function main() {
     const {parseArgs} = require('./cli-args');
     const {loadTriageFindings} = require('./tsio-channel-notify-rollup');
     const args = parseArgs(process.argv);
-    const plan = planRerun(loadTriageFindings(args['findings-dir'] || ''));
+    const ref = args['compare-ref'];
+    const plan = planRerun(loadTriageFindings(args['findings-dir'] || ''), ref ? {isStale: differsFrom(ref)} : {});
     const lines = [];
     if (args['cmt-matrix']) {
         const matrices = cmtMatrices(plan, JSON.parse(args['cmt-matrix']));
         for (const key of ['detox-ios', 'detox-android', 'detox-ipad', 'maestro-ios', 'maestro-android']) {
             lines.push(`${key}-matrix=${JSON.stringify(matrices[key] || {server: []})}`);
         }
-        lines.push(`any=${Object.keys(matrices).length > 0}`);
+        lines.push(`stale=${JSON.stringify(plan.stale)}`, `any=${Object.keys(matrices).length > 0}`);
     } else {
         const {detox, maestro} = mainInputs(plan);
         lines.push(`detox-specs=${JSON.stringify(detox)}`, `maestro-flows=${JSON.stringify(maestro)}`);

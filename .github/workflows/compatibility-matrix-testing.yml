@@ -677,6 +677,7 @@ jobs:
       detox-ipad-matrix: ${{ steps.plan.outputs.detox-ipad-matrix }}
       maestro-ios-matrix: ${{ steps.plan.outputs.maestro-ios-matrix }}
       maestro-android-matrix: ${{ steps.plan.outputs.maestro-android-matrix }}
+      stale: ${{ steps.plan.outputs.stale }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -695,15 +696,25 @@ jobs:
         with:
           pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
           path: triage-findings
+      # A spec that differs from main's is out of date on this release branch: it is not re-run on the old build.
+      - name: Fetch main to compare specs
+        continue-on-error: true
+        run: git fetch --no-tags --depth=1 origin main
       - name: Plan the re-run
         id: plan
         env:
           CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
-        run: node detox/utils/rerun-failed.js --findings-dir triage-findings --cmt-matrix "$CMT_MATRIX"
+        run: node detox/utils/rerun-failed.js --findings-dir triage-findings --cmt-matrix "$CMT_MATRIX" --compare-ref FETCH_HEAD
 
   rerun-detox-e2e:
     name: rerun-mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
-    if: needs.plan-rerun-cmt.result == 'success' && fromJson(needs.plan-rerun-cmt.outputs.detox-ios-matrix).server[0] != null
+    # !cancelled(): a lane failed upstream (that is why there is a re-run), which would skip this job otherwise.
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun-cmt.result == 'success' &&
+      needs.build-ios-simulator.result == 'success' &&
+      needs.provision-cmt-servers.result == 'success' &&
+      fromJson(needs.plan-rerun-cmt.outputs.detox-ios-matrix).server[0] != null
     permissions:
       contents: read
       # nested template mints an OIDC token for the TSIO upload.
@@ -753,7 +764,13 @@ jobs:
 
   rerun-detox-ipad-e2e:
     name: rerun-mobile-cmt-ipad-${{ matrix.server.version }}
-    if: needs.plan-rerun-cmt.result == 'success' && fromJson(needs.plan-rerun-cmt.outputs.detox-ipad-matrix).server[0] != null
+    # !cancelled(): a lane failed upstream (that is why there is a re-run), which would skip this job otherwise.
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun-cmt.result == 'success' &&
+      needs.build-ios-simulator.result == 'success' &&
+      needs.provision-cmt-servers.result == 'success' &&
+      fromJson(needs.plan-rerun-cmt.outputs.detox-ipad-matrix).server[0] != null
     permissions:
       contents: read
       id-token: write
@@ -806,7 +823,13 @@ jobs:
 
   rerun-detox-android-e2e:
     name: rerun-mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
-    if: needs.plan-rerun-cmt.result == 'success' && fromJson(needs.plan-rerun-cmt.outputs.detox-android-matrix).server[0] != null
+    # !cancelled(): a lane failed upstream (that is why there is a re-run), which would skip this job otherwise.
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun-cmt.result == 'success' &&
+      needs.build-android-apk.result == 'success' &&
+      needs.provision-cmt-servers.result == 'success' &&
+      fromJson(needs.plan-rerun-cmt.outputs.detox-android-matrix).server[0] != null
     permissions:
       contents: read
       id-token: write
@@ -858,7 +881,13 @@ jobs:
 
   rerun-maestro-ios-e2e:
     name: rerun-mobile-cmt-maestro-ios-${{ matrix.server.version }}
-    if: needs.plan-rerun-cmt.result == 'success' && fromJson(needs.plan-rerun-cmt.outputs.maestro-ios-matrix).server[0] != null
+    # !cancelled(): a lane failed upstream (that is why there is a re-run), which would skip this job otherwise.
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun-cmt.result == 'success' &&
+      needs.build-ios-simulator.result == 'success' &&
+      needs.provision-cmt-servers.result == 'success' &&
+      fromJson(needs.plan-rerun-cmt.outputs.maestro-ios-matrix).server[0] != null
     permissions:
       contents: read
       id-token: write
@@ -901,7 +930,13 @@ jobs:
 
   rerun-maestro-android-e2e:
     name: rerun-mobile-cmt-maestro-android-${{ matrix.server.version }}
-    if: needs.plan-rerun-cmt.result == 'success' && fromJson(needs.plan-rerun-cmt.outputs.maestro-android-matrix).server[0] != null
+    # !cancelled(): a lane failed upstream (that is why there is a re-run), which would skip this job otherwise.
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun-cmt.result == 'success' &&
+      needs.build-android-apk-maestro.result == 'success' &&
+      needs.provision-cmt-servers.result == 'success' &&
+      fromJson(needs.plan-rerun-cmt.outputs.maestro-android-matrix).server[0] != null
     permissions:
       contents: read
       id-token: write
@@ -955,6 +990,7 @@ jobs:
       - rerun-detox-android-e2e
       - rerun-maestro-ios-e2e
       - rerun-maestro-android-e2e
+      - plan-rerun-cmt
     permissions:
       contents: read
       # the channel rollup mints an OIDC token to read each shard's TSIO group.
@@ -983,6 +1019,7 @@ jobs:
           JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
           TRIAGE_FINDINGS_DIR: triage-findings
           RERUN_RESULTS_DIR: rerun-results
+          RERUN_STALE: ${{ needs.plan-rerun-cmt.outputs.stale || '{}' }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
           UPSTREAM_SUCCEEDED: ${{ needs.update-final-status.outputs.upstream-succeeded || 'false' }}
         run: |

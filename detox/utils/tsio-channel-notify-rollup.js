@@ -337,6 +337,11 @@ async function main() {
     if (['mobile-main', 'mobile-release'].includes(webhookBucketForReportName(rollupIdentity.name))) {
         const {planRerun, loadRerunResults} = require('./rerun-failed');
         rerun = {...planRerun(triage), results: loadRerunResults(args['rerun-results-dir'] || process.env.RERUN_RESULTS_DIR || '')};
+        try {
+            rerun.stale = JSON.parse(process.env.RERUN_STALE || '{}');
+        } catch {
+            rerun.stale = {};
+        }
     }
     let changes = null;
     if (triage.length && webhookBucketForReportName(rollupIdentity.name) === 'mobile-main') {

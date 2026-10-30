@@ -728,6 +728,9 @@ describe('cmt-channel-notify', () => {
                 `➡️ [Workflow run](${runUrl})`,
                 '',
             ].join('\n'));
+            const stale = message({rerun: {lanes: {}, tooMany: {}, results: {}, stale: {'detox-android': ['test 0', 'test 1']}}});
+            assert.match(stale, /^📝 \*\*Test differs from main \(2\) — out of date on this branch, not re-run:\*\* 🤖 detox-android 2$/m);
+            assert.match(stale, /^🟡 /);
             const tooMany = message({rerun: {lanes: {}, tooMany: {'maestro-android-e2e': 12}, results: {}}});
             assert.match(tooMany, /🤖 maestro-android 8 \(12 failed at once, too many to re-run: check that run's setup first\)$/m);
         });
@@ -808,6 +811,15 @@ describe('cmt-channel-notify', () => {
             assert.equal(judge(''), 'new');
             const flaky = finding('Error: thrown: "Exceeded timeout of 300000 ms for a hook.', 'FLAKY_ON_TRUNK', 'flaky');
             assert.equal(judgeFinding(flaky, lane([flaky])), 'flaky');
+        });
+
+        it('calls it setup when the server said the feature is off for another spec of the same feature', () => {
+            const folder = 'detox/e2e/test/products/channels/channel_attributes';
+            const off = {...finding('Error: failed to create the channel for MM-T6310_1: {"id":"api.channel.create_channel.attributes_feature_disabled"}'), file: `${folder}/chip_update.e2e.ts`};
+            const ui = {...finding('Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “channel_attribute_labels”)'), file: `${folder}/chips.e2e.ts`};
+            const elsewhere = {...ui, file: 'detox/e2e/test/products/channels/messaging/chips.e2e.ts'};
+            assert.equal(judgeFinding(ui, lane([off, ui])), 'setup');
+            assert.equal(judgeFinding(elsewhere, lane([off, elsewhere])), 'new', 'another feature is judged on its own');
         });
 
         it('calls it the run when most tests that ran failed with the same error', () => {

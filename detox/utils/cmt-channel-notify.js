@@ -637,6 +637,10 @@ const SETUP_ERRORS = [
 ];
 const TEST_CODE_ERRORS = /^(TypeError|ReferenceError|SyntaxError):/;
 
+// The server says a feature is off (attributes_feature_disabled): every spec of that feature fails on this server.
+const FEATURE_OFF = /_feature_disabled|not enabled on this server/;
+const specFolder = (file) => (file || '').replace(/\/[^/]*$/, '');
+
 // The same failure, whatever its numbers and ids.
 function errorSignature(text) {
     return (text || '').split('\n')[0].replace(/[0-9a-f]{8,}|\d+/gi, '#').trim();
@@ -653,6 +657,7 @@ function causeOfError(text) {
 /**
  * A finding's verdict after mobile's judge: triage's, unless the failure is one triage left uncleared and
  *   - its error is setup, the harness, the device or the test's code (causeOfError);
+ *   - the server said the feature is off for another spec in the same folder: setup;
  *   - at least half of the tests that ran in the lane, and 3 or more, failed with the same error: the run, not each test;
  *   - a test in the lane failed with the same error and passed on its retry (retried, from TSIO): flaky.
  *
@@ -669,6 +674,10 @@ function judgeFinding(row, lane, retried) {
     const cause = causeOfError(row.error_first_line);
     if (cause) {
         return cause;
+    }
+    const folder = row.file && specFolder(row.file);
+    if (folder && (lane.findings || []).some((other) => specFolder(other.file) === folder && FEATURE_OFF.test(other.error_first_line || ''))) {
+        return 'setup';
     }
     const signature = errorSignature(row.error_first_line);
     if (signature) {
@@ -737,6 +746,9 @@ function formatMainChannelMessage({
                 key = 'fresh-pass';
             } else if (UNCLEARED.has(key)) {
                 key = judgeFinding(row, lane, retried);
+                if (UNCLEARED.has(key) && rerun?.stale?.[lane.lane]?.includes(row.title)) {
+                    key = 'stale';
+                }
             }
             verdicts.push({key, leg, lane: lane.lane, title: row.title, new: verdictOf(row, true).key === 'new'});
             names.add(row.full_title || row.title).add(row.title);
@@ -760,6 +772,7 @@ function formatMainChannelMessage({
 
     const confirmed = verdicts.filter((v) => v.key === 'confirmed');
     const unconfirmed = verdicts.filter((v) => UNCLEARED.has(v.key));
+    const stale = verdicts.filter((v) => v.key === 'stale');
     const setupLines = [];
     const noResults = legs.filter((leg) => leg.status === 'missing' || leg.status === 'no-results');
     if (noResults.length) {
@@ -776,7 +789,7 @@ function formatMainChannelMessage({
     let header;
     if (confirmed.length) {
         header = `🔴 **${title} — product bug**${on}`;
-    } else if (unconfirmed.length || unexplained) {
+    } else if (unconfirmed.length || stale.length || unexplained) {
         header = `🟡 **${title} — no product bug confirmed**${on}`;
     } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
         header = `🟡 **${title} — setup problem**${on}`;
@@ -823,6 +836,9 @@ function formatMainChannelMessage({
     }
     if (unconfirmed.length) {
         lines.push(`🔎 **Not confirmed (${unconfirmed.length}) — not re-run, or the re-run gave no result:** ${perRun(unconfirmed)}`);
+    }
+    if (stale.length) {
+        lines.push(`📝 **Test differs from main (${stale.length}) — out of date on this branch, not re-run:** ${perRun(stale)}`);
     }
     if (unexplained) {
         lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');

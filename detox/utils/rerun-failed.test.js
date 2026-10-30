@@ -35,6 +35,7 @@ describe('rerun-failed', () => {
                     'maestro-android-e2e': {files: ['detox/maestro/flows/timezone/clock_display.yml'], titles: ['clock_display']},
                 },
                 tooMany: {},
+                stale: {},
             });
             assert.deepEqual(mainInputs(plan), {
                 detox: {'detox-android': 'detox/e2e/test/a.e2e.ts detox/e2e/test/b.e2e.ts'},
@@ -44,7 +45,17 @@ describe('rerun-failed', () => {
 
         it('does not re-run a lane where too many specs failed at once', () => {
             const findings = Array.from({length: MAX_SPECS_PER_LANE + 1}, (_, i) => row(`t${i}`, `detox/e2e/test/s${i}.e2e.ts`));
-            assert.deepEqual(planRerun([{lane: 'detox-android', findings}]), {lanes: {}, tooMany: {'detox-android': MAX_SPECS_PER_LANE + 1}});
+            assert.deepEqual(planRerun([{lane: 'detox-android', findings}]), {lanes: {}, tooMany: {'detox-android': MAX_SPECS_PER_LANE + 1}, stale: {}});
+        });
+
+        it('does not re-run on a release build a spec that differs from main', () => {
+            const plan = planRerun([{lane: 'detox-ios-Server_12.0.0-rc3',
+                findings: [
+                    row('MM-T4896_1 - markdown image', 'detox/e2e/test/products/channels/messaging/markdown_image.e2e.ts'),
+                    row('MM-T1 - logs in', 'detox/e2e/test/a.e2e.ts'),
+                ]}], {isStale: (file) => file.endsWith('markdown_image.e2e.ts')});
+            assert.deepEqual(plan.lanes, {'detox-ios-Server_12.0.0-rc3': {files: ['detox/e2e/test/a.e2e.ts'], titles: ['MM-T1 - logs in']}});
+            assert.deepEqual(plan.stale, {'detox-ios-Server_12.0.0-rc3': ['MM-T4896_1 - markdown image']});
         });
     });
 
