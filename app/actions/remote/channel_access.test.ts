@@ -6,6 +6,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import EphemeralStore from '@store/ephemeral_store';
+import {logDebug, logError} from '@utils/log';
 
 import {fetchCategories} from './category';
 import {handleChannelAccessDenied} from './channel';
@@ -14,6 +15,8 @@ import {fetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('@utils/log');
 
 jest.mock('./category', () => ({
     fetchCategories: jest.fn(),
@@ -99,7 +102,7 @@ const storedChannelIds = async () => {
     return rows.map((r) => r.id).sort();
 };
 
-const enableFeature = async (skuShortName = 'advanced', version = '12.1.0', channelPermissionActions = 'true') => {
+const enableFeature = async (skuShortName = 'advanced', version = '12.2.0', channelPermissionActions = 'true') => {
     await operator.handleConfigs({
         configs: [
             {id: 'FeatureFlagPermissionPolicies', value: 'true'},
@@ -135,6 +138,8 @@ describe('channel access', () => {
     afterEach(async () => {
         EphemeralStore.clearPendingChannelAccessChecks(serverUrl);
         Object.values(mockClient).forEach((fn) => fn.mockReset());
+        jest.mocked(logDebug).mockClear();
+        jest.mocked(logError).mockClear();
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -163,7 +168,7 @@ describe('channel access', () => {
         });
 
         it('should make no request while the ChannelPermissionActions flag is off', async () => {
-            await enableFeature('advanced', '12.1.0', 'false');
+            await enableFeature('advanced', '12.2.0', 'false');
             await seed([channel('channel1')]);
 
             await reconcileChannelAccess(serverUrl);
@@ -173,7 +178,7 @@ describe('channel access', () => {
         });
 
         it('should make no request on servers older than the channel read access version', async () => {
-            await enableFeature('advanced', '11.9.0');
+            await enableFeature('advanced', '12.1.0');
 
             await reconcileChannelAccess(serverUrl);
 
@@ -299,6 +304,21 @@ describe('channel access', () => {
 
             await reconcileChannelAccess(serverUrl);
 
+            expect(await storedChannelIds()).toEqual(['channel1']);
+            expect(logDebug).toHaveBeenCalledWith('error on checkTeam', expect.any(String));
+            expect(logError).not.toHaveBeenCalled();
+        });
+
+        it('should log an error when the run fails outside a request', async () => {
+            await enableFeature();
+            await seed([channel('channel1')]);
+            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => {
+                throw new Error('no client');
+            });
+
+            await reconcileChannelAccess(serverUrl);
+
+            expect(logError).toHaveBeenCalledWith('error on reconcileChannelAccess', expect.any(String));
             expect(await storedChannelIds()).toEqual(['channel1']);
         });
 

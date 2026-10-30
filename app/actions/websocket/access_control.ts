@@ -57,6 +57,9 @@ type PendingInvalidation = {
 const pendingInvalidations = new Map<string, PendingInvalidation>();
 const attributeViewRetries = new Map<string, ReturnType<typeof setTimeout>>();
 
+// Every connected client gets a policy update at once, so each one's channel list request is spread out.
+const pendingReconciles = new Map<string, ReturnType<typeof setTimeout>>();
+
 // A trigger awaits the feature predicate before registering anything, so a logout landing in that
 // window would leave a timer clearRedactionInvalidations never saw. The token lets the in-flight
 // trigger notice the teardown and abandon itself.
@@ -241,6 +244,20 @@ export const scheduleRedactionInvalidation = async (
     }
 };
 
+// A burst of policy updates inside the window costs one reconcile.
+const scheduleChannelAccessReconcile = (serverUrl: string) => {
+    if (pendingReconciles.has(serverUrl)) {
+        return;
+    }
+
+    const timeout = setTimeout(() => {
+        pendingReconciles.delete(serverUrl);
+        reconcileChannelAccess(serverUrl);
+    }, Math.floor(Math.random() * ATTRIBUTE_VIEW_RETRY_JITTER_MS));
+
+    pendingReconciles.set(serverUrl, timeout);
+};
+
 const RENDER_PERMISSION_ACTIONS: string[] = Object.values(RenderPermissionAction);
 
 // A server that predates the action list leaves it out, and then any action may have changed.
@@ -265,7 +282,7 @@ export const handlePermissionPolicyUpdatedEvent = (serverUrl: string, msg: WebSo
     }
 
     if (policyActionsChanged(actions, [RenderPermissionAction.ChannelReadAccess])) {
-        reconcileChannelAccess(serverUrl);
+        scheduleChannelAccessReconcile(serverUrl);
     }
 };
 
@@ -428,5 +445,11 @@ export const clearRedactionInvalidations = (serverUrl: string) => {
     if (retry) {
         clearTimeout(retry);
         attributeViewRetries.delete(serverUrl);
+    }
+
+    const reconcile = pendingReconciles.get(serverUrl);
+    if (reconcile) {
+        clearTimeout(reconcile);
+        pendingReconciles.delete(serverUrl);
     }
 };

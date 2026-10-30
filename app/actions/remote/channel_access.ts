@@ -16,7 +16,7 @@ import EphemeralStore, {type PendingChannelAccessChecks} from '@store/ephemeral_
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {logDebug} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import {fetchCategories} from './category';
 import {handleChannelAccessDenied} from './channel';
@@ -35,7 +35,8 @@ const running = new Set<string>();
 // DMs and GMs are exempt from the policy, and an archived channel is not brought back by it.
 const isRestorable = (channel: Channel) => !isDMorGM(channel) && channel.delete_at === 0;
 
-const logFailure = (serverUrl: string, description: string, error: unknown) => {
+// The request itself failed: the server refused it or could not be reached.
+const logRequestFailure = (serverUrl: string, description: string, error: unknown) => {
     logDebug(`error on ${description}`, getFullErrorMessage(error));
     forceLogoutIfNecessary(serverUrl, error);
 };
@@ -96,7 +97,7 @@ async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId
     try {
         channels = await client.getMyChannels(teamId);
     } catch (error) {
-        logFailure(serverUrl, 'checkTeam', error);
+        logRequestFailure(serverUrl, 'checkTeam', error);
         return [];
     }
 
@@ -138,7 +139,7 @@ async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId
             const memberships = await client.getMyChannelMembers(teamId);
             models.push(...await prepareRestoredChannels(serverUrl, database, regained, memberships));
         } catch (error) {
-            logFailure(serverUrl, 'checkTeam memberships', error);
+            logRequestFailure(serverUrl, 'checkTeam memberships', error);
         }
     }
 
@@ -194,7 +195,8 @@ async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChanne
             }
         }
     } catch (error) {
-        logFailure(serverUrl, 'reconcileChannelAccess', error);
+        // A database read, a missing client or a bug; a failed request is handled where it is made.
+        logError('error on reconcileChannelAccess', getFullErrorMessage(error));
     }
 }
 
@@ -230,7 +232,7 @@ export async function reconcileChannelAccess(serverUrl: string): Promise<{error?
         }
         return {};
     } catch (error) {
-        logDebug('error on reconcileChannelAccess', getFullErrorMessage(error));
+        logError('error on reconcileChannelAccess', getFullErrorMessage(error));
         return {error};
     }
 }

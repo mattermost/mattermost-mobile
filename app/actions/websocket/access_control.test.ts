@@ -72,6 +72,12 @@ const flushCoalescer = async () => {
     await advanceTimers(0);
 };
 
+// Each client delays its channel list request by up to the jitter window.
+const flushReconcileJitter = async () => {
+    await advanceTimers(ATTRIBUTE_VIEW_RETRY_JITTER_MS);
+    await advanceTimers(0);
+};
+
 const flushAttributeViewRetry = async () => {
     await advanceTimers(ATTRIBUTE_VIEW_RETRY_MS + ATTRIBUTE_VIEW_RETRY_JITTER_MS + 100);
     await advanceTimers(0);
@@ -157,6 +163,7 @@ describe('redaction invalidation triggers', () => {
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
         await flushCoalescer();
+        await flushReconcileJitter();
 
         expect(reconcileChannelAccess).toHaveBeenCalledTimes(1);
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
@@ -451,6 +458,7 @@ describe('permission policy changed actions', () => {
     it('should raise the global epoch and reconcile the channel list when the server names no actions', async () => {
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
+        await flushReconcileJitter();
 
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
@@ -459,6 +467,7 @@ describe('permission policy changed actions', () => {
     it('should raise the global epoch without reconciling the channel list when download_file_attachment changed', async () => {
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([DOWNLOAD_FILE_ATTACHMENT_ACTION]));
         await flushCoalescer();
+        await flushReconcileJitter();
 
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
         expect(reconcileChannelAccess).not.toHaveBeenCalled();
@@ -469,6 +478,7 @@ describe('permission policy changed actions', () => {
 
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([RenderPermissionAction.ChannelReadAccess]));
         await flushCoalescer();
+        await flushReconcileJitter();
 
         expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBe(true);
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
@@ -486,6 +496,7 @@ describe('permission policy changed actions', () => {
 
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([action]));
         await flushCoalescer();
+        await flushReconcileJitter();
 
         expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBe(true);
         expect(reconcileChannelAccess).not.toHaveBeenCalled();
@@ -497,10 +508,32 @@ describe('permission policy changed actions', () => {
 
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([]));
         await flushCoalescer();
+        await flushReconcileJitter();
 
         expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBeUndefined();
         expect(reconcileChannelAccess).not.toHaveBeenCalled();
         expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
+    });
+
+    it('should delay the channel list reconcile by a jitter and run it once for a burst of policy changes', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+
+        await flushReconcileJitter();
+
+        expect(reconcileChannelAccess).toHaveBeenCalledTimes(1);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        await flushCoalescer();
+    });
+
+    it('should cancel a pending channel list reconcile on logout', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        clearRedactionInvalidations(serverUrl);
+
+        await flushReconcileJitter();
+
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
     });
 });
 
