@@ -180,7 +180,7 @@ describe('cmt-channel-notify', () => {
             ].join('\n'));
         });
 
-        it('renders a passed PR report with PR link and no failure banner', () => {
+        it('posts nothing for a PR run that passed, flaky tests included', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {
                     repository: 'mattermost/mattermost-mobile',
@@ -191,18 +191,16 @@ describe('cmt-channel-notify', () => {
                 },
                 detail: {
                     status: 'completed',
-                    test_stats: {passed: 240, failed: 0, skipped: 10, total: 250},
+                    test_stats: {passed: 240, failed: 0, skipped: 10, flaky: 1, total: 250},
                     reports: [],
                 },
                 reportUrl: 'https://test-io.test.mattermost.com/reports/mattermost-mobile/feat~tsio/55afc0b/mobile-pr',
                 baseUrl: 'https://test-io.test.mattermost.com',
                 perJobCounts: {},
+                failures: [{title: 'Login › MM-T1 - logs in', job: 'detox-ios', error: 'Element not found', passedOnRetry: true}],
                 upstreamJobsSucceeded: true,
             });
-            assert.match(text, /^## ✅ Mobile PR E2E\n/);
-            assert.match(text, /\*\*PR:\*\* \[#9925\]\(https:\/\/github\.com\/mattermost\/mattermost-mobile\/pull\/9925\)/);
-            assert.doesNotMatch(text, /failing test/);
-            assert.match(text, /\| \*\*Overall\*\* \| \*\*240\*\* \| \*\*0\*\* \| \*\*10\*\* \| ✅ Passed \|/);
+            assert.equal(text, null);
         });
 
         it('marks overall failed when hasFailures is set without test failures', () => {
@@ -261,7 +259,7 @@ describe('cmt-channel-notify', () => {
         it('links the CI run separately from the TSIO report', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {branch: 'feature', commit_sha: 'a1b2c3d', name: 'mobile-pr'},
-                detail: {status: 'completed', test_stats: {passed: 1}, reports: []},
+                detail: {status: 'completed', test_stats: {passed: 1, failed: 1}, reports: []},
                 runUrl: 'https://github.com/mattermost/mattermost-mobile/actions/runs/30424009936',
                 perJobCounts: {},
             });
@@ -446,10 +444,10 @@ describe('cmt-channel-notify', () => {
             assert.doesNotMatch(text, /likely a cascade/);
         });
 
-        it('renders no judgement section without failures', () => {
+        it('renders no judgement section without failure details', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {branch: 'feature', commit_sha: 'a1b2c3d', name: 'mobile-pr'},
-                detail: {status: 'completed', test_stats: {passed: 1, failed: 0}, reports: []},
+                detail: {status: 'completed', test_stats: {passed: 1, failed: 1}, reports: []},
                 perJobCounts: {},
             });
             assert.doesNotMatch(text, /Failure judgement/);
@@ -467,7 +465,7 @@ describe('cmt-channel-notify', () => {
         };
         const detail = {
             status: 'completed',
-            test_stats: {passed: 460, failed: 0, skipped: 40, total: 500},
+            test_stats: {passed: 459, failed: 1, skipped: 40, total: 500},
             reports: [{id: 'rid-ios', gh_job_name: 'detox-ios', status: 'complete'}],
         };
         const core = {info: () => {}, warning: () => {}};
@@ -493,28 +491,42 @@ describe('cmt-channel-notify', () => {
                     baseUrl: 'https://test-io.test.mattermost.com',
                     compositeIdentity: identity,
                     detail,
-                    perJobCounts: {'detox-ios': {passed: 460, failed: 0, skipped: 40, flaky: 0}},
+                    perJobCounts: {'detox-ios': {passed: 459, failed: 1, skipped: 40, flaky: 0}},
                     webhookUrl: 'https://mm.example/hooks/master-health',
                 });
 
                 assert.equal(calls.length, 1);
                 assert.equal(calls[0].url, 'https://mm.example/hooks/master-health');
                 const posted = JSON.parse(calls[0].options.body).text;
-                assert.match(posted, /\| \[📱 detox-ios\]\(https:\/\/test-io\.test\.mattermost\.com\/reports\/r\/rid-ios\) \| 460 \| 0 \| 40 \| ✅ 460\/460 \|/);
+                assert.match(posted, /\| \[📱 detox-ios\]\(https:\/\/test-io\.test\.mattermost\.com\/reports\/r\/rid-ios\) \| 459 \| 1 \| 40 \| ❌ 459\/460 \|/);
                 assert.doesNotMatch(posted, /no-results/);
+            });
+        });
+
+        it('posts nothing when the run passed', async () => {
+            await withStubbedFetch(async (calls) => {
+                await notifyCmtChannel({
+                    core,
+                    baseUrl: 'https://test-io.test.mattermost.com',
+                    compositeIdentity: identity,
+                    detail: {...detail, test_stats: {passed: 460, failed: 0, skipped: 40, total: 500}},
+                    perJobCounts: {'detox-ios': {passed: 460, failed: 0, skipped: 40, flaky: 0}},
+                    webhookUrl: 'https://mm.example/hooks/e2e',
+                });
+                assert.equal(calls.length, 0);
             });
         });
 
         it('never mentions anyone, whatever a test is called', async () => {
             await withStubbedFetch(async (calls) => {
-                const failures = [{title: 'Messaging - At-Mention › MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here', job: 'detox-ios', error: 'Element not found', passedOnRetry: true}];
+                const failures = [{title: 'Messaging - At-Mention › MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here', job: 'detox-ios', error: 'Element not found'}];
                 await notifyCmtChannel({
                     core,
                     baseUrl: 'https://test-io.test.mattermost.com',
                     compositeIdentity: identity,
                     detail,
                     failures,
-                    perJobCounts: {'detox-ios': {passed: 460, failed: 0, skipped: 40, flaky: 1}},
+                    perJobCounts: {'detox-ios': {passed: 459, failed: 1, skipped: 40, flaky: 0}},
                     webhookUrl: 'https://mm.example/hooks/e2e',
                 });
                 const posted = JSON.parse(calls[0].options.body).text;

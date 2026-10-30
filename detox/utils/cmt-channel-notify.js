@@ -907,7 +907,8 @@ function formatMetaLine(compositeIdentity) {
 
 /**
  * @param {Object} params
- * @returns {string|null} null when a main run has nothing to post (see formatMainChannelMessage)
+ * @returns {string|null} null when there is nothing to post: the run passed, or (main and CMT) no failure is a
+ *   product bug (see formatMainChannelMessage)
  */
 function formatCmtChannelMessage(params) {
     if (postsShortMessage(params.compositeIdentity)) {
@@ -934,6 +935,11 @@ function formatCmtChannelMessage(params) {
         detail?.status !== 'completed' ||
         !upstreamJobsSucceeded ||
         hasFailures;
+
+    // The channel hears about a run only when something failed: the PR's checks already show a pass.
+    if (!overallFailed) {
+        return null;
+    }
     const title = reportTitleForIdentity(compositeIdentity);
     const legs = buildLegSummaries(perJobCounts, detail?.reports || [], baseUrl);
 
@@ -1265,7 +1271,7 @@ async function notifyCmtChannel({
             hasFailures,
         });
         if (!text) {
-            core.info('Mobile Main E2E: no possible product bug or setup problem — skipping channel notify');
+            core.info('E2E channel notify: the run passed, or no failure is a product bug or a setup problem — nothing to post');
             return;
         }
 
