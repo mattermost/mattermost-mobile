@@ -27,6 +27,7 @@ import {
     getUploadErrorMessage,
     hasWriteStoragePermission,
     isDocument,
+    isAudio,
     isGif,
     isImage,
     isVideo,
@@ -214,6 +215,19 @@ describe('Image utils', () => {
             expect(isVideo({name: 'file.mp4', mimeType: 'video/mp4'} as unknown as FileInfo)).toBe(true);
             expect(isVideo({name: 'file.mov', mimeType: 'video/quicktime'} as unknown as FileInfo)).toBe(true);
             expect(isVideo({name: 'file.mkv', mimeType: 'video/x-matroska'} as unknown as FileInfo)).toBe(false);
+        });
+    });
+
+    describe('isAudio', () => {
+        it('should treat both MIME types used for m4a voice notes as playable audio', () => {
+            expect(isAudio({name: 'voice-note.m4a', mime_type: 'audio/mp4'} as FileInfo)).toBe(true);
+            expect(isAudio({name: 'voice-note.m4a', mime_type: 'audio/x-m4a'} as FileInfo)).toBe(true);
+            expect(isAudio({name: 'voice-note.m4a', mimeType: 'audio/x-m4a'} as unknown as FileModel)).toBe(true);
+        });
+
+        it('should fall back to the file name when there is no MIME type', () => {
+            expect(isAudio({name: 'voice-note.m4a'} as FileInfo)).toBe(true);
+            expect(isAudio({name: 'notes.txt'} as FileInfo)).toBe(false);
         });
     });
 

@@ -68,7 +68,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location can be used to report the Wi-Fi network name to your administrator when required by your organization's security policy.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Enabling access to your device's microphones means you can capture audio for calls or videos to share in $(PRODUCT_NAME).</string>
+	<string>Enabling access to your device's microphones means you can capture audio for calls, videos or voice notes to share in $(PRODUCT_NAME).</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Enabling write access to your photo library means you can save downloaded photos and videos from $(PRODUCT_NAME) to your device.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

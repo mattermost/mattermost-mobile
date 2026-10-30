@@ -115,6 +115,7 @@ export function openUserProfile(props: UserProfileProps) {
 export function openAttachmentOptions(
     props: {
         onUploadFiles: (files: ExtractedFileInfo[]) => void;
+        onRecordVoiceNote?: () => void;
         maxFilesReached: boolean;
         canUploadFiles: boolean;
         showAttachLogs?: boolean;
@@ -125,7 +126,8 @@ export function openAttachmentOptions(
 
     const TITLE_HEIGHT = 54;
     const renderContent = () => (<AttachmentOptions {...props}/>);
-    const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4 + (props.showAttachLogs ? 1 : 0), ITEM_HEIGHT);
+    const itemCount = 4 + (props.onRecordVoiceNote ? 1 : 0) + (props.showAttachLogs ? 1 : 0);
+    const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(itemCount, ITEM_HEIGHT);
     bottomSheet(renderContent, [1, componentHeight]);
 }
 

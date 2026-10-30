@@ -36,6 +36,7 @@ export default function AttachmentQuickAction({
     disabled,
     fileCount = 0,
     onUploadFiles,
+    onRecordVoiceNote,
     maxFilesReached,
     maxFileCount,
     showAttachLogs,
@@ -51,6 +52,7 @@ export default function AttachmentQuickAction({
 
         openAttachmentOptions({
             onUploadFiles,
+            onRecordVoiceNote,
             maxFilesReached,
             canUploadFiles: !disabled,
             showAttachLogs,
@@ -58,7 +60,7 @@ export default function AttachmentQuickAction({
             fileCount,
             maxFileCount,
         });
-    }, [blurAndDismissKeyboard, onUploadFiles, maxFilesReached, disabled, showAttachLogs, testID, fileCount, maxFileCount]);
+    }, [blurAndDismissKeyboard, onUploadFiles, onRecordVoiceNote, maxFilesReached, disabled, showAttachLogs, testID, fileCount, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 
