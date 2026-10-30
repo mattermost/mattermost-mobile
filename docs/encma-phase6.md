@@ -15,6 +15,8 @@ Phase 6 adds an Android self-managed Telecom call surface. It is intended to rep
 
 ## Startup/login compatibility
 
+- Post-VPN navigation reads the active server from the app database rather than falling back to secure-storage alias discovery. With no active server, the server form does not wait for Android Keystore enumeration. This targets the reported POCO X7 / Android 16 VPN-to-logo stall; device confirmation remains pending.
+
 - Ordinary Android startup registers the native-call headless task without eagerly loading WinterCG or the full app initialization graph. Those modules still load, with the existing retry guard and all-calls-ended lifecycle, when the native service actually invokes the task.
 - Android password, Intune, and magic-link login requests omit `voip_device_id`; iOS behavior is unchanged. For Server push, the first authenticated session update attempts to attach the Android VoIP token. If an older server rejects it, Android retries without that field to preserve ordinary push registration and contains any second failure instead of creating an unhandled rejection. Direct and Off skip this session attachment.
 - This compatibility behavior is not a substitute for the backend calling changes. A server that rejects Android VoIP session attachment can still allow login and ordinary Server push, but it cannot provide native incoming calls until its Calls/VoIP contract is compatible.

@@ -78,7 +78,7 @@ describe('determinePostWireGuardRoute', () => {
     const serverUrl = 'https://server-1.com';
 
     beforeEach(() => {
-        jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
         jest.mocked(getServerCredentials).mockResolvedValue({token: 'token1'} as ServerCredential);
         jest.mocked(getThemeForCurrentTeam).mockResolvedValue(undefined);
         jest.mocked(getServer).mockResolvedValue({persistenceFlag: 'default'} as unknown as ServersModel);
@@ -109,12 +109,15 @@ describe('determinePostWireGuardRoute', () => {
         expect(getServerCredentials).not.toHaveBeenCalled();
     });
 
-    it('returns to the server form when there is no active server', async () => {
-        jest.mocked(getActiveServerUrl).mockResolvedValue(undefined);
+    it('returns to the server form without waiting for secure-storage discovery when there is no active server', async () => {
+        jest.mocked(getActiveServerUrl).mockReturnValue(new Promise(() => undefined));
+        jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue(undefined);
 
         const result = await determinePostWireGuardRoute();
 
         expect(result.route).toBe('/(unauthenticated)/server');
         expect(result.params.serverUrl).toBeUndefined();
+        expect(getActiveServerUrl).not.toHaveBeenCalled();
+        expect(getServerCredentials).not.toHaveBeenCalled();
     });
 });

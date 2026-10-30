@@ -186,7 +186,10 @@ const determineRoute = async (props: LaunchProps): Promise<ExpoRouterLaunchResul
  * paths and must not hold the VPN continuation screen hostage.
  */
 export async function determinePostWireGuardRoute(): Promise<ExpoRouterLaunchResult> {
-    const serverUrl = await getActiveServerUrl();
+    // Initialization has already selected the active server in the app DB.
+    // Do not fall back to enumerating Android Keystore aliases here: on a
+    // fresh install only the VPN secret exists and no login can be resumed.
+    const serverUrl = await DatabaseManager.getActiveServerUrl();
     if (serverUrl && !DatabaseManager.serverDatabases[serverUrl]?.database) {
         return {
             route: '/(unauthenticated)/server',

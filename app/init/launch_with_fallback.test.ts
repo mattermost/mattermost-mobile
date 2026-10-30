@@ -43,6 +43,19 @@ describe('determineInitialExpoRouteWithFallback', () => {
         expect(determineInitialExpoRoute).not.toHaveBeenCalled();
     });
 
+    it('returns the server destination when post-VPN routing stalls', async () => {
+        jest.useFakeTimers({doNotFake: ['nextTick']});
+        jest.mocked(determinePostWireGuardRoute).mockReturnValue(new Promise<never>(() => undefined));
+
+        const result = determinePostWireGuardRouteWithFallback();
+        jest.advanceTimersByTime(INITIAL_LAUNCH_TIMEOUT_MS);
+
+        await expect(result).resolves.toEqual({
+            route: '/(unauthenticated)/server',
+            params: {launchError: true},
+        });
+    });
+
     it('returns the server destination when ordinary launch routing times out', async () => {
         jest.useFakeTimers({doNotFake: ['nextTick']});
         jest.mocked(determineInitialExpoRoute).mockReturnValue(new Promise<never>(() => undefined));
