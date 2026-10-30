@@ -7,9 +7,11 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
+import ReadOnlyNotice from '@components/channel_read_only_notice';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useFetchRenderPermissions} from '@hooks/render_permissions';
 import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -30,6 +32,7 @@ type Props = {
     isCallsEnabledInChannel: boolean;
     canManageAutotranslations: boolean;
     canManageSharedChannel: boolean;
+    isReadOnly: boolean;
     type?: ChannelType;
 }
 
@@ -62,6 +65,7 @@ const ChannelSettings = ({
     isCallsEnabledInChannel,
     canManageAutotranslations,
     canManageSharedChannel,
+    isReadOnly,
     type,
 }: Props) => {
     const theme = useTheme();
@@ -72,6 +76,7 @@ const ChannelSettings = ({
     }, []);
 
     useAndroidHardwareBackHandler(Screens.CHANNEL_SETTINGS, onPressed);
+    useFetchRenderPermissions(channelId);
 
     return (
         <SafeAreaView
@@ -85,13 +90,23 @@ const ChannelSettings = ({
                 contentContainerStyle={styles.content}
                 testID='channel_settings.scroll_view'
             >
+                {isReadOnly &&
+                <ReadOnlyNotice
+                    location={Screens.CHANNEL_SETTINGS}
+                    testID='channel_settings.read_only_notice'
+                />
+                }
                 {canManageSettings &&
-                <ChannelInfoOption channelId={channelId}/>
+                <ChannelInfoOption
+                    channelId={channelId}
+                    disabled={isReadOnly}
+                />
                 }
                 {canConvert &&
                 <ConvertPrivate
                     canConvert={canConvert}
                     channelId={channelId}
+                    disabled={isReadOnly}
                     displayName={displayName}
                 />
                 }
@@ -117,6 +132,7 @@ const ChannelSettings = ({
                         canArchive={canArchive}
                         canUnarchive={canUnarchive}
                         channelId={channelId}
+                        disabled={isReadOnly}
                         type={type}
                     />
                 </>

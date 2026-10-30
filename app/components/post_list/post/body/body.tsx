@@ -45,6 +45,7 @@ type BodyProps = {
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
+    isChannelWriteDenied: boolean;
     location: AvailableScreens;
     post: PostModel;
     searchPatterns?: SearchPattern[];
@@ -109,6 +110,7 @@ const Body = ({
     isPendingOrFailed,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
+    isChannelWriteDenied,
     location,
     post,
     searchPatterns,
@@ -213,7 +215,8 @@ const Body = ({
         );
     }
 
-    const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
+    // The server refuses acknowledging under a write access policy, so the control is hidden as on the webapp.
+    const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack && !isChannelWriteDenied;
     const reactionsVisible = hasReactions && showAddReaction;
     const redactedFileCount = post.metadata?.redacted_file_count ?? 0;
 

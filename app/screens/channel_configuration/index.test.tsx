@@ -62,6 +62,7 @@ describe('ChannelConfiguration index (enhanced)', () => {
         expect(component).toHaveProp('isChannelShared', false);
         expect(component).toHaveProp('canManageAutotranslations', false);
         expect(component).toHaveProp('canManageSharedChannel', false);
+        expect(component).toHaveProp('isReadOnly', false);
     });
 
     it('passes displayName and isChannelShared from channel when channel exists', async () => {

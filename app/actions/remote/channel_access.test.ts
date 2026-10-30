@@ -256,12 +256,17 @@ describe('channel access', () => {
 
         it('should remove every stored team channel when the channel list response is empty', async () => {
             await enableFeature();
-            await seed([channel('channel1'), channel('channel2')]);
+            await seed([
+                channel('channel1'),
+                channel('channel2'),
+                channel('dmchannel', {type: 'D', team_id: ''}),
+                channel('archived', {delete_at: 123}),
+            ]);
             mockClient.getMyChannels.mockResolvedValueOnce([]);
 
             await reconcileChannelAccess(serverUrl);
 
-            expect(await storedChannelIds()).toEqual([]);
+            expect(await storedChannelIds()).toEqual(['archived', 'dmchannel']);
             expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
         });
 

@@ -10,6 +10,7 @@ import Preferences from '@constants/preferences';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
+import Acknowledgements from './acknowledgements';
 import Body from './body';
 import Message from './message';
 import UnverifiedFilesPlaceholder from './unverified_files_placeholder';
@@ -20,6 +21,14 @@ jest.mock('./message', () => ({
 }));
 jest.mocked(Message).mockImplementation(() =>
     React.createElement(View, {testID: 'message'}, null),
+);
+
+jest.mock('./acknowledgements', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(Acknowledgements).mockImplementation(() =>
+    React.createElement(View, {testID: 'acknowledgements'}, null),
 );
 
 jest.mock('@components/files', () => ({
@@ -44,10 +53,11 @@ describe('Body attachment render state', () => {
         filesInfo?: FileInfo[];
         isRedactionVerified?: boolean;
         isPendingOrFailed?: boolean;
+        isChannelWriteDenied?: boolean;
     };
 
     const renderBody = (metadata: PostMetadata, options: Options = {}) => {
-        const {filesInfo = [], isRedactionVerified = true, isPendingOrFailed = false} = options;
+        const {filesInfo = [], isRedactionVerified = true, isPendingOrFailed = false, isChannelWriteDenied = false} = options;
         const post = TestHelper.fakePostModel({
             id: 'post-id',
             message: 'a message',
@@ -65,7 +75,9 @@ describe('Body attachment render state', () => {
                 isEphemeral={false}
                 isJumboEmoji={false}
                 isPendingOrFailed={isPendingOrFailed}
+                isPostAcknowledgementEnabled={true}
                 isPostAddChannelMember={false}
+                isChannelWriteDenied={isChannelWriteDenied}
                 isRedactionVerified={isRedactionVerified}
                 redactionRequiredEpoch={3}
                 location={Screens.CHANNEL}
@@ -143,5 +155,12 @@ describe('Body attachment render state', () => {
 
         expect(queryByTestId('unverified-files-placeholder')).toBeNull();
         expect(queryByTestId('files')).toBeNull();
+    });
+
+    it('should hide the acknowledge button while a write access policy denies the channel', () => {
+        const metadata = {priority: {requested_ack: true}} as PostMetadata;
+
+        expect(renderBody(metadata).queryByTestId('acknowledgements')).not.toBeNull();
+        expect(renderBody(metadata, {isChannelWriteDenied: true}).queryByTestId('acknowledgements')).toBeNull();
     });
 });
