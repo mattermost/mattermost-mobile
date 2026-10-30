@@ -5,11 +5,12 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, createContext, useEffect, useState} from 'react';
 import {Appearance} from 'react-native';
 
-import {Preferences} from '@constants';
 import useDidUpdate from '@hooks/did_update';
 import {queryThemePreferences} from '@queries/servers/preference';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
+
+import {getDefaultThemeByAppearance} from './default';
 
 import type {PreferenceModel} from '@database/models/server';
 import type Database from '@nozbe/watermelondb/Database';
@@ -24,12 +25,7 @@ type WithThemeProps = {
     theme: Theme;
 }
 
-export function getDefaultThemeByAppearance(): Theme {
-    if (Appearance.getColorScheme() === 'dark') {
-        return Preferences.THEMES.onyx;
-    }
-    return Preferences.THEMES.denim;
-}
+export {getDefaultThemeByAppearance};
 
 export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;

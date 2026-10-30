@@ -15,6 +15,7 @@ import Svg, {
     Stop,
 } from 'react-native-svg';
 
+import EncmaAuthBackground from '@components/encma_auth_background';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -32,6 +33,10 @@ const Background = ({
     theme,
 }: Props) => {
     const styles = getStyleSheet(theme);
+
+    if (theme.centerChannelBg === '#0C122D') {
+        return <EncmaAuthBackground/>;
+    }
 
     return (
         <Svg

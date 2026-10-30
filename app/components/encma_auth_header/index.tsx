@@ -21,6 +21,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     logo: {
         borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.centerChannelBg === '#0C122D' ? '#46EBE0' : 'transparent',
         height: 56,
         width: 56,
     },

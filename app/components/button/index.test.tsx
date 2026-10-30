@@ -6,6 +6,7 @@ import React, {type ComponentProps} from 'react';
 import {View, Text} from 'react-native';
 
 import {Preferences} from '@constants';
+import {ENCMA_THEME} from '@constants/encma_theme';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -36,6 +37,31 @@ describe('components/button', () => {
         text: 'Test Button',
         theme: Preferences.THEMES.denim,
         testID: 'test-button',
+    });
+
+    it('adds a non-interactive gradient to enabled ENCMA primary buttons', () => {
+        const props = {...getBaseProps(), theme: ENCMA_THEME};
+        const {getByTestId} = render(<Button {...props}/>);
+        expect(getByTestId('encma_button_gradient').props.pointerEvents).toBe('none');
+        fireEvent.press(getByTestId('test-button'));
+        expect(props.onPress).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+        {disabled: true},
+        {isDestructive: true},
+        {isInverted: true},
+        {emphasis: 'secondary' as const},
+        {emphasis: 'tertiary' as const},
+    ])('preserves semantic styling without a gradient for %j', (overrides) => {
+        const {queryByTestId} = render(
+            <Button
+                {...getBaseProps()}
+                theme={ENCMA_THEME}
+                {...overrides}
+            />,
+        );
+        expect(queryByTestId('encma_button_gradient')).toBeNull();
     });
 
     it('should render button with text', () => {

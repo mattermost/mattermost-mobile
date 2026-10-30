@@ -351,7 +351,7 @@ export const buttonBackgroundStyle = (
 ): StyleProp<ViewStyle> => {
     const backgroundStyles = getBackgroundStyles(theme);
 
-    return [buttonStyles.main, buttonSizeStyles[size], backgroundStyles[emphasis][type][state]];
+    return [theme.centerChannelBg === '#0C122D' ? {borderRadius: 12} : buttonStyles.main, buttonSizeStyles[size], backgroundStyles[emphasis][type][state]];
 };
 
 /**

@@ -29,12 +29,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 22,
     },
     statusCard: {
-        borderRadius: 12,
+        borderRadius: theme.centerChannelBg === '#0C122D' ? 20 : 12,
         padding: 16,
         marginBottom: 20,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         borderWidth: StyleSheet.hairlineWidth,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+        borderColor: theme.centerChannelBg === '#0C122D' ? '#345268' : changeOpacity(theme.centerChannelColor, 0.16),
     },
     statusLabel: {
         ...typography('Body', 300, 'SemiBold'),

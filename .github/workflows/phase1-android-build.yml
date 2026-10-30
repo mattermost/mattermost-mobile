@@ -31,6 +31,9 @@ jobs:
       - name: Run ENCMA focused JavaScript tests
         run: |
           NODE_OPTIONS=--max_old_space_size=4096 npx jest --runInBand --runTestsByPath \
+            app/context/theme/default.test.ts \
+            app/components/button/index.test.tsx \
+            app/utils/buttonStyles.test.ts \
             app/components/encma_auth_header/index.test.tsx \
             app/screens/server/header.test.tsx \
             app/screens/server/form.test.tsx \
