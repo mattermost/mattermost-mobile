@@ -27,6 +27,8 @@ import {typography} from '@utils/typography';
 
 import AppsFormFileField from '../apps_form_file_field';
 
+import AppsFormActionButton from './apps_form_action_button';
+
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
 const DATE_DISPLAY_FORMAT: FormattedDateFormat = {dateStyle: 'medium'};
@@ -322,6 +324,14 @@ const AppsFormFieldComponent = React.memo(({
                         theme={theme}
                     />
                 </View>
+            );
+        }
+        case AppFieldTypes.ACTION_BUTTON: {
+            return (
+                <AppsFormActionButton
+                    field={field}
+                    testID={testID}
+                />
             );
         }
         case AppFieldTypes.FILE: {

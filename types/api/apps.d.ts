@@ -200,6 +200,10 @@ type AppField = {
     time_interval?: number;
     datetime_config?: DateTimeConfig;
 
+    // Action button props
+    action_button_url?: string;
+    action_button_context?: Record<string, string>;
+
     // Collapsible section props
     collapsible_config?: AppCollapsibleConfig;
 };

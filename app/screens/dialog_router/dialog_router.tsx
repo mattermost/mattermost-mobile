@@ -2,12 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
+import {DeviceEventEmitter} from 'react-native';
 
 import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/integrations';
+import {Events} from '@constants';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
+import IntegrationsManager from '@managers/integrations_manager';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
 import {convertAppFormValuesToDialogSubmission, flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
 import {flattenDialogElements} from '@utils/dialog_utils';
@@ -55,6 +58,8 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
     }, {error: error.message});
 }
 
+const incrementNonce = (prev: number) => prev + 1;
+
 export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
     channelId,
@@ -71,6 +76,11 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     const [accumulatedElements, setAccumulatedElements] = useState<DialogElement[]>([]);
 
+    // Values to keep in the fields of a form returned by a field refresh, which the
+    // server re-sends without them. A form returned by a submit starts from its own
+    // values instead (matching webapp), so these are cleared then.
+    const [prefillValues, setPrefillValues] = useState<AppFormValues>({});
+
     // Union of element definitions, later steps winning on a name collision so the most
     // recent declaration of a field decides how its value is converted.
     const mergeElements = useCallback((previous: DialogElement[], next: DialogElement[]) => {
@@ -85,6 +95,33 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     // Per-field FILE values from earlier multiform steps (field name → comma-joined IDs).
     const [accumulatedFileFields, setAccumulatedFileFields] = useState<Record<string, string>>({});
+
+    // Incremented when a dialog stacked on top of this one closes and this one should
+    // re-fetch its form; AppsFormComponent watches it.
+    const [refreshNonce, setRefreshNonce] = useState(0);
+
+    // Incremented whenever a form replaces the current one, so a refresh-on-return
+    // response that arrives after a newer form is ignored.
+    const formSeqRef = useRef(0);
+
+    // Follows each form returned by a submit or refresh, not just the opened dialog.
+    const refreshOnReturn = Boolean(currentConfig?.dialog?.refresh_on_return && currentConfig.dialog.source_url);
+
+    const onDialogClosed = useCallback((event: {serverUrl: string}) => {
+        if (event.serverUrl !== serverUrl || IntegrationsManager.getManager(serverUrl).getTopDialogTriggerId() !== config?.trigger_id) {
+            return;
+        }
+        setRefreshNonce(incrementNonce);
+    }, [serverUrl, config?.trigger_id]);
+
+    useEffect(() => {
+        if (!refreshOnReturn) {
+            return undefined;
+        }
+
+        const listener = DeviceEventEmitter.addListener(Events.INTERACTIVE_DIALOG_CLOSED, onDialogClosed);
+        return () => listener.remove();
+    }, [refreshOnReturn, onDialogClosed]);
 
     // Update modal title when dialog config changes
     useEffect(() => {
@@ -185,9 +222,12 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                     },
                 };
 
+                formSeqRef.current++;
+                setPrefillValues({});
                 setCurrentConfig(newDialogConfig);
             } else {
             // Clear accumulated state since dialog is completing
+                setPrefillValues({});
                 setAccumulatedValues({});
                 setAccumulatedElements([]);
                 setAccumulatedFileFields({});
@@ -276,6 +316,47 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         return {data: {type: 'ok', data: {items: []}}};
     }, [currentConfig, serverUrl]);
 
+    // Posts the current values to the form's source_url as a refresh request. Dialogs
+    // without a source_url keep posting to the submit url so existing integrations are
+    // unaffected.
+    const requestRefresh = useCallback(async (values: AppFormValues, selectedField?: string) => {
+        // Merge current values with accumulated values from previous steps
+        const allValues = {...accumulatedValues, ...values};
+
+        // Convert current values back to dialog submission format
+        const dialogSubmission = InteractiveDialogAdapter.convertValuesToSubmission(allValues, currentConfig);
+
+        if (selectedField) {
+            dialogSubmission.submission.selected_field = selectedField;
+        }
+
+        // Set type to indicate this is a refresh request (matching webapp)
+        const refreshSubmission = {
+            ...dialogSubmission,
+            url: currentConfig.dialog.source_url || dialogSubmission.url,
+            type: 'refresh',
+        };
+
+        // Server returns {"form": {...}, "type": "form"} format
+        const result = await submitInteractiveDialog(serverUrl, refreshSubmission);
+        const form = result.data && typeof result.data === 'object' && 'form' in result.data ? (result.data as {form: InteractiveDialogConfig['dialog']}).form : undefined;
+        return {form, error: result.error};
+    }, [accumulatedValues, currentConfig, serverUrl]);
+
+    const makeRefreshError = useCallback((error: unknown): DoAppCallResult<FormResponseData> => {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        return {
+            error: {
+                type: 'error' as AppCallResponseType,
+                text: intl.formatMessage({
+                    id: 'interactive_dialog.refresh_failed',
+                    defaultMessage: 'Failed to refresh form fields',
+                }) + ` (${errorMessage})`,
+            },
+        };
+    }, [intl]);
+
     // Create refreshOnSelect for Interactive Dialog field refresh support
     const refreshOnSelect = useCallback(async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
         // Early return if required parameters are missing
@@ -283,32 +364,21 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             return {data: {type: 'ok'}};
         }
 
-        // For Interactive Dialogs, field refresh uses the standard dialog submission
-        // which routes to the plugin URL automatically
+        const seq = ++formSeqRef.current;
         try {
-            // Merge current values with accumulated values for field refresh
-            const allValues = {...accumulatedValues, ...values};
+            const {form, error} = await requestRefresh(values, field.name);
 
-            // Convert current values back to dialog submission format
-            const dialogSubmission = InteractiveDialogAdapter.convertValuesToSubmission(allValues, currentConfig);
-
-            // Add the selected field that triggered refresh
-            dialogSubmission.submission.selected_field = field.name;
-
-            // Set type to indicate this is a refresh request (matching webapp)
-            const refreshSubmission = {...dialogSubmission, type: 'refresh'};
-
-            // Use the existing submitInteractiveDialog action which handles routing properly
-            const result = await submitInteractiveDialog(serverUrl, refreshSubmission);
+            // Superseded; a FORM response without a form is a no-op for the caller.
+            if (seq !== formSeqRef.current) {
+                return {data: {type: 'form' as AppCallResponseType}};
+            }
 
             // Check if we got a new dialog configuration back
-            // Server returns {"form": {...}, "type": "form"} format
-            if (result.data && typeof result.data === 'object' && 'form' in result.data) {
-                const formResult = result.data as {form: InteractiveDialogConfig['dialog']; type: string};
-
+            if (form) {
                 // Accumulate values from field refresh for preservation
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
+                setPrefillValues(newAccumulatedValues);
 
                 const {submission: refreshedSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
                 setAccumulatedFileFields(mergeFileFieldValues(accumulatedFileFields, refreshedSubmission as {[x: string]: string}, currentConfig.dialog.elements));
@@ -316,7 +386,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 // Update the dialog config state with new form data
                 const newConfig = {
                     ...currentConfig,
-                    dialog: formResult.form,
+                    dialog: form,
                 };
 
                 setCurrentConfig(newConfig);
@@ -333,7 +403,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             }
 
             // Handle errors from dialog submission
-            if (result.error) {
+            if (error) {
                 return {
                     error: {
                         type: 'error' as AppCallResponseType,
@@ -344,37 +414,80 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
             return {data: {type: 'ok'}};
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-
-            return {
-                error: {
-                    type: 'error' as AppCallResponseType,
-                    text: intl.formatMessage({
-                        id: 'interactive_dialog.refresh_failed',
-                        defaultMessage: 'Failed to refresh form fields',
-                    }) + ` (${errorMessage})`,
-                },
-            };
+            return makeRefreshError(error);
         }
-    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, accumulatedFileFields]);
+    }, [currentConfig, accumulatedValues, accumulatedFileFields, requestRefresh, makeRefreshError]);
 
-    if (!appForm || !appForm.fields) {
-        return null;
-    }
+    // Re-fetches the whole form without a selected field when a dialog stacked on top
+    // of this one closes (refresh_on_return).
+    const refreshForm = useCallback(async (values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
+        const seq = ++formSeqRef.current;
+        try {
+            const {form, error} = await requestRefresh(values);
 
-    // Pre-populate form fields with accumulated values to preserve field refresh state
-    const formWithValues = {
-        ...appForm,
-        fields: appForm.fields.map((field) => {
-            if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
+            // A submit, field refresh, or newer refresh replaced the form meanwhile.
+            if (seq !== formSeqRef.current) {
+                return {data: {type: 'ok'}};
+            }
+
+            if (form) {
+                const newConfig = {
+                    ...currentConfig,
+                    dialog: form,
+                };
+                setCurrentConfig(newConfig);
+
                 return {
-                    ...field,
-                    value: accumulatedValues[field.name],
+                    data: {
+                        type: 'form' as AppCallResponseType,
+                        form: InteractiveDialogAdapter.convertToAppForm(newConfig),
+                    },
                 };
             }
-            return field;
-        }),
-    };
+
+            if (error) {
+                logDebug('[DialogRouter.refreshForm]', getFullErrorMessage(error));
+                return {
+                    error: {
+                        type: 'error' as AppCallResponseType,
+                        text: intl.formatMessage({
+                            id: 'interactive_dialog.refresh_failed',
+                            defaultMessage: 'Failed to refresh form fields',
+                        }),
+                    },
+                };
+            }
+
+            return {data: {type: 'ok'}};
+        } catch (error) {
+            return makeRefreshError(error);
+        }
+    }, [currentConfig, requestRefresh, makeRefreshError, intl]);
+
+    // Pre-populate form fields with the values kept across a field refresh.
+    // Memoized because AppsFormComponent resets its values whenever the form changes.
+    const formWithValues = useMemo(() => {
+        if (!appForm?.fields) {
+            return null;
+        }
+
+        return {
+            ...appForm,
+            fields: appForm.fields.map((field) => {
+                if (field.name && prefillValues[field.name] !== undefined && !field.value) {
+                    return {
+                        ...field,
+                        value: prefillValues[field.name],
+                    };
+                }
+                return field;
+            }),
+        };
+    }, [appForm, prefillValues]);
+
+    if (!formWithValues) {
+        return null;
+    }
 
     return (
         <AppsFormComponent
@@ -382,6 +495,8 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             submit={handleSubmit}
             performLookupCall={performLookupCall}
             refreshOnSelect={refreshOnSelect}
+            refreshForm={refreshForm}
+            refreshNonce={refreshNonce}
             channelId={channelId}
         />
     );
