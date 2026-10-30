@@ -9,8 +9,7 @@ export const PROPERTY_FIELDS_SEARCH_VERSION = [11, 10, 0];
 export const RENDER_PERMISSIONS_VERSION = [12, 0, 0];
 
 // First release whose team channel list leaves out the channels a read-access policy denies.
-// TODO: Update this once PR is merged
-export const CHANNEL_READ_ACCESS_VERSION = [12, 0, 0];
+export const CHANNEL_READ_ACCESS_VERSION = [12, 2, 0];
 
 // Server version where a promoted feature flag is removed from the client config (MM-69218). Mobile
 // treats the feature as always-on at or after this version, and honors the flag on older servers that
