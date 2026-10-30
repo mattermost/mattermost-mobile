@@ -705,8 +705,9 @@ jobs:
           manifest-path: detox/artifacts/spec-durations.next.json
           mode: save
 
+      # For TSIO, or for a re-run of failed specs, which hands its results to the channel message.
       - name: Merge per-shard Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        if: always() && ((inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false') || inputs.results-artifact != '')
         id: tsio-merge
         env:
           # Built from repo filenames, so it must reach the shell as data, never spliced

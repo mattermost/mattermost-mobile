@@ -551,16 +551,6 @@ jobs:
           name: maestro-ios-results-${{ github.run_id }}${{ inputs.results-artifact != '' && '-rerun' || '' }}
           path: build/
 
-      # A re-run of failed flows hands its per-flow results to the channel message.
-      - name: Upload re-run results
-        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
-        continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ${{ inputs.results-artifact }}
-          path: build/maestro-report.xml
-          retention-days: 1
-
       - name: Parse Maestro Report
         id: summary
         if: always()
@@ -612,6 +602,16 @@ jobs:
 
       # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
       # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      # A re-run of failed flows hands its per-flow results to the channel message.
+      - name: Upload re-run results
+        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.results-artifact }}
+          path: build/maestro-report.xml
+          retention-days: 1
+
       - name: Collect triage evidence
         if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
         continue-on-error: true
@@ -1297,16 +1297,6 @@ jobs:
           name: maestro-android-results-${{ github.run_id }}${{ inputs.results-artifact != '' && '-rerun' || '' }}
           path: build/
 
-      # A re-run of failed flows hands its per-flow results to the channel message.
-      - name: Upload re-run results
-        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
-        continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ${{ inputs.results-artifact }}
-          path: build/maestro-report.xml
-          retention-days: 1
-
       - name: Parse Maestro Report
         id: summary
         if: always()
@@ -1357,6 +1347,16 @@ jobs:
 
       # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
       # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      # A re-run of failed flows hands its per-flow results to the channel message.
+      - name: Upload re-run results
+        if: always() && inputs.results-artifact != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.results-artifact }}
+          path: build/maestro-report.xml
+          retention-days: 1
+
       - name: Collect triage evidence
         if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
         continue-on-error: true
