@@ -7,6 +7,7 @@ import https from 'node:https';
 import path from 'node:path';
 
 import {DEMO_PLUGIN_VERSION, ensureDemoPluginFixture} from '../shared/demo-plugin-fixture';
+import PREPACKAGED_PLUGINS from '../shared/prepackaged-plugins.json';
 
 import {
     AGENTS_PLUGIN_ID,
@@ -209,6 +210,43 @@ async function waitForDialogCommand(client: MattermostClient, token: string, tea
     /* eslint-enable no-await-in-loop */
 
     logInfo('/dialog command is registered.');
+}
+
+/**
+ * The demo plugin settings entry to write so DialogOnlyMode is on, or null when it already is. Setting
+ * keys are matched case-insensitively, so any spelling of DialogOnlyMode is replaced; other settings are kept.
+ */
+export function demoPluginSettingsPatch(entry: Record<string, unknown>): Record<string, unknown> | null {
+    const isDialogOnlyModeKey = (key: string) => key.toLowerCase() === 'dialogonlymode';
+    const values = Object.entries(entry).filter(([key]) => isDialogOnlyModeKey(key)).map(([, value]) => value);
+    if (values.length > 0 && values.every((value) => value === true)) {
+        return null;
+    }
+    const otherSettings = Object.fromEntries(Object.entries(entry).filter(([key]) => !isDialogOnlyModeKey(key)));
+    return {...otherSettings, DialogOnlyMode: true};
+}
+
+/**
+ * Sets DialogOnlyMode in the demo plugin's settings entry before the plugin is installed, so it starts
+ * without the demo user, the demo channels and the posts for every server event, keeping only /dialog
+ * (demo plugin v0.12.2+). The entry also keeps an older build still running on a reused server (v0.12.1)
+ * out of config saves: without an entry it hands every save back to the server, and that round trip
+ * resets settings it does not know, or that are false, to their defaults.
+ */
+export async function ensureDemoPluginSettingsEntry(client: MattermostClient, token: string): Promise<void> {
+    const res = await client.request<{PluginSettings?: {Plugins?: Record<string, Record<string, unknown> | undefined>}}>('GET', '/api/v4/config', undefined, token);
+    if (res.status !== 200) {
+        throw new Error(`Could not read config to check the ${DEMO_PLUGIN_ID} settings entry (HTTP ${res.status})`);
+    }
+    const settings = demoPluginSettingsPatch(res.data?.PluginSettings?.Plugins?.[DEMO_PLUGIN_ID] ?? {});
+    if (!settings) {
+        return;
+    }
+    const patchRes = await client.request<ApiErrorBody>('PUT', '/api/v4/config/patch', {PluginSettings: {Plugins: {[DEMO_PLUGIN_ID]: settings}}}, token);
+    if (patchRes.status !== 200) {
+        throw new Error(`Could not set DialogOnlyMode in the ${DEMO_PLUGIN_ID} settings entry (HTTP ${patchRes.status})`);
+    }
+    logInfo(`Set DialogOnlyMode in the ${DEMO_PLUGIN_ID} settings entry so it posts nothing and its config hook keeps other settings intact.`);
 }
 
 export async function ensureDemoPluginReady(client: MattermostClient, token: string): Promise<void> {
@@ -481,5 +519,53 @@ export async function installRequiredPlugin(
         logWarn(`Failed to enable ${pluginId} after install (HTTP ${postInstallEnableRes.status}): ${postInstallEnableRes.data.message || JSON.stringify(postInstallEnableRes.data)}`);
     } else {
         logInfo(`Plugin ${pluginId} installed and enabled from Marketplace.`);
+    }
+}
+
+/** Active plugins that are neither prepackaged nor provisioned for this server. */
+export function strayPluginIds(active: PluginListEntry[] | undefined, provisioned: readonly RequiredPlugin[]): string[] {
+    const keep = new Set<string>([...PREPACKAGED_PLUGINS, ...provisioned.map((plugin) => plugin.id)]);
+    return (active ?? []).map((plugin) => plugin.id).filter((id) => !keep.has(id));
+}
+
+/** Disables stray plugins once per run, so shards on read-only pool servers never have to. */
+export async function disableStrayPlugins(client: MattermostClient, token: string, provisioned: readonly RequiredPlugin[]): Promise<void> {
+    const res = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
+    if (res.status !== 200) {
+        logWarn(`Could not list plugins to disable stray ones (HTTP ${res.status})`);
+        return;
+    }
+    /* eslint-disable no-await-in-loop -- one plugin at a time for clear provisioning logs */
+    for (const id of strayPluginIds(res.data?.active, provisioned)) {
+        const disableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(id)}/disable`, {}, token);
+        if (disableRes.status === 200) {
+            logInfo(`Disabled stray plugin ${id}`);
+        } else {
+            logWarn(`Failed to disable stray plugin ${id} (HTTP ${disableRes.status}): ${disableRes.data?.message || ''}`);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+}
+
+/** A violation message when the demo plugin is active on a server that was not provisioned with it. */
+export function demoPluginViolation(active: PluginListEntry[] | undefined, demoPlugin: boolean): string | undefined {
+    if (demoPlugin || !active?.some((plugin) => plugin.id === DEMO_PLUGIN_ID)) {
+        return undefined;
+    }
+    return `${DEMO_PLUGIN_ID} is active on a server provisioned without it; provisioning cannot finish`;
+}
+
+/** Fails provisioning when a server without the demo plugin still runs it, since the baseline no longer covers it. */
+export async function assertDemoPluginAbsent(client: MattermostClient, token: string, demoPlugin: boolean): Promise<void> {
+    if (demoPlugin) {
+        return;
+    }
+    const res = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
+    if (res.status !== 200) {
+        throw new Error(`Could not list plugins to verify ${DEMO_PLUGIN_ID} is absent (HTTP ${res.status})`);
+    }
+    const violation = demoPluginViolation(res.data?.active, demoPlugin);
+    if (violation) {
+        throw new Error(violation);
     }
 }

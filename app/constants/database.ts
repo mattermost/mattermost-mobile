@@ -87,6 +87,7 @@ export const SYSTEM_IDENTIFIERS = {
     LAST_BOR_POST_CLEANUP_RUN: 'lastBoRPostCleanupRun',
     ACCESS_CONTROL_GROUP_ID: 'accessControlGroupId',
     LAST_AUTO_CACHE_CLEANUP_RUN: 'lastAutoCacheCleanupRun',
+    REDACTION_EPOCH: 'redactionEpoch',
 };
 
 export const GLOBAL_IDENTIFIERS = {
@@ -101,6 +102,7 @@ export const GLOBAL_IDENTIFIERS = {
     LAST_VIEWED_THREAD: 'lastViewedThread',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
     CACHE_MIGRATION: 'cacheMigration',
+    PREAUTH_SECRET_MIGRATION: 'preauthSecretMigration',
     PUSH_SIGNING_KEY: 'pushSigningKey',
     EPHEMERAL_MODE_AUDIT_QUEUE: 'ephemeralModeAuditQueue',
 };

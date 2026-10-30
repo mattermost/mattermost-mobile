@@ -13,12 +13,8 @@ import {
     TermsOfService,
     User,
 } from '@support/server_api';
-import {SITE_THREE_LOCK_TIMEOUT_MS, siteThreeLock} from '@support/site_three_lock';
-import {
-    hasThreeDistinctServers,
-    serverThreeUrl,
-    siteThreeUrl,
-} from '@support/test_config';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
+import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     ChannelListScreen,
     HomeScreen,
@@ -37,78 +33,63 @@ const describeApiError = (error: any, status?: number): string => {
     return `status ${status ?? 'unknown'}: ${error?.message ?? error?.id ?? 'unknown error'}`;
 };
 
-const describeOrSkip = hasThreeDistinctServers ? describe : describe.skip;
-
-describeOrSkip('Server Login - Custom Terms of Service', () => {
+// Custom ToS puts a modal in front of every login, so this runs alone on the mutation server
+// (detox/e2e/server_mutation_specs.json).
+describe('Server Login - Custom Terms of Service', () => {
     const serverDisplayName = 'Server 1';
     const tosText = 'E2E Custom Terms of Service — accept to continue.';
-    let lockOwner = '';
-    let lockAcquired = false;
     let testUser: any;
 
     beforeAll(async () => {
-        lockOwner = siteThreeLock.createOwner();
-        await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
-        lockAcquired = true;
+        requireMutationServer('custom_terms_of_service');
 
-        await User.apiAdminLogin(siteThreeUrl);
-        await System.apiRequireLicenseForFeature(siteThreeUrl, 'CustomTermsOfService');
+        await User.apiAdminLogin(siteOneUrl);
+        await System.apiRequireLicenseForFeature(siteOneUrl, 'CustomTermsOfService');
 
-        // A previous holder that was killed mid-suite (emulator crash, cancelled job) leaves
-        // ToS enabled, and its afterAll never ran. Clearing it on acquire is what makes the
-        // shared server self-heal rather than staying wedged for every later login.
-        await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
+        // A run killed mid-suite leaves ToS enabled; provisioning also resets it, but clear it here too.
+        await TermsOfService.apiDisableCustomTermsOfService(siteOneUrl);
 
-        const {terms, error: createError, status: createStatus} = await TermsOfService.apiCreateTermsOfService(siteThreeUrl, tosText);
+        const {terms, error: createError, status: createStatus} = await TermsOfService.apiCreateTermsOfService(siteOneUrl, tosText);
         if (createError || !terms?.id) {
             throw new Error(`Failed to create custom ToS: ${describeApiError(createError, createStatus)}`);
         }
 
-        const {error: enableError, status: enableStatus} = await TermsOfService.apiEnableCustomTermsOfService(siteThreeUrl);
+        const {error: enableError, status: enableStatus} = await TermsOfService.apiEnableCustomTermsOfService(siteOneUrl);
         if (enableError) {
             throw new Error(`Failed to enable custom ToS: ${describeApiError(enableError, enableStatus)}`);
         }
 
         // Fail here rather than 60s later as an unexplained "modal never appeared".
-        await TermsOfService.apiAssertCustomTermsOfServiceActive(siteThreeUrl, terms.id);
+        await TermsOfService.apiAssertCustomTermsOfServiceActive(siteOneUrl, terms.id);
 
         // Created after ToS is active, so the app fetches a config that already has it on
         // when it connects below — no reload needed to dodge a stale cached config.
-        const {user} = await Setup.apiInit(siteThreeUrl);
+        const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
-    }, timeouts.ONE_MIN * 45);
+    });
 
     afterAll(async () => {
-        // Never tear down shared server state we do not own.
-        if (!lockAcquired) {
+        if (!canMutateServer) {
             return;
         }
 
-        try {
-            await User.apiAdminLogin(siteThreeUrl);
+        await User.apiAdminLogin(siteOneUrl);
 
-            const {error, status} = await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
-            if (error) {
-                throw new Error(`Failed to disable custom ToS after suite: ${describeApiError(error, status)}`);
-            }
-
-            // Hold the lock until the disable is actually visible in client config. The patch
-            // returns before the server regenerates it, so releasing here would let the next
-            // SITE_3 suite start against a server still advertising ToS as on.
-            await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteThreeUrl);
-        } finally {
-            // Releasing even when the disable failed is deliberate: holding the lock forever
-            // would block every later run, and the next holder disables ToS on acquire.
-            await siteThreeLock.release(siteThreeUrl, lockOwner);
+        const {error, status} = await TermsOfService.apiDisableCustomTermsOfService(siteOneUrl);
+        if (error) {
+            throw new Error(`Failed to disable custom ToS after suite: ${describeApiError(error, status)}`);
         }
+
+        // The patch returns before the client config regenerates; wait so the next spec sees ToS off.
+        await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteOneUrl);
     });
 
     it('MM-T1193_1 - should return to server screen after declining custom terms of service', async () => {
         // Fresh user so ToS is required (the beforeAll user is reserved for accept)
-        const {user: declineUser} = await Setup.apiInit(siteThreeUrl);
+        const {user: declineUser} = await Setup.apiInit(siteOneUrl);
 
         // # Connect and log in until custom ToS is shown
-        await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
+        await ServerScreen.connectToServer(serverOneUrl, serverDisplayName);
         await TermsOfServiceScreen.loginUntilVisible(declineUser);
 
         // # Decline and confirm the logout alert
@@ -123,7 +104,7 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
 
     it('MM-T1194_1 - should log in after accepting custom terms of service', async () => {
         // # Connect and log in until custom ToS is shown
-        await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
+        await ServerScreen.connectToServer(serverOneUrl, serverDisplayName);
         await TermsOfServiceScreen.loginUntilVisible(testUser);
 
         // * Verify Accept / Decline are available

@@ -94,27 +94,79 @@ const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localh
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
-// Prepackaged plugins to keep enabled.
-const PREPACKAGED_PLUGINS = new Set([
-    'antivirus',
-    'mattermost-autolink',
-    'com.mattermost.aws-sns',
-    'com.mattermost.plugin-channel-export',
-    'com.mattermost.custom-attributes',
-    'github',
-    'com.github.manland.mattermost-plugin-gitlab',
-    'com.mattermost.plugin-incident-management',
-    'jenkins',
-    'jira',
-    'com.mattermost.calls',
-    'com.mattermost.nps',
-    'com.mattermost.welcomebot',
-    'zoom',
-]);
+// Plugins in this set are never disabled by this setup; provisioning owns them (provision/constants.ts).
+// The demo plugin is installed on every full-suite server (pool A and mutation B), in DialogOnlyMode.
+const PROVISIONED_PLUGINS = new Set(['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
+
+// Prepackaged plugins to keep enabled (shared with provisioning).
+const PREPACKAGED_PLUGINS = new Set(require('../shared/prepackaged-plugins.json'));
+
+async function disableStrayPlugins(headers) {
+    try {
+        const plugins = await axios.get(`${SITE_URL}/api/v4/plugins`, {headers});
+        const active = plugins.data?.active || [];
+        const toDisable = active.filter(
+            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && !PROVISIONED_PLUGINS.has(plugin.id),
+        );
+        await Promise.all(toDisable.map((plugin) => {
+            process.stdout.write(`[globalSetup] Disabling plugin: ${plugin.id}\n`);
+            return axios.post(
+                `${SITE_URL}/api/v4/plugins/${encodeURIComponent(plugin.id)}/disable`,
+                null,
+                {headers},
+            );
+        }));
+        process.stdout.write('[globalSetup] ✅ Plugin cleanup done\n');
+    } catch (err) {
+        process.stderr.write(`[globalSetup] ⚠️ Could not clean up plugins: ${err.message}\n`);
+    }
+}
 
 // Match Maestro seed.ts: Matterwick can 403 / serve the inactive portal for ~2min.
 const WARMUP_RETRIES = 8;
 const WARMUP_DELAY_MS = 15000;
+
+/**
+ * The permission policy actions this server supports, comma-separated, so suites can gate on one
+ * (see serverSupportsPolicyAction). New actions ship without a feature flag, so this asks the
+ * render-time decisions endpoint: called without `actions`, it returns a decision for every action
+ * the server registers for channels.
+ * Returns '' on servers without the endpoint (before 12.0), and undefined when it can't tell.
+ */
+async function detectPolicyActions(headers) {
+    const options = {headers, validateStatus: () => true};
+    try {
+        // The endpoint evaluates against a real channel. The admin's DM with themselves works even on
+        // a server with no teams or channels, and creating it again returns the same one, so there's
+        // nothing to clean up.
+        const me = await axios.get(`${SITE_URL}/api/v4/users/me`, options);
+        const userId = me.data?.id;
+        if (!userId) {
+            return undefined;
+        }
+        const selfDm = await axios.post(`${SITE_URL}/api/v4/channels/direct`, [userId, userId], options);
+        const channelId = selfDm.data?.id;
+        if (!channelId) {
+            return undefined;
+        }
+
+        const search = await axios.post(
+            `${SITE_URL}/api/v4/access_control/decisions/actions/search`,
+            {resource: {type: 'channel', id: channelId}},
+            options,
+        );
+        if (search.status === 404) {
+            return '';
+        }
+        const decisions = search.data?.decisions;
+        if (search.status !== 200 || !decisions || typeof decisions !== 'object') {
+            return undefined;
+        }
+        return Object.keys(decisions).join(',');
+    } catch {
+        return undefined;
+    }
+}
 
 async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} = {}) {
     let lastErr;
@@ -231,6 +283,14 @@ async function serverSetup() {
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
 
+    const policyActions = await detectPolicyActions(headers);
+    if (policyActions === undefined) {
+        process.stderr.write('[globalSetup] ⚠️ Could not detect supported permission policy actions — no suite will be skipped for them\n');
+    } else {
+        process.env.MM_SERVER_POLICY_ACTIONS = policyActions;
+        process.stdout.write(`[globalSetup] Permission policy actions: ${policyActions || '(none)'}\n`);
+    }
+
     // Pre-warm the server so the first app request isn't also the server's cold start. This
     // does not warm the simulator's TLS session, so -1005 drops are still possible.
     try {
@@ -239,32 +299,39 @@ async function serverSetup() {
         process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
     }
 
-    try {
-        await axios.put(`${SITE_URL}/api/v4/config/patch`, {
-            ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
-        }, {headers});
-        process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
-    } catch (err) {
-        process.stderr.write(`[globalSetup] ⚠️ Could not patch server config: ${err.message}\n`);
-    }
+    // Server config comes from provisioning (detox/shared/server-baseline.ts); shards only probe it.
 
-    try {
-        const plugins = await axios.get(`${SITE_URL}/api/v4/plugins`, {headers});
-        const active = plugins.data?.active || [];
-        const toDisable = active.filter(
-            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && plugin.id !== 'com.mattermost.demo-plugin',
+    // Shared Channels needs the license feature and a running remote-cluster service; probing here
+    // lets the suite report as skipped rather than passed on a server that cannot run it.
+    const license = await retryAxios(
+        () => axios.get(`${SITE_URL}/api/v4/license/client?format=old`, {headers}),
+        {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'client license'},
+    );
+    let sharedChannelsReason = `license ${license.data?.SkuShortName || 'none'} has no SharedChannels`;
+    process.env.MM_SERVER_HAS_SHARED_CHANNELS = 'false';
+    if (license.data?.SharedChannels === 'true') {
+        const remotes = await retryAxios(
+            () => axios.get(`${SITE_URL}/api/v4/remotecluster`, {headers, validateStatus: () => true}),
+            {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'remote cluster probe'},
         );
-        await Promise.all(toDisable.map((plugin) => {
-            process.stdout.write(`[globalSetup] Disabling plugin: ${plugin.id}\n`);
-            return axios.post(
-                `${SITE_URL}/api/v4/plugins/${encodeURIComponent(plugin.id)}/disable`,
-                null,
-                {headers},
-            );
-        }));
-        process.stdout.write('[globalSetup] ✅ Plugin cleanup done\n');
-    } catch (err) {
-        process.stderr.write(`[globalSetup] ⚠️ Could not clean up plugins: ${err.message}\n`);
+        process.env.MM_SERVER_HAS_SHARED_CHANNELS = remotes.status === 200 ? 'true' : 'false';
+        sharedChannelsReason = `license ${license.data.SkuShortName}, GET /remotecluster returned ${remotes.status}`;
+    }
+    process.stdout.write(`[globalSetup] Shared Channels available: ${process.env.MM_SERVER_HAS_SHARED_CHANNELS} (${sharedChannelsReason})\n`);
+
+    // An env-pinned MaxFileSize ignores API patches, so a spec that must shrink it cannot run.
+    const environment = await retryAxios(
+        () => axios.get(`${SITE_URL}/api/v4/config/environment`, {headers}),
+        {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'config environment'},
+    );
+    process.env.MM_SERVER_MAX_FILE_SIZE_PINNED = environment.data?.FileSettings?.MaxFileSize === true ? 'true' : 'false';
+    process.stdout.write(`[globalSetup] MaxFileSize env-pinned: ${process.env.MM_SERVER_MAX_FILE_SIZE_PINNED}\n`);
+
+    // Pool servers are read-only to shards; provisioning disables stray plugins there once per run.
+    if (process.env.CI === 'true' && process.env.E2E_SERVER_ROLE === 'pool') {
+        process.stdout.write('[globalSetup] Plugin cleanup skipped on a pool shard (owned by provisioning)\n');
+    } else {
+        await disableStrayPlugins(headers);
     }
 }
 
