@@ -10,7 +10,7 @@ import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {HTTP_UNAUTHORIZED} from '@constants/network';
 import DatabaseManager from '@database/manager';
-import {getNotificationDeviceToken, getNotificationVoIPDeviceToken} from '@managers/direct_notification/mode';
+import {getInitialLoginVoIPDeviceToken, getNotificationDeviceToken} from '@managers/direct_notification/mode';
 import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -127,7 +127,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     try {
         const client = NetworkManager.getClient(serverUrl);
         deviceToken = await getNotificationDeviceToken(serverUrl);
-        const voipDeviceToken = await getNotificationVoIPDeviceToken(serverUrl);
+        const voipDeviceToken = await getInitialLoginVoIPDeviceToken(serverUrl);
         user = await client.login(
             loginId,
             password,
@@ -362,7 +362,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         // Step 2: POST accessToken to /oauth/intune to exchange for session token
         const client = NetworkManager.getClient(serverUrl);
         const deviceToken = await getNotificationDeviceToken(serverUrl);
-        const voipDeviceToken = await getNotificationVoIPDeviceToken(serverUrl);
+        const voipDeviceToken = await getInitialLoginVoIPDeviceToken(serverUrl);
         let csrfToken: string;
         let userData: UserProfile | undefined;
 
@@ -450,7 +450,7 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
         const client = await NetworkManager.createClient(serverUrlToUse, undefined);
         const config = await client.getClientConfigOld();
         const deviceId = await getNotificationDeviceToken(serverUrlToUse);
-        const voipDeviceId = await getNotificationVoIPDeviceToken(serverUrlToUse);
+        const voipDeviceId = await getInitialLoginVoIPDeviceToken(serverUrlToUse);
         const serverDisplayName = config.SiteName;
 
         const user = await client.loginByMagicLinkLogin(token, deviceId, voipDeviceId);

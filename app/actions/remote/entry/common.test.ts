@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {nativeApplicationVersion} from 'expo-application';
+import {Platform} from 'react-native';
 import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchMyChannelsForTeam} from '@actions/remote/channel';
@@ -15,7 +16,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getDeviceToken} from '@queries/app/global';
+import {getDeviceToken, getVoIPDeviceToken} from '@queries/app/global';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {NavigationStore} from '@store/navigation_store';
@@ -50,6 +51,7 @@ jest.mock('expo-application');
 
 describe('actions/remote/entry/common', () => {
     const serverUrl = 'https://server.example.com';
+    const originalPlatform = Platform.OS;
 
     let mockClient: any;
     const mockOperator = {
@@ -99,6 +101,10 @@ describe('actions/remote/entry/common', () => {
         (RESULTS as any).GRANTED = 'granted';
         require('react-native-permissions').checkNotifications = jest.fn().mockResolvedValue({status: RESULTS.GRANTED});
         require('expo-application').nativeApplicationVersion = '0.0.0';
+    });
+
+    afterEach(() => {
+        Platform.OS = originalPlatform;
     });
 
     describe('entry', () => {
@@ -249,6 +255,64 @@ describe('actions/remote/entry/common', () => {
                 undefined,
                 undefined,
             );
+        });
+
+        it('should attach the Android VoIP token after authentication', async () => {
+            Platform.OS = 'android';
+            jest.mocked(getDeviceToken).mockResolvedValueOnce('android_rn-v2:standard-token');
+            jest.mocked(getVoIPDeviceToken).mockResolvedValueOnce('android_rn-v2:voip-token');
+
+            const result = await setExtraSessionProps(serverUrl);
+
+            expect(result).toEqual({});
+            expect(mockClient.setExtraSessionProps).toHaveBeenCalledWith(
+                'android_rn-v2:standard-token',
+                false,
+                nativeApplicationVersion,
+                'android_rn-v2:voip-token',
+                undefined,
+            );
+        });
+
+        it('should preserve Server push attachment when Android VoIP is rejected', async () => {
+            Platform.OS = 'android';
+            const mockError = new Error('Android VoIP is not supported by this server');
+            jest.mocked(getDeviceToken).mockResolvedValueOnce('android_rn-v2:standard-token');
+            jest.mocked(getVoIPDeviceToken).mockResolvedValueOnce('android_rn-v2:voip-token');
+            mockClient.setExtraSessionProps.mockRejectedValueOnce(mockError).mockResolvedValueOnce({});
+
+            await expect(setExtraSessionProps(serverUrl)).resolves.toEqual({});
+            expect(mockClient.setExtraSessionProps).toHaveBeenCalledTimes(2);
+            expect(mockClient.setExtraSessionProps).toHaveBeenNthCalledWith(
+                2,
+                'android_rn-v2:standard-token',
+                false,
+                nativeApplicationVersion,
+                undefined,
+                undefined,
+            );
+        });
+
+        it('should contain rejection of both Android session attachment attempts', async () => {
+            Platform.OS = 'android';
+            const voipError = new Error('Android VoIP is not supported by this server');
+            const attachmentError = new Error('Session attachment failed');
+            jest.mocked(getDeviceToken).mockResolvedValueOnce('android_rn-v2:standard-token');
+            jest.mocked(getVoIPDeviceToken).mockResolvedValueOnce('android_rn-v2:voip-token');
+            mockClient.setExtraSessionProps.mockRejectedValueOnce(voipError).mockRejectedValueOnce(attachmentError);
+
+            await expect(setExtraSessionProps(serverUrl)).resolves.toEqual({error: attachmentError});
+        });
+
+        it('should not retry iOS session attachment without its VoIP token', async () => {
+            Platform.OS = 'ios';
+            const mockError = new Error('VoIP attachment failed');
+            jest.mocked(getDeviceToken).mockResolvedValueOnce('apple_rn-v2:standard-token');
+            jest.mocked(getVoIPDeviceToken).mockResolvedValueOnce('apple_rn-v2:voip-token');
+            mockClient.setExtraSessionProps.mockRejectedValueOnce(mockError);
+
+            await expect(setExtraSessionProps(serverUrl)).resolves.toEqual({error: mockError});
+            expect(mockClient.setExtraSessionProps).toHaveBeenCalledTimes(1);
         });
 
         it('should handle errors gracefully', async () => {

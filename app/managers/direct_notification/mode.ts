@@ -165,6 +165,15 @@ export async function getNotificationVoIPDeviceToken(serverUrl: string): Promise
     return getVoIPDeviceToken();
 }
 
+export async function getInitialLoginVoIPDeviceToken(serverUrl: string): Promise<string> {
+    if (Platform.OS === 'android') {
+        // Servers without Android VoIP login validation can reject this field and fail
+        // authentication. Attach it after login through setExtraSessionProps instead.
+        return '';
+    }
+    return getNotificationVoIPDeviceToken(serverUrl);
+}
+
 export function resetNotificationDeliveryModeCache(): void {
     cachedModes = {};
 }

@@ -8,6 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getDeviceToken, getVoIPDeviceToken, queryGlobalValue} from '@queries/app/global';
 
 import {
+    getInitialLoginVoIPDeviceToken,
     getNotificationDeliveryMode,
     getNotificationDeliveryModeKey,
     getNotificationDeviceToken,
@@ -89,6 +90,31 @@ describe('Direct notification delivery modes', () => {
         await expect(getNotificationDeviceToken(serverUrl)).resolves.toBe('fcm-token');
         await expect(getNotificationVoIPDeviceToken(serverUrl)).resolves.toBe('voip-token');
         expect(getDeviceToken).toHaveBeenCalledTimes(1);
+        expect(getVoIPDeviceToken).toHaveBeenCalledTimes(1);
+    });
+
+    it('defers Android VoIP attachment until after login for every delivery mode', async () => {
+        await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.DIRECT);
+        await expect(getInitialLoginVoIPDeviceToken(serverUrl)).resolves.toBe('');
+        await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.OFF);
+        await expect(getInitialLoginVoIPDeviceToken(serverUrl)).resolves.toBe('');
+        await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.SERVER_PUSH);
+        await expect(getInitialLoginVoIPDeviceToken(serverUrl)).resolves.toBe('');
+
+        expect(getVoIPDeviceToken).not.toHaveBeenCalled();
+    });
+
+    it('preserves iOS VoIP delivery during initial login according to the selected mode', async () => {
+        Platform.OS = 'ios';
+
+        await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.DIRECT);
+        await expect(getInitialLoginVoIPDeviceToken(serverUrl)).resolves.toBe('');
+        await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.OFF);
+        await expect(getInitialLoginVoIPDeviceToken(serverUrl)).resolves.toBe('');
+        expect(getVoIPDeviceToken).not.toHaveBeenCalled();
+
+        await persistNotificationDeliveryMode(serverUrl, NotificationDeliveryMode.SERVER_PUSH);
+        await expect(getInitialLoginVoIPDeviceToken(serverUrl)).resolves.toBe('voip-token');
         expect(getVoIPDeviceToken).toHaveBeenCalledTimes(1);
     });
 

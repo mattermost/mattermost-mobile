@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {nativeApplicationVersion} from 'expo-application';
+import {Platform} from 'react-native';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
 import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
@@ -323,7 +324,19 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, voipDeviceToken || undefined, groupLabel);
+            try {
+                await client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, voipDeviceToken || undefined, groupLabel);
+            } catch (error) {
+                if (Platform.OS !== 'android' || !voipDeviceToken) {
+                    throw error;
+                }
+
+                // Older servers can reject Android's VoIP ID. Preserve ordinary
+                // Server push registration while leaving native-call support to
+                // a compatible server; the outer catch contains a second error.
+                logDebug('error on setExtraSessionProps with Android VoIP; retrying without it', getFullErrorMessage(error));
+                await client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, undefined, groupLabel);
+            }
         }
         return {};
     } catch (error) {
