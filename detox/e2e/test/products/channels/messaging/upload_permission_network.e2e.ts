@@ -9,6 +9,7 @@
 
 import {assertAbacBaseline} from '@support/abac_test_helper';
 import {AccessControl, Setup, System, Team, User} from '@support/server_api';
+import {requireMutationServer} from '@support/server_role';
 import {enableSessionAttribute} from '@support/session_attributes_test_helper';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
@@ -43,7 +44,10 @@ const canSwitchNetwork = isAndroid() && isNetworkControlAvailable(serverOneUrl);
     let permissionPolicyId: string | null = null;
     let restoreNetworkTypeAttribute: (() => Promise<void>) | undefined;
 
+    // Runs alone on the mutation server (detox/e2e/server_mutation_specs.json), so no lock is needed.
     beforeAll(async () => {
+        requireMutationServer('upload_permission_network', 'enables a server-wide session attribute');
+
         await User.apiAdminLogin(siteOneUrl);
 
         // # Require an Enterprise Advanced license: below it the server ignores session attributes
@@ -93,20 +97,26 @@ const canSwitchNetwork = isAndroid() && isNetworkControlAvailable(serverOneUrl);
     });
 
     afterAll(async () => {
-        // # Put the server back first: the device steps below throw when the app is unreachable,
-        // and a server-wide attribute left enabled would leak into the next specs on this server
-        if (permissionPolicyId) {
-            await AccessControl.apiDeletePermissionPolicy(siteOneUrl, permissionPolicyId);
+        try {
+            // # Put the server back first: a server-wide attribute left enabled would leak into
+            // the next specs on this server
+            if (permissionPolicyId) {
+                await AccessControl.apiDeletePermissionPolicy(siteOneUrl, permissionPolicyId);
+            }
+            await restoreNetworkTypeAttribute?.();
+            if (testTeam?.id) {
+                await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
+            }
+        } finally {
+            // # Put the device back on Wi-Fi and in sync even if the server cleanup or the
+            // reachability check after turning Wi-Fi on failed, then log out
+            try {
+                await setAndroidWifiEnabled(true, serverOneUrl);
+            } finally {
+                await device.enableSynchronization();
+                await HomeScreen.logout();
+            }
         }
-        await restoreNetworkTypeAttribute?.();
-        if (testTeam?.id) {
-            await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
-        }
-
-        // # Put the device back on Wi-Fi (adb only, so it works even if the app is gone), then log out
-        await setAndroidWifiEnabled(true, serverOneUrl);
-        await device.enableSynchronization();
-        await HomeScreen.logout();
     });
 
     it('MM-71102_1 - should update the attachment button when the device switches between Wi-Fi and cellular', async () => {
