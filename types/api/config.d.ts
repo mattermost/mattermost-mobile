@@ -136,6 +136,7 @@ interface ClientConfig {
     FeatureFlagCustomProfileAttributes?: string;
     FeatureFlagMmBlocksEnabled?: string;
     FeatureFlagPermissionPolicies?: string;
+    FeatureFlagRecurringScheduledPosts?: string;
     FeatureFlagSessionAttributes?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;

@@ -46,6 +46,12 @@ declare class ScheduledPostModel extends Model {
     /** type : The post type of draft */
     type: string | null;
 
+    /** repeat_type : '' for a one-time post, 'weekly' for a post the server re-schedules every week */
+    repeatType: ScheduledPostRepeatType;
+
+    /** repeat_timezone : The IANA zone name the weekly recurrence advances in */
+    repeatTimezone: string;
+
     toApi: (user_id: string) => ScheduledPost;
 }
 
