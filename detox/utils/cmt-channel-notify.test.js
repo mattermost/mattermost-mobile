@@ -505,6 +505,24 @@ describe('cmt-channel-notify', () => {
             });
         });
 
+        it('never mentions anyone, whatever a test is called', async () => {
+            await withStubbedFetch(async (calls) => {
+                const failures = [{title: 'Messaging - At-Mention › MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here', job: 'detox-ios', error: 'Element not found', passedOnRetry: true}];
+                await notifyCmtChannel({
+                    core,
+                    baseUrl: 'https://test-io.test.mattermost.com',
+                    compositeIdentity: identity,
+                    detail,
+                    failures,
+                    perJobCounts: {'detox-ios': {passed: 460, failed: 0, skipped: 40, flaky: 1}},
+                    webhookUrl: 'https://mm.example/hooks/e2e',
+                });
+                const posted = JSON.parse(calls[0].options.body).text;
+                assert.match(posted, /posting @\u200ball, @\u200bchannel, and @\u200bhere/);
+                assert.doesNotMatch(posted, /@(all|channel|here)\b/);
+            });
+        });
+
         it('falls back to the consolidated fetch when no counts are supplied', async () => {
             await withStubbedFetch(async (calls) => {
                 await notifyCmtChannel({

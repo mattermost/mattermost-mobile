@@ -1178,6 +1178,12 @@ async function fetchFailuresFromConsolidated(baseUrl, compositeIdentity, groupDe
  * @param {string} params.text
  * @param {string} [params.username]
  */
+// Test names and errors come from the tests ("…when posting @all, @channel, and @here"): a zero-width space after
+// each @ keeps them from mentioning, and emailing, the whole channel.
+function withoutMentions(text) {
+    return (text || '').replace(/@(?=[\w.-])/g, '@\u200b');
+}
+
 async function postMattermostWebhook({core, webhookUrl, text, username = 'Mobile E2E'}) {
     if (!webhookUrl) {
         core.info('MATTERMOST webhook URL not set — skipping E2E channel notify');
@@ -1187,7 +1193,7 @@ async function postMattermostWebhook({core, webhookUrl, text, username = 'Mobile
     const body = {
         username,
         icon_url: 'https://mattermost.com/wp-content/uploads/2022/02/icon.png',
-        text,
+        text: withoutMentions(text),
     };
 
     await fetchWithTimeout(

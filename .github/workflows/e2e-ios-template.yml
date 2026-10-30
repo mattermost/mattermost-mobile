@@ -176,7 +176,9 @@ env:
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
   ZEPHYR_FOLDER_ID: "3233873"
   TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
-  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+  # save_report's own channel post, only for a run that does not report to TSIO: a TSIO run is posted once, for the
+  # whole run, by the tsio-channel-notify rollup.
+  WEBHOOK_URL: ${{ (inputs.tsio-config == '' || vars.TSIO_UPLOAD_ENABLED == 'false') && secrets.MM_MOBILE_E2E_WEBHOOK_URL || '' }}
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
   RUNNING_E2E: "true"
