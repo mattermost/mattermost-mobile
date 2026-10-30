@@ -165,4 +165,4 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-https://github.com/HusainAlhajHasan1/mattermost-mobile/actions/workflows/phase1-android-build.yml
+# Build latest ENCMA startup fixes.
