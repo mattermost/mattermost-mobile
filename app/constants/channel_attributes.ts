@@ -30,28 +30,21 @@ export const CHANNEL_ATTRIBUTE_OBJECT_TYPE = 'channel';
 // Custom Profile Attributes in the same group: the attributes an ABAC subject is built from.
 export const USER_ATTRIBUTE_OBJECT_TYPE = 'user';
 
-// The server rejects a values PATCH carrying more than this outright rather than
-// truncating it, so a caller that ever batches has to chunk. Nothing batches yet.
+// The server rejects a values PATCH with more items than this instead of truncating it.
 export const MAX_PROPERTY_VALUE_PATCH_ITEMS = 50;
 
-// The field types whose stored value is an option id rather than free text. A
-// text attribute stores its display string directly, so only these can point at
-// an option that was renamed or removed.
+// Types whose stored value is an option id, so it can point at a renamed or removed option.
 export const OPTION_BACKED_FIELD_TYPES = new Set<string>(['select', 'multiselect', 'rank']);
 
-// The longest a text attribute value may be, matching the server's own limit.
-// Longer input is refused with a 400 rather than trimmed.
+// Matches the server limit; longer input gets a 400, not a trim.
 export const PROPERTY_TEXT_VALUE_MAX_LENGTH = 64;
 
-// Returned by POST /channels when a required attribute the caller may set was
-// left empty. Carries no params and names no attribute — which attributes a
-// server defines is itself sensitive — so the create screen maps this one id to
-// a legible string instead of showing the raw error.
+// POST /channels error when a required attribute was left empty. It names no attribute
+// (which attributes exist is sensitive), so the create screen maps it to its own string.
 export const MISSING_REQUIRED_ATTRIBUTES_ERROR_ID = 'api.channel.create_channel.missing_required_attributes.app_error';
 
-// ASCII unit separator. Joins per-attribute signatures with a byte no option name,
-// field name or colour can contain, so no value can forge a record boundary and
-// make two different configurations hash alike.
+// ASCII unit separator. Option and field names are free text, so a printable
+// separator could let two different configurations produce the same signature.
 export const SIGNATURE_SEPARATOR = '\u001f';
 
 // Values of a field's attrs.actions, deciding where its value displays. The

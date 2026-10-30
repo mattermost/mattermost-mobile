@@ -82,8 +82,7 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-// The sheet renders in its own route, so what it was handed is inspected here and
-// its callback invoked the way the sheet itself would invoke it.
+// The sheet renders in its own route, so tests read its props and call onSubmit directly.
 const sheetPropsAt = (index: number) => (mockedBottomSheet.mock.calls[index][0]() as ReactElement<ComponentProps<typeof ChannelAttributeEditor>>).props;
 const sheetProps = () => sheetPropsAt(0);
 
@@ -191,9 +190,6 @@ describe('ChannelInfoAttributes', () => {
         });
 
         it('should not explain a permission lock when no row is editable, which is the common member view', () => {
-            // The System Console pins the tier to admin, and ordinary members hold the
-            // channel permission, so every row denied is the usual case rather than an
-            // edge one. A notice per row would be noise.
             const adminTier = field({permissionValues: 'admin'});
             const {queryByTestId} = render([attribute({field: adminTier})]);
 
@@ -217,8 +213,6 @@ describe('ChannelInfoAttributes', () => {
         });
 
         it('should still explain a policy lock when nothing on the channel is editable', () => {
-            // A policy lock describes the channel, not the viewer, so it is worth a line
-            // whoever is reading.
             const locked = field({attrs: {options: OPTIONS, actions: ['display_label_info'], change_policy: 'never'}});
             const {getByTestId} = render([attribute({field: locked})], permissions({canManageChannelProperties: false}));
 
@@ -254,7 +248,6 @@ describe('ChannelInfoAttributes', () => {
 
             await waitFor(() => expect(getByTestId('channel_info.attributes.classification.error')).toBeTruthy());
 
-            // The row keeps the value it had: nothing was written optimistically.
             expect(queryByTestId('channel_info.attributes.classification.chip')).toBeTruthy();
         });
 
@@ -317,9 +310,7 @@ describe('ChannelInfoAttributes', () => {
             await act(async () => {
                 firstSubmit = sheetPropsAt(0).onSubmit('cf-1', 'level-public');
 
-                // The write itself is chained through a microtask (see pendingWrites
-                // in channel_info_attributes.tsx), so it has not reached the mock yet
-                // when this synchronous call returns. Flush it before asserting.
+                // Writes are chained through a microtask (pendingWrites), so flush before asserting.
                 await Promise.resolve();
             });
 
@@ -329,9 +320,7 @@ describe('ChannelInfoAttributes', () => {
                 secondSubmit = sheetPropsAt(1).onSubmit('cf-1', 'level-secret');
             });
 
-            // The second write is chained behind the still-pending first one: it
-            // must not have reached the server yet. Without the queue, both would
-            // fire immediately and could arrive at the server in either order.
+            // Queued behind the still-pending first write, so not sent yet.
             expect(mockedSetValue).toHaveBeenCalledTimes(1);
 
             await act(async () => {

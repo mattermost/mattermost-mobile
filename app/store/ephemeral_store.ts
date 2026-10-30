@@ -66,9 +66,6 @@ class EphemeralStoreSingleton {
     // (cleared on app restart) and cleared per server on logout.
     private classificationBannerFetchedAt: {[serverUrl: string]: number | undefined} = {};
 
-    // Tracked separately from a successful fetch: a malformed-response failure
-    // backs off for a short window instead of borrowing the 1-hour success TTL,
-    // so a genuine fix or a forced retry is not blocked for the rest of that hour.
     private classificationBannerFailedAt: {[serverUrl: string]: number | undefined} = {};
 
     // Track classification option ids we've already forced a field refresh for, so an
@@ -562,10 +559,8 @@ class EphemeralStoreSingleton {
         delete this.channelAttributeValuesSynced[serverUrl];
     };
 
-    // Serializes property-write operations that share a key (server:target), so a
-    // REST reconciliation and a websocket write for the same target can never
-    // interleave their read-modify-write sequence. Each caller's whole
-    // read-then-write runs to completion before the next queued one starts.
+    // Serializes read-modify-write property writes per server:target key, so REST reconciliation
+    // and websocket writes for the same target can't interleave.
     private propertyWriteQueue: Map<string, Promise<unknown>> = new Map();
 
     runExclusive = <T>(key: string, fn: () => Promise<T>): Promise<T> => {

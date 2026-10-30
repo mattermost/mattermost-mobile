@@ -114,9 +114,7 @@ type PropertyValue<T = unknown> = {
 
 type PropertyValuePatch<T = unknown> = Partial<Pick<PropertyValue<T>, 'value'>>;
 
-// One item of the PATCH values body. The route takes a bare array of these, and
-// a null value is how a value is cleared: the server answers a clear with an
-// upserted null-valued row rather than a delete.
+// A null value clears it; the server upserts a null-valued row instead of deleting.
 type PropertyValuePatchItem<T = unknown> = {
     field_id: string;
     value: T | null;

@@ -11,9 +11,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 // Hard character cap per chip. Values longer than this are truncated with an
-// ellipsis so one long label cannot consume the whole header row. The 'option'
-// variant opts out: in a picker the whole option name has to be readable, since
-// two markings can share their first fifteen characters.
+// ellipsis so one long label cannot consume the whole header row. Not applied to
+// 'option': in a picker, two names can share their first fifteen characters.
 const MAX_CHARS = 15;
 
 // Wraps several AttributeChips for one multi-valued attribute so they wrap
@@ -75,8 +74,7 @@ type Props = {
     announceLabel?: boolean;
 
     // 'header' for chips inside the dark channel header; 'info' (default) for
-    // chips on a light surface such as Channel Info or the overflow sheet;
-    // 'option' for a chip in a picker, which renders the value in full.
+    // chips on a light surface such as Channel Info or the overflow sheet; 'option' in a picker.
     // Only affects the neutral fallback colors — option colors are unchanged.
     variant?: 'header' | 'info' | 'option';
 
