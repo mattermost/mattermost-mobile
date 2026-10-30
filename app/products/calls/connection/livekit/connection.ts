@@ -64,8 +64,6 @@ type RoomMetadata = {
     live_captions?: CallJobState;
 }
 
-const isBot = (participant: Participant) => participant.attributes?.[CALL_ATTRIBUTES.BOT] === 'true';
-
 const isMicMuted = (participant: Participant) =>
     participant.getTrackPublication(Track.Source.Microphone)?.isMuted ?? true;
 
@@ -127,7 +125,10 @@ export async function newLiveKitConnection(
         throw err;
     }
 
-    const {session_id: mySessionID, token, url, call_state: callState} = session;
+    const {session_id: mySessionID, token, url, bot_user_id: botUserID, call_state: callState} = session;
+
+    // Attributes are self-set, so the bot is matched by its server-minted identity instead.
+    const isBot = (participant: Participant) => parseIdentity(participant.identity).userID === botUserID;
 
     // Ours joins with the room, once mySessionId is set; until then the call view shows a placeholder for us.
     const otherSessions = callState.sessions.filter(({session_id: sessionID}) => sessionID !== mySessionID);
