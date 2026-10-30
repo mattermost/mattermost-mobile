@@ -13,6 +13,12 @@ Phase 6 adds an Android self-managed Telecom call surface. It is intended to rep
 - While MainActivity is foreground, the existing in-app call UI owns ringing; a VoIP push is acknowledged without starting a second native ring. If Telecom is unavailable, the previous ordinary call-message notification remains the fallback.
 - The former microphone-only foreground service is retained only as a fallback for calls that could not register with Telecom. A Telecom call owns the combined phone-call/microphone service instead.
 
+## Startup/login compatibility
+
+- Ordinary Android startup registers the native-call headless task without eagerly loading WinterCG or the full app initialization graph. Those modules still load, with the existing retry guard and all-calls-ended lifecycle, when the native service actually invokes the task.
+- Android password, Intune, and magic-link login requests omit `voip_device_id`; iOS behavior is unchanged. For Server push, the first authenticated session update attempts to attach the Android VoIP token. If an older server rejects it, Android retries without that field to preserve ordinary push registration and contains any second failure instead of creating an unhandled rejection. Direct and Off skip this session attachment.
+- This compatibility behavior is not a substitute for the backend calling changes. A server that rejects Android VoIP session attachment can still allow login and ordinary Server push, but it cannot provide native incoming calls until its Calls/VoIP contract is compatible.
+
 ## Required server and push-proxy deployment
 
 **The mobile app and a successful mobile CI build are not sufficient for live native incoming calls.** A compatible Mattermost server and push proxy must be deployed and configured together.
@@ -47,12 +53,13 @@ Use the intended Android hardware, compatible server/Calls deployment, compatibl
 
 At minimum verify:
 
-1. **Background and killed-process ringing:** continuous phone-style audio for the expected ring window, not a single message sound; caller name/avatar; no duplicate ordinary call-message notification.
-2. **Lock screen and permissions:** full-screen/CallStyle presentation, Answer/Decline, microphone permission flow, and behavior when full-screen-intent or notification permission is denied.
-3. **Live call controls:** successful RTC join, microphone capture, mute/unmute in both native and in-app directions, local hang-up, remote hang-up, ring timeout, answered/declined elsewhere, and caller cancellation while JavaScript is still booting.
-4. **Lifecycle:** swipe-away/killed process, screen off, MainActivity recreation, returning to the in-app call, and leaving/re-entering a call. Android **force-stop is different**: FCM is not expected to wake a force-stopped app; do not count that as a supported cold-start case.
-5. **Transport preservation:** Calls v1 and v2, outgoing calls, outbound ringback, foreground in-app ringing, speaker/earpiece/Bluetooth routing, and the legacy microphone-service fallback when Telecom is unavailable.
-6. **Per-server behavior:** Server push produces native calls with the compatible backend; Direct/Off do not leak VoIP tokens or display suppressed FCM calls; multiple servers retain independent modes.
-7. **Network security:** calls and answer/reconciliation work through the approved WireGuard and imported CA without disabling certificate-chain or hostname validation.
+1. **Ordinary startup and login:** cold foreground launch reaches the server screen without a headless-initialization failure; password login succeeds, plus Intune/magic-link where used. On an older server, login and ordinary Server push still work even if Android VoIP session attachment is rejected. Record any server response or logcat evidence if this fails.
+2. **Background and killed-process ringing:** continuous phone-style audio for the expected ring window, not a single message sound; caller name/avatar; no duplicate ordinary call-message notification.
+3. **Lock screen and permissions:** full-screen/CallStyle presentation, Answer/Decline, microphone permission flow, and behavior when full-screen-intent or notification permission is denied.
+4. **Live call controls:** successful RTC join, microphone capture, mute/unmute in both native and in-app directions, local hang-up, remote hang-up, ring timeout, answered/declined elsewhere, and caller cancellation while JavaScript is still booting.
+5. **Lifecycle:** swipe-away/killed process, screen off, MainActivity recreation, returning to the in-app call, and leaving/re-entering a call. Android **force-stop is different**: FCM is not expected to wake a force-stopped app; do not count that as a supported cold-start case.
+6. **Transport preservation:** Calls v1 and v2, outgoing calls, outbound ringback, foreground in-app ringing, speaker/earpiece/Bluetooth routing, and the legacy microphone-service fallback when Telecom is unavailable.
+7. **Per-server behavior:** Server push produces native calls with the compatible backend; Direct/Off do not leak VoIP tokens or display suppressed FCM calls; multiple servers retain independent modes.
+8. **Network security:** calls and answer/reconciliation work through the approved WireGuard and imported CA without disabling certificate-chain or hostname validation.
 
 CI success and installation of the APK establish build/install evidence only. Ringing, lock-screen UI, answer/decline, audio, backend compatibility, and FCM delivery remain unverified until these physical-device and deployment checks pass.

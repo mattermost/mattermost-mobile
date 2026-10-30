@@ -1,19 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Install WinterCG globals needed by the calls stack (TextDecoder for
-// msgpack/WebRTC negotiation, URL for the WebSocket client). The foreground
-// path receives these through Expo's `Expo.fx`.
-import {installGlobal} from 'expo/src/winter/installGlobal';
 import {AppRegistry, DeviceEventEmitter} from 'react-native';
 
 import Calls from '@constants/calls';
-import {initialize} from '@init/app';
 import {logError} from '@utils/log';
-
-installGlobal('TextDecoder', () => require('expo/src/winter/TextDecoder').TextDecoder);
-installGlobal('URL', () => require('expo/src/winter/url').URL);
-installGlobal('URLSearchParams', () => require('expo/src/winter/url').URLSearchParams);
 
 // Started by MMCallsBootTaskService when an incoming-call FCM arrives while
 // the process is killed. Initialization attaches the normal WebSocket and
@@ -33,6 +24,14 @@ const headlessBootHandler = async () => {
     }
     bootedOnce = true;
     try {
+        // Keep WinterCG and the full initialization graph out of ordinary
+        // foreground startup. They are needed only when native Calls wakes JS.
+        // The foreground path receives these globals through Expo's `Expo.fx`.
+        const {installGlobal} = require('expo/src/winter/installGlobal');
+        installGlobal('TextDecoder', () => require('expo/src/winter/TextDecoder').TextDecoder);
+        installGlobal('URL', () => require('expo/src/winter/url').URL);
+        installGlobal('URLSearchParams', () => require('expo/src/winter/url').URLSearchParams);
+        const {initialize} = require('@init/app');
         await initialize();
     } catch (error) {
         // The native ring has its own timeout and teardown. Do not keep a

@@ -1,13 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-jest.mock('expo/src/winter/installGlobal', () => ({
-    installGlobal: jest.fn(),
-}), {virtual: true});
+let mockWinterModuleLoaded = false;
+let mockAppModuleLoaded = false;
 
-jest.mock('@init/app', () => ({
-    initialize: jest.fn(),
-}));
+jest.mock('expo/src/winter/installGlobal', () => {
+    mockWinterModuleLoaded = true;
+    return {
+        installGlobal: jest.fn(),
+    };
+}, {virtual: true});
+
+jest.mock('@init/app', () => {
+    mockAppModuleLoaded = true;
+    return {
+        initialize: jest.fn(),
+    };
+});
 
 jest.mock('@utils/log', () => ({
     logError: jest.fn(),
@@ -36,9 +45,18 @@ function loadHeadlessHandler(): HeadlessHandler {
 beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
+    mockWinterModuleLoaded = false;
+    mockAppModuleLoaded = false;
 });
 
 describe('Android native-call headless boot', () => {
+    it('registers without eagerly loading WinterCG or app initialization', () => {
+        loadHeadlessHandler();
+
+        expect(mockWinterModuleLoaded).toBe(false);
+        expect(mockAppModuleLoaded).toBe(false);
+    });
+
     it('finishes after an initialization failure instead of waiting forever', async () => {
         const {initialize} = require('@init/app');
         initialize.mockRejectedValueOnce(new Error('database unavailable'));
