@@ -770,7 +770,7 @@ jobs:
 
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@18a0baa05c20060a4036d38ccdb030c5e53051be # release-0.15.0 / main@18a0baa
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@3212731263d782a3993dbdf4c8c54f143e69a7b2 # release-0.16.0 / main@3212731
         with:
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
