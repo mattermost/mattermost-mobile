@@ -71,6 +71,8 @@ runs:
         lane: ${{ inputs.job-key }}
         evidence-dir: triage-evidence
         test-root: .
+        # A failure in an unchanged spec is "merge main" when main changed the code it runs through.
+        support-paths: detox/e2e/support,detox/maestro/lib,detox/maestro/subflows,detox/maestro/fixtures
         github-token: ${{ inputs.github-token }}
         # The PR changes the app, which can't take the separate test server down or put a
         # proxy page in front of it: a test that failed on that environment is not the PR's.
