@@ -31,6 +31,10 @@ inputs:
     description: Comma-separated commit-status contexts the one PR-wide triage check summarises
     required: false
     default: e2e-test/detox-ios,e2e-test/detox-ipad,e2e-test/detox-android,e2e-test/maestro-ios,e2e-test/maestro-android
+  rerun-attempts:
+    description: Automatic re-runs a lane red only on infrastructure may get (see e2e-tests-rerun.yml); 0 turns it off. The calling job needs actions read.
+    required: false
+    default: "0"
 
 runs:
   using: composite
@@ -80,6 +84,7 @@ runs:
         anthropic-api-key: ${{ inputs.anthropic-api-key }}
         mode: ${{ inputs.mode }}
         answers-cache: e2e-triage-answers.json
+        rerun-attempts: ${{ inputs.rerun-attempts }}
         findings-file: e2e-triage-findings.json
     # The verdict on each failed test, which the channel message reads (tsio-channel-notify).
     - name: Upload triage findings

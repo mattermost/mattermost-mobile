@@ -1305,6 +1305,8 @@ jobs:
       contents: read
       statuses: write
       pull-requests: read
+      # Triage reads the run's failed jobs before it asks for an automatic re-run.
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -1332,3 +1334,6 @@ jobs:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           # A triage failure must never change the outcome of the E2E run itself.
           mode: ${{ vars.E2E_TRIAGE_MODE || 'report-only' }}
+          # A lane red only on infrastructure (a dead job, missing reports) asks for one
+          # automatic re-run of the failed jobs; e2e-tests-rerun.yml carries it out.
+          rerun-attempts: '1'
