@@ -7,6 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -26,15 +27,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
-
-const setDepartment = async (userId: string, fieldId: string, department: string) => {
-    const {error} = await AccessControl.apiSetUserPropertyValues(siteOneUrl, userId, {[fieldId]: department});
-    if (error) {
-        throw new Error(`Failed to set the Department attribute: ${JSON.stringify(error)}`);
-    }
-};
 
 describe('Messaging - Upload Permission (ABAC)', () => {
     const serverOneDisplayName = 'Server 1';
@@ -45,12 +39,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
     let deniedUser: any;
     let allowedUser: any;
     let permissionPolicyId: string | null = null;
-    let attributeFieldId: string | null = null; // field UUID — used as the property values key
-    let attributeFieldName: string | null = null; // field name  — used in CEL expressions
-    let attributeFieldCreated = false; // true if this run created the field (must clean up)
-
-    // Server settings this suite changes, restored as they were rather than to assumed defaults.
-    let originalSettings: Record<string, any> = {};
+    let departmentFieldId = '';
 
     beforeAll(async () => {
         await User.apiAdminLogin(siteOneUrl);
@@ -62,53 +51,10 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             throw new Error(`Upload permission tests need an Enterprise Advanced license, got ${license?.SkuShortName}`);
         }
 
-        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        originalSettings = {
-            AccessControlSettings: {
-                EnableAttributeBasedAccessControl: originalConfig?.AccessControlSettings?.EnableAttributeBasedAccessControl,
-                EnableUserManagedAttributes: originalConfig?.AccessControlSettings?.EnableUserManagedAttributes,
-            },
-            PasswordSettings: {MinimumLength: originalConfig?.PasswordSettings?.MinimumLength},
-            ServiceSettings: {AllowCorsFrom: originalConfig?.ServiceSettings?.AllowCorsFrom},
-        };
-
-        // # Relax password policy for test users
-        await System.apiPatchConfig(siteOneUrl, {
-            PasswordSettings: {MinimumLength: 8},
-        });
-
-        // # Make sure the feature flags are on. Only flags that are off get written, and the others
-        // are left as they are, so suites sharing this server keep their flags. They are not turned
-        // back off afterwards: PermissionPolicies is on by default, the ABAC flag only exists on
-        // servers older than 11.10, and the other ABAC suite may still be running.
-        const {error: flagsError} = await System.apiEnableFeatureFlags(siteOneUrl, [
-            'AttributeBasedAccessControl',
-            'PermissionPolicies',
-        ]);
-        if (flagsError) {
-            throw new Error(`Failed to enable the feature flags: ${JSON.stringify(flagsError)}`);
-        }
-        const {error: abacError} = await AccessControl.apiEnableABAC(siteOneUrl);
-        if (abacError) {
-            throw new Error(`Failed to enable ABAC: ${JSON.stringify(abacError)}`);
-        }
-
-        // # Enable user-managed attributes so CEL expressions can reference user.attributes.*
-        await System.apiPatchConfig(siteOneUrl, {
-            AccessControlSettings: {EnableUserManagedAttributes: true},
-        });
-
-        // # Reuse existing "Department" attribute field or create it if absent
-        const {field, created, error: fieldError} = await AccessControl.apiGetOrCreateCustomProfileAttributeField(
-            siteOneUrl,
-            'Department',
-        );
-        if (fieldError) {
-            throw new Error(`Failed to get/create attribute field: ${JSON.stringify(fieldError)}`);
-        }
-        attributeFieldId = field.id;
-        attributeFieldName = field.name;
-        attributeFieldCreated = created;
+        // # ABAC, user-managed attributes and the Department attribute come from provisioning
+        await assertAbacBaseline(siteOneUrl);
+        const department = await getProvisionedDepartmentField(siteOneUrl);
+        departmentFieldId = department.id;
 
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
@@ -124,26 +70,26 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         ({user: deniedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'denied'}));
         await Team.apiAddUserToTeam(siteOneUrl, deniedUser.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, testChannel.id);
-        await setDepartment(deniedUser.id, attributeFieldId as string, 'Sales');
+        await setDepartment(siteOneUrl, deniedUser.id, department.id, 'Sales');
 
         // # Create allowed user (Department: "Engineering") and add to team + channel
         ({user: allowedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'allowed'}));
         await Team.apiAddUserToTeam(siteOneUrl, allowedUser.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, testChannel.id);
-        await setDepartment(allowedUser.id, attributeFieldId as string, 'Engineering');
+        await setDepartment(siteOneUrl, allowedUser.id, department.id, 'Engineering');
 
         // # Wait for the server-side attribute view to pick up the values (30s refresh gate)
         await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
 
-        // # Create a permission policy: Engineering can upload files, Sales cannot. System permission
-        // policies are server-wide, so uploads are restricted for users outside Engineering while this
-        // suite runs; afterAll deletes the policy first.
-        const {policy, error: policyError} = await AccessControl.apiCreatePermissionPolicy(
+        // # In this channel only, Engineering can upload files and Sales cannot
+        const {policy, error: policyError} = await AccessControl.apiCreateChannelPermissionPolicy(
             siteOneUrl,
-            `abac-upload-policy-${getRandomId()}`,
+            testChannel.id,
             [{
+                name: 'abac-upload',
+                role: 'channel_user',
                 actions: ['upload_file_attachment'],
-                expression: `user.attributes.${attributeFieldName} == "Engineering"`,
+                expression: `user.attributes.${department.name} == "Engineering"`,
             }],
         );
         if (policyError) {
@@ -156,22 +102,13 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             throw new Error(`Failed to activate permission policy: ${JSON.stringify(activateError)}`);
         }
 
-        // # Allow cross-origin WebSocket connections for the Android emulator
-        await System.apiPatchConfig(siteOneUrl, {
-            ServiceSettings: {AllowCorsFrom: '*'},
-        });
-
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
     });
 
     afterAll(async () => {
-        // # Clean up the server first: a failing UI step must not leave the deny policy active on a
-        // shared server. Then policy, attribute field (if created), team, users, and config.
+        // # Delete the policy first so a failing UI step cannot leave it active
         if (permissionPolicyId) {
             await AccessControl.apiDeletePermissionPolicy(siteOneUrl, permissionPolicyId);
-        }
-        if (attributeFieldCreated && attributeFieldId) {
-            await AccessControl.apiDeleteCustomProfileAttributeField(siteOneUrl, attributeFieldId);
         }
         if (testTeam?.id) {
             await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
@@ -182,7 +119,6 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         if (allowedUser?.id) {
             await User.apiDeactivateUser(siteOneUrl, allowedUser.id);
         }
-        await System.apiPatchConfig(siteOneUrl, originalSettings);
     });
 
     it('MM-68219_3 - should disable the attachment button when the policy denies uploads in the channel', async () => {
@@ -229,7 +165,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             withTimeout(timeouts.TEN_SEC);
 
         // # Change the user's attribute so the policy now grants uploads
-        await setDepartment(deniedUser.id, attributeFieldId as string, 'Engineering');
+        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
 
         // * The button re-enables on its own. The server's attribute view refreshes on a 30s gate,
         // which the app's delayed re-check is built to outlast.
@@ -238,7 +174,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             withTimeout(timeouts.ONE_MIN);
 
         // # Restore the attribute so the suite leaves the user as it found it
-        await setDepartment(deniedUser.id, attributeFieldId as string, 'Sales');
+        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
 
         await ChannelScreen.back();
         await HomeScreen.logout();

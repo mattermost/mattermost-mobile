@@ -437,7 +437,7 @@ describe('ProfileForm', () => {
         expect(getByTestId('edit_profile_form.customAttributes.unknownField')).toBeTruthy();
     });
 
-    describe('SAML Field Disabling', () => {
+    describe('Read-only Custom Field Disabling', () => {
         it('should disable custom fields when SAML-linked', () => {
             const customFields = [
                 TestHelper.fakeCustomProfileFieldModel({
@@ -493,6 +493,44 @@ describe('ProfileForm', () => {
 
             // Normal field should be enabled
             expect(normalField.props.editable).toBe(true);
+        });
+
+        it('should disable custom fields when admin-managed', () => {
+            const customFields = [
+                TestHelper.fakeCustomProfileFieldModel({
+                    id: 'admin-managed-field',
+                    name: 'Admin Managed Field',
+                    type: 'select',
+                    attrs: {
+                        managed: 'admin',
+                        options: [{id: 'option-1', name: 'Option 1'}],
+                    },
+                }),
+            ];
+
+            const props = {
+                ...baseProps,
+                enableCustomAttributes: true,
+                customFields,
+                userInfo: {
+                    ...baseProps.userInfo,
+                    customAttributes: {
+                        'admin-managed-field': {
+                            id: 'admin-managed-field',
+                            name: 'Admin Managed Field',
+                            type: 'select',
+                            value: '',
+                        },
+                    },
+                },
+            };
+
+            renderWithIntl(
+                <ProfileForm {...props}/>,
+            );
+
+            const managedField = screen.getByTestId('edit_profile_form.customAttributes.admin-managed-field.selector');
+            expect(managedField.props.disabled).toBe(true);
         });
 
         it('should enable custom fields when SAML attribute is empty', () => {

@@ -7,7 +7,7 @@ import {afterEach, describe, it, type TestContext} from 'node:test';
 import {AxiosError, type AxiosAdapter, type AxiosResponse, type InternalAxiosRequestConfig} from 'axios';
 
 import {client} from './client';
-import {apiPatchFeatureFlags} from './system';
+import {apiEnableFeatureFlags, apiPatchFeatureFlags} from './system';
 
 const BASE_URL = 'http://unit-test.invalid';
 const previousAdapter = client.defaults.adapter;
@@ -135,5 +135,39 @@ describe('apiPatchFeatureFlags', () => {
         assert.deepEqual(result.error, {message: 'getFeatureFlags: empty config response'});
         assert.equal(requests.length, 1);
         assert.equal(requests[0]?.method, 'get');
+    });
+});
+
+describe('apiEnableFeatureFlags', () => {
+    afterEach(() => {
+        client.defaults.adapter = previousAdapter;
+    });
+
+    it('should retry a config read with a dropped response before writing', async (t) => {
+        t.mock.timers.enable({apis: ['setTimeout']});
+        const requests: InternalAxiosRequestConfig[] = [];
+        let reads = 0;
+
+        client.defaults.adapter = (async (config) => {
+            requests.push(config);
+            if (config.method === 'get') {
+                reads += 1;
+                if (reads === 1) {
+                    throw new AxiosError('socket hang up', 'ECONNRESET', config);
+                }
+                return response(config, {FeatureFlags: {PermissionPolicies: false, ChannelAttributes: true}});
+            }
+            return response(config, {});
+        }) as AxiosAdapter;
+
+        const pending = apiEnableFeatureFlags(BASE_URL, ['PermissionPolicies']);
+        await advanceRetryDelay(t);
+        const result = await pending;
+
+        assert.equal(result.error, undefined);
+        assert.deepEqual(requests.map(({method}) => method), ['get', 'get', 'put']);
+        assert.deepEqual(JSON.parse(String(requests[2]?.data)), {
+            FeatureFlags: {PermissionPolicies: true, ChannelAttributes: true},
+        });
     });
 });

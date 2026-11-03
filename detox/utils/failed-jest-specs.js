@@ -58,6 +58,56 @@ function suiteFailed(suite) {
 }
 
 /**
+ * Suites of a Jest report keyed by spec, or null when the report is missing, unreadable or empty.
+ *
+ * @param {string} resultsPath
+ * @returns {Map<string, object> | null}
+ */
+function readSuitesByKey(resultsPath) {
+    if (!resultsPath || !fs.existsSync(resultsPath)) {
+        return null;
+    }
+
+    let report;
+    try {
+        report = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+    } catch {
+        return null;
+    }
+
+    const suites = Array.isArray(report.testResults) ? report.testResults : [];
+    if (suites.length === 0) {
+        return null;
+    }
+
+    const byKey = new Map();
+    for (const suite of suites) {
+        const key = specKey(suitePath(suite));
+        if (key) {
+            byKey.set(key, suite);
+        }
+    }
+    return byKey;
+}
+
+/**
+ * Specs from the shard that never appeared in the Jest report: the ones a killed Jest process
+ * never started. Specs that ran, passed or failed, are left out.
+ *
+ * @param {string} resultsPath
+ * @param {string[]} shardSpecs
+ * @returns {string[]}
+ */
+function listUnrunSpecs(resultsPath, shardSpecs) {
+    const specs = (shardSpecs || []).filter(Boolean);
+    const byKey = readSuitesByKey(resultsPath);
+    if (!byKey) {
+        return specs;
+    }
+    return specs.filter((spec) => !byKey.has(specKey(spec)));
+}
+
+/**
  * Specs from the shard that failed or never appeared in the Jest report.
  * Missing report → retry the whole shard (crash / timeout before JSON).
  *
@@ -67,28 +117,9 @@ function suiteFailed(suite) {
  */
 function listRetrySpecs(resultsPath, shardSpecs) {
     const specs = (shardSpecs || []).filter(Boolean);
-    if (!resultsPath || !fs.existsSync(resultsPath)) {
+    const byKey = readSuitesByKey(resultsPath);
+    if (!byKey) {
         return specs;
-    }
-
-    let report;
-    try {
-        report = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
-    } catch {
-        return specs;
-    }
-
-    const suites = Array.isArray(report.testResults) ? report.testResults : [];
-    if (suites.length === 0) {
-        return specs;
-    }
-
-    const byKey = new Map();
-    for (const suite of suites) {
-        const key = specKey(suitePath(suite));
-        if (key) {
-            byKey.set(key, suite);
-        }
     }
 
     const retry = [];
@@ -133,6 +164,37 @@ function suiteCases(suite) {
  * @param {string[]} inputPaths
  * @returns {object}
  */
+/**
+ * The later attempt of a suite, with each test's earlier failures carried into
+ * Jest's retryReasons. Replacing attempt 1 outright reported a test that failed
+ * and then passed as passed: the failure vanished from Test System IO, and its
+ * history never showed the test as flaky.
+ *
+ * @param {object} later
+ * @param {object} earlier
+ * @returns {object}
+ */
+function withEarlierFailures(later, earlier) {
+    const failedBefore = new Map();
+    for (const c of suiteCases(earlier)) {
+        if (c?.status === 'failed') {
+            const reasons = [...(c.retryReasons || []), (c.failureMessages || []).join('\n') || 'failed'];
+            failedBefore.set(c.fullName || c.title, reasons);
+        }
+    }
+    if (failedBefore.size === 0) {
+        return later;
+    }
+    const field = Array.isArray(later?.assertionResults) ? 'assertionResults' : 'testResults';
+    return {
+        ...later,
+        [field]: suiteCases(later).map((c) => {
+            const reasons = failedBefore.get(c?.fullName || c?.title);
+            return reasons ? {...c, retryReasons: [...reasons, ...(c.retryReasons || [])]} : c;
+        }),
+    };
+}
+
 function mergeJestResultsPreferLater(inputPaths) {
     const byKey = new Map();
     for (const inputPath of inputPaths) {
@@ -155,7 +217,7 @@ function mergeJestResultsPreferLater(inputPaths) {
             if (previous && suiteCases(suite).length === 0 && suiteCases(previous).length > 0) {
                 continue;
             }
-            byKey.set(key, suite);
+            byKey.set(key, previous ? withEarlierFailures(suite, previous) : suite);
         }
     }
 
@@ -210,7 +272,8 @@ function main() {
     }
 
     const shardSpecs = (args['shard-specs'] || '').split(/\s+/).filter(Boolean);
-    const retry = listRetrySpecs(args.results, shardSpecs);
+    const list = args['unrun-only'] ? listUnrunSpecs : listRetrySpecs;
+    const retry = list(args.results, shardSpecs);
     for (const spec of retry) {
         console.log(spec);
     }
@@ -224,5 +287,6 @@ module.exports = {
     specKey,
     suiteFailed,
     listRetrySpecs,
+    listUnrunSpecs,
     mergeJestResultsPreferLater,
 };

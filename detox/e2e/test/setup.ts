@@ -6,6 +6,9 @@ import {execSync} from 'child_process';
 import {existsSync} from 'fs';
 
 import {System, User} from '@support/server_api';
+import {drainPoolGuardViolations} from '@support/server_api/pool_guard';
+import {applyServerBaseline} from '@support/server_baseline';
+import {serverRole} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
 import {safeEnableSynchronization} from '@support/utils';
 
@@ -194,6 +197,14 @@ async function grantAndroidNotificationPermission(): Promise<void> {
     }
 }
 
+// iOS has no shard-level retry (Android re-runs failed spec files in a second
+// attempt), so on CI a failing iOS test is retried once in place. Jest keeps the
+// first attempt's error in the report's retryReasons, and Test System IO stores it
+// as a failed attempt: a test that passes on retry is reported flaky, not clean.
+if (process.env.CI && process.env.IOS === 'true') {
+    jest.retryTimes(Number(process.env.DETOX_TEST_RETRIES ?? 1), {logErrorsBeforeRetry: true});
+}
+
 // ─── Global beforeAll ────────────────────────────────────────────────────────
 // Runs before each test file.
 // Responsibilities: launch app with clean state, admin login, plugin cleanup.
@@ -354,4 +365,17 @@ beforeAll(async () => {
     console.info('✅ App launched');
 
     await loginAdmin();
+
+    // The mutation shard runs specs that change server-wide state; start each one from the baseline.
+    if (serverRole === 'mutation') {
+        await applyServerBaseline(siteOneUrl);
+    }
 }, 360_000);
+
+// API helpers return errors instead of throwing, so a blocked write would otherwise pass unnoticed.
+afterAll(() => {
+    const violations = drainPoolGuardViolations();
+    if (violations.length) {
+        throw new Error(`Server-wide writes from a pool shard (move the spec to detox/e2e/server_mutation_specs.json):\n${violations.join('\n')}`);
+    }
+});

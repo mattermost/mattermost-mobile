@@ -211,7 +211,7 @@ export async function fetchChannelByName(serverUrl: string, teamId: string, chan
     }
 }
 
-export async function createChannel(serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType) {
+export async function createChannel(serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType, propertyValues?: PropertyValuePatchItem[]) {
     try {
         EphemeralStore.creatingChannel = true;
         const client = NetworkManager.getClient(serverUrl);
@@ -229,7 +229,7 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             type,
         } as Channel;
 
-        const channelData = await client.createChannel(channel);
+        const channelData = await client.createChannel(channel, propertyValues);
 
         const member = await client.getChannelMember(channelData.id, currentUserId);
 

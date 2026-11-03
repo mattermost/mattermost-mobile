@@ -199,6 +199,31 @@ export const apiCreatePermissionPolicy = async (
 };
 
 /**
+ * Create a channel access policy whose rules gate permission actions in that channel only; channel
+ * membership is unaffected. The policy id is the channel id, so delete it with apiDeletePermissionPolicy.
+ * Requires admin session and the ChannelPermissionPolicies feature flag.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - the channel the policy applies to
+ * @param {Array<{name: string; role: string; actions: string[]; expression: string}>} rules - v0.4 rules; each needs a unique name and a channel role such as 'channel_user'
+ * @return {Object} returns {policy} on success or {error, status} on error
+ */
+export const apiCreateChannelPermissionPolicy = async (
+    baseUrl: string,
+    channelId: string,
+    rules: Array<{name: string; role: string; actions: string[]; expression: string}>,
+): Promise<any> => {
+    try {
+        const response = await client.put(
+            `${baseUrl}/api/v4/access_control_policies`,
+            {id: channelId, type: 'channel', version: 'v0.4', rules},
+        );
+        return {policy: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Delete an access control policy by ID.
  * Requires admin session.
  * @param {string} baseUrl - the base server URL
@@ -253,6 +278,7 @@ export const AccessControl = {
     apiDeleteCustomProfileAttributeField,
     apiSetUserPropertyValues,
     apiCreatePermissionPolicy,
+    apiCreateChannelPermissionPolicy,
     apiDeletePermissionPolicy,
     apiSetPolicyActive,
 };

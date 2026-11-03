@@ -143,7 +143,9 @@ describe('Agents - Channel Summary', () => {
 
         // # Wait for main options to reappear and open Date Range Picker
         await waitFor(element(by.id('agents.channel_summary.option.custom'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await element(by.id('agents.channel_summary.option.custom')).tap();
+
+        // On iOS the row's label is drawn over the row's own centre, so Detox refuses a tap on the row.
+        await element(by.id('agents.channel_summary.option.custom.label')).tap();
 
         // * Verify Date Picker UI elements
         await waitFor(element(by.id('agents.channel_summary.date_picker.back'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);

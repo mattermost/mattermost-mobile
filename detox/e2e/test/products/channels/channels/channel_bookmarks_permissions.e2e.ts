@@ -11,10 +11,10 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -65,9 +65,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     beforeAll(async () => {
         // Members stay in an archived channel. The client only pops to the
         // channel list when ExperimentalViewArchivedChannels is false.
-        await System.apiUpdateConfig(siteOneUrl, {
-            TeamSettings: {ExperimentalViewArchivedChannels: true},
-        });
+        await assertServerBaseline(siteOneUrl, ['TeamSettings.ExperimentalViewArchivedChannels']);
         await wait(timeouts.ONE_SEC);
 
         const {team, user} = await Setup.apiInit(siteOneUrl);

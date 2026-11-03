@@ -5,7 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {Events} from '@constants';
-import {CLASSIFICATION_BANNER_CACHE_TTL} from '@constants/classification';
+import {CLASSIFICATION_BANNER_CACHE_TTL, CLASSIFICATION_BANNER_FAILURE_BACKOFF} from '@constants/classification';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {toMilliseconds} from '@utils/datetime';
 
@@ -66,6 +66,11 @@ class EphemeralStoreSingleton {
     // (cleared on app restart) and cleared per server on logout.
     private classificationBannerFetchedAt: {[serverUrl: string]: number | undefined} = {};
 
+    // Tracked separately from a successful fetch: a malformed-response failure
+    // backs off for a short window instead of borrowing the 1-hour success TTL,
+    // so a genuine fix or a forced retry is not blocked for the rest of that hour.
+    private classificationBannerFailedAt: {[serverUrl: string]: number | undefined} = {};
+
     // Track classification option ids we've already forced a field refresh for, so an
     // option that is genuinely gone server-side does not trigger an infinite re-fetch loop.
     private classificationFieldSyncAttempted: {[serverUrl: string]: Set<string>} = {};
@@ -78,6 +83,9 @@ class EphemeralStoreSingleton {
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
     private runningTranslations = new Set<string>();
+
+    // Add-server candidate secret before a session exists (not safe in Expo Router params).
+    private pendingPreauthSecrets: {[serverUrl: string]: string | undefined} = {};
 
     addRunningTranslation = (postId: string) => {
         this.runningTranslations.add(postId);
@@ -496,6 +504,11 @@ class EphemeralStoreSingleton {
 
     // Ephemeral cache for the classification banner fields fetch
     shouldFetchClassificationBanner = (serverUrl: string) => {
+        const failedAt = this.classificationBannerFailedAt[serverUrl];
+        if (failedAt !== undefined && Date.now() - failedAt < CLASSIFICATION_BANNER_FAILURE_BACKOFF) {
+            return false;
+        }
+
         const ts = this.classificationBannerFetchedAt[serverUrl];
         if (ts === undefined) {
             return true;
@@ -505,6 +518,12 @@ class EphemeralStoreSingleton {
 
     setClassificationBannerFetched = (serverUrl: string) => {
         this.classificationBannerFetchedAt[serverUrl] = Date.now();
+        delete this.classificationBannerFailedAt[serverUrl];
+    };
+
+    setClassificationBannerFailed = (serverUrl: string) => {
+        this.classificationBannerFailedAt[serverUrl] = Date.now();
+        delete this.classificationBannerFetchedAt[serverUrl];
     };
 
     getClassificationFieldSyncAttempted = (serverUrl: string, optionId: string) => {
@@ -520,6 +539,7 @@ class EphemeralStoreSingleton {
 
     clearClassificationCache = (serverUrl: string) => {
         delete this.classificationBannerFetchedAt[serverUrl];
+        delete this.classificationBannerFailedAt[serverUrl];
         delete this.classificationFieldSyncAttempted[serverUrl];
     };
 
@@ -542,6 +562,25 @@ class EphemeralStoreSingleton {
         delete this.channelAttributeValuesSynced[serverUrl];
     };
 
+    // Serializes property-write operations that share a key (server:target), so a
+    // REST reconciliation and a websocket write for the same target can never
+    // interleave their read-modify-write sequence. Each caller's whole
+    // read-then-write runs to completion before the next queued one starts.
+    private propertyWriteQueue: Map<string, Promise<unknown>> = new Map();
+
+    runExclusive = <T>(key: string, fn: () => Promise<T>): Promise<T> => {
+        const previous = this.propertyWriteQueue.get(key) ?? Promise.resolve();
+        const next = previous.then(fn, fn);
+        const settled = next.then(() => undefined, () => undefined);
+        this.propertyWriteQueue.set(key, settled);
+        settled.then(() => {
+            if (this.propertyWriteQueue.get(key) === settled) {
+                this.propertyWriteQueue.delete(key);
+            }
+        });
+        return next;
+    };
+
     // Ephemeral control for rejected files
     addRejectedFile = (fileId: string, rejectionReason?: string) => {
         this.rejectedFiles.set(fileId, rejectionReason || '');
@@ -560,6 +599,18 @@ class EphemeralStoreSingleton {
 
     clearRejectedFiles = () => {
         this.rejectedFiles.clear();
+    };
+
+    setPendingPreauthSecret = (serverUrl: string, secret: string) => {
+        this.pendingPreauthSecrets[serverUrl] = secret;
+    };
+
+    getPendingPreauthSecret = (serverUrl: string) => {
+        return this.pendingPreauthSecrets[serverUrl];
+    };
+
+    clearPendingPreauthSecret = (serverUrl: string) => {
+        delete this.pendingPreauthSecrets[serverUrl];
     };
 
     // Ephemeral control for the items currently in a post list viewport

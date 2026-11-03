@@ -12,7 +12,6 @@ import {
     Setup,
     TermsOfService,
 } from '@support/server_api';
-import {SITE_THREE_LOCK_TIMEOUT_MS, siteThreeLock} from '@support/site_three_lock';
 import {
     serverOneUrl,
     serverTwoUrl,
@@ -45,35 +44,14 @@ describe('Server Login - Server List', () => {
     let serverOneUser: any;
     let serverTwoUser: any;
     let serverThreeUser: any;
-    let lockOwner = '';
-    let lockAcquired = false;
 
     beforeAll(async () => {
-        if (hasThreeDistinctServers) {
-            lockOwner = siteThreeLock.createOwner();
-            await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
-            lockAcquired = true;
-
-            // custom_terms_of_service heals ToS on acquire, but a stolen lease can re-enable it
-            // after this hook. Clear it while we hold the lock, so the SITE_3
-            // login is not sitting under that overlay.
-            await User.apiAdminLogin(siteThreeUrl);
-            const {error, status} = await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
-            if (error) {
-                throw new Error(`Failed to disable custom ToS after SITE_3 lock acquire: status ${status ?? 'unknown'}`);
-            }
-            await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteThreeUrl);
-        }
-
         // # Log in to the first server
         ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await waitForElementToBeVisible(ServerScreen.headerTitleConnectToServer, timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
-
-        // The hook gets its own budget so the lock wait above does not have to fit inside the
-        // default per-test timeout.
-    }, timeouts.ONE_MIN * 45);
+    });
 
     beforeEach(async () => {
         // * Verify on channel list screen
@@ -81,14 +59,8 @@ describe('Server Login - Server List', () => {
     });
 
     afterAll(async () => {
-        try {
-            // # Log out
-            await HomeScreen.logout();
-        } finally {
-            if (lockAcquired) {
-                await siteThreeLock.release(siteThreeUrl, lockOwner);
-            }
-        }
+        // # Log out
+        await HomeScreen.logout();
     });
 
     it('MM-T4691_1 - should match elements on server list screen', async () => {
@@ -141,11 +113,8 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
 
         // # Add a third server and log in to the third server
+        // Read-only: provisioning keeps ToS off and only the mutation shard ever enables it.
         await User.apiAdminLogin(siteThreeUrl);
-        const {error: tosError, status: tosStatus} = await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
-        if (tosError) {
-            throw new Error(`Failed to disable custom ToS before SITE_3 login: status ${tosStatus ?? 'unknown'}`);
-        }
         await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteThreeUrl);
         ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
         await wait(timeouts.TWO_SEC);

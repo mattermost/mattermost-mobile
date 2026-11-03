@@ -6,10 +6,12 @@ import clientCalls from './rest';
 describe('ClientCalls', () => {
     const mockDoFetch = jest.fn();
     const mockGetCallsRoute = jest.fn(() => '/plugins/com.plugins.calls');
+    const mockGetBaseRoute = jest.fn(() => 'https://server.example');
 
     const BaseClass = class {
         doFetch = mockDoFetch;
         getCallsRoute = mockGetCallsRoute;
+        getBaseRoute = mockGetBaseRoute;
     };
     const Client = clientCalls(BaseClass);
     const client = new Client();
@@ -178,6 +180,30 @@ describe('ClientCalls', () => {
             mockDoFetch.mockRejectedValueOnce(new Error());
             const result = await client.getVersion();
             expect(result).toEqual({});
+        });
+    });
+
+    describe('createLiveKitSession', () => {
+        const session = {
+            session_id: 'session-id',
+            token: 'jwt-token',
+            url: 'wss://livekit.example/',
+            call_state: {id: 'call-id', sessions: []},
+        };
+
+        it('should post the channel, title and thread and return the session', async () => {
+            mockDoFetch.mockResolvedValueOnce(session);
+            const result = await client.createLiveKitSession('channel-id', 'title', 'thread-id');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/com.plugins.calls/livekit-token',
+                {method: 'post', body: {channel_id: 'channel-id', title: 'title', thread_id: 'thread-id'}},
+            );
+            expect(result).toBe(session);
+        });
+
+        it('should reject a session whose room url is not secure', async () => {
+            mockDoFetch.mockResolvedValueOnce({...session, url: 'ws://evil.example/'});
+            await expect(client.createLiveKitSession('channel-id')).rejects.toThrow('Invalid LiveKit session response');
         });
     });
 

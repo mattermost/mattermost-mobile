@@ -199,6 +199,15 @@ type AppField = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Collapsible section props
+    collapsible_config?: AppCollapsibleConfig;
+};
+
+type AppCollapsibleConfig = {
+    fields?: AppField[];
+    expanded?: boolean;
+    bordered?: boolean;
 };
 
 type DateTimeConfig = {

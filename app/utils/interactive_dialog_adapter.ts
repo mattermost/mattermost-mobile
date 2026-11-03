@@ -9,6 +9,7 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import {collectFileIds, convertAppFormValuesToDialogSubmission, convertDialogToAppForm} from './dialog_conversion';
+import {flattenDialogElements} from './dialog_utils';
 
 const submissionMessages = defineMessages({
     submissionFailed: {
@@ -61,7 +62,9 @@ export class InteractiveDialogAdapter {
         values: AppFormValues,
         config: InteractiveDialogConfig,
     ): DialogSubmission {
-        const elements = config.dialog.elements || [];
+        // Flatten so nested fields are reachable by name; otherwise they're
+        // silently dropped from the submission.
+        const elements = flattenDialogElements(config.dialog.elements || []);
 
         const {submission, errors} = convertAppFormValuesToDialogSubmission(
             values,

@@ -5,9 +5,9 @@ import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {
     Channel,
     Post,
-    System,
     User,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {siteOneUrl, hasStableWebhookIngress} from '@support/test_config';
 import {
     ChannelScreen,
@@ -210,9 +210,7 @@ describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
 
     itNeedsStableIngress('MM-T6219_1 - should keep webhook username override after integration update', async () => {
         await User.apiAdminLogin(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            ServiceSettings: {EnablePostUsernameOverride: true},
-        });
+        await assertServerBaseline(siteOneUrl, ['ServiceSettings.EnablePostUsernameOverride']);
 
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks override author');
         const overrideAuthorName = 'Detox mm_blocks override';

@@ -10,8 +10,8 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -39,18 +39,11 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
-        // # Enable Collapsed Reply Threads so the global threads UI surfaces
-        // are rendered (ThreadsButton in the channel-list sidebar, follow
-        // button in thread navigation, etc.). Without `always_on` the
-        // `channel_list.threads.button` testID is conditionally removed
-        // (see app/screens/home/channel_list/categories_list/categories_list.tsx
-        // — `threadButtonComponent` returns null when `!isCRTEnabled`).
-        await System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'always_on',
-                ThreadAutoFollow: true,
-            },
-        });
+        // # Assert server baseline (CRT always_on, ThreadAutoFollow) for thread UI.
+        await assertServerBaseline(siteOneUrl, [
+            'ServiceSettings.CollapsedThreads',
+            'ServiceSettings.ThreadAutoFollow',
+        ]);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

@@ -142,6 +142,26 @@ export function observeCanManageChannelAutotranslations(database: Database, chan
     );
 }
 
+/**
+ * Whether the user holds manage_system, independent of any channel or team.
+ *
+ * manage_system is a system-wide permission granted only through a system role
+ * (system_admin by default), which lives in user.roles rather than in any
+ * channel- or team-scoped role. Routing this through observePermissionForChannel
+ * or observePermissionForTeam would require a channel or team that may not exist
+ * yet — at channel-creation time, for instance — so this reads user.roles alone.
+ */
+export function observeCanManageSystem(database: Database, user: UserModel | undefined) {
+    if (!user) {
+        return of$(false);
+    }
+
+    return queryRolesByNames(database, user.roles.split(' ')).observeWithColumns(['permissions']).pipe(
+        switchMap((roles) => of$(hasPermission(roles, Permissions.MANAGE_SYSTEM))),
+        distinctUntilChanged(),
+    );
+}
+
 export function observeCanManageSharedChannel(database: Database, channelId: string, user: UserModel) {
     const channel = observeChannel(database, channelId);
     return channel.pipe(

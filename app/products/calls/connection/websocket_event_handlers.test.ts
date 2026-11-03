@@ -5,7 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
-import {createCallAndAddToIds} from '@calls/actions/calls';
+import {createCallAndAddToIds} from '@calls/convert_call';
 import {hostRemovedErr} from '@calls/errors';
 import {endNativeCall, getNativeCallMapping, getNativeCallUUIDForCall, setNativeCallMapping} from '@calls/native_call';
 import {
@@ -15,6 +15,7 @@ import {
     getCallsState,
     getChannelIdFromCallId,
     getCurrentCall,
+    isLiveKitCurrentCall,
     receivedCaption,
     removeIncomingCall,
     setCallForChannel,
@@ -80,6 +81,7 @@ import type {
 
 jest.mock('@actions/remote/user');
 jest.mock('@calls/actions/calls');
+jest.mock('@calls/convert_call');
 jest.mock('@calls/native_call', () => ({
     endNativeCall: jest.fn(),
     getNativeCallMapping: jest.fn(),
@@ -136,6 +138,7 @@ describe('websocket event handlers', () => {
         });
 
         it('answeredElsewhere: my user joined on another session with a pending native ring', () => {
+            jest.mocked(getCurrentCall).mockReturnValue(null);
             jest.mocked(getNativeCallUUIDForCall).mockReturnValue('uuid-1');
             handleCallUserJoined(serverUrl, {
                 broadcast: {channel_id: channelId},
@@ -144,7 +147,13 @@ describe('websocket event handlers', () => {
             expect(endNativeCall).toHaveBeenCalledWith(serverUrl, channelId, 'answeredElsewhere');
         });
 
-        it('no endNativeCall when this device is the joining session', () => {
+        it('should not end the native call when my own join lands before this device knows its session', () => {
+            jest.mocked(getCurrentCall).mockReturnValue({
+                ...DefaultCurrentCall,
+                serverUrl,
+                channelId,
+                mySessionId: '',
+            });
             jest.mocked(getNativeCallUUIDForCall).mockReturnValue('uuid-1');
             handleCallUserJoined(serverUrl, {
                 broadcast: {channel_id: channelId},
@@ -177,6 +186,23 @@ describe('websocket event handlers', () => {
                 data: {session_id: sessionId},
             } as WebSocketMessage<UserLeftData>);
             expect(userLeftCall).toHaveBeenCalledWith(serverUrl, channelId, sessionId);
+        });
+
+        it('should leave the roster of a LiveKit current call untouched on user_joined and user_left', () => {
+            jest.mocked(isLiveKitCurrentCall).mockReturnValue(true);
+
+            handleCallUserJoined(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {user_id: 'someone-else', session_id: 'other-session'},
+            } as WebSocketMessage<UserJoinedData>);
+            handleCallUserLeft(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {session_id: 'other-session'},
+            } as WebSocketMessage<UserLeftData>);
+
+            expect(fetchUsersByIds).not.toHaveBeenCalled();
+            expect(userJoinedCall).not.toHaveBeenCalled();
+            expect(userLeftCall).not.toHaveBeenCalled();
         });
     });
 

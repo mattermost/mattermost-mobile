@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AGENTS_PLUGIN_ID, DEMO_PLUGIN_ID, REQUIRED_PLUGINS} from './constants';
+import {AGENTS_PLUGIN_ID, DEMO_PLUGIN_ID, DEMO_PLUGIN_REQUIREMENT, REQUIRED_PLUGINS} from './constants';
 import {ensureCustomProfileAttributeFields} from './custom-profile-attributes';
 import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
 import {logInfo, logWarn} from './log';
-import {ensureAgentsPlugin, ensureDemoPluginReady, installRequiredPlugin} from './plugins';
-import {configureTestServer, getServerMmVersion} from './server-config';
+import {assertDemoPluginAbsent, disableStrayPlugins, ensureAgentsPlugin, ensureDemoPluginReady, ensureDemoPluginSettingsEntry, installRequiredPlugin} from './plugins';
+import {applyProvisionBaseline, getServerMmVersion, verifyProvisionBaseline} from './server-config';
 
 import type {MattermostClient, ProvisionCredentials} from './types';
 
@@ -23,19 +23,32 @@ async function verifyAgentsSetup(client: MattermostClient, token: string): Promi
     return false;
 }
 
-export async function provisionServer(serverUrl: string, credentials: ProvisionCredentials): Promise<void> {
+export async function provisionServer(serverUrl: string, credentials: ProvisionCredentials, {demoPlugin}: {demoPlugin: boolean}): Promise<void> {
     const client = createMattermostClient(serverUrl);
     const token = await login(client, credentials);
     const serverMmVersion = await getServerMmVersion(client, token);
     logInfo(`Mattermost server version: ${serverMmVersion}`);
 
     await ensureTrialLicense(client, token);
-    await configureTestServer(client, token);
+
+    const provisioned = demoPlugin ? [...REQUIRED_PLUGINS, DEMO_PLUGIN_REQUIREMENT] : REQUIRED_PLUGINS;
+
+    // Before the baseline so its writes do not fan out through a stray or unwanted demo plugin. An
+    // active demo plugin on B is left alone here; the install loop below replaces a wrong version.
+    await disableStrayPlugins(client, token, provisioned);
+
+    // Before any further config write: a demo plugin already running on a reused server would otherwise
+    // reset settings the baseline and specs write.
+    if (demoPlugin) {
+        await ensureDemoPluginSettingsEntry(client, token);
+    }
+
+    await applyProvisionBaseline(client, token, serverUrl, serverMmVersion);
 
     await ensureAgentsPlugin(client, token);
 
     /* eslint-disable no-await-in-loop -- install required plugins one at a time for clear provisioning logs */
-    for (const plugin of REQUIRED_PLUGINS) {
+    for (const plugin of provisioned) {
         if (plugin.id === AGENTS_PLUGIN_ID) {
             continue;
         }
@@ -49,6 +62,10 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
         }
     }
     /* eslint-enable no-await-in-loop */
+
+    await assertDemoPluginAbsent(client, token, demoPlugin);
+
+    await verifyProvisionBaseline(client, token, serverUrl);
 
     const agentsOk = await verifyAgentsSetup(client, token);
     if (!agentsOk) {

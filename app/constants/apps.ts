@@ -39,6 +39,7 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     FILE: 'file',
     DATE: 'date',
     DATETIME: 'datetime',
+    COLLAPSIBLE: 'collapsible',
 };
 
 export const SelectableAppFieldTypes = [

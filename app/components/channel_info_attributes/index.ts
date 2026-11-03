@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import ChannelInfoAttributes from '@components/channel_info_attributes/channel_info_attributes';
+import {observeChannelAttributePermissions} from '@queries/servers/channel_attributes';
 import {observeChannelAttributesEnabled, observeResolvedChannelAttributes} from '@queries/servers/properties';
-import {channelInfoAttributesEqual, selectChannelInfoAttributes, type ResolvedChannelAttribute} from '@utils/channel_attributes';
+import {channelInfoAttributesSignature, selectChannelInfoAttributes, type ResolvedChannelAttribute} from '@utils/channel_attributes';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -18,13 +19,33 @@ type Props = WithDatabaseArgs & {
 const EMPTY: ResolvedChannelAttribute[] = [];
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
-    const attributes = observeChannelAttributesEnabled(database).pipe(
-        switchMap((enabled) => (enabled ? observeResolvedChannelAttributes(database, channelId) : of$(EMPTY))),
-        map((resolved) => selectChannelInfoAttributes(resolved)),
-        distinctUntilChanged(channelInfoAttributesEqual),
+    // Resolved once for the channel rather than once per row: three permission
+    // subscriptions regardless of how many attributes the server defines.
+    const permissions = observeChannelAttributePermissions(database, channelId);
+
+    // Channel Info lists by role, not by display configuration. An attribute the
+    // admin did not designate for the info panel still needs a row here so that a
+    // channel admin can correct or fill its value — hiding it would strand the
+    // channel with no editing affordance for that attribute.
+    const attributes = combineLatest([
+        observeChannelAttributesEnabled(database).pipe(
+            switchMap((enabled) => (enabled ? observeResolvedChannelAttributes(database, channelId) : of$(EMPTY))),
+        ),
+        permissions,
+    ]).pipe(
+
+        // Snapshotted at emission time for the same reason as in
+        // observeResolvedChannelAttributes: the field models are updated in place,
+        // so comparing two lists after the fact would see the new attrs on both.
+        map(([resolved, perms]) => {
+            const listed = selectChannelInfoAttributes(resolved, perms);
+            return {listed, signature: channelInfoAttributesSignature(listed)};
+        }),
+        distinctUntilChanged((a, b) => a.signature === b.signature),
+        map(({listed}) => listed),
     );
 
-    return {attributes};
+    return {attributes, permissions};
 });
 
 export default withDatabase(enhanced(ChannelInfoAttributes));

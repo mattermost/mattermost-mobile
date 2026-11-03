@@ -7,9 +7,9 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup, System} from '@support/server_api';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -20,14 +20,11 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 
 describe('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
-    let lockOwner = '';
-    let lockAcquired = false;
     let testUser: any;
 
+    // Runs alone on the mutation server (detox/e2e/server_mutation_specs.json), so no lock is needed.
     beforeAll(async () => {
-        lockOwner = createClassificationLockOwner();
-        await acquireClassificationLock(siteOneUrl, lockOwner);
-        lockAcquired = true;
+        requireMutationServer('global_classification_banner');
 
         // Enable once for the whole suite. Individual tests must not re-enable or unset it.
         await enableClassificationMarkings(siteOneUrl);
@@ -39,41 +36,26 @@ describe('Classification Banner - Global Classification Banner', () => {
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-
-        // The hook gets its own budget so the lock wait does not have to fit inside the
-        // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
-    }, timeouts.ONE_MIN * 50);
+    });
 
     afterAll(async () => {
-        // Never tear down shared server state we do not own — see the same guard in
-        // classification_banner_across_screens.e2e.ts.
-        if (!lockAcquired) {
+        if (!canMutateServer) {
+            await HomeScreen.logout();
             return;
         }
 
         try {
-            try {
-                await assertClassificationLockOwnership(siteOneUrl, lockOwner);
-
-                // Clean up the classification config (per-suite state) but leave the feature
-                // flag enabled — see the suite invariant above.
-                await Properties.apiCleanupClassification(siteOneUrl);
-            } finally {
-                await HomeScreen.logout();
-            }
+            // Clean up the classification config but leave the feature flag enabled.
+            await Properties.apiCleanupClassification(siteOneUrl);
         } finally {
-            await releaseClassificationLock(siteOneUrl, lockOwner);
+            await HomeScreen.logout();
         }
     });
 
     afterEach(async () => {
-        if (!lockAcquired) {
-            return;
+        if (canMutateServer) {
+            await Properties.apiCleanupClassification(siteOneUrl);
         }
-
-        await assertClassificationLockOwnership(siteOneUrl, lockOwner);
-
-        await Properties.apiCleanupClassification(siteOneUrl);
     });
 
     it('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
@@ -247,12 +229,13 @@ describe('Classification Banner - Global Classification Banner', () => {
         await Properties.apiCleanupClassification(siteOneUrl);
 
         try {
-            // Inside the try: if this patch throws, the finally below still restores the
-            // flag. Outside it, a failed patch would leave ClassificationMarkings off for
-            // every later shard.
-            await System.apiPatchFeatureFlags(siteOneUrl, {
+            // Inside the try so the finally below restores the flag even if the patch throws.
+            const {error: flagError} = await System.apiPatchFeatureFlags(siteOneUrl, {
                 ClassificationMarkings: false,
             });
+            if (flagError) {
+                throw new Error(`Failed to turn ClassificationMarkings off: ${JSON.stringify(flagError)}`);
+            }
 
             await device.reloadReactNative();
 
@@ -260,8 +243,7 @@ describe('Classification Banner - Global Classification Banner', () => {
 
             await waitFor(element(by.id('global_classification_banner'))).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         } finally {
-            // Restore while still holding the lock, including when reload/assert fail,
-            // so later shards do not inherit the flag off.
+            // Restore even when reload/assert fail so later specs on this server see the flag on.
             await enableClassificationMarkings(siteOneUrl);
         }
     });

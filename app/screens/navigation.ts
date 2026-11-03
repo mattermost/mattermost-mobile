@@ -13,9 +13,11 @@ import {logError} from '@utils/log';
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+// Expo Router URI-decodes params more than once between push and useLocalSearchParams, so any
+// "%XX" in a value would be decoded. Escaping "%" as a JSON unicode escape leaves nothing to decode.
 export function propsToParams(props: any): Record<string, string> {
     return Object.keys(props || {}).reduce((params, key) => {
-        params[key] = JSON.stringify(props[key]);
+        params[key] = JSON.stringify(props[key])?.replace(/%/g, '\\u0025');
         return params;
     }, {} as Record<string, string>);
 }
@@ -112,12 +114,24 @@ export async function dismissToStackRoot() {
     }
 }
 
-export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Array<string | number>, footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode) {
+export function bottomSheet(
+    renderContent: () => React.ReactNode,
+    snapPoints: Array<string | number>,
+    footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode,
+    keyboardBehavior?: 'extend' | 'fillParent' | 'interactive',
+) {
     DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     BottomSheetStore.setSnapPoints(snapPoints);
     BottomSheetStore.setRenderContentCallback(renderContent);
     if (footerComponent) {
         BottomSheetStore.setFooterComponent(footerComponent);
+    } else {
+        BottomSheetStore.removeFooterComponent();
+    }
+    if (keyboardBehavior) {
+        BottomSheetStore.setKeyboardBehavior(keyboardBehavior);
+    } else {
+        BottomSheetStore.removeKeyboardBehavior();
     }
 
     navigateToScreen(Screens.GENERIC_BOTTOM_SHEET);
