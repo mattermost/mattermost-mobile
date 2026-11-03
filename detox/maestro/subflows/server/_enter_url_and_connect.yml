@@ -50,6 +50,13 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "server_form.connect.button.disabled"
     commands:
+      # # Scroll up to the URL label right before re-entering it; the earlier scroll or keyboard dismissal may have moved it out of view.
+      - scrollUntilVisible:
+          element:
+            text: "Enter Server URL(, .*)?"
+          direction: UP
+          timeout: 10000
+          optional: true
       - tapOn:
           text: "Enter Server URL(, .*)?"
       - eraseText: 120

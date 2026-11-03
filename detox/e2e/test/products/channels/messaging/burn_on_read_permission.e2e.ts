@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
+import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment, waitForServerActionDecision} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -166,20 +166,39 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
 
         // # Change the user's attribute so the policy now grants burn-on-read
         await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
+        let grantError: unknown;
         try {
             // * The control appears on its own. The server's attribute view refreshes on a 30s gate,
             // which the app's delayed re-check is built to outlast.
             await waitFor(ChannelScreen.borAction).
                 toExist().
                 withTimeout(timeouts.ONE_MIN);
-        } finally {
-            // # Restore the attribute so the suite (or an in-process retry) leaves the user as it found it
-            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+        } catch (error) {
+            grantError = error;
+        }
 
-            // * Verify the denied state is back before ending, so a retry cannot observe the stale grant
-            await waitFor(ChannelScreen.borAction).
-                not.toExist().
-                withTimeout(timeouts.ONE_MIN);
+        // # Restore the attribute and confirm the denied decision server-side, so the suite (or an
+        // in-process retry) leaves the user as it found it. A cleanup failure must not replace
+        // an error from the grant wait above.
+        try {
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'create_burn_on_read_post', false);
+            if (!restored) {
+                throw new Error('Server still grants create_burn_on_read_post after restoring Department to Sales');
+            }
+        } catch (cleanupError) {
+            if (grantError) {
+                console.warn('[burn_on_read_permission] restore cleanup failed:', cleanupError); // eslint-disable-line no-console
+            } else {
+                throw cleanupError;
+            }
+        } finally {
+            // # Log out so no cached grant decision survives into the next test or retry
+            await HomeScreen.logout();
+        }
+
+        if (grantError) {
+            throw grantError;
         }
     });
 });

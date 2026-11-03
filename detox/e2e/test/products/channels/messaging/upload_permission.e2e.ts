@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
+import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment, waitForServerActionDecision} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -166,23 +166,39 @@ describe('Messaging - Upload Permission (ABAC)', () => {
 
         // # Change the user's attribute so the policy now grants uploads
         await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
+        let grantError: unknown;
         try {
             // * The button re-enables on its own. The server's attribute view refreshes on a 30s gate,
             // which the app's delayed re-check is built to outlast.
             await waitFor(ChannelScreen.attachmentAction).
                 toExist().
                 withTimeout(timeouts.ONE_MIN);
-        } finally {
-            // # Restore the attribute so the suite (or an in-process retry) leaves the user as it found it
-            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
-
-            // * Verify the denied state is back before ending, so a retry cannot observe the stale grant
-            await waitFor(ChannelScreen.attachmentActionDisabled).
-                toExist().
-                withTimeout(timeouts.ONE_MIN);
+        } catch (error) {
+            grantError = error;
         }
 
-        await ChannelScreen.back();
-        await HomeScreen.logout();
+        // # Restore the attribute and confirm the denied decision server-side, so the suite (or an
+        // in-process retry) leaves the user as it found it. A cleanup failure must not replace
+        // an error from the grant wait above.
+        try {
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'upload_file_attachment', false);
+            if (!restored) {
+                throw new Error('Server still grants upload_file_attachment after restoring Department to Sales');
+            }
+        } catch (cleanupError) {
+            if (grantError) {
+                console.warn('[upload_permission] restore cleanup failed:', cleanupError); // eslint-disable-line no-console
+            } else {
+                throw cleanupError;
+            }
+        } finally {
+            // # Log out so no cached grant decision survives into the next test or retry
+            await HomeScreen.logout();
+        }
+
+        if (grantError) {
+            throw grantError;
+        }
     });
 });
