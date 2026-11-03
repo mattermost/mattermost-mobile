@@ -20,12 +20,36 @@ appId: ${MAESTRO_APP_ID}
 # eraseText clears the old URL. After a failed connect iOS merges label and error, hence the prefix.
 - tapOn:
     text: "Enter Server URL(, .*)?"
+# # Dismiss iOS QuickPath keyboard onboarding when it covers the keyboard keys.
+- runFlow:
+    when:
+      visible:
+        id: "UIContinuousPathIntroductionView"
+    commands:
+      - tapOn:
+          text: "Continue"
+          optional: true
 - eraseText: 120
 - inputText: ${SITE_1_URL}
 - tapOn:
     text: "Display Name(, .*)?"
 - eraseText: 120
 - inputText: "Server 1"
+
+# # Re-enter fields when cold-start keyboard initialization dropped the URL input and left Connect disabled.
+- runFlow:
+    when:
+      visible:
+        id: "server_form.connect.button.disabled"
+    commands:
+      - tapOn:
+          text: "Enter Server URL(, .*)?"
+      - eraseText: 120
+      - inputText: ${SITE_1_URL}
+      - tapOn:
+          text: "Display Name(, .*)?"
+      - eraseText: 120
+      - inputText: "Server 1"
 
 # # Submit the form
 - scrollUntilVisible:
