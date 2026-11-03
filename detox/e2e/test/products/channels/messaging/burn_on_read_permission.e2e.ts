@@ -166,14 +166,15 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
 
         // # Change the user's attribute so the policy now grants burn-on-read
         await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
-
-        // * The control appears on its own. The server's attribute view refreshes on a 30s gate,
-        // which the app's delayed re-check is built to outlast.
-        await waitFor(ChannelScreen.borAction).
-            toExist().
-            withTimeout(timeouts.ONE_MIN);
-
-        // # Restore the attribute so the suite leaves the user as it found it
-        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+        try {
+            // * The control appears on its own. The server's attribute view refreshes on a 30s gate,
+            // which the app's delayed re-check is built to outlast.
+            await waitFor(ChannelScreen.borAction).
+                toExist().
+                withTimeout(timeouts.ONE_MIN);
+        } finally {
+            // # Restore the attribute so the suite (or an in-process retry) leaves the user as it found it
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+        }
     });
 });

@@ -166,15 +166,16 @@ describe('Messaging - Upload Permission (ABAC)', () => {
 
         // # Change the user's attribute so the policy now grants uploads
         await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
-
-        // * The button re-enables on its own. The server's attribute view refreshes on a 30s gate,
-        // which the app's delayed re-check is built to outlast.
-        await waitFor(ChannelScreen.attachmentAction).
-            toExist().
-            withTimeout(timeouts.ONE_MIN);
-
-        // # Restore the attribute so the suite leaves the user as it found it
-        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+        try {
+            // * The button re-enables on its own. The server's attribute view refreshes on a 30s gate,
+            // which the app's delayed re-check is built to outlast.
+            await waitFor(ChannelScreen.attachmentAction).
+                toExist().
+                withTimeout(timeouts.ONE_MIN);
+        } finally {
+            // # Restore the attribute so the suite (or an in-process retry) leaves the user as it found it
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+        }
 
         await ChannelScreen.back();
         await HomeScreen.logout();

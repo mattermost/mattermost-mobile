@@ -146,6 +146,31 @@ describe('client HTML interstitial retry', () => {
         assert.equal(isHtmlInterstitialError(new Error('Request failed with status code 403')), false);
         assert.equal(isHtmlInterstitialError(undefined), false);
     });
+
+    it('should not replay a single-use FormData stream on an HTML interstitial or CF 521', async () => {
+        const fakeFormData = Object.assign({pipe: () => {}}, {constructor: {name: 'FormData'}});
+
+        await withAdapter(
+            [{status: 200, data: COLD_START_HTML}, {status: 200, data: {file_infos: [{id: 'f1'}]}}],
+            async (calls) => {
+                await assert.rejects(
+                    () => client.post('http://example.test/api/v4/files', fakeFormData),
+                    (err: Error) => isHtmlInterstitialError(err),
+                );
+                assert.equal(calls(), 1, 'must fail immediately so the caller can rebuild the FormData stream');
+            },
+        );
+
+        await withAdapter(
+            [{status: 521, data: 'Web server is down'}, {status: 200, data: {file_infos: [{id: 'f1'}]}}],
+            async (calls) => {
+                await assert.rejects(
+                    () => client.post('http://example.test/api/v4/files', fakeFormData),
+                );
+                assert.equal(calls(), 1, 'must not replay a consumed FormData stream on 521');
+            },
+        );
+    });
 });
 
 const URL = 'http://unit-test.invalid/api/v4/channels';
