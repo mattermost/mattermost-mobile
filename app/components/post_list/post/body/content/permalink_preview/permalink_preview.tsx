@@ -50,13 +50,13 @@ const linkedPostFetchAttempts = new Set<string>();
 // resolve on a later mount.
 const isFinalFetchAnswer = (error: unknown) => isErrorWithStatusCode(error) && (error.status_code === HTTP_FORBIDDEN || error.status_code === HTTP_NOT_FOUND);
 
-const fetchLinkedPostOnce = async (serverUrl: string, postId: string, attemptKey: string, forgetOnSuccess = false) => {
+const fetchLinkedPostOnce = async (serverUrl: string, postId: string, attemptKey: string) => {
     if (linkedPostFetchAttempts.has(attemptKey)) {
         return;
     }
     linkedPostFetchAttempts.add(attemptKey);
     const {error} = await fetchLinkedPost(serverUrl, postId);
-    if (error ? !isFinalFetchAnswer(error) : forgetOnSuccess) {
+    if (!error || !isFinalFetchAnswer(error)) {
         linkedPostFetchAttempts.delete(attemptKey);
     }
 };
@@ -204,18 +204,9 @@ const PermalinkPreview = ({
         if (!post) {
             // Per epoch: a refusal stops holding once access changes. Forgotten once stored, so a post
             // evicted later can be fetched again.
-            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|missing|${embedRequiredEpoch}`, true);
-            return;
+            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|missing|${embedRequiredEpoch}`);
         }
-
-        // When the embed shows accessible files but DB records are missing (e.g. after ABAC
-        // access is granted and file records were deleted during the denial period), re-fetch
-        // the linked post so handlePosts repopulates the file records. Once per epoch: a newer
-        // decision is worth another attempt.
-        if (isEmbedRedactionVerified && embedFilesCount > 0 && !hasLinkedPostFiles) {
-            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|files|${embedRequiredEpoch}`);
-        }
-    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isEmbedRedactionVerified, embedRequiredEpoch]);
+    }, [linkedPostId, post, serverUrl, embedRequiredEpoch]);
 
     if (isOriginPostDeleted) {
         return null;

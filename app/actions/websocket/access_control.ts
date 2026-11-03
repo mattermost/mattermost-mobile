@@ -7,7 +7,6 @@ import {
     RedactionInvalidationReason,
     invalidateChannelsRedaction,
     invalidateRedactionGlobally,
-    isRedactionEnforced,
     type RedactionReason,
 } from '@actions/local/redaction';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
@@ -17,7 +16,7 @@ import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {getAccessControlGroupId} from '@queries/servers/properties';
-import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentChannelId, getCurrentUserId, isRedactionEnforced} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';

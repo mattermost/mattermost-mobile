@@ -17,7 +17,7 @@ import {
 import {getRawRecordPairs, getUniqueRawsBy, getValidRecordsForUpdate} from '@database/operator/utils/general';
 import {createPostsChain, getPostListEdges} from '@database/operator/utils/post';
 import {queryScheduledPostsForTeam} from '@queries/servers/scheduled_post';
-import {getCurrentTeamId} from '@queries/servers/system';
+import {getCurrentTeamId, isRedactionEnforced} from '@queries/servers/system';
 import FileModel from '@typings/database/models/servers/file';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {isUnrevealedBoRPost} from '@utils/bor';
@@ -133,6 +133,85 @@ async function getSupersededPostIds(database: Database, posts: Post[], epoch?: n
         Q.where('redaction_verified_epoch', Q.gt(epoch)),
     ).fetch();
     return new Set(stored.map((p) => p.id));
+}
+
+/**
+ * Whether the stored linked post lets an embed copy of it write file rows. The server caches embeds,
+ * so a copy can still list a file an edit has since removed. A newer stored decision wins, and a stored
+ * denial only yields to a copy from a strictly newer epoch: at the same epoch, or stored without one
+ * (epoch 0), the two answers cannot be ordered, so the denial wins.
+ */
+function isEmbedCopyCurrent(linked: PostModel, copy: Post, epoch?: number): boolean {
+    if (linked.deleteAt > 0 || copy.update_at < linked.updateAt) {
+        return false;
+    }
+
+    // Only reached while nothing is redacted, so the copy is the server's current answer.
+    if (epoch === undefined) {
+        return true;
+    }
+
+    const storedEpoch = linked.redactionVerifiedEpoch;
+    if (storedEpoch > epoch) {
+        return false;
+    }
+
+    if ((linked.metadata?.redacted_file_count ?? 0) === 0) {
+        return true;
+    }
+
+    return storedEpoch > 0 && storedEpoch < epoch;
+}
+
+/**
+ * A permalink embed carries the linked post's files as the server just judged them for this user, so
+ * it restores rows a denial destroyed, or that a payload without metadata (a thread) never wrote,
+ * without re-fetching the linked post. It is only a copy: the linked post's own metadata wins whenever
+ * that post is in the batch, and the stored linked post decides whether the copy is current. Rows are
+ * only written for a linked post we hold: nothing else would ever clean them up, data retention
+ * included, and the preview renders nothing without the post.
+ */
+async function getTrustedPermalinkEmbedFiles(database: Database, embeds: PermalinkEmbedData[], batchPostIds: Set<string>, epoch?: number): Promise<FileInfo[]> {
+    const candidates = embeds.filter((e) => (
+        e.post_id &&
+        e.post?.metadata?.files?.length &&
+        !batchPostIds.has(e.post_id) &&
+        (e.post?.delete_at ?? 0) === 0 &&
+        (e.post?.metadata?.redacted_file_count ?? 0) === 0
+    ));
+    if (!candidates.length) {
+        return [];
+    }
+
+    // Without an epoch the payload is only an honest "allowed" while nothing is redacted; a
+    // notification fetched before a denial must not restore what the denial removed.
+    if (epoch === undefined && await isRedactionEnforced(database)) {
+        return [];
+    }
+
+    const stored = await database.get<PostModel>(POST).query(
+        Q.where('id', Q.oneOf([...new Set(candidates.map((e) => e.post_id))])),
+    ).fetch();
+    const storedById = new Map(stored.map((p) => [p.id, p]));
+
+    // Keyed by id: several hosts can embed the same linked post, and processRecords does not dedupe.
+    const files = new Map<string, FileInfo>();
+    for (const embed of candidates) {
+        const copy = embed.post as Post;
+        const linked = storedById.get(embed.post_id);
+        if (!linked || !isEmbedCopyCurrent(linked, copy, epoch)) {
+            continue;
+        }
+
+        // A row is owned by its post_id, so a file filed under another post would bypass precedence.
+        for (const file of copy.metadata?.files ?? []) {
+            if (file.id && file.post_id === embed.post_id) {
+                files.set(file.id, file);
+            }
+        }
+    }
+
+    return Array.from(files.values());
 }
 
 /**
@@ -421,6 +500,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         const emojis: CustomEmoji[] = [];
         const files: FileInfo[] = [];
+        const permalinkEmbeds: PermalinkEmbedData[] = [];
         const postsReactions: ReactionsPerPost[] = [];
         const pendingPostsToDelete: Post[] = [];
         const postsInThread: Record<string, Post[]> = {};
@@ -478,6 +558,14 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     delete data.files;
                 }
 
+                if (data.embeds && !isSuperseded) {
+                    for (const embed of data.embeds) {
+                        if (embed.type === 'permalink' && embed.data) {
+                            permalinkEmbeds.push(embed.data as PermalinkEmbedData);
+                        }
+                    }
+                }
+
                 post.metadata = data;
             }
 
@@ -500,6 +588,11 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             raws: posts,
             key: 'id',
         }) as Post[];
+
+        // Not added to receivedFilesSet: the deletion loop below only reads rows of posts in this batch,
+        // and a linked post whose files come from an embed is never one of them.
+        const batchPostIds = new Set(uniquePosts.map((p) => p.id));
+        files.push(...await getTrustedPermalinkEmbedFiles(this.database, permalinkEmbeds, batchPostIds, redactionVerifiedEpoch));
 
         const deletedPostIds = uniquePosts.reduce((result, post) => {
             if (post.delete_at > 0) {
