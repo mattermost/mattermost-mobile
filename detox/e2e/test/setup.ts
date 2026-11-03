@@ -26,9 +26,6 @@ function getSimulatorId(): string {
     }
 }
 
-let cachedDataContainer: string | undefined;
-let cachedAppGroupContainer: string | undefined;
-
 function resolveContainerPath(simId: string, kind: string): string | undefined {
     try {
         const path = execSync(
@@ -41,6 +38,15 @@ function resolveContainerPath(simId: string, kind: string): string | undefined {
     }
 }
 
+function wipeContainerContents(containerPath: string): void {
+    // Preserve containermanagerd's metadata plist; deleting it breaks future
+    // `simctl get_app_container ... group.com.mattermost.rnbeta` lookups in the shard.
+    execSync(
+        `find "${containerPath}" -mindepth 1 -maxdepth 1 ! -name '.com.apple.mobile_container_manager.metadata.plist' -exec rm -rf {} +`,
+        {stdio: 'pipe'},
+    );
+}
+
 function clearIOSAppData(): void {
     const simId = getSimulatorId();
     if (!simId) {
@@ -49,8 +55,14 @@ function clearIOSAppData(): void {
     }
 
     try {
+        execSync(`xcrun simctl terminate "${simId}" ${BUNDLE_ID} 2>/dev/null || true`, {stdio: 'pipe', timeout: 10_000});
+    } catch {
+        // App might not be running or terminate timed out — fallback below
+    }
+
+    try {
         const appPid = execSync(
-            `xcrun simctl spawn "${simId}" launchctl list 2>/dev/null | grep "${BUNDLE_ID}" | awk '{print $1}' | grep -E '^[0-9]+$' || true`,
+            `xcrun simctl spawn "${simId}" launchctl list 2>/dev/null | grep "${BUNDLE_ID}" | awk '{print $1}' | grep -E '^[0-9]+$' | head -n 1 || true`,
             {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
         ).trim();
 
@@ -63,15 +75,14 @@ function clearIOSAppData(): void {
         // App might not be running — that's fine
     }
 
-    // 2. Find the app's data container and delete its contents.
-    if (!cachedDataContainer) {
-        cachedDataContainer = resolveContainerPath(simId, 'data');
-    }
-    if (cachedDataContainer) {
+    // 2. Find the app's data and App Group containers and delete their contents.
+    // Cache in process.env so resolved paths survive Jest's per-test-file VM sandbox.
+    const dataContainer = process.env.DETOX_IOS_DATA_CONTAINER || resolveContainerPath(simId, 'data');
+    if (dataContainer) {
+        process.env.DETOX_IOS_DATA_CONTAINER = dataContainer;
         try {
-            // Remove all contents of Documents, Library, tmp (but keep the container dir)
-            execSync(`find "${cachedDataContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-            console.info(`[clearIOSAppData] Cleared data container: ${cachedDataContainer}`);
+            wipeContainerContents(dataContainer);
+            console.info(`[clearIOSAppData] Cleared data container: ${dataContainer}`);
         } catch {
             console.warn('[clearIOSAppData] data-container wipe failed');
         }
@@ -79,14 +90,13 @@ function clearIOSAppData(): void {
         console.warn('[clearIOSAppData] Could not resolve data container (app may not be installed yet)');
     }
 
-    if (!cachedAppGroupContainer) {
-        cachedAppGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
-    }
-    if (cachedAppGroupContainer) {
-        if (existsSync(cachedAppGroupContainer)) {
+    const appGroupContainer = process.env.DETOX_IOS_APP_GROUP_CONTAINER || resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
+    if (appGroupContainer) {
+        process.env.DETOX_IOS_APP_GROUP_CONTAINER = appGroupContainer;
+        if (existsSync(appGroupContainer)) {
             try {
-                execSync(`find "${cachedAppGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-                console.info(`[clearIOSAppData] Cleared App Group container: ${cachedAppGroupContainer}`);
+                wipeContainerContents(appGroupContainer);
+                console.info(`[clearIOSAppData] Cleared App Group container: ${appGroupContainer}`);
             } catch {
                 console.warn('[clearIOSAppData] App-Group-container wipe failed');
             }
