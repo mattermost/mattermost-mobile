@@ -175,6 +175,11 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         } finally {
             // # Restore the attribute so the suite (or an in-process retry) leaves the user as it found it
             await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+
+            // * Verify the denied state is back before ending, so a retry cannot observe the stale grant
+            await waitFor(ChannelScreen.borAction).
+                not.toExist().
+                withTimeout(timeouts.ONE_MIN);
         }
     });
 });

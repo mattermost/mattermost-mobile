@@ -36,6 +36,14 @@ appId: ${MAESTRO_APP_ID}
 - eraseText: 120
 - inputText: "Server 1"
 
+# # Reveal Connect in either state before checking whether it is disabled; it can sit below the fold.
+- scrollUntilVisible:
+    element:
+      id: "server_form.connect.button(\\.disabled)?"
+    direction: DOWN
+    timeout: 10000
+    optional: true
+
 # # Re-enter fields when cold-start keyboard initialization dropped the URL input and left Connect disabled.
 - runFlow:
     when:

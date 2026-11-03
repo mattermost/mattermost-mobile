@@ -3,7 +3,9 @@
 /* eslint-disable no-await-in-loop, no-console */
 
 import {execSync} from 'child_process';
-import {existsSync} from 'fs';
+import {existsSync, readFileSync, writeFileSync} from 'fs';
+import {tmpdir} from 'os';
+import path from 'path';
 
 import {System, User} from '@support/server_api';
 import {drainPoolGuardViolations} from '@support/server_api/pool_guard';
@@ -28,14 +30,52 @@ function getSimulatorId(): string {
 
 function resolveContainerPath(simId: string, kind: string): string | undefined {
     try {
-        const path = execSync(
+        const containerPath = execSync(
             `xcrun simctl get_app_container "${simId}" ${BUNDLE_ID} ${kind} 2>/dev/null`,
             {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
         ).trim();
-        return path || undefined;
+        return containerPath || undefined;
     } catch {
         return undefined;
     }
+}
+
+// Jest resets module state per test file, so cache paths on disk per simulator instead of in a variable or process.env.
+function containerCacheFile(simId: string): string {
+    return path.join(tmpdir(), `mattermost-detox-ios-containers-${simId}.json`);
+}
+
+function readCachedContainerPath(simId: string, kind: string): string | undefined {
+    try {
+        const cached = JSON.parse(readFileSync(containerCacheFile(simId), 'utf8')) as Record<string, string>;
+        const cachedPath = cached[kind];
+        return cachedPath && existsSync(cachedPath) ? cachedPath : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+function getContainerPath(simId: string, kind: string): string | undefined {
+    const cachedPath = readCachedContainerPath(simId, kind);
+    if (cachedPath) {
+        return cachedPath;
+    }
+    const containerPath = resolveContainerPath(simId, kind);
+    if (containerPath) {
+        try {
+            let cached: Record<string, string> = {};
+            try {
+                cached = JSON.parse(readFileSync(containerCacheFile(simId), 'utf8')) as Record<string, string>;
+            } catch {
+                // No cache yet for this simulator.
+            }
+            cached[kind] = containerPath;
+            writeFileSync(containerCacheFile(simId), JSON.stringify(cached));
+        } catch {
+            // Caching is best effort; the resolved path is still usable.
+        }
+    }
+    return containerPath;
 }
 
 function wipeContainerContents(containerPath: string): void {
@@ -76,10 +116,8 @@ function clearIOSAppData(): void {
     }
 
     // 2. Find the app's data and App Group containers and delete their contents.
-    // Cache in process.env so resolved paths survive Jest's per-test-file VM sandbox.
-    const dataContainer = process.env.DETOX_IOS_DATA_CONTAINER || resolveContainerPath(simId, 'data');
+    const dataContainer = getContainerPath(simId, 'data');
     if (dataContainer) {
-        process.env.DETOX_IOS_DATA_CONTAINER = dataContainer;
         try {
             wipeContainerContents(dataContainer);
             console.info(`[clearIOSAppData] Cleared data container: ${dataContainer}`);
@@ -90,9 +128,8 @@ function clearIOSAppData(): void {
         console.warn('[clearIOSAppData] Could not resolve data container (app may not be installed yet)');
     }
 
-    const appGroupContainer = process.env.DETOX_IOS_APP_GROUP_CONTAINER || resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
+    const appGroupContainer = getContainerPath(simId, 'group.com.mattermost.rnbeta');
     if (appGroupContainer) {
-        process.env.DETOX_IOS_APP_GROUP_CONTAINER = appGroupContainer;
         if (existsSync(appGroupContainer)) {
             try {
                 wipeContainerContents(appGroupContainer);
