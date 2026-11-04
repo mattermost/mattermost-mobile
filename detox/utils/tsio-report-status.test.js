@@ -339,11 +339,26 @@ describe('tsio-report-status', () => {
         });
 
         it('tries again when a 5xx body cannot be read', async () => {
-            const dropped = {ok: false, status: 502, text: async () => {
-                throw new Error('terminated');
-            }};
+            const dropped = {
+                ok: false,
+                status: 502,
+                text: async () => {
+                    throw new Error('terminated');
+                },
+            };
             const {calls, fetchImpl} = scripted(dropped, 201);
             await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait});
+            assert.equal(calls.length, 2);
+        });
+
+        it('tries again when a 5xx body stalls instead of waiting for it', async () => {
+            const stalled = {
+                ok: false,
+                status: 503,
+                text: () => new Promise(() => {}),
+            };
+            const {calls, fetchImpl} = scripted(stalled, 201);
+            await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait, bodyTimeoutMs: 10});
             assert.equal(calls.length, 2);
         });
 

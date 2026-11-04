@@ -243,6 +243,19 @@ function triageAnnouncement({announce, state, overrideApplied, failed, runUrl, c
     };
 }
 
+/** A response's text, or a note saying why it could not be read within timeoutMs. Never rejects. */
+async function readBodyWithin(res, timeoutMs) {
+    let timer;
+    const timeout = new Promise((resolve) => {
+        timer = setTimeout(() => resolve(`(body not read within ${timeoutMs}ms)`), timeoutMs);
+    });
+    try {
+        return await Promise.race([res.text().catch((err) => `(body unreadable: ${err.message})`), timeout]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 const STATUS_POST_ATTEMPTS = 3;
 const STATUS_POST_DELAY_MS = 2000;
 
@@ -257,6 +270,7 @@ async function createCommitStatus(token, repository, sha, payload, {
     wait = sleep,
     attempts = STATUS_POST_ATTEMPTS,
     delayMs = STATUS_POST_DELAY_MS,
+    bodyTimeoutMs = FETCH_TIMEOUT_MS,
 } = {}) {
     const [owner, repo] = repository.split('/');
     let lastError;
@@ -280,8 +294,9 @@ async function createCommitStatus(token, repository, sha, payload, {
             return;
         }
         if (res) {
-            // The body is only for the message: a connection dropped while reading it must not escape the retry.
-            const body = await res.text().catch((err) => `(body unreadable: ${err.message})`);
+            // The body is only for the message: a connection that drops or stalls while it is read must not
+            // escape the retry or hold it (fetchWithTimeout's timer ends when the headers arrive).
+            const body = await readBodyWithin(res, bodyTimeoutMs);
             lastError = new Error(`createCommitStatus failed: ${res.status} ${body}`);
             if (res.status < 500) {
                 throw lastError;
