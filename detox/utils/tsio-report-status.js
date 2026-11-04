@@ -280,7 +280,9 @@ async function createCommitStatus(token, repository, sha, payload, {
             return;
         }
         if (res) {
-            lastError = new Error(`createCommitStatus failed: ${res.status} ${await res.text()}`);
+            // The body is only for the message: a connection dropped while reading it must not escape the retry.
+            const body = await res.text().catch((err) => `(body unreadable: ${err.message})`);
+            lastError = new Error(`createCommitStatus failed: ${res.status} ${body}`);
             if (res.status < 500) {
                 throw lastError;
             }

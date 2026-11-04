@@ -304,7 +304,7 @@ describe('tsio-report-status', () => {
 
     describe('createCommitStatus', () => {
         const payload = {state: 'success', context: 'e2e-test/detox-ipad', description: '19 passed', target_url: 'https://example.test'};
-        const respond = (status) => ({ok: status < 300, status, text: async () => `body ${status}`});
+        const respond = (step) => (typeof step === 'number' ? {ok: step < 300, status: step, text: async () => `body ${step}`} : step);
         const scripted = (...steps) => {
             const calls = [];
             const fetchImpl = async (url, options) => {
@@ -317,15 +317,15 @@ describe('tsio-report-status', () => {
             };
             return {calls, fetchImpl};
         };
-        const waits = [];
-        const wait = async (ms) => {
-            waits.push(ms);
-        };
+        const wait = async () => {};
 
         it('tries again after a GitHub 5xx and stops once the status is posted', async () => {
-            waits.length = 0;
+            const waits = [];
+            const recordWait = async (ms) => {
+                waits.push(ms);
+            };
             const {calls, fetchImpl} = scripted(500, 201);
-            await createCommitStatus('t', 'mattermost/mattermost-mobile', 'abc', payload, {fetchImpl, wait});
+            await createCommitStatus('t', 'mattermost/mattermost-mobile', 'abc', payload, {fetchImpl, wait: recordWait});
             assert.equal(calls.length, 2);
             assert.equal(calls[0].url, 'https://api.github.com/repos/mattermost/mattermost-mobile/statuses/abc');
             assert.deepEqual(JSON.parse(calls[1].options.body), payload);
@@ -334,6 +334,15 @@ describe('tsio-report-status', () => {
 
         it('tries again after a dropped connection', async () => {
             const {calls, fetchImpl} = scripted(new Error('socket hang up'), 201);
+            await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait});
+            assert.equal(calls.length, 2);
+        });
+
+        it('tries again when a 5xx body cannot be read', async () => {
+            const dropped = {ok: false, status: 502, text: async () => {
+                throw new Error('terminated');
+            }};
+            const {calls, fetchImpl} = scripted(dropped, 201);
             await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait});
             assert.equal(calls.length, 2);
         });
