@@ -13,19 +13,22 @@ const runId = '41806866909';
 const runUrl = `https://github.com/${repository}/actions/runs/${runId}`;
 const lanes = ['e2e-test/detox-ios', 'e2e-test/detox-android'];
 const triage = (state, targetUrl = runUrl) => ({context: TRIAGE_CHECK_CONTEXT, state, target_url: targetUrl});
-const lane = (context, state) => ({context, state, target_url: 'https://test-io.example/report'});
+const lane = (context, state, targetUrl = `https://test-io.example/report?gid=g1&gh_run_id=${runId}&gh_run_attempt=1`) => ({context, state, target_url: targetUrl});
 const settle = (rows, extra = {}) => settleTriageCheck({rows, lanes, repository, runId, runUrl, ...extra});
 
 describe('tsio-triage-settle', () => {
     describe('ownedByRun', () => {
-        it('owns its run page and the toolkit link that names the run', () => {
+        it('owns its run page, a TSIO report link with gh_run_id, and the toolkit link that names the run', () => {
             assert.equal(ownedByRun(runUrl, repository, runId), true);
+            assert.equal(ownedByRun(`https://test-io.example/report?gid=g1&gh_run_id=${runId}&gh_run_attempt=1`, repository, runId), true);
             assert.equal(ownedByRun(`https://github.com/${repository}/actions/runs/1?status_run_id=${runId}&status_run_attempt=2`, repository, runId), true);
         });
 
         it('does not own another run, another repository or a bad link', () => {
             assert.equal(ownedByRun(`https://github.com/${repository}/actions/runs/1`, repository, runId), false);
             assert.equal(ownedByRun(`https://github.com/${repository}/actions/runs/${runId}0`, repository, runId), false);
+            assert.equal(ownedByRun('https://test-io.example/report?gid=g1&gh_run_id=1&gh_run_attempt=1', repository, runId), false);
+            assert.equal(ownedByRun('https://test-io.example/report?gid=g1', repository, runId), false);
             assert.equal(ownedByRun(`https://github.com/other/repo/actions/runs/${runId}`, repository, runId), false);
             assert.equal(ownedByRun('not a url', repository, runId), false);
             assert.equal(ownedByRun(undefined, repository, runId), false);
@@ -52,6 +55,31 @@ describe('tsio-triage-settle', () => {
             const settled = settle([triage('pending'), lane('e2e-test/detox-ios', 'pending')]);
             assert.equal(settled.state, 'failure');
             assert.equal(settled.description, 'No triage verdict: 2 with no final result');
+        });
+
+        it('ignores a lane status from another run on the same SHA and treats an unmatched lane as not final', () => {
+            const otherRunReport = 'https://test-io.example/report?gid=g0&gh_run_id=111&gh_run_attempt=1';
+            const otherRunPage = `https://github.com/${repository}/actions/runs/111`;
+            const settled = settle([
+                triage('pending'),
+                lane('e2e-test/detox-ios', 'success'),
+                lane('e2e-test/detox-android', 'success', otherRunReport),
+                lane('e2e-test/detox-android', 'success', otherRunPage),
+            ]);
+            assert.equal(settled.state, 'failure');
+            assert.equal(settled.description, 'No triage verdict: 1 with no final result');
+        });
+
+        it('selects this run\'s lane status even when another run posted a newer status on the same SHA', () => {
+            const newerRunPage = `https://github.com/${repository}/actions/runs/99999999999`;
+            const settled = settle([
+                triage('pending'),
+                lane('e2e-test/detox-ios', 'pending', newerRunPage),
+                lane('e2e-test/detox-ios', 'success', runUrl),
+                lane('e2e-test/detox-android', 'success'),
+            ]);
+            assert.equal(settled.state, 'success');
+            assert.equal(settled.description, 'Every E2E check is green');
         });
 
         it('settles green when every lane is green', () => {
@@ -92,6 +120,31 @@ describe('tsio-triage-settle', () => {
             const rows = await readStatuses({token: 't', repository, sha: 'abc', fetchImpl, wait});
             assert.equal(rows.length, 101);
             assert.deepEqual(urls.map((u) => new URL(u).searchParams.get('page')), ['1', '1', '2']);
+        });
+
+        it('retries a page when reading the 200 JSON body drops or stalls, aborting the stalled stream without keeping partial data', async () => {
+            const dropped = {
+                ok: true,
+                status: 200,
+                json: async () => {
+                    throw new Error('terminated');
+                },
+            };
+            const stalled = {
+                ok: true,
+                status: 200,
+                json: () => new Promise(() => {}),
+            };
+            const steps = [dropped, stalled, reply(200, [triage('pending')])];
+            const signals = [];
+            const fetchImpl = async (_url, options) => {
+                signals.push(options?.signal);
+                return steps[signals.length - 1];
+            };
+            const rows = await readStatuses({token: 't', repository, sha: 'abc', fetchImpl, wait, bodyTimeoutMs: 10});
+            assert.deepEqual(rows, [triage('pending')]);
+            assert.equal(signals.length, 3);
+            assert.equal(signals[1].aborted, true);
         });
 
         it('fails at once on a 4xx', async () => {

@@ -360,6 +360,8 @@ describe('tsio-report-status', () => {
             const {calls, fetchImpl} = scripted(stalled, 201);
             await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait, bodyTimeoutMs: 10});
             assert.equal(calls.length, 2);
+            assert.equal(calls[0].options.signal.aborted, true);
+            assert.equal(calls[1].options.signal.aborted, true);
         });
 
         it('tries again after a 429 rate limit', async () => {

@@ -26,7 +26,7 @@ const {createCommitStatus, githubRequestWithRetry, TRIAGE_CHECK_CONTEXT} = requi
 const FINAL_STATES = new Set(['success', 'failure', 'error']);
 const RED_STATES = new Set(['failure', 'error']);
 
-/** Whether a status's link belongs to this workflow run: its run page, or the toolkit's status_run_id. */
+/** Whether a status's link belongs to this workflow run: its run page, a TSIO report's gh_run_id, or the toolkit's status_run_id. */
 function ownedByRun(targetUrl, repository, runId) {
     let url;
     try {
@@ -35,7 +35,11 @@ function ownedByRun(targetUrl, repository, runId) {
         return false;
     }
     const id = String(runId);
-    return url.pathname.replace(/\/+$/, '') === `/${repository}/actions/runs/${id}` || url.searchParams.get('status_run_id') === id;
+    return (
+        url.pathname.replace(/\/+$/, '') === `/${repository}/actions/runs/${id}` ||
+        url.searchParams.get('status_run_id') === id ||
+        url.searchParams.get('gh_run_id') === id
+    );
 }
 
 /**
@@ -50,12 +54,12 @@ function ownedByRun(targetUrl, repository, runId) {
  * @returns {{state: string, context: string, description: string, target_url: string} | null}
  */
 function settleTriageCheck({rows, lanes, repository, runId, runUrl}) {
-    const current = (context) => rows.find((r) => r.context === context);
-    const check = current(TRIAGE_CHECK_CONTEXT);
+    const check = rows.find((r) => r.context === TRIAGE_CHECK_CONTEXT);
     if (!check || !ownedByRun(check.target_url, repository, runId) || !lanes.length) {
         return null;
     }
-    const states = lanes.map((lane) => current(lane)?.state);
+    const currentForRun = (context) => rows.find((r) => r.context === context && ownedByRun(r.target_url, repository, runId));
+    const states = lanes.map((lane) => currentForRun(lane)?.state);
     const green = states.every((s) => s === 'success');
     const red = states.filter((s) => RED_STATES.has(s)).length;
     const notFinal = states.filter((s) => !FINAL_STATES.has(s)).length;
@@ -83,14 +87,13 @@ function settleTriageCheck({rows, lanes, repository, runId, runUrl}) {
 async function readStatuses({token, repository, sha, ...retry}) {
     const rows = [];
     for (let page = 1; page <= 20; page++) {
-        const res = await githubRequestWithRetry(`https://api.github.com/repos/${repository}/commits/${sha}/statuses?per_page=100&page=${page}`, {
+        const batch = await githubRequestWithRetry(`https://api.github.com/repos/${repository}/commits/${sha}/statuses?per_page=100&page=${page}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/vnd.github+json',
                 'X-GitHub-Api-Version': '2022-11-28',
             },
-        }, {...retry, what: 'reading statuses'});
-        const batch = await res.json();
+        }, {...retry, what: 'reading statuses', readBody: (res) => res.json()});
         rows.push(...batch);
         if (batch.length < 100) {
             return rows;
