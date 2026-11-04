@@ -1,0 +1,27 @@
+# Re-runs an E2E run's failed jobs when a lane's triage asked for it: the lane was red only on
+# infrastructure (a dead job, missing reports), never on a test. Triage decides and leaves a marker
+# artifact in the run (rerun-attempts on the tsio-triage job in e2e-detox-pr.yml); the toolkit's
+# e2e-test-rerun action reads it and re-runs the failed jobs once, so the new attempt is triaged again.
+# It checks out and runs no code from the run it re-runs.
+name: E2E re-run on infrastructure failure
+on:
+  workflow_run:
+    workflows: ["E2E"]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  rerun:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: write
+    steps:
+      - name: e2e/rerun
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-rerun@main # actions/e2e-test-rerun
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+          run-attempt: ${{ github.event.workflow_run.run_attempt }}
