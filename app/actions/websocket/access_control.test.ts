@@ -486,10 +486,15 @@ describe('permission policy changed actions', () => {
         expect(refetchPostsForRedaction).not.toHaveBeenCalled();
     });
 
-    it('should only expire the decisions when an action without a channel list or post effect changed', async () => {
+    // The write and management gates read the render decisions, and neither action hides a channel or a file.
+    it.each([
+        RenderPermissionAction.ChannelWriteAccess,
+        RenderPermissionAction.ChannelManagementAccess,
+        RenderPermissionAction.UploadFileAttachment,
+    ])('should only expire the decisions when %s changed', async (action) => {
         seedDecisions();
 
-        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([RenderPermissionAction.UploadFileAttachment]));
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([action]));
         await flushCoalescer();
         await flushReconcileJitter();
 

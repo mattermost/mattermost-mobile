@@ -24,6 +24,7 @@ import type RoleModel from '@typings/database/models/servers/role';
 type Props = {
     channel: ChannelModel;
     creator?: string;
+    managementDenied: boolean;
     roles: RoleModel[];
     theme: Theme;
 }
@@ -82,7 +83,7 @@ const messages = defineMessages({
     },
 });
 
-const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
+const PublicOrPrivateChannel = ({channel, creator, managementDenied, roles, theme}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
@@ -101,20 +102,20 @@ const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
     });
 
     const canManagePeople = useMemo(() => {
-        if (channel.deleteAt !== 0) {
+        if (channel.deleteAt !== 0 || managementDenied) {
             return false;
         }
         const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
         return hasPermission(roles, permission);
-    }, [channel.type, roles, channel.deleteAt]);
+    }, [channel.type, roles, channel.deleteAt, managementDenied]);
 
     const canSetHeader = useMemo(() => {
-        if (channel.deleteAt !== 0) {
+        if (channel.deleteAt !== 0 || managementDenied) {
             return false;
         }
         const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES : Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES;
         return hasPermission(roles, permission);
-    }, [channel.type, roles, channel.deleteAt]);
+    }, [channel.type, roles, channel.deleteAt, managementDenied]);
 
     const createdBy = useMemo(() => {
         const message = channel.type === General.OPEN_CHANNEL ? messages.publicChannel : messages.privateChannel;
