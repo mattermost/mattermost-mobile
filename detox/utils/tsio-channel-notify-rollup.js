@@ -10,9 +10,13 @@
  *   JOB_CONFIGS — JSON map from buildTsioJobConfigMap
  *   UPSTREAM_SUCCEEDED — "true" | "false"
  *   USE_STAGING — "true" to hit staging TSIO
- *   GITHUB_TOKEN — unused here but kept for parity with other CI utils
+ *   GITHUB_TOKEN — reads the changes merged since the last main run (GitHub compare)
+ *   TRIAGE_FINDINGS_DIR — the triage jobs' findings files (--findings-dir)
  *   MATTERMOST_*_WEBHOOK_URL — routed via resolveWebhookUrl / webhookBucketForReportName
  */
+
+const fs = require('fs');
+const path = require('path');
 
 const {webhookBucketForReportName} = require('./build-tsio-job-config');
 const {parseArgs} = require('./cli-args');
@@ -40,6 +44,97 @@ function bucketIdentity(sampleIdentity) {
         name: bucket,
         run_group: bucket,
     };
+}
+
+/**
+ * The triage job's findings file for each run (one artifact per run). Only schema 2, which names each test's
+ * verdict, is used; anything else is skipped with a warning.
+ *
+ * @param {string} dir
+ * @param {Function} [warn]
+ * @returns {Array<{lane: string, findings: Array, counts?: object}>}
+ */
+function loadTriageFindings(dir, warn = console.warn) {
+    if (!dir || !fs.existsSync(dir)) {
+        return [];
+    }
+    const out = [];
+    for (const file of fs.readdirSync(dir, {recursive: true}).filter((name) => name.endsWith('.json')).map((name) => path.join(dir, name))) {
+        try {
+            const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+            if (parsed?.schema === 2 && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
+                out.push(parsed);
+            } else {
+                warn(`tsio-channel-notify-rollup: ${file} is not a schema 2 findings file — skipped`);
+            }
+        } catch (err) {
+            warn(`tsio-channel-notify-rollup: could not read ${file}: ${err.message}`);
+        }
+    }
+    return out;
+}
+
+/**
+ * The changes merged between the previous run of this suite on the same branch and this one: TSIO names the
+ * previous run's commit, GitHub's compare lists the commits in between, and each squash-merged commit names its
+ * PR as "(#1234)". Null when either side is unknown.
+ *
+ * @param {Object} params
+ * @param {string} params.baseUrl - TSIO
+ * @param {{repository: string, name: string, branch: string, commit_sha: string}} params.identity - one run's identity
+ * @param {string} [params.token] - GitHub token
+ * @param {Function} [params.fetchImpl]
+ * @returns {Promise<{from: string, to: string, prs: Array<{number: number, title: string}>, partial?: boolean} | null>}
+ */
+async function findChangesSinceLastRun({baseUrl, identity, token, fetchImpl = fetch}) {
+    const query = new URLSearchParams({repository: identity.repository, name: identity.name, limit: '20'});
+    const res = await fetchImpl(`${baseUrl}/api/v1/reports?${query}`, {signal: AbortSignal.timeout(30000)});
+    if (!res.ok) {
+        return null;
+    }
+    const reports = ((await res.json())?.reports || []).
+        filter((r) => r.branch === identity.branch && r.commit && r.created_at).
+        sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+    // Prefer this workflow run and attempt over another dispatch of the same commit.
+    const current = identity.gh_run_id ? reports.find((r) => String(r.gh_run_id) === String(identity.gh_run_id) &&
+        (!identity.gh_run_attempt || !(r.gh_run_attempt ?? r.run_attempt) ||
+            String(r.gh_run_attempt ?? r.run_attempt) === String(identity.gh_run_attempt))) :
+        reports.find((r) => r.commit === identity.commit_sha);
+
+    // An earlier attempt of this workflow run is not a previous run.
+    const otherRuns = identity.gh_run_id ? reports.filter((r) => String(r.gh_run_id) !== String(identity.gh_run_id)) : reports;
+
+    // If this run has not reported yet, the latest report for this commit is the previous run.
+    const earlier = current ?
+        otherRuns.find((r) => r.created_at < current.created_at) :
+        otherRuns.find((r) => r.commit === identity.commit_sha) || otherRuns[0];
+    if (!earlier) {
+        return null;
+    }
+    if (earlier.commit === identity.commit_sha) {
+        return {from: earlier.commit, to: identity.commit_sha, prs: []};
+    }
+    const compare = await fetchImpl(`https://api.github.com/repos/${identity.repository}/compare/${earlier.commit}...${identity.commit_sha}`, {
+        headers: {Accept: 'application/vnd.github+json', ...(token ? {Authorization: `Bearer ${token}`} : {})},
+        signal: AbortSignal.timeout(30000),
+    });
+    if (!compare.ok) {
+        return null;
+    }
+    const body = await compare.json();
+    const commits = body?.commits || [];
+    const prs = [];
+    for (const commit of commits) {
+        const subject = (commit.commit?.message || '').split('\n')[0];
+        const number = (/\(#(\d+)\)\s*$/).exec(subject)?.[1];
+        if (number) {
+            prs.push({number: Number(number), title: subject.replace(/\s*\(#\d+\)\s*$/, '')});
+        }
+    }
+
+    // GitHub lists at most 250 commits of a comparison: past that, the PRs are only some of those merged.
+    return {from: earlier.commit, to: identity.commit_sha, prs, partial: (body?.total_commits || 0) > commits.length};
 }
 
 function mergeDetails(details) {
@@ -113,8 +208,13 @@ async function collectPerJobCounts({
         try {
             counts = await fetchCounts(baseUrl, identity, detail);
         } catch (err) {
-            warn(`tsio-channel-notify-rollup: no per-leg counts for ${identity.name}: ${err.message}`);
-            continue;
+            // The group's own totals, so a slow per-test fetch never drops a run's failures from the message.
+            const job = (detail.reports || []).map((r) => r.gh_job_name || r.display_name).find(Boolean);
+            warn(`tsio-channel-notify-rollup: no per-test counts for ${identity.name} (${err.message})${job ? '; using the group totals' : ''}`);
+            if (!job || !detail.test_stats) {
+                continue;
+            }
+            counts = {[job]: detail.test_stats};
         }
 
         for (const [job, jobCounts] of Object.entries(counts || {})) {
@@ -217,6 +317,28 @@ async function main() {
     const perJobCounts = await collectPerJobCounts({baseUrl, results});
     const failures = await collectFailures({baseUrl, results});
 
+    // The triage jobs' verdicts, and on main the changes since the last main run, which the new failures point to.
+    const triage = loadTriageFindings(args['findings-dir'] || process.env.TRIAGE_FINDINGS_DIR || '');
+
+    // Main and CMT re-run the failures triage could not clear on fresh devices (rerun-failed.js): the same plan
+    // names what was re-run, and each re-run test's result decides whether it is a product bug.
+    let rerun = null;
+    if (['mobile-main', 'mobile-release'].includes(webhookBucketForReportName(rollupIdentity.name))) {
+        const {planRerun, loadRerunResults} = require('./rerun-failed');
+
+        // The same plan as the planner job: CMT tests whose spec differs from main (its `stale` output) are left out.
+        const stale = JSON.parse(process.env.RERUN_STALE || '{}');
+        rerun = {...planRerun(triage, {stale}), results: loadRerunResults(args['rerun-results-dir'] || process.env.RERUN_RESULTS_DIR || '')};
+    }
+    let changes = null;
+    if (triage.length && webhookBucketForReportName(rollupIdentity.name) === 'mobile-main') {
+        try {
+            changes = await findChangesSinceLastRun({baseUrl, identity: sampleIdentity, token: process.env.GITHUB_TOKEN});
+        } catch (err) {
+            console.warn(`tsio-channel-notify-rollup: changes since the last main run unknown: ${err.message}`);
+        }
+    }
+
     // The bucket name has no single TSIO group of its own (each job owns
     // mobile-<flow>-<job>), so the rollup links to the workflow run and each leg
     // row deep-links to its own TSIO report.
@@ -237,6 +359,9 @@ async function main() {
         runUrl,
         perJobCounts,
         failures,
+        triage,
+        changes,
+        rerun,
         upstreamJobsSucceeded: upstreamSucceeded,
         hasFailures,
         webhookUrl,
@@ -250,4 +375,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {bucketIdentity, mergeDetails, collectPerJobCounts, collectFailures};
+module.exports = {bucketIdentity, mergeDetails, collectPerJobCounts, collectFailures, loadTriageFindings, findChangesSinceLastRun};
