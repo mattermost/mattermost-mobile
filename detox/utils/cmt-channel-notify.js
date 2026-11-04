@@ -250,12 +250,12 @@ const HARD_ASSERTION_PATTERNS = [
 ];
 
 const INFRA_ERROR_PATTERNS = [
-    /attributes_feature_disabled|not enabled on this server/i,
+    /(?:^|[._])feature_disabled\b|feature is not enabled|not enabled on this server/i,
     /simctl|NSPOSIXErrorDomain|Failed to CreateArtifact/i,
-    /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|socket hang up/i,
-    /Exceeded timeout of \d+ ?ms for a hook/i,
+    /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|socket hang up|No response from server|timeout of \d+ ?ms exceeded/i,
+    /Exceeded timeout of \d+ ?ms for a (hook|test)/i,
     /Cannot read properties of undefined \(reading '(id|channel|team|user)'\)/i,
-    /test server (is )?(down|unreachable)|server did not (respond|become ready)/i,
+    /test server (is )?(down|unreachable)|server did not (respond|become ready)|server not at baseline/i,
 ];
 
 /**
@@ -637,8 +637,8 @@ const SETUP_ERRORS = [
 ];
 const TEST_CODE_ERRORS = /^(TypeError|ReferenceError|SyntaxError):/;
 
-// The server says a feature is off (attributes_feature_disabled): every spec of that feature fails on this server.
-const FEATURE_OFF = /_feature_disabled|not enabled on this server/;
+// The server says a feature is off (attributes_feature_disabled / permission_policies.feature_disabled): every spec of that feature fails on this server.
+const FEATURE_OFF = /(?:^|[._])feature_disabled\b|feature is not enabled|not enabled on this server/i;
 const specFolder = (file) => (file || '').replace(/\/[^/]*$/, '');
 
 // The same failure, whatever its numbers and ids.

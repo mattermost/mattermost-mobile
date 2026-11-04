@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
+import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment, waitForServerActionDecision} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -144,10 +144,12 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * The burn-on-read control appears once the allow decision lands
+        // * The burn-on-read control appears once the allow decision lands. Same decision fetch
+        // as MM-70693_2's grant wait, so use its ONE_MIN budget: on a loaded shard the decision
+        // took longer than TEN_SEC in run 41768017254 and this test timed out waiting for it.
         await waitFor(ChannelScreen.borAction).
             toExist().
-            withTimeout(timeouts.TEN_SEC);
+            withTimeout(timeouts.ONE_MIN);
     });
 
     it('MM-70693_2 - should withhold the control for a denied user and show it without reopening the channel once their attribute satisfies the policy', async () => {
@@ -166,14 +168,47 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
 
         // # Change the user's attribute so the policy now grants burn-on-read
         await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
+        let grantError: unknown;
+        try {
+            // * The control appears on its own. The server's attribute view refreshes on a 30s gate,
+            // which the app's delayed re-check is built to outlast.
+            await waitFor(ChannelScreen.borAction).
+                toExist().
+                withTimeout(timeouts.ONE_MIN);
+        } catch (error) {
+            grantError = error;
+        }
 
-        // * The control appears on its own. The server's attribute view refreshes on a 30s gate,
-        // which the app's delayed re-check is built to outlast.
-        await waitFor(ChannelScreen.borAction).
-            toExist().
-            withTimeout(timeouts.ONE_MIN);
+        // # Restore the attribute and confirm the denied decision server-side, so the suite (or an
+        // in-process retry) leaves the user as it found it. A cleanup failure must not replace
+        // an error from the grant wait above.
+        try {
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
 
-        // # Restore the attribute so the suite leaves the user as it found it
-        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+            // The denied decision took over a minute to land server-side in run 41768017254
+            // (still granted at the ONE_MIN mark), so confirm with a FOUR_MIN budget.
+            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'create_burn_on_read_post', false, timeouts.FOUR_MIN);
+            if (!restored) {
+                throw new Error('Server still grants create_burn_on_read_post after restoring Department to Sales');
+            }
+        } catch (cleanupError) {
+            if (grantError) {
+                console.warn('[burn_on_read_permission] restore cleanup failed:', cleanupError); // eslint-disable-line no-console
+            } else {
+                throw cleanupError;
+            }
+        } finally {
+            // # Return to the channel list, then log out so no cached grant decision survives into the next test or retry
+            try {
+                await ChannelScreen.back();
+            } catch {
+                // Best effort: the logout below is the cleanup that must run.
+            }
+            await HomeScreen.logout();
+        }
+
+        if (grantError) {
+            throw grantError;
+        }
     });
 });

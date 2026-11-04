@@ -228,8 +228,26 @@ appId: ${MAESTRO_APP_ID}
                 # auth config (Email / Username / AD-LDAP segments), so match the
                 # stable ends rather than one server's exact composition.
                 text: "Email.*Username"
+            # # Dismiss iOS QuickPath keyboard onboarding when it covers the keyboard keys.
+            - runFlow:
+                when:
+                  visible:
+                    id: "UIContinuousPathIntroductionView"
+                commands:
+                  - tapOn:
+                      text: "Continue"
+                      optional: true
             - eraseText: 80
             - inputText: ${TEST_USER_EMAIL}
+            # # QuickPath onboarding can also surface after typing into the first field.
+            - runFlow:
+                when:
+                  visible:
+                    id: "UIContinuousPathIntroductionView"
+                commands:
+                  - tapOn:
+                      text: "Continue"
+                      optional: true
             - tapOn:
                 text: "Next"
             # # Erase first: on a retry the password field still holds the previous
