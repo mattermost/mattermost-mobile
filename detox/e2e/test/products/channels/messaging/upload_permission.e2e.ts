@@ -193,7 +193,12 @@ describe('Messaging - Upload Permission (ABAC)', () => {
                 throw cleanupError;
             }
         } finally {
-            // # Log out so no cached grant decision survives into the next test or retry
+            // # Return to the channel list, then log out so no cached grant decision survives into the next test or retry
+            try {
+                await ChannelScreen.back();
+            } catch {
+                // Best effort: the logout below is the cleanup that must run.
+            }
             await HomeScreen.logout();
         }
 

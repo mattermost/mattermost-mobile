@@ -56,7 +56,6 @@ appId: ${MAESTRO_APP_ID}
             text: "Enter Server URL(, .*)?"
           direction: UP
           timeout: 10000
-          optional: true
       - tapOn:
           text: "Enter Server URL(, .*)?"
       - eraseText: 120
