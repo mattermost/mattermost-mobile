@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {AccessControl} from '@support/server_api';
+import {getResponseFromError} from '@support/server_api/common';
 import {assertServerBaseline} from '@support/server_baseline';
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import axios from 'axios';
 
 // Server state the ABAC suites rely on; provisioning sets it, the suites only check it.
@@ -56,12 +58,21 @@ export const waitForServerActionDecision = async (
 ): Promise<boolean> => {
     let token: string | undefined;
     try {
-        const login = await axios.post(
-            `${baseUrl}/api/v4/users/login`,
-            {login_id: user.username, password: user.password},
-            {timeout: timeouts.TEN_SEC},
-        );
-        token = login.headers.token as string | undefined;
+        // Password-only login, so a replay on a dropped connection is safe (same reasoning as
+        // apiLogin); errors are returned in {error, status} form for the retry helper to classify.
+        const loginResult = await withTransportRetry(async (): Promise<{token?: string; error?: unknown; status?: number}> => {
+            try {
+                const login = await axios.post(
+                    `${baseUrl}/api/v4/users/login`,
+                    {login_id: user.username, password: user.password},
+                    {timeout: timeouts.TEN_SEC},
+                );
+                return {token: login.headers.token as string | undefined};
+            } catch (err) {
+                return getResponseFromError(err);
+            }
+        }, {idempotent: false, allowDuplicateWrites: true, label: 'waitForServerActionDecision login', budgetMs: timeouts.ONE_MIN});
+        token = loginResult.token;
         if (!token) {
             return false;
         }
