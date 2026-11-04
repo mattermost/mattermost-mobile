@@ -182,7 +182,10 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         // an error from the grant wait above.
         try {
             await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
-            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'upload_file_attachment', false);
+
+            // The denied decision took over a minute to land server-side in run 41768017254
+            // (still granted at the ONE_MIN mark), so confirm with a FOUR_MIN budget.
+            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'upload_file_attachment', false, timeouts.FOUR_MIN);
             if (!restored) {
                 throw new Error('Server still grants upload_file_attachment after restoring Department to Sales');
             }

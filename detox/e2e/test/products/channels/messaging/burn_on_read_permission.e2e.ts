@@ -144,10 +144,12 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * The burn-on-read control appears once the allow decision lands
+        // * The burn-on-read control appears once the allow decision lands. Same decision fetch
+        // as MM-70693_2's grant wait, so use its ONE_MIN budget: on a loaded shard the decision
+        // took longer than TEN_SEC in run 41768017254 and this test timed out waiting for it.
         await waitFor(ChannelScreen.borAction).
             toExist().
-            withTimeout(timeouts.TEN_SEC);
+            withTimeout(timeouts.ONE_MIN);
     });
 
     it('MM-70693_2 - should withhold the control for a denied user and show it without reopening the channel once their attribute satisfies the policy', async () => {
@@ -182,7 +184,10 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         // an error from the grant wait above.
         try {
             await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
-            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'create_burn_on_read_post', false);
+
+            // The denied decision took over a minute to land server-side in run 41768017254
+            // (still granted at the ONE_MIN mark), so confirm with a FOUR_MIN budget.
+            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'create_burn_on_read_post', false, timeouts.FOUR_MIN);
             if (!restored) {
                 throw new Error('Server still grants create_burn_on_read_post after restoring Department to Sales');
             }
