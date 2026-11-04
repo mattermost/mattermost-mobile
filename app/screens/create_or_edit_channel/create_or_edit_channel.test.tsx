@@ -31,9 +31,7 @@ jest.mock('@screens/navigation', () => ({
 
 const mockedBottomSheet = jest.mocked(bottomSheet);
 
-// The sheet renders in its own route, so what it was handed is inspected here and
-// its callback invoked the way the sheet itself would invoke it. Mirrors the
-// pattern in channel_info_attributes.test.tsx.
+// The sheet renders in its own route, so tests read its props and call onSubmit directly.
 const sheetProps = () => (mockedBottomSheet.mock.calls[mockedBottomSheet.mock.calls.length - 1][0]() as ReactElement<ComponentProps<typeof ChannelAttributeEditor>>).props;
 
 jest.mock('@hooks/android_back_handler', () => ({
@@ -147,8 +145,7 @@ describe('CreateOrEditChannel', () => {
             fireEvent.changeText(getByTestId('channel_info_form.display_name.input'), 'town-square');
         });
 
-        // A valid display name alone is not enough: the required attribute is
-        // still unset.
+        // Display name is valid, but the required attribute is still unset.
         await waitFor(() => {
             expect(lastHeaderButton().props.disabled).toBe(true);
         });
@@ -157,8 +154,6 @@ describe('CreateOrEditChannel', () => {
     it('should let an optional attribute stay empty and leave it out of the create request', async () => {
         jest.mocked(createChannel).mockResolvedValue({channel: TestHelper.fakeChannel({id: 'created-channel', team_id: 'team1'})});
 
-        // What the form is given with the required flag off: classification as an
-        // optional copy.
         const {getByTestId, getByText} = renderWithEverything(
             <CreateOrEditChannel
                 {...getBaseProps()}
@@ -208,7 +203,6 @@ describe('CreateOrEditChannel', () => {
             fireEvent.changeText(getByTestId('channel_info_form.display_name.input'), 'town-square');
         });
 
-        // Open the sheet, then submit the way the sheet itself would.
         fireEvent.press(getByTestId('channel_attribute_form.sensitivity.edit'));
         await act(async () => {
             await sheetProps().onSubmit('field-1', 'opt-1');

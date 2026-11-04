@@ -128,11 +128,8 @@ export const observeChannelAttributesEnabled = (database: Database) => {
 };
 
 /**
- * Whether the server refuses a channel create that is missing a required
- * attribute. Mirrors the webapp isChannelAttributesRequiredEnabled selector and
- * the server's IsChannelAttributesRequiredEnabled(): the flag is a kill switch,
- * so with it off a field can still carry required=true without anything
- * enforcing it.
+ * The flag is a kill switch: with it off the server enforces nothing, even on
+ * fields that carry required=true.
  */
 export const observeChannelAttributesRequiredEnabled = (database: Database) => {
     const required = observeConfigBooleanValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, false);
@@ -143,11 +140,8 @@ export const observeChannelAttributesRequiredEnabled = (database: Database) => {
     );
 };
 
-/**
- * Whether the classification field is available. The server also wants an
- * Enterprise licence, which callers here already imply by sitting behind the
- * Enterprise Advanced gate of observeChannelAttributesEnabled.
- */
+// The server also requires an Enterprise licence; callers already sit behind
+// the Enterprise Advanced gate of observeChannelAttributesEnabled.
 export const observeClassificationMarkingsEnabled = (database: Database) => {
     return observeConfigBooleanValue(database, FEATURE_FLAG_CLASSIFICATION_MARKINGS, false);
 };
@@ -194,9 +188,7 @@ export const observeChannelAttributeFields = (database: Database) => {
                 Q.where('object_type', CHANNEL_ATTRIBUTE_OBJECT_TYPE),
                 Q.where('delete_at', 0),
 
-            // permission_values is its own column, not part of attrs, so it has
-            // to be listed: relying on update_at moving would miss a patch that
-            // lands in the same millisecond as the last one.
+            // update_at alone misses a permission_values patch in the same millisecond.
             ).observeWithColumns(['update_at', 'delete_at', 'attrs', 'permission_values']);
         }),
     );
@@ -219,12 +211,7 @@ export const observeResolvedChannelAttributes = (
         map(([fields, values]) => {
             const attributes = resolveChannelAttributes(fields, values);
 
-            // The signature is computed here, not inside distinctUntilChanged.
-            // WatermelonDB updates a record in place and re-emits the same model
-            // instance, so by the time a comparator ran, the *previous* emission's
-            // field already reported the new attrs and every comparison of a
-            // configuration change came out equal. Snapshotting it as a string at
-            // emission time is what makes the comparison mean anything.
+            // Snapshot; see resolvedAttributesSignature.
             return {attributes, signature: resolvedAttributesSignature(attributes)};
         }),
         distinctUntilChanged((a, b) => a.signature === b.signature),

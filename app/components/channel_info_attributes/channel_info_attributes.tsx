@@ -34,18 +34,8 @@ import {typography} from '@utils/typography';
 import AttributeRow from './attribute_row';
 
 /**
- * Whether to explain why a row is locked.
- *
- * A policy lock is always explained. The value looks editable and is not, and the
- * reason is a property of the channel rather than of the viewer, so it is worth a
- * line whoever is reading.
- *
- * A permission or unsupported-type lock is explained only when some other row on
- * this channel *is* editable, which is the only case where the distinction tells
- * the reader anything. Without that condition an ordinary member would see a
- * permission notice under every row: the System Console pins the tier to `admin`,
- * and ordinary members hold the channel-level permission by default, so the common
- * configuration is precisely the one where every row is denied.
+ * Policy locks are always explained. Other locks only when some row is editable: by default
+ * every row is denied to ordinary members, who would otherwise see a notice under each one.
  */
 function shouldShowLockReason(editability: AttributeEditability, anyRowEditable: boolean): boolean {
     if (editability.editable) {
@@ -130,9 +120,7 @@ function validateSubmission(attribute: ResolvedChannelAttribute, value: ChannelA
  * incomplete. Optional unset attributes are not listed at all — on the webapp
  * they are reached through Add attribute, which is a later story.
  *
- * This component owns the write and the error surface; the editor sheet owns
- * neither. A failed save is reported beside the row that asked for it, which is
- * still on screen once the sheet has closed, and the row keeps its old value.
+ * Failed saves are reported here, beside the row; the editor sheet has no error surface.
  */
 const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
     const theme = useTheme();
@@ -144,21 +132,13 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
 
     const [failedFieldIds, setFailedFieldIds] = useState<Set<string>>(() => new Set());
 
-    // Two guards against applying a result that no longer belongs to what is on
-    // screen. visitToken invalidates every field's in-flight save at once on a
-    // channel switch; saveSequence invalidates one field's own stale save without
-    // touching any other field's outcome — each save is keyed by fieldId so that
-    // submitting field B while field A is still in flight cannot clear or
-    // overwrite field A's result.
+    // visitToken drops every in-flight result on a channel switch; saveSequence drops a field's
+    // superseded result without touching other fields.
     const visitToken = useRef(0);
     const saveSequence = useRef<Map<string, number>>(new Map());
     const isMounted = useRef(true);
 
-    // Chained per field so two submits to the same field always reach the server
-    // in the order they were made. Without this, the guard above still shows the
-    // right outcome on screen, but the two requests race on the network and the
-    // one sent first can still be the one the server applies last, leaving the
-    // stored value out of sync with the row.
+    // Chained per field so the server applies writes in submit order.
     const pendingWrites = useRef<Map<string, Promise<unknown>>>(new Map());
 
     useDidMount(() => {
@@ -168,8 +148,7 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
         };
     });
 
-    // A layout effect so the token moves in the same commit that points the refs
-    // below at the new channel; queued saves check it before reading them.
+    // Layout effect so the token moves in the same commit as the refs below; queued saves check it.
     useLayoutEffect(() => {
         visitToken.current += 1;
         saveSequence.current = new Map();
@@ -177,8 +156,6 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
         setFailedFieldIds(new Set());
     }, [channelId]);
 
-    // Rebuilt only when the attribute list changes, so the press handler below
-    // keeps a stable reference across renders.
     const byFieldId = useMemo(() => {
         const map = new Map<string, ResolvedChannelAttribute>();
         for (const attribute of attributes) {
@@ -194,8 +171,6 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
         permissionsRef.current = permissions;
     }, [byFieldId, permissions]);
 
-    // Editability is resolved for the whole section in one pass, because whether a
-    // permission lock is worth explaining depends on the other rows.
     const rows = useMemo(() => attributes.map((attribute) => ({
         attribute,
         editability: getAttributeEditability(
@@ -223,17 +198,13 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
 
         const previousWrite = pendingWrites.current.get(fieldId) ?? Promise.resolve();
         const thisWrite = previousWrite.then(async () => {
-            // Replacing pendingWrites on a channel switch does not cancel a chain
-            // that is already queued, so drop it here before it reads the new
-            // channel's data and writes it against the old channelId.
+            // A channel switch doesn't cancel a queued chain; don't write the new channel's data to the old one.
             if (token !== visitToken.current) {
                 logDebug('handleSubmit', 'skipped stale submit; channel changed', channelId, fieldId);
                 return {error: 'channel changed'};
             }
 
-            // Read after earlier writes finish. The sheet may have been open while
-            // a websocket changed the field, value, or permissions, so captured
-            // render data is not authoritative at request time.
+            // Re-read at request time: a websocket may have changed the field, value or permissions.
             const current = byFieldIdRef.current.get(fieldId);
             if (!current || !getAttributeEditability(
                 current.field,
@@ -256,8 +227,6 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
 
         const {error} = await thisWrite;
 
-        // A result from a previous channel, or from a save a later one has already
-        // superseded, is not this row's outcome.
         if (!isMounted.current || token !== visitToken.current || saveSequence.current.get(fieldId) !== sequence) {
             return;
         }
@@ -276,10 +245,7 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
 
         const {field, rawValue} = attribute;
 
-        // Clearing is offered only where the server would accept it: a directional
-        // policy refuses a clear outright, because clearing and re-setting would
-        // launder a value straight past it. A required field never accepts a
-        // clear regardless of policy — the server always rejects it.
+        // The server refuses a clear on a required field, or under a directional policy once set.
         const clearable = !isPropertyFieldRequired(field) && (getPropertyFieldChangePolicy(field) === 'any' || !isPropertyValueSet(rawValue));
 
         const renderContent = () => (
@@ -293,11 +259,6 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
         const totalRows = field.type === 'text' ? 1 : reachableOptions(field, rawValue).length + (clearable ? 1 : 0);
         const snapPoints = getChannelAttributeEditorSnapPoints({totalRows, fieldType: field.type, bottomInset: bottom, isTablet, windowHeight});
 
-        // 'interactive' grows the sheet by exactly the keyboard's height instead
-        // of 'extend''s default of jumping straight to the tallest configured
-        // snap point — only the text field's editor shows a keyboard, but this
-        // is harmless to pass for every field type since it only changes
-        // anything while a keyboard is visible.
         bottomSheet(renderContent, snapPoints, undefined, 'interactive');
     }, [bottom, byFieldId, handleSubmit, isTablet, windowHeight]);
 

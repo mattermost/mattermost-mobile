@@ -15,7 +15,6 @@ import {typography} from '@utils/typography';
 
 export const ROW_MIN_HEIGHT = 40;
 
-// Ids shared with the webapp so translators see one source string per message.
 const lockReasons = defineMessages({
     never: {
         id: 'channel_attributes.info.locked',
@@ -100,10 +99,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     attribute: ResolvedChannelAttribute;
     editability: AttributeEditability;
-
-    // Whether to explain a lock. A policy lock is always explained; a permission
-    // lock only where the viewer can edit other attributes on this channel, so a
-    // plain member is not told three times over that they cannot edit anything.
     showLockReason: boolean;
 
     failed: boolean;
@@ -119,8 +114,6 @@ const AttributeRow = ({attribute, editability, showLockReason, failed, onPress}:
     const label = getPropertyFieldLabel(field);
     const testID = `channel_info.attributes.${field.name}`;
 
-    // The field id comes back through the callback so the parent can pass one
-    // memoized handler to every row.
     const handlePress = useCallback(() => onPress(field.id), [field.id, onPress]);
 
     const value = (
@@ -156,7 +149,6 @@ const AttributeRow = ({attribute, editability, showLockReason, failed, onPress}:
 
     const content = (
         <>
-            {/* The attribute's own name: dynamic and not translatable. */}
             <Text
                 style={styles.label}
                 numberOfLines={1}

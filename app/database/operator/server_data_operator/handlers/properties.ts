@@ -32,9 +32,8 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
      * handlePropertyFields: Syncs the PropertyField table from a list of fields. Each field's
      * `delete_at` decides whether it is upserted (0) or deleted (non-zero); deleting a field also
      * removes its property values. When `groupId` is provided the list is treated as the
-     * authoritative set for that group, so stored fields missing from it are pruned as well —
-     * scoped to `objectTypes` when given, since a group can be shared with object types the
-     * caller's fetch never requested.
+     * authoritative set for that group, so stored fields missing from it are pruned as well,
+     * scoped to `objectTypes` when given.
      */
     handlePropertyFields = async ({fields: rawFields, groupId, objectTypes, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
         const fields = safeArrayCast<PropertyField>(rawFields);

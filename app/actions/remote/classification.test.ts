@@ -260,11 +260,9 @@ describe('fetchAccessControlAttributeFields', () => {
         await fetchAccessControlAttributeFields(serverUrl);
         expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(2);
 
-        // A non-forced call within the backoff window must not retry.
         await fetchAccessControlAttributeFields(serverUrl);
         expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(2);
 
-        // A forced call must still reach the network.
         mockClient.getPropertyFields.
             mockResolvedValueOnce([systemField]).
             mockResolvedValueOnce([channelField]);
@@ -341,9 +339,6 @@ describe('fetchAccessControlAttributeFields', () => {
     it('should not delete a user/session field in the same group that this request never fetched', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        // access_control is shared with other object types this feature does not
-        // own or ever request. The group-wide prune must not treat "missing from
-        // this system+channel response" as "delete it".
         const userField = {...systemField, id: 'user-field-id', object_type: 'user' as PropertyFieldObjectType, name: 'assignee'};
         await operator.handlePropertyFields({fields: [userField], prepareRecordsOnly: false});
         await setAccessControlGroupId(serverUrl, CLASSIFICATIONS_GROUP_NAME);
@@ -770,8 +765,6 @@ describe('fetchChannelAttributeValues', () => {
 
         expect(result.error).toBeDefined();
 
-        // Neither the incoming upsert nor the stale prune applied: the pre-existing
-        // row is exactly as it was, and the new value was never persisted.
         const values = await getStoredValues(database, channelId);
         expect(values.map((v) => v.id)).toEqual(['cv-existing']);
     });

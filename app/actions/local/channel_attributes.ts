@@ -39,9 +39,7 @@ export async function removeStoredFields(serverUrl: string) {
         prepareRecordsOnly: true,
     }) : [];
 
-    // The field deletion and the group-id clear are committed in one batch: a
-    // failed write must not clear the group id while leaving the owned fields
-    // (and their cascaded values) still stored, or vice versa.
+    // One batch, so a failed write never clears the group id but keeps its fields.
     const systemModels = await operator.handleSystem({
         systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: ''}],
         prepareRecordsOnly: true,

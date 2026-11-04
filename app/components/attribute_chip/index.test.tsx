@@ -74,10 +74,8 @@ describe('AttributeChip', () => {
 
         expect(getByText(LONG_VALUE)).toBeTruthy();
 
-        // getByText alone would still pass under native single-line truncation:
-        // RTL renders the full text content regardless of numberOfLines, which
-        // only clips on a real device. The props themselves are what has to be
-        // absent for the option variant to actually render untruncated.
+        // RTL renders the full text regardless of numberOfLines, so assert the
+        // truncation props are absent.
         expect(getByTestId('chip.value').props.numberOfLines).toBeUndefined();
         expect(getByTestId('chip.value').props.ellipsizeMode).toBeUndefined();
     });

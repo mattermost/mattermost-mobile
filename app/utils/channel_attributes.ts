@@ -15,9 +15,6 @@ import type {PropertyFieldModel, PropertyValueModel} from '@database/models/serv
 // payloads satisfy, so the same pure helpers serve the observers and the tests.
 // Selection by group, object_type and delete_at happens in the scoped queries in
 // @queries/servers/properties; these helpers only project what was selected.
-// `type` and `permissionValues` are here for the editor: the first decides
-// whether an editor exists for the field at all, the second is the per-field
-// permission tier layered above the channel-level one.
 export type ChannelAttributeField = Pick<PropertyFieldModel, 'id' | 'name' | 'type' | 'attrs' | 'permissionValues'>;
 export type ChannelAttributeValue = Pick<PropertyValueModel, 'fieldId' | 'value'>;
 
@@ -47,9 +44,7 @@ export type ResolvedChannelAttribute = {
     unresolvedOptionIds?: string[];
 };
 
-// Why a row cannot be edited. Shown to the user rather than hidden: a row that
-// silently does nothing when tapped reads as broken, and hiding it makes a
-// correctly marked channel look like one missing a marking.
+// Shown to the user, not hidden: a row that ignores taps reads as broken.
 export type AttributeLockReason = 'never' | 'raise_only' | 'lower_only' | 'permission' | 'unsupported_type';
 
 export type AttributeEditability =
@@ -59,7 +54,6 @@ export type AttributeEditability =
 // What a field's permission_values tier requires beyond the channel-level gate.
 export type AttributeTierGate = 'never' | 'channel_only' | 'manage_channel_roles' | 'manage_system';
 
-// The channel-wide permission answers every row is judged against.
 export type ChannelAttributePermissions = {
     canManageChannelProperties: boolean;
     canManageChannelRoles: boolean;
@@ -83,8 +77,6 @@ const EMPTY_OPTIONS: PropertyFieldOption[] = [];
 
 const EDITABLE: AttributeEditability = {editable: true};
 
-// The field types with an editor. Mirrors the webapp, which leaves date, user and
-// multiuser read-only.
 const EDITABLE_FIELD_TYPES = new Set<string>(['text', 'select', 'multiselect', 'rank']);
 
 // Ranks a field for display. Absent sort_order sorts last rather than first, so
@@ -109,30 +101,17 @@ export function isPropertyValueSet(raw: unknown): boolean {
 }
 
 /**
- * The value that clears a field: an empty list for list-valued types, an empty
- * string otherwise. Never null — on iOS the native bridge drops null-valued keys,
- * so {value: null} reaches the server as an item with no value and is rejected.
- * The server reads "" and [] as unset just as it does null.
+ * Never null: the iOS bridge drops null-valued keys, so the server gets an item
+ * with no value and rejects it. The server reads "" and [] as unset.
  */
 export function getEmptyPropertyValue(fieldType: string): string | string[] {
     return fieldType === 'multiselect' || fieldType === 'multiuser' ? [] : '';
 }
 
 /**
- * Drops draft values a live field-list update has stranded: a field that no
- * longer appears at all, or a selected option id an administrator has since
- * removed from the field.
- *
- * Only the channel-creation form needs this. It holds its draft as local
- * component state rather than a persisted value, and the field list it draws
- * from is a live subscription — unlike Channel Info, where every write goes
- * straight to the server and is judged against the live field there instead.
- * Without this, a draft option id that stopped existing between the pick and
- * the tap on Create would still be sent, for the server to reject with no
- * option even reachable in the sheet's own picker to explain why.
- *
- * Returns the same object when nothing changed, so a caller storing this in
- * React state does not re-render on every unrelated field-list emission.
+ * Drops create-form draft values whose field or option was removed after it was
+ * picked, so Create does not send ids the server rejects. Returns the same object
+ * when nothing changed.
  */
 export function pruneStaleAttributeValues(
     fields: ChannelAttributeField[],
@@ -259,13 +238,6 @@ export function canMoveToOption(field: ChannelAttributeField, currentValue: unkn
     return policy === 'raise_only' ? nextRank > currentRank : nextRank < currentRank;
 }
 
-/**
- * The options a field's change policy still permits, given its current value.
- *
- * The editor narrows its list to these rather than rendering the rest disabled:
- * under a directional policy the unreachable options are not choices, and showing
- * them greyed out only invites the tap.
- */
 export function reachableOptions(field: ChannelAttributeField, currentValue: unknown): PropertyFieldOption[] {
     const options = getFieldOptions(field);
     if (options.length === 0) {
@@ -276,29 +248,13 @@ export function reachableOptions(field: ChannelAttributeField, currentValue: unk
     return reachable.length === options.length ? options : reachable;
 }
 
-/**
- * Whether this field's type has an editor at all.
- *
- * date, user and multiuser attributes are displayed but not editable — there is
- * no editor for them on the webapp either, and inventing one on a phone first is
- * the wrong order.
- */
 export function hasAttributeEditor(field: ChannelAttributeField): boolean {
     return EDITABLE_FIELD_TYPES.has(field.type);
 }
 
 /**
- * What this field's permission_values tier demands, on top of the channel-level
- * manage_*_channel_properties gate.
- *
- * Anything absent or unrecognised reads as `never`, which matches the server: its
- * switch has no default branch and a nil tier returns false. The webapp instead
- * treats an empty tier as `member`, so it offers an edit affordance the server
- * refuses — deliberately not copied here.
- *
- * A tier is returned rather than a permission name because the permissions have
- * to be observed for the channel as a whole: one subscription each, then every
- * row selects from the result, instead of a subscription per row.
+ * An absent or unrecognised tier reads as `never`, matching the server, which
+ * refuses a nil tier.
  */
 export function attributeTierGate(field: ChannelAttributeField): AttributeTierGate {
     switch (field.permissionValues) {
@@ -314,14 +270,8 @@ export function attributeTierGate(field: ChannelAttributeField): AttributeTierGa
 }
 
 /**
- * Whether the caller may set this field while creating a channel, mirroring the
- * server's canSetChannelAttributeOnCreate (api4/channel.go).
- *
- * The channel does not exist yet, so there is no channel-level gate to check —
- * only the field's own tier, answered from what creation itself guarantees: the
- * creator is saved as a channel admin, which satisfies both `member` and `admin`.
- * Only `sysadmin` needs anything beyond that. Anything absent or unrecognised
- * fails closed, matching the server's switch having no default branch.
+ * Mirrors the server's canSetChannelAttributeOnCreate. The creator becomes a
+ * channel admin, so only `sysadmin` needs more; an unknown tier fails closed.
  */
 export function canSetChannelAttributeOnCreate(field: ChannelAttributeField, canManageSystem: boolean): boolean {
     switch (field.permissionValues) {
@@ -336,24 +286,15 @@ export function canSetChannelAttributeOnCreate(field: ChannelAttributeField, can
 }
 
 export type ChannelAttributeCreateFlags = {
-
-    // FeatureFlagChannelAttributesRequired, on top of channel attributes being enabled.
     requiredEnforced: boolean;
-
-    // FeatureFlagClassificationMarkings.
     classificationAvailable: boolean;
 };
 
-// Matched by name, as in deriveChannelAttributeBanner and for the same reason:
-// mobile does not persist linked_field_id, and the server allows only one live
-// channel field per name in the group.
 function isClassificationField(field: ChannelAttributeField): boolean {
     return field.name === CLASSIFICATIONS_FIELD_NAME;
 }
 
-// Mirrors the server's channelAttributeFieldAvailable: it refuses a value for
-// the classification field while its feature is off, so offering it would only
-// lead to a 400.
+// The server refuses a classification value while its feature flag is off.
 function isFieldAvailableOnCreate(field: ChannelAttributeField, classificationAvailable: boolean): boolean {
     return classificationAvailable || !isClassificationField(field);
 }
@@ -374,13 +315,8 @@ function asOptionalField(field: ChannelAttributeField): ChannelAttributeField {
 }
 
 /**
- * The fields the channel-creation form should offer, in display order.
- *
- * With required attributes enforced: the required ones with a mobile editor that
- * the caller may set on create. With the kill switch engaged the server demands
- * nothing, so only classification is offered, as an optional copy, matching the
- * webapp's courtesy exception. Every other field stays hidden, and a stored
- * required=true no longer forces a value.
+ * With the required flag off the server enforces nothing, so only classification
+ * is offered, as optional.
  */
 export function getCreatableChannelAttributeFields(
     fields: ChannelAttributeField[],
@@ -399,16 +335,8 @@ export function getCreatableChannelAttributeFields(
 }
 
 /**
- * Whether some field the server will require from this caller (required, and the caller's
- * tier passes canSetChannelAttributeOnCreate) but that has no mobile editor at
- * all. The create form drops it for the same reason a sysadmin-only field is
- * dropped — there is nothing to render — but unlike the sysadmin case the server
- * does *not* also skip the requirement here, since the tier check passes. Left
- * undetected, the create screen would let Create be tapped with no way to have
- * supplied a value the server then rejects.
- *
- * Never true with the kill switch engaged, and never for a field whose feature is
- * off: the server requires neither.
+ * A required field the caller may set but mobile has no editor for. Unlike a
+ * sysadmin-only field, the server still requires it, so creation would fail with a 400.
  */
 export function hasCreationBlockingChannelAttribute(
     fields: ChannelAttributeField[],
@@ -431,10 +359,6 @@ export function channelAttributePermissionsEqual(a: ChannelAttributePermissions,
         a.canManageSystem === b.canManageSystem;
 }
 
-/**
- * Both permission gates for one field: the channel-level one, already resolved by
- * the caller, and this field's tier.
- */
 export function canEditAttributeField(field: ChannelAttributeField, permissions: ChannelAttributePermissions): boolean {
     if (!permissions.canManageChannelProperties) {
         return false;
@@ -453,19 +377,8 @@ export function canEditAttributeField(field: ChannelAttributeField, permissions:
 }
 
 /**
- * Whether a row may be edited, and when it may not, which of the reasons to show.
- *
- * `hasPermission` is both permission gates already resolved: the channel-level
- * one and this field's tier.
- *
- * Two details are easy to get wrong and both are load-bearing:
- *
- * - The check reads the stored value, not the display string. A stored option id
- *   that no longer resolves still counts as set, and — being unresolvable — is
- *   correctly refused by canMoveToOption.
- * - A locked policy only locks a field that already has a value. The server
- *   exempts the first write, so a required attribute whose creation-time write
- *   failed is not stranded as "Not set" forever.
+ * Reads the stored value, so an option id that no longer resolves still counts as
+ * set. A policy only locks a set value; the server exempts the first write.
  */
 export function getAttributeEditability(
     field: ChannelAttributeField,
@@ -476,11 +389,7 @@ export function getAttributeEditability(
         return {editable: false, reason: 'unsupported_type'};
     }
 
-    // The policy is checked before the permission, so a locked field reports why it
-    // is locked even to someone who could not have edited it anyway. That reason
-    // describes the channel rather than the viewer, and it is the more useful of
-    // the two: "cannot be changed after it is set" explains the row, where "you do
-    // not have permission" only explains the reader.
+    // Policy before permission: the lock reason explains the row, not the viewer.
     if (isPropertyValueSet(currentValue)) {
         const policy = getPropertyFieldChangePolicy(field);
 
@@ -488,10 +397,7 @@ export function getAttributeEditability(
             return {editable: false, reason: 'never'};
         }
 
-        // A directional policy compares option ranks, so a field with nothing left
-        // to compare can never satisfy it. The server reaches the same conclusion
-        // from the other side: an unresolvable rank is refused. That also covers a
-        // text field, which only ends up here through a type change.
+        // No reachable option means the server would refuse every change.
         if (policy !== 'any' && reachableOptions(field, currentValue).length === 0) {
             return {editable: false, reason: policy};
         }
@@ -613,29 +519,9 @@ export function selectAttributesForAction(
 }
 
 /**
- * The attributes listed in Channel Info, filtered by role not by display configuration.
- *
- * Display configuration (attrs.actions / display_label_info) controls only the
- * chip/banner surfaces. Channel Info is the editing surface, so it must show every
- * attribute the viewer can act on — hiding a value because an admin did not tick
- * "show in info panel" would leave a channel admin with no way to correct it.
- *
- * Required-and-unset rows are shown per field, not per a single "is this user a
- * channel admin" boolean: a custom role can hold manage_public/private_channel_
- * properties and edit a member-tier field without holding manage_channel_roles,
- * and that user must still see the only row that lets them complete it. Each
- * field's own effective editability (canEditAttributeField) decides, not the
- * channel-role permission alone.
- *
- * Any attribute with a stored value is listed regardless of who can edit it —
- * read-only for a viewer who cannot act on it.
- *
- * Optional unset attributes are reached through Add Attribute (a later story).
- *
- * "Has a stored value" is tested against rawValue (server semantics: null / '' / []
- * all count as unset) rather than displayValue, so a stored id that no longer
- * resolves to an option is still counted as set and the row is the only way to reach
- * it.
+ * Ignores display configuration, since Channel Info is the editing surface. Required
+ * unset rows are checked per field: a custom role may edit a member-tier field
+ * without manage_channel_roles.
  */
 export function selectChannelInfoAttributes(
     attributes: ResolvedChannelAttribute[],
@@ -712,11 +598,7 @@ export function groupChannelAttributeChipsByField(items: ChannelAttributeChipIte
  * The configuration keys have to be in here, not just the rendered value: which
  * surface an attribute appears on is decided *after* this comparator runs, by
  * selectAttributesForAction and selectChannelInfoAttributes reading attrs.actions
- * and attrs.required. Lives with the helpers it mirrors, since it touches no
- * database; the observers in @queries/servers/properties only apply it. Comparing
- * only the value meant an administrator unticking "show in header" produced an
- * emission this treated as identical, so the chip stayed on screen until the app
- * restarted.
+ * and attrs.required.
  */
 function renderSignature(attribute: ResolvedChannelAttribute): string {
     const {attrs} = attribute.field;
@@ -728,10 +610,7 @@ function renderSignature(attribute: ResolvedChannelAttribute): string {
         attribute.field.type,
         attribute.displayValue,
 
-        // The raw stored value, not just the rendered display string: two options
-        // that happen to share a name and colour render identical display values,
-        // and without this, picking one over the other produced an emission this
-        // treated as unchanged.
+        // Two options can share a name and colour, so the display string alone misses a switch.
         JSON.stringify(attribute.rawValue ?? null),
         attribute.option?.color ?? '',
 
@@ -747,18 +626,7 @@ function renderSignature(attribute: ResolvedChannelAttribute): string {
     ].join('|');
 }
 
-/**
- * The keys the editor gates on, plus the option list it offers.
- *
- * Without the first three, narrowing a policy or revoking a tier produced an
- * emission treated as identical. The option list is in here as a digest rather
- * than by identity because it is what the editor offers: an administrator
- * renaming, recolouring or removing an option has to reach an open row, and
- * comparing only the rendered value meant the row kept offering an option the
- * server had already stopped accepting. Joined with SIGNATURE_SEPARATOR rather
- * than ':'/',' because option.name is admin-authored free text that can legally
- * contain either, which would let two different option sets collide.
- */
+// What the editor gates on and offers, so a policy, tier or option change reaches an open row.
 function editorSignatureKeys(field: ChannelAttributeField): string[] {
     const {attrs} = field;
 
@@ -776,26 +644,15 @@ function optionsSignature(field: ChannelAttributeField): string {
 }
 
 /**
- * One string standing for everything the chip, banner and Channel Info surfaces
- * read from a resolved attribute list.
- *
- * Callers must take this at emission time rather than comparing two lists inside
- * distinctUntilChanged. WatermelonDB updates a record in place and re-emits the
- * same model instance, so by the time a comparator ran, the *previous* emission's
- * field already reported the new attrs and every comparison of a configuration
- * change came out equal.
+ * Take this at emission time, not inside distinctUntilChanged: WatermelonDB updates
+ * records in place and re-emits the same instance, so a comparator sees new attrs on both sides.
  */
 export function resolvedAttributesSignature(attributes: ResolvedChannelAttribute[]): string {
     return attributes.map(renderSignature).join(SIGNATURE_SEPARATOR);
 }
 
-/**
- * What Channel Info renders and edits for one attribute. Narrower than
- * renderSignature on purpose: Channel Info lists attributes whatever their
- * display actions, so an administrator toggling "show in header" must not
- * re-render it. It still carries the stored value and every key the editor and
- * its submit-time revalidation read, since Channel Info is the editing surface.
- */
+// Narrower than renderSignature: Channel Info ignores display actions, so toggling
+// "show in header" must not re-render it.
 function channelInfoSignature(attribute: ResolvedChannelAttribute): string {
     return [
         attribute.field.id,
@@ -810,25 +667,14 @@ function channelInfoSignature(attribute: ResolvedChannelAttribute): string {
     ].join('|');
 }
 
-/**
- * The Channel Info counterpart of resolvedAttributesSignature, under the same
- * rule: take it at emission time, never compare two lists after the fact.
- */
+// Snapshot; see resolvedAttributesSignature.
 export function channelInfoAttributesSignature(attributes: ResolvedChannelAttribute[]): string {
     return attributes.map(channelInfoSignature).join(SIGNATURE_SEPARATOR);
 }
 
-// What the create form renders for one field, plus what decides whether the
-// field is in the list at all (required flag, permission tier). Taken at
-// emission time for the same reason as resolvedAttributesSignature: a field
-// changed in place re-emits the same model instance.
 function creatableFieldSignature(field: ChannelAttributeField): string {
     return [
         field.id,
-
-        // The fallback label (getPropertyFieldLabel falls back to name when
-        // display_name is absent), the sort tie-break, and every row testID are
-        // all keyed off name, not just display_name.
         field.name,
         field.type,
         field.permissionValues ?? '',
@@ -839,10 +685,7 @@ function creatableFieldSignature(field: ChannelAttributeField): string {
     ].join(SIGNATURE_SEPARATOR);
 }
 
-/**
- * The create-form counterpart of resolvedAttributesSignature, under the same
- * rule: take it at emission time, never compare two lists after the fact.
- */
+// Snapshot; see resolvedAttributesSignature.
 export function creatableFieldsSignature(fields: ChannelAttributeField[]): string {
     return fields.map(creatableFieldSignature).join('|');
 }

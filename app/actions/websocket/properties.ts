@@ -33,14 +33,9 @@ export async function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg
             const models = await operator.handlePropertyFields({fields: [field], prepareRecordsOnly: true});
             await operator.batchRecords(models, 'handlePropertyFieldCreatedOrUpdated', true);
 
-            // The event carries a group_id but no group name, so there is no way to tell
-            // from here whether this field is ours. What we can tell is that we do not
-            // know our group id yet — which happens when the last fetch found no fields
-            // and stamped its one-hour cache. Without this, the first attribute an
-            // administrator creates stays invisible for the rest of that hour.
-            //
-            // Narrowed to the object types this feature owns, and self-limiting: once
-            // the fetch publishes the id, this stops firing.
+            // The event has no group name, so we can't tell if the field is ours. If our group
+            // id is still unknown (last fetch found no fields and cached for an hour), refetch,
+            // or the first attribute an admin creates stays hidden for that hour.
             return OWNED_OBJECT_TYPES.has(field.object_type) && !(await getAccessControlGroupId(database));
         });
 
@@ -73,8 +68,7 @@ export async function handlePropertyFieldDeleted(serverUrl: string, msg: WebSock
 }
 
 // Stamping delete_at is how the operator is told to remove a row; it has no
-// delete-by-query path for values. Prepared and committed as one propagated
-// batch so a failed write throws rather than silently leaving stale rows.
+// delete-by-query path for values.
 async function destroyValues(serverUrl: string, operator: ServerDataOperator, stale: PropertyValueModel[], description: string) {
     if (!stale.length) {
         return;
@@ -137,9 +131,8 @@ export async function handlePropertyValuesUpdated(serverUrl: string, msg: WebSoc
             };
             const targetId = data.target_id ?? values[0].target_id;
             if (values.some((value) => value.target_type === 'channel')) {
-                // Serialized against the REST full-channel fetch and
-                // setChannelAttributeValue for the same channel, so this upsert
-                // cannot land in the gap between that fetch's read and its write.
+                // Shares the lock with the REST channel fetch so this upsert cannot
+                // land between that fetch's request and its prune.
                 await EphemeralStore.runExclusive(channelAttributeWriteLockKey(serverUrl, targetId), persistValues);
                 return;
             }
@@ -154,15 +147,8 @@ export async function handlePropertyValuesUpdated(serverUrl: string, msg: WebSoc
         }
 
         if (data.target_id) {
-            // This event carries no group identity, so an "all cleared" broadcast
-            // from another property group sharing this table (managed channel
-            // categories, custom profile attributes) is indistinguishable from one
-            // for access_control. Deleting locally here would apply someone else's
-            // clear to our data. Instead, force a group-scoped REST reconciliation:
-            // if the clear really was ours, the fetch will observe it and prune;
-            // if it belonged to another group, the fetch finds our values
-            // unchanged and nothing is lost. Non-channel targets (users, posts,
-            // system) can never hold channel attributes, so they are skipped.
+            // The event has no group id, so this clear may belong to another group
+            // sharing the table. Refetch our values instead of deleting locally.
             if (data.object_type !== CHANNEL_ATTRIBUTE_OBJECT_TYPE) {
                 logDebug('handlePropertyValuesUpdated', 'Ignoring cleared values for non-channel object type', data.object_type);
                 return;

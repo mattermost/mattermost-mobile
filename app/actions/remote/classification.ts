@@ -81,20 +81,16 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
                     if (!groupId || allFields.some((f) => f.group_id !== groupId)) {
                         logError('fetchAccessControlAttributeFields', 'Unexpected access control fields');
 
-                        // A short backoff, not the 1-hour success TTL: this suppresses
-                        // a fetch-and-fail loop from non-forced callers without
-                        // hiding a genuine fix (or a forced retry) for an hour, and
-                        // existing local data is left untouched.
+                        // Short backoff, not the 1-hour TTL: stops a fetch-and-fail loop
+                        // without hiding a server-side fix for an hour.
                         EphemeralStore.setClassificationBannerFailed(serverUrl);
                         return {error: 'access control fields returned an unexpected group_id'};
                     }
 
                     const values = await client.getSystemPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME);
 
-                    // objectTypes scopes the authoritative prune to what this request
-                    // actually fetched: only system+channel object types. Without it,
-                    // the group's user/session fields (owned by other features) would
-                    // read as "missing from the response" and be deleted.
+                    // Prune only the object types we fetched; user/session fields share
+                    // this group and would otherwise be deleted.
                     const fieldModels = await operator.handlePropertyFields({groupId, fields: allFields, objectTypes: [...OWNED_OBJECT_TYPES], prepareRecordsOnly: true});
                     const valueModels = await operator.handlePropertyValues({
                         targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
@@ -103,11 +99,8 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
                         prepareRecordsOnly: true,
                     });
 
-                    // Published for the field observables, which cannot scope
-                    // themselves to this group until the id is known. Persisted in the
-                    // same batch so field records never exist without a group ID: a
-                    // failed write leaves the DB as it was rather than storing
-                    // unscopeable rows.
+                    // Same batch as the fields, so fields never exist without the group id
+                    // the field observables scope by.
                     const systemIdModels = await operator.handleSystem({
                         systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: groupId}],
                         prepareRecordsOnly: true,
@@ -167,22 +160,18 @@ export async function fetchChannelAttributeValues(serverUrl: string, channelId: 
         const client = NetworkManager.getClient(serverUrl);
         let values: Array<PropertyValue<string>> | undefined;
 
-        // The request itself is serialized with websocket and local writes. Locking
-        // only after the response arrives would still let an older REST request
-        // commit after a newer websocket update and prune that update as stale.
+        // Lock around the request too, or an older response could commit after a
+        // newer websocket update and prune it as stale.
         await EphemeralStore.runExclusive(channelAttributeWriteLockKey(serverUrl, channelId), async () => {
-            // Concurrent non-forced callers can both pass the check above before
-            // either enters the queue. Re-check here so only the first one fetches.
+            // Concurrent callers can all pass the check above; only the first fetches.
             if (!force && EphemeralStore.getChannelAttributeValuesSynced(serverUrl, channelId)) {
                 return;
             }
 
             values = await client.getPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, channelId);
 
-            // The PropertyValue table is shared across groups (managed channel
-            // categories and other features store per-channel values in it), so the
-            // prune is scoped to the access_control group. Until that group id is
-            // known, upsert only: an unscoped prune would delete other groups' rows.
+            // Other groups store per-channel values in this table, so the prune is
+            // scoped to our group id, and skipped (upsert only) until it is known.
             const groupId = await getAccessControlGroupId(database);
             const models = await operator.handlePropertyValues({
                 values,
