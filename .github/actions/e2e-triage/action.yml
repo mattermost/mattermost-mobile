@@ -63,6 +63,7 @@ runs:
         restore-keys: e2e-triage-answers-${{ inputs.job-key }}-${{ fromJSON(inputs.composite-identity).gh_pr_number && format('pr{0}', fromJSON(inputs.composite-identity).gh_pr_number) || fromJSON(inputs.composite-identity).commit_sha }}-
     # A triage failure must never change the outcome of the E2E run itself.
     - name: e2e/triage
+      id: triage
       continue-on-error: true
       uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-triage@main # actions/e2e-test-triage
       with:
@@ -87,6 +88,43 @@ runs:
         rerun-attempts: ${{ inputs.rerun-attempts }}
         findings-file: e2e-triage-findings.json
     # The verdict on each failed test, which the channel message reads (tsio-channel-notify).
+    # The templates post a pending e2e-test/triage check for a red lane. A run triage ends up
+    # not enforcing (E2E/Triage-report-only added after that, labels it cannot read, or a triage
+    # that stopped before saying) never writes that check, so it would stay pending. Settle
+    # this run's own pending check from the lanes as the tests left them; never another run's.
+    - name: Settle a pending triage check triage will not write
+      if: always() && steps.triage.outputs.effective-mode != 'enforce'
+      continue-on-error: true
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        COMPOSITE_IDENTITY: ${{ inputs.composite-identity }}
+        TRIAGE_LANES: ${{ inputs.triage-lanes }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const sha = JSON.parse(process.env.COMPOSITE_IDENTITY).commit_sha;
+          const {owner, repo} = context.repo;
+          // Newest first, so the first row per context is its current state.
+          const rows = await github.paginate(github.rest.repos.listCommitStatusesForRef, {owner, repo, ref: sha, per_page: 100});
+          const current = (name) => rows.find((r) => r.context === name);
+          const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+          const check = current('e2e-test/triage');
+          if (!check || check.state !== 'pending' || check.target_url !== runUrl) {
+            core.info(`e2e-test/triage is ${check ? `${check.state} from ${check.target_url}` : 'not posted'}; nothing to settle`);
+            return;
+          }
+          const lanes = process.env.TRIAGE_LANES.split(',').map((c) => c.trim()).filter(Boolean);
+          const red = lanes.filter((c) => ['failure', 'error'].includes(current(c)?.state));
+          await github.rest.repos.createCommitStatus({
+            owner, repo, sha,
+            context: 'e2e-test/triage',
+            state: red.length ? 'failure' : 'success',
+            description: (red.length
+              ? `Report only: ${red.length} E2E check(s) stay red as the tests set them`
+              : 'Report only: no E2E check is red').slice(0, 140),
+            target_url: runUrl,
+          });
+          core.info(`settled e2e-test/triage: ${red.length ? `red (${red.join(', ')})` : 'green'}`);
     - name: Upload triage findings
       if: always() && hashFiles('e2e-triage-findings.json') != ''
       continue-on-error: true

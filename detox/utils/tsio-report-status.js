@@ -243,19 +243,54 @@ function triageAnnouncement({announce, state, overrideApplied, failed, runUrl, c
     };
 }
 
-async function createCommitStatus(token, repository, sha, payload) {
+const STATUS_POST_ATTEMPTS = 3;
+const STATUS_POST_DELAY_MS = 2000;
+
+/**
+ * Posts a commit status. A GitHub 5xx or a dropped connection is tried again: posting the
+ * same status twice only repeats it, while giving up fails the lane's job on a run whose
+ * tests passed (mobile PR 10303: `createCommitStatus failed: 500` on a 19/19 iPad lane).
+ * A 4xx is the request's fault and fails at once.
+ */
+async function createCommitStatus(token, repository, sha, payload, {
+    fetchImpl = fetchWithTimeout,
+    wait = sleep,
+    attempts = STATUS_POST_ATTEMPTS,
+    delayMs = STATUS_POST_DELAY_MS,
+} = {}) {
     const [owner, repo] = repository.split('/');
-    const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`createCommitStatus failed: ${res.status} ${await res.text()}`);
+    let lastError;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        let res;
+        try {
+            res = await fetchImpl(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+        } catch (err) {
+            lastError = new Error(`createCommitStatus failed: ${err.message}`);
+        }
+        if (res?.ok) {
+            return;
+        }
+        if (res) {
+            lastError = new Error(`createCommitStatus failed: ${res.status} ${await res.text()}`);
+            if (res.status < 500) {
+                throw lastError;
+            }
+        }
+        if (attempt < attempts) {
+            console.warn(`tsio-report-status: ${lastError.message}; trying again (${attempt + 1}/${attempts})`);
+            await wait(delayMs * attempt);
+        }
+    }
+    throw lastError;
 }
 
 async function reportTsioStatus(options) {
@@ -611,6 +646,7 @@ async function main() {
 module.exports = {
     buildDisplayReportUrl,
     buildWorkflowRunUrl,
+    createCommitStatus,
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
