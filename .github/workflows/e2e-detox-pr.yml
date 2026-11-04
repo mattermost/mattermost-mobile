@@ -1286,16 +1286,19 @@ jobs:
     timeout-minutes: 15
     # Red runs only: a verdict can turn a red run green, never the reverse. The gate is
     # per run, not per lane, so a passing lane may still run and post nothing. Not on a
-    # cancelled run: its unfinished specs count as failures.
+    # cancelled run: its unfinished specs count as failures. A lane counts as red on any
+    # result but success or skipped: when shards never get a runner the lane ends
+    # "abandoned", not "failure" (run 41818921294), and triage must still judge it and
+    # ask for the re-run.
     if: >-
       !cancelled() &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       needs.calculate-tsio-identity.result == 'success' &&
-      (needs.run-detox-ios.result == 'failure' ||
-       needs.run-detox-android.result == 'failure' ||
-       needs.run-maestro-ios.result == 'failure' ||
-       needs.run-maestro-android.result == 'failure')
+      (!contains(fromJSON('["success", "skipped"]'), needs.run-detox-ios.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-detox-android.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-ios.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result))
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
