@@ -21,9 +21,8 @@
  */
 
 const {parseArgs} = require('./cli-args');
-const {createCommitStatus} = require('./tsio-report-status');
+const {createCommitStatus, githubRequestWithRetry, TRIAGE_CHECK_CONTEXT} = require('./tsio-report-status');
 
-const TRIAGE_CHECK_CONTEXT = 'e2e-test/triage';
 const FINAL_STATES = new Set(['success', 'failure', 'error']);
 const RED_STATES = new Set(['failure', 'error']);
 
@@ -80,19 +79,17 @@ function settleTriageCheck({rows, lanes, repository, runId, runUrl}) {
     };
 }
 
-async function readStatuses({token, repository, sha, fetchImpl = fetch}) {
+/** The commit's statuses, newest first, every page; a transient error is tried again (githubRequestWithRetry). */
+async function readStatuses({token, repository, sha, ...retry}) {
     const rows = [];
     for (let page = 1; page <= 20; page++) {
-        const res = await fetchImpl(`https://api.github.com/repos/${repository}/commits/${sha}/statuses?per_page=100&page=${page}`, {
+        const res = await githubRequestWithRetry(`https://api.github.com/repos/${repository}/commits/${sha}/statuses?per_page=100&page=${page}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/vnd.github+json',
                 'X-GitHub-Api-Version': '2022-11-28',
             },
-        });
-        if (!res.ok) {
-            throw new Error(`reading statuses failed: ${res.status}`);
-        }
+        }, {...retry, what: 'reading statuses'});
         const batch = await res.json();
         rows.push(...batch);
         if (batch.length < 100) {
@@ -123,7 +120,7 @@ async function main() {
     console.log(`${TRIAGE_CHECK_CONTEXT}: ${settled.state} · ${settled.description}`);
 }
 
-module.exports = {ownedByRun, settleTriageCheck, TRIAGE_CHECK_CONTEXT};
+module.exports = {ownedByRun, readStatuses, settleTriageCheck, TRIAGE_CHECK_CONTEXT};
 
 if (require.main === module) {
     main().catch((err) => {

@@ -1287,9 +1287,9 @@ jobs:
     # Red runs only: a verdict can turn a red run green, never the reverse. The gate is
     # per run, not per lane, so a passing lane may still run and post nothing. Not on a
     # cancelled run: its unfinished specs count as failures. A lane counts as red on any
-    # result but success or skipped: when shards never get a runner the lane ends
-    # "abandoned", not "failure" (run 41818921294), and triage must still judge it and
-    # ask for the re-run.
+    # result but success or skipped: in run 41818921294 five Android shards never got a
+    # runner and stayed queued, and the lane's needs result was "abandoned", not "failure"
+    # (as the channel rollup job logged it). Triage must still judge such a lane.
     if: >-
       !cancelled() &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&

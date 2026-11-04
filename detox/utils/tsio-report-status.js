@@ -260,43 +260,34 @@ const STATUS_POST_ATTEMPTS = 3;
 const STATUS_POST_DELAY_MS = 2000;
 
 /**
- * Posts a commit status. A GitHub 5xx, a 429 rate limit or a dropped connection is tried
- * again: posting the same status twice only repeats it, while giving up fails the lane's
- * job on a run whose tests passed. Any other 4xx is the request's fault and fails at once.
+ * A GitHub REST call, tried again on a 5xx, a 429 rate limit or a dropped connection: the callers
+ * here only post a status (posting it again repeats it) or read. Any other 4xx is the request's
+ * fault and fails at once. Resolves to the OK response.
  */
-async function createCommitStatus(token, repository, sha, payload, {
+async function githubRequestWithRetry(url, init, {
+    what = 'GitHub request',
     fetchImpl = fetchWithTimeout,
     wait = sleep,
     attempts = STATUS_POST_ATTEMPTS,
     delayMs = STATUS_POST_DELAY_MS,
     bodyTimeoutMs = FETCH_TIMEOUT_MS,
 } = {}) {
-    const [owner, repo] = repository.split('/');
     let lastError;
     for (let attempt = 1; attempt <= attempts; attempt++) {
         let res;
         try {
-            res = await fetchImpl(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/vnd.github+json',
-                    'X-GitHub-Api-Version': '2022-11-28',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
+            res = await fetchImpl(url, init);
         } catch (err) {
-            lastError = new Error(`createCommitStatus failed: ${err.message}`);
+            lastError = new Error(`${what} failed: ${err.message}`);
         }
         if (res?.ok) {
-            return;
+            return res;
         }
         if (res) {
             // The body is only for the message: a connection that drops or stalls while it is read must not
             // escape the retry or hold it (fetchWithTimeout's timer ends when the headers arrive).
             const body = await readBodyWithin(res, bodyTimeoutMs);
-            lastError = new Error(`createCommitStatus failed: ${res.status} ${body}`);
+            lastError = new Error(`${what} failed: ${res.status} ${body}`);
             if (res.status < 500 && res.status !== 429) {
                 throw lastError;
             }
@@ -307,6 +298,24 @@ async function createCommitStatus(token, repository, sha, payload, {
         }
     }
     throw lastError;
+}
+
+/**
+ * Posts a commit status, with githubRequestWithRetry's retries: giving up on a transient error
+ * would fail the lane's job on a run whose tests passed.
+ */
+async function createCommitStatus(token, repository, sha, payload, options = {}) {
+    const [owner, repo] = repository.split('/');
+    await githubRequestWithRetry(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    }, {...options, what: 'createCommitStatus'});
 }
 
 async function reportTsioStatus(options) {
@@ -663,6 +672,7 @@ module.exports = {
     buildDisplayReportUrl,
     buildWorkflowRunUrl,
     createCommitStatus,
+    githubRequestWithRetry,
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
@@ -675,6 +685,7 @@ module.exports = {
     OVERRIDE_LABEL,
     PRODUCTION_URL,
     STAGING_URL,
+    TRIAGE_CHECK_CONTEXT,
 };
 
 if (require.main === module) {
