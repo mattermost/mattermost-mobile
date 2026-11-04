@@ -1339,3 +1339,53 @@ jobs:
           # A lane red only on infrastructure (a dead job, missing reports) asks for one
           # automatic re-run of the failed jobs; e2e-tests-rerun.yml carries it out.
           rerun-attempts: '1'
+
+  # The PR-wide e2e-test/triage check, once every lane is final. A red lane announces triage there (pending)
+  # and an enforcing triage writes its verdict, but nothing else does: a triage that ran report-only (the
+  # E2E/Triage-report-only label added after the announcement), stopped early, or was skipped because a re-run
+  # turned every lane green would leave this run's check pending or red. See detox/utils/tsio-triage-settle.js.
+  settle-triage-check:
+    name: Settle the E2E triage check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce'
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+      - tsio-triage
+      - rerun-detox
+      - rerun-maestro
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-triage-settle.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cli-args.js
+          sparse-checkout-cone-mode: false
+      - name: Settle this run's e2e-test/triage check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+        run: |
+          SHA=$(jq -r '[.[].composite_identity.commit_sha] | first // empty' <<<"$JOB_CONFIGS")
+          LANES=$(jq -r '[.[].status_context] | join(",")' <<<"$JOB_CONFIGS")
+          node detox/utils/tsio-triage-settle.js \
+            --repository="$GITHUB_REPOSITORY" \
+            --sha="$SHA" \
+            --run-id="$GITHUB_RUN_ID" \
+            --lanes="$LANES"

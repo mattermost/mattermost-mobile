@@ -260,10 +260,9 @@ const STATUS_POST_ATTEMPTS = 3;
 const STATUS_POST_DELAY_MS = 2000;
 
 /**
- * Posts a commit status. A GitHub 5xx or a dropped connection is tried again: posting the
- * same status twice only repeats it, while giving up fails the lane's job on a run whose
- * tests passed (mobile PR 10303: `createCommitStatus failed: 500` on a 19/19 iPad lane).
- * A 4xx is the request's fault and fails at once.
+ * Posts a commit status. A GitHub 5xx, a 429 rate limit or a dropped connection is tried
+ * again: posting the same status twice only repeats it, while giving up fails the lane's
+ * job on a run whose tests passed. Any other 4xx is the request's fault and fails at once.
  */
 async function createCommitStatus(token, repository, sha, payload, {
     fetchImpl = fetchWithTimeout,
@@ -298,7 +297,7 @@ async function createCommitStatus(token, repository, sha, payload, {
             // escape the retry or hold it (fetchWithTimeout's timer ends when the headers arrive).
             const body = await readBodyWithin(res, bodyTimeoutMs);
             lastError = new Error(`createCommitStatus failed: ${res.status} ${body}`);
-            if (res.status < 500) {
+            if (res.status < 500 && res.status !== 429) {
                 throw lastError;
             }
         }

@@ -362,6 +362,12 @@ describe('tsio-report-status', () => {
             assert.equal(calls.length, 2);
         });
 
+        it('tries again after a 429 rate limit', async () => {
+            const {calls, fetchImpl} = scripted(429, 201);
+            await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait});
+            assert.equal(calls.length, 2);
+        });
+
         it('fails at once on a 4xx: the request is wrong, not GitHub', async () => {
             const {calls, fetchImpl} = scripted(422);
             await assert.rejects(createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait}), /createCommitStatus failed: 422 body 422/);
