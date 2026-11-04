@@ -2,11 +2,15 @@
 // See LICENSE.txt for license information.
 
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {describe, it, type TestContext} from 'node:test';
 
 import {AxiosError, type AxiosAdapter, type AxiosResponse, type InternalAxiosRequestConfig} from 'axios';
 
 import {client, isHtmlInterstitialError, isPreConnectionFailure, PRE_CONNECTION_MAX_RETRIES} from './client';
+import {apiUploadFileToChannel} from './post';
 
 /**
  * Trimmed from a real failure body in PR 10050's 40b8e5ea run: Cloudflare answered the Detox
@@ -36,6 +40,7 @@ const ok = (config: InternalAxiosRequestConfig, data: unknown, status = 200): Ax
 const withAdapter = async (
     steps: Array<{status: number; data: unknown}>,
     run: (calls: () => number) => Promise<void>,
+    capturedData: unknown[] = [],
 ) => {
     const previous = client.defaults.adapter;
     let calls = 0;
@@ -44,6 +49,7 @@ const withAdapter = async (
         const step = steps.at(Math.min(calls, steps.length - 1));
         assert.ok(step, 'adapter step fixture must exist');
         calls += 1;
+        capturedData.push(config.data);
         const response = ok(config, step.data, step.status);
         if (step.status >= 400) {
             const error = new Error(`Request failed with status code ${step.status}`) as Error & {
@@ -170,6 +176,50 @@ describe('client HTML interstitial retry', () => {
                 assert.equal(calls(), 1, 'must not replay a consumed FormData stream on 521');
             },
         );
+    });
+
+    it('should rebuild the FormData and read stream when apiUploadFileToChannel retries after an interstitial', async (t) => {
+        t.mock.timers.enable({apis: ['setTimeout']});
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'client-upload-retry-'));
+        const filePath = path.join(dir, 'sample.txt');
+        fs.writeFileSync(filePath, 'sample');
+        const capturedData: unknown[] = [];
+
+        try {
+            await withAdapter(
+                [{status: 200, data: COLD_START_HTML}, {status: 200, data: {file_infos: [{id: 'f1'}]}}],
+                async (calls) => {
+                    const pending = apiUploadFileToChannel('http://example.test', 'channel-id', filePath);
+                    await tickRetryDelays(t, [2000]);
+                    assert.deepEqual(await pending, {fileId: 'f1'});
+                    assert.equal(calls(), 2, 'the upload should have been retried exactly once');
+                },
+                capturedData,
+            );
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+
+        assert.equal(capturedData.length, 2, 'both upload attempts should reach the transport');
+        assert.notEqual(capturedData[0], capturedData[1], 'the retry must use a newly created FormData, not replay the first one');
+
+        const fileStreams = capturedData.map((data) => {
+            const streams = (data as {_streams?: unknown[]})._streams ?? [];
+            for (const stream of streams) {
+                const candidate = stream as {path?: unknown; source?: {path?: unknown}} | null;
+                if (typeof candidate?.path === 'string') {
+                    return candidate as {path: string};
+                }
+                if (typeof candidate?.source?.path === 'string') {
+                    return candidate.source as {path: string};
+                }
+            }
+            return undefined;
+        });
+        assert.ok(fileStreams[0] && fileStreams[1], 'each attempt should carry a file read stream');
+        assert.notEqual(fileStreams[0], fileStreams[1], 'the retry must use a newly created read stream');
+        assert.equal(fileStreams[0].path, filePath);
+        assert.equal(fileStreams[1].path, filePath);
     });
 });
 
