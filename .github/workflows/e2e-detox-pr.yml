@@ -1275,8 +1275,10 @@ jobs:
   # history of exactly the failed tests and settles what the rules can (broken or flaky
   # on main, recurring on other PRs, owned by the PR's diff). Only the rest reaches a
   # second judge that must cite evidence. Runs on main too, where only intermittency
-  # clears a failure. report-only (the default) posts the PR comment and leaves the
-  # per-job statuses alone; E2E_TRIAGE_MODE=enforce makes the verdict the lane's status.
+  # clears a failure. Enforce (the default) makes the verdict the lane's status, so a
+  # lane red only on failures that are not the PR's turns green. Setting the
+  # E2E_TRIAGE_MODE variable to report-only posts the PR comment and leaves the
+  # per-job statuses alone.
   tsio-triage:
     name: Triage E2E failures (${{ matrix.job-key }})
     runs-on: ubuntu-24.04
@@ -1333,7 +1335,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           # A triage failure must never change the outcome of the E2E run itself.
-          mode: ${{ vars.E2E_TRIAGE_MODE || 'report-only' }}
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'enforce' }}
           # A lane red only on infrastructure (a dead job, missing reports) asks for one
           # automatic re-run of the failed jobs; e2e-tests-rerun.yml carries it out.
           rerun-attempts: '1'
