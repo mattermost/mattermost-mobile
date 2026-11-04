@@ -1371,9 +1371,10 @@ jobs:
       contents: read
       statuses: write
     steps:
+      # From the dispatch ref, as the triage action is, never MOBILE_VERSION: the commit under test may predate the
+      # settle script, and this job holds a token that writes statuses. --sha below still names the tested commit.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
           sparse-checkout: |
             detox/utils/tsio-triage-settle.js
