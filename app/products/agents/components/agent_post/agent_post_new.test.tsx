@@ -120,6 +120,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
                 post={makePost()}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -201,6 +202,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: 'Final response text'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -256,6 +258,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost()}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -306,6 +309,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: 'Final response'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -387,6 +391,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: ''})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={false}
             />,
@@ -472,6 +477,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: ''})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={false}
             />,
@@ -513,6 +519,7 @@ describe('AgentPostNew — multi-round rendering (A1)', () => {
                 post={makePost({message: 'Final answer'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -545,6 +552,7 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
                 post={makePost({message: 'Answer'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -562,6 +570,7 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
                 post={makePost({message: 'Answer', props: {conversation_id: CONV_ID, no_regen: 'true'}})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -579,6 +588,7 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
                 post={makePost({message: 'Answer', props: {conversation_id: CONV_ID, no_regen: true}})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -596,6 +606,7 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
                 post={makePost({message: 'Answer', props: {conversation_id: CONV_ID, no_regen: 'false'}})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -621,6 +632,7 @@ describe('AgentPostNew — stale cached conversation after a missed stream end',
                 post={makePost({message: 'Summary text'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -656,6 +668,7 @@ describe('AgentPostNew — stale cached conversation after a missed stream end',
                 post={makePost({message: 'Summary text'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -675,6 +688,7 @@ describe('AgentPostNew — stale cached conversation after a missed stream end',
                 post={makePost({message: ''})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -705,6 +719,7 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
                 post={makePost()}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -734,6 +749,7 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
                 post={makePost()}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -791,6 +807,7 @@ describe('AgentPostNew — combined Sources aggregation', () => {
                 post={makePost({message: 'Answer'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
@@ -825,6 +842,7 @@ describe('AgentPostNew — stream settle handover', () => {
                 post={makePost({message: 'Earlier round'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
+                isReplyPost={false}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
