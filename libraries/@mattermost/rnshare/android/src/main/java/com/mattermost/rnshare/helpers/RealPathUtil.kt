@@ -1,15 +1,18 @@
 package com.mattermost.rnshare.helpers
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.provider.DocumentsContract
+import android.os.storage.StorageManager
 import android.provider.OpenableColumns
-import android.text.TextUtils
 import android.util.Log
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.file.Files
+import java.util.UUID
+
+private val UNSAFE_FILENAME_CHARS = Regex("""[%\\\p{Cntrl}]""")
 
 object RealPathUtil {
     const val CACHE_DIR_NAME: String = "mmShare"
@@ -18,118 +21,109 @@ object RealPathUtil {
         deleteTempFiles(File(CACHE_DIR_NAME))
     }
 
-    fun getRealPathFromURI(context:Context, uri:Uri?): String? {
+    fun getRealPathFromURI(context: Context, uri: Uri?): String? {
         if (uri == null) {
             return null
         }
-        // DocumentProvider
-        if (DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                val docId = DocumentsContract.getDocumentId(uri)
-                val split = docId.split((":").toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val type = split[0]
-                if ("primary".equals(type, ignoreCase = true)) {
-                    return context.getExternalFilesDir(split[1])?.absolutePath
-                }
-            } else if (isDownloadsDocument(uri)) {
-                // DownloadsProvider
-                val id = DocumentsContract.getDocumentId(uri)
-                if (!TextUtils.isEmpty(id)) {
-                    if (id.startsWith("raw:")) {
-                        return id.replaceFirst(("raw:").toRegex(), "")
-                    }
 
-                    try {
-                        return getPathFromSavingTempFile(context, uri)
-                    } catch (e:NumberFormatException) {
-                        Log.e("ReactNative", "DownloadsProvider unexpected uri $uri")
-                        return null
-                    }
+        return when (uri.scheme?.lowercase()) {
+            ContentResolver.SCHEME_CONTENT -> {
+                if (isOwnProvider(context, uri)) {
+                    Log.w("ReactNative", "RealPathUtil rejected content uri served by this app")
+                    return null
                 }
+                getPathFromSavingTempFile(context, uri)
             }
-            else if (isMediaDocument(uri)) {
-                // MediaProvider
-                return getPathFromSavingTempFile(context, uri)
+            ContentResolver.SCHEME_FILE -> {
+                val path = uri.path?.let { getSharedStoragePath(context, it) }
+                if (path == null) {
+                    Log.w("ReactNative", "RealPathUtil rejected file uri outside shared storage")
+                }
+                path
             }
+            else -> null
         }
-        if ("content".equals(uri.scheme, ignoreCase = true)) {
-            // MediaStore (and general)
-            if (isGooglePhotosUri(uri)) {
-                return uri.lastPathSegment
-            }
-            // Try save to tmp file, and return tmp file path
-            return getPathFromSavingTempFile(context, uri)
-        }
-        else if ("file".equals(uri.scheme, ignoreCase = true)) {
-            return uri.path
-        }
-        return null
     }
 
-    private fun getPathFromSavingTempFile(context:Context, uri:Uri): String? {
-        val tmpFile:File
+    private fun isOwnProvider(context: Context, uri: Uri): Boolean {
+        val authority = uri.authority?.substringAfterLast('@') ?: return true
+        val provider = context.packageManager.resolveContentProvider(authority, 0)
+        return provider?.packageName == context.packageName
+    }
+
+    private fun getSharedStoragePath(context: Context, path: String): String? {
+        val file = File(path).canonicalOrNull() ?: return null
+
+        val sharedStorageRoots = context.getSystemService(StorageManager::class.java)
+            ?.storageVolumes
+            ?.mapNotNull { it.directory?.canonicalOrNull() }
+            .orEmpty()
+        if (sharedStorageRoots.none { file.toPath().startsWith(it.toPath()) }) {
+            return null
+        }
+
+        // Compared by file identity rather than path, since shared storage is case-insensitive.
+        val privateDirs = getPrivateDirs(context)
+        val isPrivate = generateSequence(file) { it.parentFile }.any { ancestor ->
+            privateDirs.any { it.isSameFileAs(ancestor) }
+        }
+        return if (isPrivate) null else file.absolutePath
+    }
+
+    @Suppress("DEPRECATION")
+    private fun getPrivateDirs(context: Context): List<File> {
+        val appSpecificExternalDirs = (context.externalCacheDirs + context.getExternalFilesDirs(null) + context.obbDirs + context.externalMediaDirs)
+            .mapNotNull { it?.parentFile }
+        return appSpecificExternalDirs + context.dataDir + context.createDeviceProtectedStorageContext().dataDir
+    }
+
+    private fun File.canonicalOrNull(): File? {
+        return try {
+            canonicalFile
+        } catch (e: IOException) {
+            null
+        }
+    }
+
+    private fun File.isSameFileAs(other: File): Boolean {
+        return try {
+            Files.isSameFile(toPath(), other.toPath())
+        } catch (e: IOException) {
+            false
+        }
+    }
+
+    private fun getPathFromSavingTempFile(context: Context, uri: Uri): String? {
         var fileName: String? = null
-        // Try and get the filename from the Uri
-        try
-        {
-            val returnCursor = context.contentResolver.query(uri, null, null, null, null)
-            val nameIndex = returnCursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            returnCursor?.moveToFirst()
-            fileName = sanitizeFilename(nameIndex?.let { returnCursor.getString(it) })
-            returnCursor?.close()
-        } catch (e:Exception) {
+        try {
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex >= 0 && cursor.moveToFirst()) {
+                    fileName = sanitizeFilename(cursor.getString(nameIndex))
+                }
+            }
+        } catch (e: Exception) {
             // just continue to get the filename with the last segment of the path
         }
 
-        try
-        {
-            if (fileName == null) {
-                fileName = sanitizeFilename(uri.lastPathSegment.toString().trim())
-            }
-            val cacheDir = File(context.cacheDir, CACHE_DIR_NAME)
-            if (!cacheDir.exists()) {
-                cacheDir.mkdirs()
-            }
-            tmpFile = File(cacheDir, fileName!!)
-            tmpFile.createNewFile()
-            val pfd = context.contentResolver.openFileDescriptor(uri, "r")
-            val src = FileInputStream(pfd?.fileDescriptor).channel
-            val dst = FileOutputStream(tmpFile).channel
-            dst.transferFrom(src, 0, src.size())
-            src.close()
-            dst.close()
-            pfd?.close()
+        val name = fileName ?: sanitizeFilename(uri.lastPathSegment?.trim()) ?: return null
+        return try {
+            val tmpDir = File(File(context.cacheDir, CACHE_DIR_NAME), UUID.randomUUID().toString())
+            tmpDir.mkdirs()
+            val tmpFile = File(tmpDir, name)
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                FileOutputStream(tmpFile).use { output -> input.copyTo(output) }
+            } ?: return null
+            tmpFile.absolutePath
+        } catch (e: Exception) {
+            Log.w("ReactNative", "RealPathUtil failed to copy content uri: ${e.javaClass.simpleName}")
+            null
         }
-        catch (ex:IOException) {
-            return null
-        }
-        return tmpFile.absolutePath
     }
 
     private fun sanitizeFilename(filename: String?): String? {
-        if (filename == null) {
-            return null
-        }
-
-        val f = File(filename)
-        return f.name
-    }
-
-    private fun isExternalStorageDocument(uri:Uri):Boolean {
-        return "com.android.externalstorage.documents" == uri.authority
-    }
-
-    private fun isDownloadsDocument(uri:Uri):Boolean {
-        return "com.android.providers.downloads.documents" == uri.authority
-    }
-
-    private fun isMediaDocument(uri:Uri):Boolean {
-        return "com.android.providers.media.documents" == uri.authority
-    }
-
-    private fun isGooglePhotosUri(uri:Uri):Boolean {
-        return "com.google.android.apps.photos.content" == uri.authority
+        val name = filename?.let { File(it).name.replace(UNSAFE_FILENAME_CHARS, "_") }
+        return if (name.isNullOrBlank() || name == "." || name == "..") null else name
     }
 
     fun getExtension(uri: String?): String? {

@@ -9,12 +9,17 @@ import android.content.pm.ProviderInfo
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
+import android.os.Environment
 import android.os.ParcelFileDescriptor
+import android.os.Process
+import android.os.storage.StorageManager
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,7 +27,10 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowContentResolver
+import org.robolectric.shadows.StorageVolumeBuilder
 import java.io.File
+import java.nio.file.Files
 
 private const val GOOGLE_PHOTOS_AUTHORITY = "com.google.android.apps.photos.content"
 private const val DOWNLOADS_AUTHORITY = "com.android.providers.downloads.documents"
@@ -60,6 +68,42 @@ class RealPathUtilTest {
     }
 
     @Test
+    fun `should resolve a file uri in shared storage`() {
+        val sharedFile = File(addSharedStorageVolume(), "Download/report.pdf").apply {
+            parentFile?.mkdirs()
+            writeText(SHARED_CONTENT)
+        }
+
+        assertEquals(sharedFile.canonicalPath, RealPathUtil.getRealPathFromURI(context, Uri.fromFile(sharedFile)))
+    }
+
+    @Test
+    fun `should not resolve a file uri in this app's external storage`() {
+        addSharedStorageVolume()
+        val appFile = File(context.getExternalFilesDir(null), "attachment.pdf").apply { writeText(SECRET) }
+
+        assertNull(RealPathUtil.getRealPathFromURI(context, Uri.fromFile(appFile)))
+    }
+
+    @Test
+    fun `should not resolve a file uri in this app's external storage spelled with different case`() {
+        val root = addSharedStorageVolume()
+        val appFile = File(context.getExternalFilesDir(null), "attachment.pdf").apply { writeText(SECRET) }
+        val caseVariant = File(root, appFile.relativeTo(root).path.uppercase())
+        assumeTrue("requires a case-insensitive filesystem", caseVariant.exists())
+
+        assertNull(RealPathUtil.getRealPathFromURI(context, Uri.fromFile(caseVariant)))
+    }
+
+    @Test
+    fun `should not resolve a file uri in shared storage that links into private storage`() {
+        val link = File(addSharedStorageVolume().canonicalFile, "Download/link").apply { parentFile?.mkdirs() }
+        Files.createSymbolicLink(link.toPath(), privateFile.toPath())
+
+        assertNull(RealPathUtil.getRealPathFromURI(context, Uri.fromFile(link)))
+    }
+
+    @Test
     fun `should not resolve a spoofed downloads raw document id to a private file`() {
         registerDocumentsProvider(DOWNLOADS_AUTHORITY)
         val uri = DocumentsContract.buildDocumentUri(DOWNLOADS_AUTHORITY, "raw:${privateFile.absolutePath}")
@@ -68,14 +112,35 @@ class RealPathUtilTest {
     }
 
     @Test
+    fun `should not copy a content uri served by this app's own provider`() {
+        val ownAuthority = "${context.packageName}.provider"
+        val provider = registerContentProvider(ownAuthority, displayName = "server.db", packageName = context.packageName)
+        // Android routes user-prefixed authorities to the same provider; Robolectric needs it registered explicitly.
+        ShadowContentResolver.registerProviderInternal("0@$ownAuthority", provider)
+
+        assertNull(RealPathUtil.getRealPathFromURI(context, Uri.parse("content://$ownAuthority/files/databases/server.db")))
+        assertNull(RealPathUtil.getRealPathFromURI(context, Uri.parse("content://0@$ownAuthority/files/databases/server.db")))
+    }
+
+    @Test
     fun `should copy a genuine content uri into the share cache with a sanitized name`() {
-        registerContentProvider(GENUINE_AUTHORITY, displayName = "../../evil.txt")
+        registerContentProvider(GENUINE_AUTHORITY, displayName = "../../..%2Fevil.txt")
         val uri = Uri.parse("content://$GENUINE_AUTHORITY/files/1")
 
-        val path = RealPathUtil.getRealPathFromURI(context, uri)
+        assertCopiedToShareCache(RealPathUtil.getRealPathFromURI(context, uri), ".._2Fevil.txt")
+    }
 
-        assertEquals(File(context.cacheDir, "${RealPathUtil.CACHE_DIR_NAME}/evil.txt").absolutePath, path)
-        assertEquals(SHARED_CONTENT, File(path!!).readText())
+    @Test
+    fun `should keep separate copies of content uris with the same name`() {
+        registerContentProvider(GENUINE_AUTHORITY, displayName = "report.pdf")
+        val uri = Uri.parse("content://$GENUINE_AUTHORITY/files/1")
+
+        val first = RealPathUtil.getRealPathFromURI(context, uri)
+        val second = RealPathUtil.getRealPathFromURI(context, uri)
+
+        assertCopiedToShareCache(first, "report.pdf")
+        assertCopiedToShareCache(second, "report.pdf")
+        assertNotEquals(first, second)
     }
 
     @Test
@@ -83,10 +148,25 @@ class RealPathUtilTest {
         registerContentProvider(GOOGLE_PHOTOS_AUTHORITY, displayName = "photo.jpg")
         val uri = Uri.parse("content://$GOOGLE_PHOTOS_AUTHORITY/0/1/mediakey%3A%2Flocal%253A123/ORIGINAL/NONE/1234")
 
-        val path = RealPathUtil.getRealPathFromURI(context, uri)
+        assertCopiedToShareCache(RealPathUtil.getRealPathFromURI(context, uri), "photo.jpg")
+    }
 
-        assertEquals(File(context.cacheDir, "${RealPathUtil.CACHE_DIR_NAME}/photo.jpg").absolutePath, path)
-        assertEquals(SHARED_CONTENT, File(path!!).readText())
+    private fun assertCopiedToShareCache(path: String?, expectedName: String) {
+        val copy = File(requireNotNull(path))
+        assertEquals(expectedName, copy.name)
+        assertEquals(File(context.cacheDir, RealPathUtil.CACHE_DIR_NAME), copy.parentFile?.parentFile)
+        assertEquals(SHARED_CONTENT, copy.readText())
+    }
+
+    private fun addSharedStorageVolume(): File {
+        // Robolectric keeps external dirs side by side; their parent holds the app-specific dirs, as a device volume does.
+        val root = requireNotNull(Environment.getExternalStorageDirectory().parentFile)
+        val volume = StorageVolumeBuilder("primary", root, "Internal storage", Process.myUserHandle(), Environment.MEDIA_MOUNTED)
+            .setIsPrimary(true)
+            .setIsEmulated(true)
+            .build()
+        shadowOf(context.getSystemService(StorageManager::class.java)).addStorageVolume(volume)
+        return root
     }
 
     private fun registerDocumentsProvider(authority: String) {
@@ -104,11 +184,21 @@ class RealPathUtilTest {
         )
     }
 
-    private fun registerContentProvider(authority: String, displayName: String) {
+    private fun registerContentProvider(
+        authority: String,
+        displayName: String,
+        packageName: String = "com.example.genuine",
+    ): FakeProvider {
         val source = File(context.filesDir, "provider-source").apply { writeText(SHARED_CONTENT) }
         FakeProvider.displayName = displayName
         FakeProvider.source = source
-        Robolectric.buildContentProvider(FakeProvider::class.java).create(authority)
+        val providerInfo = ProviderInfo().apply {
+            this.authority = authority
+            this.packageName = packageName
+            name = FakeProvider::class.java.name
+        }
+        shadowOf(context.packageManager).addOrUpdateProvider(providerInfo)
+        return Robolectric.buildContentProvider(FakeProvider::class.java).create(providerInfo).get()
     }
 
     class FakeProvider : ContentProvider() {

@@ -14,6 +14,7 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -22,6 +23,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowContentResolver
 import java.io.File
 
 private const val GOOGLE_PHOTOS_AUTHORITY = "com.google.android.apps.photos.content"
@@ -64,7 +66,7 @@ class RealPathUtilTest {
         val pickerResult = File(context.cacheDir, "rn_image_picker_lib_temp_1.jpg").apply { writeText(SHARED_CONTENT) }
         val uri = Uri.fromFile(pickerResult)
 
-        assertEquals(pickerResult.absolutePath, RealPathUtil.getRealPathFromURI(context, uri))
+        assertEquals(pickerResult.canonicalPath, RealPathUtil.getRealPathFromURI(context, uri))
     }
 
     @Test
@@ -76,14 +78,35 @@ class RealPathUtilTest {
     }
 
     @Test
+    fun `should not copy a content uri served by this app's own provider`() {
+        val ownAuthority = "${context.packageName}.provider"
+        val provider = registerContentProvider(ownAuthority, displayName = "server.db", packageName = context.packageName)
+        // Android routes user-prefixed authorities to the same provider; Robolectric needs it registered explicitly.
+        ShadowContentResolver.registerProviderInternal("0@$ownAuthority", provider)
+
+        assertNull(RealPathUtil.getRealPathFromURI(context, Uri.parse("content://$ownAuthority/files/databases/server.db")))
+        assertNull(RealPathUtil.getRealPathFromURI(context, Uri.parse("content://0@$ownAuthority/files/databases/server.db")))
+    }
+
+    @Test
     fun `should copy a genuine content uri into the share cache with a sanitized name`() {
-        registerContentProvider(GENUINE_AUTHORITY, displayName = "../../evil.txt")
+        registerContentProvider(GENUINE_AUTHORITY, displayName = "../../..%2Fevil.txt")
         val uri = Uri.parse("content://$GENUINE_AUTHORITY/files/1")
 
-        val path = RealPathUtil.getRealPathFromURI(context, uri)
+        assertCopiedToShareCache(RealPathUtil.getRealPathFromURI(context, uri), ".._2Fevil.txt")
+    }
 
-        assertEquals(File(context.cacheDir, "${CACHE_DIR_NAME}/evil.txt").absolutePath, path)
-        assertEquals(SHARED_CONTENT, File(path!!).readText())
+    @Test
+    fun `should keep separate copies of content uris with the same name`() {
+        registerContentProvider(GENUINE_AUTHORITY, displayName = "report.pdf")
+        val uri = Uri.parse("content://$GENUINE_AUTHORITY/files/1")
+
+        val first = RealPathUtil.getRealPathFromURI(context, uri)
+        val second = RealPathUtil.getRealPathFromURI(context, uri)
+
+        assertCopiedToShareCache(first, "report.pdf")
+        assertCopiedToShareCache(second, "report.pdf")
+        assertNotEquals(first, second)
     }
 
     @Test
@@ -91,10 +114,14 @@ class RealPathUtilTest {
         registerContentProvider(GOOGLE_PHOTOS_AUTHORITY, displayName = "photo.jpg")
         val uri = Uri.parse("content://$GOOGLE_PHOTOS_AUTHORITY/0/1/mediakey%3A%2Flocal%253A123/ORIGINAL/NONE/1234")
 
-        val path = RealPathUtil.getRealPathFromURI(context, uri)
+        assertCopiedToShareCache(RealPathUtil.getRealPathFromURI(context, uri), "photo.jpg")
+    }
 
-        assertEquals(File(context.cacheDir, "${CACHE_DIR_NAME}/photo.jpg").absolutePath, path)
-        assertEquals(SHARED_CONTENT, File(path!!).readText())
+    private fun assertCopiedToShareCache(path: String?, expectedName: String) {
+        val copy = File(requireNotNull(path))
+        assertEquals(expectedName, copy.name)
+        assertEquals(File(context.cacheDir, CACHE_DIR_NAME), copy.parentFile?.parentFile)
+        assertEquals(SHARED_CONTENT, copy.readText())
     }
 
     private fun registerDocumentsProvider(authority: String) {
@@ -112,11 +139,21 @@ class RealPathUtilTest {
         )
     }
 
-    private fun registerContentProvider(authority: String, displayName: String) {
+    private fun registerContentProvider(
+        authority: String,
+        displayName: String,
+        packageName: String = "com.example.genuine",
+    ): FakeProvider {
         val source = File(context.filesDir, "provider-source").apply { writeText(SHARED_CONTENT) }
         FakeProvider.displayName = displayName
         FakeProvider.source = source
-        Robolectric.buildContentProvider(FakeProvider::class.java).create(authority)
+        val providerInfo = ProviderInfo().apply {
+            this.authority = authority
+            this.packageName = packageName
+            name = FakeProvider::class.java.name
+        }
+        shadowOf(context.packageManager).addOrUpdateProvider(providerInfo)
+        return Robolectric.buildContentProvider(FakeProvider::class.java).create(providerInfo).get()
     }
 
     class FakeProvider : ContentProvider() {
