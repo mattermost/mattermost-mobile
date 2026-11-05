@@ -261,13 +261,10 @@ describe('Channels - Archived Channel Interactions', () => {
         await ManageChannelMembersScreen.closeTutorial();
         await ManageChannelMembersScreen.toBeVisible();
 
-        // * Verify the Manage button is visible — archived channels still render it but gate
-        // showManageMode so no remove controls appear in the rows.
-        await expect(ManageChannelMembersScreen.manageButton).toBeVisible();
-
-        // # Enter manage mode and verify remove controls are not offered
-        await ManageChannelMembersScreen.toggleManageMode();
-        await expect(ManageChannelMembersScreen.removeButton).not.toBeVisible();
+        // * Verify the Manage button is not rendered — members of an archived channel cannot be managed,
+        // so manage mode and its remove controls are not offered.
+        await expect(ManageChannelMembersScreen.manageButton).not.toExist();
+        await expect(ManageChannelMembersScreen.removeButton).not.toExist();
 
         // # Go back — Android pressBack() is more reliable when back button is occluded post-tutorial.
         if (isAndroid()) {

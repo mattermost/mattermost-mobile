@@ -134,6 +134,7 @@ interface ClientConfig {
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
+    FeatureFlagChannelPermissionActions?: string;
     FeatureFlagCustomProfileAttributes?: string;
     FeatureFlagMmBlocksEnabled?: string;
     FeatureFlagPermissionPolicies?: string;

@@ -1,0 +1,242 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {chunk} from 'lodash';
+
+import {storeCategories} from '@actions/local/category';
+import {removeCurrentUserFromChannel, storeAllMyChannels} from '@actions/local/channel';
+import {CHANNEL_READ_ACCESS_VERSION} from '@constants/versions';
+import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
+import {queryAllMyChannel, queryMyChannelsByChannelIds, queryMyChannelsByTeam} from '@queries/servers/channel';
+import {isChannelAccessEnforced} from '@queries/servers/render_permissions';
+import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
+import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore, {type PendingChannelAccessChecks} from '@store/ephemeral_store';
+import {isDMorGM} from '@utils/channel';
+import {getFullErrorMessage} from '@utils/errors';
+import {isMinimumServerVersion} from '@utils/helpers';
+import {logDebug, logError} from '@utils/log';
+
+import {fetchCategories} from './category';
+import {handleChannelAccessDenied} from './channel';
+import {fetchRenderPermissions} from './render_permissions';
+import {forceLogoutIfNecessary} from './session';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Database, Model} from '@nozbe/watermelondb';
+
+const BATCH_SIZE = 10;
+
+// One run at a time per server: work arriving mid-run is picked up by its next pass, so a burst of
+// events costs at most two passes and two passes never restore the same channel concurrently.
+const running = new Set<string>();
+
+// DMs and GMs are exempt from the policy, and an archived channel is not brought back by it.
+const isRestorable = (channel: Channel) => !isDMorGM(channel) && channel.delete_at === 0;
+
+// The request itself failed: the server refused it or could not be reached.
+const logRequestFailure = (serverUrl: string, description: string, error: unknown) => {
+    logDebug(`error on ${description}`, getFullErrorMessage(error));
+    forceLogoutIfNecessary(serverUrl, error);
+};
+
+// A failed request drops its item and the rest carry on; a later run or sync picks it up.
+async function fetchInBatches<T>(ids: string[], fetch: (id: string) => Promise<T>, description: string): Promise<T[]> {
+    const results: T[] = [];
+    for (const batch of chunk(ids, BATCH_SIZE)) {
+        // eslint-disable-next-line no-await-in-loop
+        const settled = await Promise.allSettled(batch.map(fetch));
+        for (const result of settled) {
+            if (result.status === 'fulfilled') {
+                results.push(result.value);
+            }
+        }
+    }
+
+    if (results.length < ids.length) {
+        logDebug(`reconcileChannelAccess: ${description} skipped`, ids.length - results.length);
+    }
+    return results;
+}
+
+// Puts restored channels back in their sidebar categories, fetched once per team. A team whose
+// categories cannot be fetched keeps its channels out until a later run.
+async function prepareRestoredChannels(serverUrl: string, database: Database, channels: Channel[], memberships: ChannelMembership[]): Promise<Model[]> {
+    const teamIds = [...new Set(channels.map((c) => c.team_id))];
+    const results = await fetchInBatches(teamIds, (teamId) => fetchCategories(serverUrl, teamId, false, true), 'team categories');
+    const categories = results.flatMap((r) => r.categories ?? []);
+
+    const categorizedTeamIds = new Set(categories.map((c) => c.team_id));
+    const restored = channels.filter((c) => categorizedTeamIds.has(c.team_id));
+    if (!restored.length) {
+        return [];
+    }
+
+    const isCRTEnabled = await getIsCRTEnabled(database);
+    const {models: channelModels} = await storeAllMyChannels(serverUrl, restored, memberships, isCRTEnabled, true);
+    const {models: categoryModels} = await storeCategories(serverUrl, categories, true, true);
+    return [...(channelModels ?? []), ...(categoryModels ?? [])];
+}
+
+// The server leaves denied and archived channels out of the team's channel list, so the list alone
+// tells which stored channels were denied and which were regained. Memberships are only fetched to
+// restore the regained ones.
+async function checkTeam(serverUrl: string, operator: ServerDataOperator, teamId: string): Promise<Model[]> {
+    const {database} = operator;
+    const client = NetworkManager.getClient(serverUrl);
+
+    // Read before the request: a channel joined or left while it is in flight would otherwise be
+    // compared against a list that predates it, and wrongly purged or restored.
+    const [teamChannelIds, allChannelIds] = await Promise.all([
+        queryMyChannelsByTeam(database, teamId).fetchIds(),
+        queryAllMyChannel(database).fetchIds(),
+    ]);
+
+    let channels: Channel[];
+    try {
+        channels = await client.getMyChannels(teamId);
+    } catch (error) {
+        logRequestFailure(serverUrl, 'checkTeam', error);
+        return [];
+    }
+
+    // An empty list means every stored team channel was denied: a user with no memberships at all
+    // gets a 404 instead, and DMs and GMs, which the policy never denies, would be listed.
+    const listed = new Set(channels.map((c) => c.id));
+    const deniedIds = teamChannelIds.filter((id) => !listed.has(id));
+
+    if (deniedIds.length) {
+        const currentChannelId = await getCurrentChannelId(database);
+        const removed: Model[] = [];
+        for (const id of deniedIds) {
+            if (id !== currentChannelId) {
+                // eslint-disable-next-line no-await-in-loop
+                const {models: prepared} = await removeCurrentUserFromChannel(serverUrl, id, true);
+                if (prepared?.length) {
+                    removed.push(...prepared);
+                }
+            }
+        }
+
+        // Written before the open channel is kicked: on tablet the kick switches to a fallback
+        // channel, which must not be one this pass is about to remove.
+        if (removed.length) {
+            await operator.batchRecords(removed, 'checkTeamChannelAccessDenied');
+        }
+
+        if (deniedIds.includes(currentChannelId)) {
+            // Shared with a denied view call or render decision, so the open channel is kicked once.
+            await handleChannelAccessDenied(serverUrl, currentChannelId);
+        }
+    }
+
+    const models: Model[] = [];
+    const storedIds = new Set(allChannelIds);
+    const regained = channels.filter((c) => !storedIds.has(c.id) && isRestorable(c));
+    if (regained.length) {
+        try {
+            const memberships = await client.getMyChannelMembers(teamId);
+            models.push(...await prepareRestoredChannels(serverUrl, database, regained, memberships));
+        } catch (error) {
+            logRequestFailure(serverUrl, 'checkTeam memberships', error);
+        }
+    }
+
+    return models;
+}
+
+async function checkChannels(serverUrl: string, database: Database, channelIds: string[]): Promise<Model[]> {
+    const client = NetworkManager.getClient(serverUrl);
+    const storedIds = new Set(await queryMyChannelsByChannelIds(database, channelIds).fetchIds());
+
+    // A stored channel is re-checked through its render decision, which drops it when denied.
+    await fetchInBatches(channelIds.filter((id) => storedIds.has(id)), (id) => fetchRenderPermissions(serverUrl, id), 'channel decisions');
+
+    // Any other channel may have just been regained; one still denied answers 403.
+    const fetched = await fetchInBatches(
+        channelIds.filter((id) => !storedIds.has(id)),
+        (id) => Promise.all([client.getChannel(id), client.getMyChannelMember(id)]),
+        'regained channels',
+    );
+    const regained = fetched.map(([channel]) => channel).filter(isRestorable);
+    if (!regained.length) {
+        return [];
+    }
+    return prepareRestoredChannels(serverUrl, database, regained, fetched.map(([, membership]) => membership));
+}
+
+async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChannelAccessChecks) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (!(await isChannelAccessEnforced(database))) {
+            return;
+        }
+
+        // Older servers still list denied channels; the view call and the render decision are what
+        // catch a denial there.
+        if (teamIds.size && isMinimumServerVersion(await getConfigValue(database, 'Version'), ...CHANNEL_READ_ACCESS_VERSION)) {
+            const models: Model[] = [];
+            for (const teamId of teamIds) {
+                // eslint-disable-next-line no-await-in-loop
+                models.push(...await checkTeam(serverUrl, operator, teamId));
+            }
+            if (models.length) {
+                await operator.batchRecords(models, 'checkTeamChannelAccess');
+            }
+        }
+
+        // Written separately from the team pass so a channel both regained there and named by an
+        // event is created once.
+        if (channelIds.size) {
+            const models = await checkChannels(serverUrl, database, [...channelIds]);
+            if (models.length) {
+                await operator.batchRecords(models, 'checkChannelAccess');
+            }
+        }
+    } catch (error) {
+        // A database read, a missing client or a bug; a failed request is handled where it is made.
+        logError('error on reconcileChannelAccess', getFullErrorMessage(error));
+    }
+}
+
+async function drain(serverUrl: string) {
+    if (running.has(serverUrl)) {
+        return;
+    }
+
+    running.add(serverUrl);
+    try {
+        for (let work = EphemeralStore.takePendingChannelAccessChecks(serverUrl); work; work = EphemeralStore.takePendingChannelAccessChecks(serverUrl)) {
+            // eslint-disable-next-line no-await-in-loop
+            await runChecks(serverUrl, work);
+        }
+    } finally {
+        running.delete(serverUrl);
+    }
+}
+
+function schedule(serverUrl: string, check: {teamId?: string; channelId?: string}) {
+    EphemeralStore.addPendingChannelAccessCheck(serverUrl, check);
+    return drain(serverUrl);
+}
+
+// Only the current team, so a policy edit costs each client one request: other teams' denied channels
+// are dropped by the next sync, or when opened (the view call is refused).
+export async function reconcileChannelAccess(serverUrl: string): Promise<{error?: unknown}> {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const teamId = await getCurrentTeamId(database);
+        if (teamId) {
+            await schedule(serverUrl, {teamId});
+        }
+        return {};
+    } catch (error) {
+        logError('error on reconcileChannelAccess', getFullErrorMessage(error));
+        return {error};
+    }
+}
+
+export function checkChannelAccess(serverUrl: string, channelId: string) {
+    return schedule(serverUrl, {channelId});
+}

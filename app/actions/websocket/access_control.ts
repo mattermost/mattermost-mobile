@@ -10,8 +10,10 @@ import {
     isRedactionEnforced,
     type RedactionReason,
 } from '@actions/local/redaction';
+import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
+import {DOWNLOAD_FILE_ATTACHMENT_ACTION, RenderPermissionAction} from '@constants/access_control';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
@@ -19,6 +21,7 @@ import {getPostById} from '@queries/servers/post';
 import {getAccessControlGroupId} from '@queries/servers/properties';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
@@ -53,6 +56,9 @@ type PendingInvalidation = {
 // save sends one event per child channel, and each would otherwise be its own write and refetch.
 const pendingInvalidations = new Map<string, PendingInvalidation>();
 const attributeViewRetries = new Map<string, ReturnType<typeof setTimeout>>();
+
+// Every connected client gets a policy update at once, so each one's channel list request is spread out.
+const pendingReconciles = new Map<string, ReturnType<typeof setTimeout>>();
 
 // A trigger awaits the feature predicate before registering anything, so a logout landing in that
 // window would leave a timer clearRedactionInvalidations never saw. The token lets the in-flight
@@ -196,6 +202,8 @@ export const scheduleRedactionInvalidation = async (
     needsAttributeViewRetry = false,
 ) => {
     const token = cleanupToken(serverUrl);
+
+    RenderPermissionsStore.revokeFetches(serverUrl, channelId);
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isRedactionEnforced(database))) {
@@ -236,9 +244,46 @@ export const scheduleRedactionInvalidation = async (
     }
 };
 
-// The payload carries nothing, so every cached channel has to be treated as affected.
-export const handlePermissionPolicyUpdatedEvent = (serverUrl: string) => {
-    scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+// A burst of policy updates inside the window costs one reconcile.
+const scheduleChannelAccessReconcile = (serverUrl: string) => {
+    if (pendingReconciles.has(serverUrl)) {
+        return;
+    }
+
+    const timeout = setTimeout(() => {
+        pendingReconciles.delete(serverUrl);
+        reconcileChannelAccess(serverUrl);
+    }, Math.floor(Math.random() * ATTRIBUTE_VIEW_RETRY_JITTER_MS));
+
+    pendingReconciles.set(serverUrl, timeout);
+};
+
+const RENDER_PERMISSION_ACTIONS: string[] = Object.values(RenderPermissionAction);
+
+// A server that predates the action list leaves it out, and then any action may have changed.
+const policyActionsChanged = (actions: string[] | undefined, dependsOn: string[]) => {
+    return !actions || dependsOn.some((action) => actions.includes(action));
+};
+
+/**
+ * Every connected client gets this event, so each step runs only when an action it depends on is among
+ * the ones the change touched. The policy is system-scoped, so every cached channel is affected.
+ */
+export const handlePermissionPolicyUpdatedEvent = (serverUrl: string, msg: WebSocketMessage) => {
+    const actions: string[] | undefined = msg.data?.actions;
+
+    // Raising the epoch revalidates the render decisions as well, so they only need expiring on their own.
+    if (policyActionsChanged(actions, [DOWNLOAD_FILE_ATTACHMENT_ACTION])) {
+        scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+    } else if (policyActionsChanged(actions, RENDER_PERMISSION_ACTIONS)) {
+        RenderPermissionsStore.expireServer(serverUrl);
+    } else {
+        logDebug('handlePermissionPolicyUpdatedEvent: no action this client caches changed');
+    }
+
+    if (policyActionsChanged(actions, [RenderPermissionAction.ChannelReadAccess])) {
+        scheduleChannelAccessReconcile(serverUrl);
+    }
 };
 
 // Scoped to the one channel, so a single policy edit does not invalidate every cached channel.
@@ -250,6 +295,7 @@ export const handleChannelAccessControlUpdatedEvent = (serverUrl: string, msg: W
     }
 
     scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.ChannelPolicy, channelId);
+    checkChannelAccess(serverUrl, channelId);
 };
 
 /**
@@ -399,5 +445,11 @@ export const clearRedactionInvalidations = (serverUrl: string) => {
     if (retry) {
         clearTimeout(retry);
         attributeViewRetries.delete(serverUrl);
+    }
+
+    const reconcile = pendingReconciles.get(serverUrl);
+    if (reconcile) {
+        clearTimeout(reconcile);
+        pendingReconciles.delete(serverUrl);
     }
 };
