@@ -153,6 +153,15 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
     });
 
     it('MM-70693_2 - should withhold the control for a denied user and show it without reopening the channel once their attribute satisfies the policy', async () => {
+        // # Start from a server-side deny. A first attempt has it already (set before the policy),
+        // so this returns on the first poll. An in-place retry (iOS CI) follows an attempt that
+        // granted the user and only restored the attribute at the end; the deny can take over a
+        // minute to land (run 41768017254), so the retry waits for it here.
+        const denied = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'create_burn_on_read_post', false, timeouts.TWO_MIN);
+        if (!denied) {
+            throw new Error('Server still grants create_burn_on_read_post to the denied user (Department: Sales)');
+        }
+
         // # Log in as the denied user and open the channel
         await LoginScreen.login(deniedUser);
         await ChannelListScreen.toBeVisible();
@@ -179,18 +188,12 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             grantError = error;
         }
 
-        // # Restore the attribute and confirm the denied decision server-side, so the suite (or an
-        // in-process retry) leaves the user as it found it. A cleanup failure must not replace
-        // an error from the grant wait above.
+        // # Restore the attribute so the suite leaves the user as it found it. Do not wait for the
+        // deny to land: it can take minutes, which this test's 300s budget does not have after
+        // login and the grant wait. A retry waits for it at the start instead. A cleanup failure
+        // must not replace an error from the grant wait above.
         try {
             await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
-
-            // The denied decision took over a minute to land server-side in run 41768017254
-            // (still granted at the ONE_MIN mark), so confirm with a FOUR_MIN budget.
-            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'create_burn_on_read_post', false, timeouts.FOUR_MIN);
-            if (!restored) {
-                throw new Error('Server still grants create_burn_on_read_post after restoring Department to Sales');
-            }
         } catch (cleanupError) {
             if (grantError) {
                 console.warn('[burn_on_read_permission] restore cleanup failed:', cleanupError); // eslint-disable-line no-console

@@ -156,6 +156,15 @@ describe('Messaging - Upload Permission (ABAC)', () => {
     });
 
     it('MM-68219_5 - should enable the attachment button without reopening the channel once the user attribute satisfies the policy', async () => {
+        // # Start from a server-side deny. A first attempt has it already (MM-68219_3 saw it), so
+        // this returns on the first poll. An in-place retry (iOS CI) follows an attempt that granted
+        // the user and only restored the attribute at the end; the deny can take over a minute to
+        // land (run 41768017254), so the retry waits for it here.
+        const denied = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'upload_file_attachment', false, timeouts.TWO_MIN);
+        if (!denied) {
+            throw new Error('Server still grants upload_file_attachment to the denied user (Department: Sales)');
+        }
+
         // # Log in as the denied user and open the channel
         await LoginScreen.login(deniedUser);
         await ChannelListScreen.toBeVisible();
@@ -177,18 +186,12 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             grantError = error;
         }
 
-        // # Restore the attribute and confirm the denied decision server-side, so the suite (or an
-        // in-process retry) leaves the user as it found it. A cleanup failure must not replace
-        // an error from the grant wait above.
+        // # Restore the attribute so the suite leaves the user as it found it. Do not wait for the
+        // deny to land: it can take minutes, which this test's 300s budget does not have after
+        // login and the grant wait. A retry waits for it at the start instead. A cleanup failure
+        // must not replace an error from the grant wait above.
         try {
             await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
-
-            // The denied decision took over a minute to land server-side in run 41768017254
-            // (still granted at the ONE_MIN mark), so confirm with a FOUR_MIN budget.
-            const restored = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'upload_file_attachment', false, timeouts.FOUR_MIN);
-            if (!restored) {
-                throw new Error('Server still grants upload_file_attachment after restoring Department to Sales');
-            }
         } catch (cleanupError) {
             if (grantError) {
                 console.warn('[upload_permission] restore cleanup failed:', cleanupError); // eslint-disable-line no-console
