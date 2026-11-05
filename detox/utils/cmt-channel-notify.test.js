@@ -277,6 +277,8 @@ describe('cmt-channel-notify', () => {
 
         it('judges a server-disabled feature error as infra, not an app bug', () => {
             assert.equal(classifyFailure({title: 'MM-T6310', error: 'api.channel.create_channel.attributes_feature_disabled: Channel attributes are not enabled on this server.'}).category, 'infra');
+            assert.equal(classifyFailure({title: 'MM-68219_1', error: 'Failed to create permission policy: {"id":"api.access_control_policy.permission_policies.feature_disabled","message":"Permission policies feature is not enabled.","status_code":501}'}).category, 'infra');
+            assert.equal(classifyFailure({title: 'MM-T6197_1', error: 'classification lock: *** login failed: {"message":"No response from server: timeout of 45000ms exceeded."}'}).category, 'infra');
         });
 
         it('judges a test with mixed pass/fail history as flaky', () => {
