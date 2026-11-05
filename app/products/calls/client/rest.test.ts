@@ -191,6 +191,16 @@ describe('ClientCalls', () => {
         });
     });
 
+    describe('phoneCall', () => {
+        it('should post the number with the optional target user and label', async () => {
+            await client.phoneCall({number: '+15551234567', targetUserId: 'user-id', displayLabel: 'Mom'});
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/com.plugins.calls/phone-call',
+                {method: 'post', body: {number: '+15551234567', target_user_id: 'user-id', display_label: 'Mom'}},
+            );
+        });
+    });
+
     describe('genTURNCredentials', () => {
         it('makes correct API call', async () => {
             await client.genTURNCredentials();

@@ -20,6 +20,7 @@ import {
     needsRecordingWillBePostedAlert,
     needsRecordingErrorAlert,
     leaveAndJoinWithAlert,
+    startPhoneCall,
 } from './alerts';
 
 jest.mock('@calls/actions', () => ({
@@ -43,6 +44,7 @@ jest.mock('@calls/state', () => ({
 jest.mock('@calls/actions/calls');
 jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/user', () => ({
@@ -483,6 +485,42 @@ describe('alerts', () => {
                 'You are already on a channel call in ~leave-channel. Do you want to leave your current call and start a new call in ~join-channel?',
                 expect.any(Array),
             );
+        });
+    });
+
+    describe('startPhoneCall', () => {
+        const intl = {
+            formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage,
+        };
+
+        beforeEach(() => {
+            const {getCallsConfig} = require('@calls/state');
+            getCallsConfig.mockReturnValue({DefaultEnabled: true});
+        });
+
+        it('shows the mapped alert for a server error ID', async () => {
+            const {joinCall} = require('@calls/actions');
+            joinCall.mockResolvedValueOnce({error: {server_error_id: 'sip_number_not_allowed'}});
+            const mockAlert = jest.spyOn(Alert, 'alert');
+
+            await startPhoneCall(intl as any, 'server1', '+15551234567');
+
+            expect(mockAlert).toHaveBeenCalledWith('Error', 'Calling this number isn\'t permitted.');
+        });
+
+        it('ignores a second call while the first is still being placed', async () => {
+            const {joinCall} = require('@calls/actions');
+            let finishJoin: (value: object) => void = () => {};
+            joinCall.mockReturnValueOnce(new Promise((resolve) => {
+                finishJoin = resolve;
+            }));
+
+            const first = startPhoneCall(intl as any, 'server1', '+15551234567');
+            await startPhoneCall(intl as any, 'server1', '+15551234567');
+            finishJoin({});
+            await first;
+
+            expect(joinCall).toHaveBeenCalledTimes(1);
         });
     });
 

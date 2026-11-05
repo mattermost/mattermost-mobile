@@ -6,7 +6,7 @@ import {Platform} from 'react-native';
 
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {livekitConnectTimeout, peerConnectTimeout} from '@calls/connection/constants';
-import {createAudioRouteManager, stopAudioSession} from '@calls/connection/session/audio';
+import {createAudioRouteManager, startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
 import {hostRemovedErr} from '@calls/errors';
 import {
     clearStartUnmuted,
@@ -107,7 +107,9 @@ type MicTrack = {source?: string; isMuted: boolean; mute: jest.Mock; unmute: jes
 describe('newLiveKitConnection', () => {
     const mockClient = {
         createLiveKitSession: jest.fn(),
+        phoneCall: jest.fn(),
     };
+    const onChannelResolved = jest.fn(() => Promise.resolve());
 
     const mockIntl = {formatMessage: jest.fn((m) => m.defaultMessage)} as unknown as import('react-intl').IntlShape;
 
@@ -119,8 +121,7 @@ describe('newLiveKitConnection', () => {
     const connect = async (remoteParticipants: any[] = [], closeCb: (err?: Error) => void = () => {}, hasMicPermission = false) => {
         mockRoom.remoteParticipants = new Map(remoteParticipants.map((p) => [p.identity, p]));
 
-        const connection = await newLiveKitConnection(
-            SERVER_URL, CHANNEL_ID, closeCb, () => {}, hasMicPermission, mockIntl, 'title', 'root-id',
+        const connection = await newLiveKitConnection(SERVER_URL, {type: 'channel', channelID: CHANNEL_ID}, closeCb, onChannelResolved, () => {}, hasMicPermission, mockIntl, 'title', 'root-id',
         );
         await connection.waitForPeerConnection();
         return connection;
@@ -208,14 +209,14 @@ describe('newLiveKitConnection', () => {
     it('should resolve waitForPeerConnection with the session id from the join response', async () => {
         mockClient.createLiveKitSession.mockResolvedValue({session_id: 'minted-session', token: LIVEKIT_TOKEN, url: LIVEKIT_URL, call_state: callState});
 
-        const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl);
+        const connection = await newLiveKitConnection(SERVER_URL, {type: 'channel', channelID: CHANNEL_ID}, () => {}, onChannelResolved, () => {}, false, mockIntl);
 
         await expect(connection.waitForPeerConnection()).resolves.toBe('minted-session');
     });
 
     it('should keep waiting for the room past the rtcd peer timeout and reject once the livekit timeout passes', async () => {
         mockRoom.connect.mockReturnValue(new Promise(() => {}));
-        const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl);
+        const connection = await newLiveKitConnection(SERVER_URL, {type: 'channel', channelID: CHANNEL_ID}, () => {}, onChannelResolved, () => {}, false, mockIntl);
         const settled = jest.fn();
         connection.waitForPeerConnection().catch(settled);
 
@@ -226,12 +227,72 @@ describe('newLiveKitConnection', () => {
         expect(settled).toHaveBeenCalledWith(new Error('timed out waiting for peer connection'));
     });
 
-    it('should stop the audio session and reject when the join request fails', async () => {
+    it.each([
+        ['channel', {type: 'channel', channelID: CHANNEL_ID}, 'createLiveKitSession'],
+        ['phone', {type: 'phone', phone: {number: '+15551234567'}}, 'phoneCall'],
+    ] as const)('should stop the audio session and reject when the join request fails for a %s target', async (_name, target, method) => {
         const joinError = new Error('join failed');
-        mockClient.createLiveKitSession.mockRejectedValue(joinError);
+        mockClient[method].mockRejectedValue(joinError);
 
-        await expect(newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl)).rejects.toBe(joinError);
+        await expect(newLiveKitConnection(SERVER_URL, target, () => {}, onChannelResolved, () => {}, false, mockIntl)).rejects.toBe(joinError);
         expect(stopAudioSession).toHaveBeenCalled();
+        if (method === 'phoneCall') {
+            expect(onChannelResolved).not.toHaveBeenCalled();
+        }
+    });
+
+    it('should request a phone call and resolve its channel before connecting the room and keying call state', async () => {
+        const order: string[] = [];
+        mockClient.phoneCall.mockResolvedValue({
+            session_id: SESSION_ID,
+            token: LIVEKIT_TOKEN,
+            url: LIVEKIT_URL,
+            call_state: callState,
+            call_id: 'call-id',
+            channel_id: 'bot-dm-channel',
+            bot_user_id: 'bot',
+        });
+        onChannelResolved.mockImplementationOnce(async () => {
+            order.push('resolved');
+        });
+        mockRoom.connect.mockImplementationOnce(() => {
+            order.push('connect');
+            roomHandlers[RoomEvent.Connected]?.();
+            return Promise.resolve();
+        });
+
+        const phone = {number: '+15551234567'};
+        const connection = await newLiveKitConnection(SERVER_URL, {type: 'phone', phone}, () => {}, onChannelResolved, () => {}, false, mockIntl);
+        await advanceTimers(0);
+
+        expect(mockClient.phoneCall).toHaveBeenCalledWith(phone);
+        expect(mockClient.createLiveKitSession).not.toHaveBeenCalled();
+        expect(onChannelResolved).toHaveBeenCalledWith('bot-dm-channel');
+        expect(order).toEqual(['resolved', 'connect']);
+        expect(jest.mocked(setCallForChannel).mock.calls[0][1]).toBe('bot-dm-channel');
+        await expect(connection.waitForPeerConnection()).resolves.toBe(SESSION_ID);
+    });
+
+    it('should resolve the channel before starting the audio session for a channel target', async () => {
+        const order: string[] = [];
+        onChannelResolved.mockImplementationOnce(async () => {
+            order.push('resolved');
+        });
+        jest.mocked(startAudioSession).mockImplementationOnce(async () => {
+            order.push('audio');
+        });
+
+        await connect();
+
+        expect(order).toEqual(['resolved', 'audio']);
+    });
+
+    it('should not look up a profile for a sip participant present at connect', async () => {
+        await connect([participant('userA', 'sessionA'), {...participant('', ''), identity: 'sip:+15551234567'}]);
+
+        const fetchedIDs = jest.mocked(fetchMissingProfilesByIds).mock.calls.flatMap(([, ids]) => ids);
+        expect(fetchedIDs).not.toContain('');
+        expect(fetchedIDs).toContain('userA');
     });
 
     it('should seed the channel call with the other sessions from the join response, leaving ours to the room', async () => {
@@ -472,7 +533,7 @@ describe('newLiveKitConnection', () => {
         mockRoom.connect.mockReturnValue(new Promise<void>((resolve) => {
             finishConnect = resolve;
         }));
-        const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, true, mockIntl);
+        const connection = await newLiveKitConnection(SERVER_URL, {type: 'channel', channelID: CHANNEL_ID}, () => {}, onChannelResolved, () => {}, true, mockIntl);
         await advanceTimers(0);
 
         connection.disconnect();
@@ -489,7 +550,7 @@ describe('newLiveKitConnection', () => {
         mockRoom.prepareConnection.mockReturnValue(new Promise<void>((resolve) => {
             finishPrepare = resolve;
         }));
-        const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl);
+        const connection = await newLiveKitConnection(SERVER_URL, {type: 'channel', channelID: CHANNEL_ID}, () => {}, onChannelResolved, () => {}, false, mockIntl);
 
         connection.disconnect();
         finishPrepare();
@@ -503,7 +564,7 @@ describe('newLiveKitConnection', () => {
         mockRoom.connect.mockReturnValue(new Promise<void>((resolve) => {
             finishConnect = resolve;
         }));
-        const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl);
+        const connection = await newLiveKitConnection(SERVER_URL, {type: 'channel', channelID: CHANNEL_ID}, () => {}, onChannelResolved, () => {}, false, mockIntl);
         await advanceTimers(0);
 
         connection.disconnect();
@@ -516,7 +577,7 @@ describe('newLiveKitConnection', () => {
 
     it('releases a captured microphone that was never published on disconnect', async () => {
         mockRoom.connect.mockRejectedValue(new Error('connect failed'));
-        await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, true, mockIntl);
+        await newLiveKitConnection(SERVER_URL, {type: 'channel', channelID: CHANNEL_ID}, () => {}, onChannelResolved, () => {}, true, mockIntl);
         await advanceTimers(0);
 
         expect(micTrack?.stop).toHaveBeenCalled();

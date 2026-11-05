@@ -367,7 +367,7 @@ describe('onCallAnswered', () => {
         await onCallAnswered({uuid: 'u1'});
 
         expect(setMicPermissionsGranted).toHaveBeenCalledWith(true);
-        expect(joinCall).toHaveBeenCalledWith(SERVER_URL, 'ch1', 'user1', true, expect.anything(), undefined, 't1');
+        expect(joinCall).toHaveBeenCalledWith(SERVER_URL, {type: 'channel', channelID: 'ch1'}, 'user1', true, expect.anything(), undefined, 't1');
         expect(CallsNative.reportConnected).toHaveBeenCalledWith('u1');
         expect(unmuteMyself).toHaveBeenCalled();
         expect(CallsNative.setMuted).not.toHaveBeenCalled();

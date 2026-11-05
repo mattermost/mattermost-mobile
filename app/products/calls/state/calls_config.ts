@@ -7,6 +7,8 @@ import {BehaviorSubject} from 'rxjs';
 import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
 import useDidMount from '@hooks/did_mount';
 
+import {getCurrentCall} from './current_call';
+
 const callsConfigSubjects: Dictionary<BehaviorSubject<CallsConfigState>> = {};
 
 const getCallsConfigSubject = (serverUrl: string) => {
@@ -19,6 +21,10 @@ const getCallsConfigSubject = (serverUrl: string) => {
 
 export const getCallsConfig = (serverUrl: string) => {
     return getCallsConfigSubject(serverUrl).value;
+};
+
+export const isPhoneDialingAvailable = (serverUrl: string) => {
+    return getCallsConfig(serverUrl).EnableSIPOutbound && !getCurrentCall();
 };
 
 export const setCallsConfig = (serverUrl: string, callsConfig: CallsConfigState) => {

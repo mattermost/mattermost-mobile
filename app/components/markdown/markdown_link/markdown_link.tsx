@@ -8,12 +8,14 @@ import {useIntl, defineMessages} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 import urlParse from 'url-parse';
 
+import {startPhoneCall} from '@calls/alerts';
+import {isPhoneDialingAvailable} from '@calls/state';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
-import {isTelHref} from '@utils/phone_number';
+import {getTelNumber, isTelHref} from '@utils/phone_number';
 import {openLink} from '@utils/url/links';
 
 type MarkdownLinkProps = {
@@ -25,6 +27,14 @@ type MarkdownLinkProps = {
 }
 
 const messages = defineMessages({
+    callWithMattermost: {
+        id: 'mobile.markdown.link.call_with_mattermost',
+        defaultMessage: 'Call with Mattermost',
+    },
+    callWithPhone: {
+        id: 'mobile.markdown.link.call_with_phone',
+        defaultMessage: 'Call with phone',
+    },
     copyEmail: {
         id: 'mobile.markdown.link.copy_email',
         defaultMessage: 'Copy Email Address',
@@ -76,7 +86,42 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     const serverUrl = useServerUrl();
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        openLink(href, serverUrl, siteURL ?? '', intl);
+        if (!isTelHref(href) || !isPhoneDialingAvailable(serverUrl)) {
+            openLink(href, serverUrl, siteURL ?? '', intl);
+            return;
+        }
+
+        const renderContent = () => (
+            <View style={style.bottomSheet}>
+                <SlideUpPanelItem
+                    leftIcon='phone-in-talk'
+                    onPress={() => {
+                        dismissBottomSheet();
+                        startPhoneCall(intl, serverUrl, getTelNumber(href));
+                    }}
+                    testID='markdown_link.bottom_sheet.call_with_mattermost'
+                    text={intl.formatMessage(messages.callWithMattermost)}
+                />
+                <SlideUpPanelItem
+                    leftIcon='phone-outline'
+                    onPress={() => {
+                        dismissBottomSheet();
+                        openLink(href, serverUrl, siteURL ?? '', intl);
+                    }}
+                    testID='markdown_link.bottom_sheet.call_with_phone'
+                    text={intl.formatMessage(messages.callWithPhone)}
+                />
+                <SlideUpPanelItem
+                    destructive={true}
+                    leftIcon='cancel'
+                    onPress={dismissBottomSheet}
+                    testID='markdown_link.bottom_sheet.cancel'
+                    text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                />
+            </View>
+        );
+
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(3, ITEM_HEIGHT)]);
     }, [href, intl, serverUrl, siteURL]));
 
     const handleLongPress = useCallback(() => {

@@ -40,7 +40,7 @@ import {
     userLeftCall,
     userReacted,
 } from '@calls/state';
-import {type CallsConnection} from '@calls/types/calls';
+import {type CallsConnection, type CallTarget} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
@@ -64,6 +64,9 @@ type RoomMetadata = {
     live_captions?: CallJobState;
 }
 
+// Identities without a user ID (the phone participant) parse to an empty ID and have no profile to fetch.
+const fetchProfiles = (serverUrl: string, userIDs: string[]) => fetchMissingProfilesByIds(serverUrl, userIDs.filter(Boolean));
+
 const isBot = (participant: Participant) => participant.attributes?.[CALL_ATTRIBUTES.BOT] === 'true';
 
 const isMicMuted = (participant: Participant) =>
@@ -74,8 +77,9 @@ const raisedHandAt = (participant: Participant) =>
 
 export async function newLiveKitConnection(
     serverUrl: string,
-    channelID: string,
+    target: CallTarget,
     closeCb: (err?: Error) => void,
+    onChannelResolved: (channelId: string) => Promise<void>,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
     intl: IntlShape,
@@ -90,6 +94,12 @@ export async function newLiveKitConnection(
     let micTrackPromise: Promise<void> | null = null;
     let onPeerConnected: ((sessionId: string) => void) | null = null;
     let activeSessions = new Set<string>();
+    let channelID = '';
+
+    if (target.type === 'channel') {
+        channelID = target.channelID;
+        await onChannelResolved(channelID);
+    }
 
     // LiveKit's audio session management is left off: @mattermost/calls-native owns
     // AVAudioSession, and autoConfigureAudioSession defaults to true.
@@ -119,7 +129,13 @@ export async function newLiveKitConnection(
 
     let session;
     try {
-        session = await client.createLiveKitSession(channelID, title, rootId);
+        if (target.type === 'phone') {
+            session = await client.phoneCall(target.phone);
+            channelID = session.channel_id;
+            await onChannelResolved(channelID);
+        } else {
+            session = await client.createLiveKitSession(channelID, title, rootId);
+        }
     } catch (err) {
         await stopAudioSession();
 
@@ -134,7 +150,7 @@ export async function newLiveKitConnection(
 
     const seededUserIDs = new Set<string>();
     setCallForChannel(serverUrl, channelID, createCallAndAddToIds(channelID, {...callState, sessions: otherSessions}, seededUserIDs));
-    fetchMissingProfilesByIds(serverUrl, Array.from(seededUserIDs));
+    fetchProfiles(serverUrl, Array.from(seededUserIDs));
     if (callState.recording) {
         setRecordingState(serverUrl, channelID, callState.recording);
     }
@@ -319,7 +335,7 @@ export async function newLiveKitConnection(
             }
             return userID;
         });
-        fetchMissingProfilesByIds(serverUrl, userIDs);
+        fetchProfiles(serverUrl, userIDs);
 
         applyRoomMetadata(room.metadata);
 
@@ -352,7 +368,7 @@ export async function newLiveKitConnection(
             return;
         }
 
-        fetchMissingProfilesByIds(serverUrl, [joinParticipant(participant)]);
+        fetchProfiles(serverUrl, [joinParticipant(participant)]);
     });
 
     room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {

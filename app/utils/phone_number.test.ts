@@ -1,7 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {findPhoneNumbers, isTelHref, toTelHref} from './phone_number';
+import {findPhoneNumbers, getTelNumber, isTelHref, toTelHref} from './phone_number';
+
+describe('getTelNumber', () => {
+    it('should decode the number and drop tel: params', () => {
+        expect(getTelNumber('tel:%2B1%20555%20123%204567;ext=12')).toBe('+1 555 123 4567');
+    });
+
+    it('should return the raw number when it is not valid URI encoding', () => {
+        expect(getTelNumber('TEL:+1555%ZZ')).toBe('+1555%ZZ');
+    });
+});
 
 describe('toTelHref', () => {
     it('should keep a leading plus and strip separators', () => {

@@ -11,7 +11,7 @@ import {peerConnectTimeout} from '@calls/connection/constants';
 import {createAudioRouteManager, startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/session/foreground_service';
 import {clearStartUnmuted, processMeanOpinionScore} from '@calls/state';
-import {type CallsConnection} from '@calls/types/calls';
+import {type CallsConnection, type CallTarget} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -28,14 +28,22 @@ const rtcMonitorInterval = 10000;
 
 export async function newRtcdConnection(
     serverUrl: string,
-    channelID: string,
+    target: CallTarget,
     closeCb: (err?: Error) => void,
+    onChannelResolved: (channelId: string) => Promise<void>,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
     intl: IntlShape,
     title?: string,
     rootId?: string,
 ) {
+    if (target.type === 'phone') {
+        throw new Error('calls: rtcd does not support phone targets');
+    }
+
+    const {channelID} = target;
+    await onChannelResolved(channelID);
+
     let peer: RTCPeer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;

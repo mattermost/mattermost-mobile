@@ -153,7 +153,7 @@ class CallsNativeSingleton {
             setMicPermissionsGranted(hasMic);
 
             const intl = getIntlShape(user.locale);
-            const res = await joinCall(serverUrl, channelId, user.id, hasMic, intl, undefined, threadId);
+            const res = await joinCall(serverUrl, {type: 'channel', channelID: channelId}, user.id, hasMic, intl, undefined, threadId);
             if (res.error) {
                 logError('onCallAnswered: joinCall failed', res.error);
                 CallsNative.reportEnded(uuid, 'failed');

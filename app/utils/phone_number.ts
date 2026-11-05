@@ -22,6 +22,15 @@ export function isTelHref(href: string): boolean {
     return href.toLowerCase().startsWith('tel:');
 }
 
+export function getTelNumber(href: string): string {
+    const [rawNumber] = href.replace(/^tel:/i, '').split(';');
+    try {
+        return decodeURIComponent(rawNumber).trim();
+    } catch {
+        return rawNumber.trim();
+    }
+}
+
 export function toTelHref(raw: string): string {
     const withoutScheme = raw.replace(/^tel:/i, '');
     const hasPlus = withoutScheme.trimStart().startsWith('+');

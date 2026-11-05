@@ -93,15 +93,25 @@ const mockClient = {
 };
 
 jest.mock('@calls/connection', () => ({
-    newCallConnection: jest.fn((serverURL, channelId, onClose) => Promise.resolve({
-        disconnect: jest.fn((err?: Error) => onClose(err)),
-        mute: jest.fn(),
-        unmute: jest.fn(),
-        waitForPeerConnection: jest.fn(() => Promise.resolve('session-id')),
-        initializeVoiceTrack: jest.fn(),
-        sendReaction: jest.fn(),
-        setUserSelectedAudioRoute: jest.fn(),
-    })),
+    newCallConnection: jest.fn(async (serverURL, target, onClose, onChannelResolved) => {
+        if (target.type === 'channel') {
+            await onChannelResolved(target.channelID);
+        }
+        return {
+            disconnect: jest.fn((err?: Error) => onClose(err)),
+            mute: jest.fn(),
+            unmute: jest.fn(),
+            waitForPeerConnection: jest.fn(() => Promise.resolve('session-id')),
+            initializeVoiceTrack: jest.fn(),
+            sendReaction: jest.fn(),
+            setUserSelectedAudioRoute: jest.fn(),
+        };
+    }),
+}));
+
+jest.mock('@actions/remote/channel', () => ({
+    ...jest.requireActual('@actions/remote/channel'),
+    fetchMyChannel: jest.fn(() => Promise.resolve({})),
 }));
 
 jest.mock('@calls/native_call', () => ({
@@ -267,7 +277,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -281,7 +291,7 @@ describe('Actions.Calls', () => {
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newCallConnection).toHaveBeenCalled();
-        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection.mock.calls[0][1]).toEqual({type: 'channel', channelID: 'channel-id'});
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {
@@ -293,7 +303,7 @@ describe('Actions.Calls', () => {
         endNativeCall.mockClear();
         newCallConnection.mockRejectedValueOnce(forceLogoutError);
         await act(async () => {
-            await expect(CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await expect(CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }))).resolves.toStrictEqual({error: forceLogoutError});
@@ -309,12 +319,83 @@ describe('Actions.Calls', () => {
         newCallConnection.mockResolvedValueOnce(connection);
 
         await act(async () => {
-            const res = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            const res = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
             expect(res).toStrictEqual({error: 'unable to connect to the voice call: Error: failed to connect'});
             expect(connection.disconnect).toHaveBeenCalled();
+        });
+    });
+
+    describe('joinCall with a phone target', () => {
+        const intl = createIntl({locale: 'en', messages: {}});
+        const phone = {number: '+15551234567'};
+
+        it('should create the current call on the resolved channel and name the CallKit entry after the number', async () => {
+            const {registerOutgoingNativeCall} = require('@calls/native_call');
+            jest.mocked(getChannelById).mockResolvedValue({id: 'bot-dm'} as never);
+            newCallConnection.mockImplementationOnce(async (_url: string, _target: unknown, _onClose: unknown, onChannelResolved: (id: string) => Promise<void>) => {
+                await onChannelResolved('bot-dm');
+                return {disconnect: jest.fn(), waitForPeerConnection: jest.fn(() => Promise.resolve('session-id'))};
+            });
+
+            let res: Awaited<ReturnType<typeof CallsActions.joinCall>>;
+            await act(async () => {
+                res = await CallsActions.joinCall('server1', {type: 'phone', phone}, 'myUserId', true, intl, undefined, undefined, {startedByMe: true});
+            });
+
+            expect(res!).toEqual({data: 'bot-dm'});
+            expect(getCurrentCall()?.channelId).toBe('bot-dm');
+            expect(registerOutgoingNativeCall).toHaveBeenCalledWith('server1', 'bot-dm', undefined, '+15551234567');
+        });
+
+        it('should return the error without ending a native call when the connection rejects before the channel resolves', async () => {
+            const {endNativeCall} = require('@calls/native_call');
+            endNativeCall.mockClear();
+            const error = new Error('invalid_number');
+            newCallConnection.mockRejectedValueOnce(error);
+
+            let res: Awaited<ReturnType<typeof CallsActions.joinCall>>;
+            await act(async () => {
+                res = await CallsActions.joinCall('server1', {type: 'phone', phone}, 'myUserId', true, intl);
+            });
+
+            expect(res!).toEqual({error});
+            expect(endNativeCall).not.toHaveBeenCalled();
+            expect(getCurrentCall()).toBeNull();
+        });
+
+        it('should clear the current call when the connection rejects after the channel resolves', async () => {
+            const error = new Error('connect failed');
+            jest.mocked(getChannelById).mockResolvedValue({id: 'bot-dm'} as never);
+            newCallConnection.mockImplementationOnce(async (_url: string, _target: unknown, _onClose: unknown, onChannelResolved: (id: string) => Promise<void>) => {
+                await onChannelResolved('bot-dm');
+                throw error;
+            });
+
+            let res: Awaited<ReturnType<typeof CallsActions.joinCall>>;
+            await act(async () => {
+                res = await CallsActions.joinCall('server1', {type: 'phone', phone}, 'myUserId', true, intl);
+            });
+
+            expect(res!).toEqual({error});
+            expect(getCurrentCall()).toBeNull();
+        });
+
+        it('should keep a different current call when the connection rejects after the channel resolves', async () => {
+            jest.mocked(getChannelById).mockResolvedValue({id: 'bot-dm'} as never);
+            newCallConnection.mockImplementationOnce(async (_url: string, _target: unknown, _onClose: unknown, onChannelResolved: (id: string) => Promise<void>) => {
+                await onChannelResolved('bot-dm');
+                newCurrentCall('server1', 'other-channel', 'myUserId', CallsTransport.LiveKit);
+                throw new Error('connect failed');
+            });
+
+            await act(async () => {
+                await CallsActions.joinCall('server1', {type: 'phone', phone}, 'myUserId', true, intl);
+            });
+
+            expect(getCurrentCall()?.channelId).toBe('other-channel');
         });
     });
 
@@ -328,7 +409,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -364,10 +445,10 @@ describe('Actions.Calls', () => {
         mockClient.getVersion.mockReturnValueOnce({version: '2.0.0'});
 
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({locale: 'en', messages: {}}));
         });
 
-        expect(newCallConnection.mock.calls[0][6]).toBe(CallsTransport.LiveKit);
+        expect(newCallConnection.mock.calls[0][7]).toBe(CallsTransport.LiveKit);
         expect(getCurrentCall()?.transport).toBe(CallsTransport.LiveKit);
         jest.mocked(getCallsTransport).mockReset();
 
@@ -385,7 +466,7 @@ describe('Actions.Calls', () => {
 
         let res: Awaited<ReturnType<typeof CallsActions.joinCall>>;
         await act(async () => {
-            res = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            res = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({locale: 'en', messages: {}}));
         });
 
         expect(res!).toStrictEqual({error: configError});
@@ -400,7 +481,7 @@ describe('Actions.Calls', () => {
 
         let res: Awaited<ReturnType<typeof CallsActions.joinCall>>;
         await act(async () => {
-            res = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            res = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({locale: 'en', messages: {}}));
         });
 
         expect(res!).toStrictEqual({error: 'unable to determine calls plugin version'});
@@ -412,7 +493,7 @@ describe('Actions.Calls', () => {
         // setup
         addFakeCall('server1', 'channel-id');
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -449,7 +530,7 @@ describe('Actions.Calls', () => {
 
         addFakeCall('server1', 'channel-id');
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -530,7 +611,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -563,7 +644,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'mysUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'mysUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -1464,7 +1545,7 @@ describe('Actions.Calls', () => {
     it('should not pin the route when setPreferredAudioRoute is called without fromUser', async () => {
         addFakeCall('server1', 'channel-id');
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({locale: 'en', messages: {}}));
             newCurrentCall('server1', 'channel-id', 'myUserId', CallsTransport.Rtcd);
         });
 
@@ -1481,7 +1562,7 @@ describe('Actions.Calls', () => {
     it('should pin the route when setPreferredAudioRoute is called with fromUser', async () => {
         addFakeCall('server1', 'channel-id');
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({locale: 'en', messages: {}}));
             newCurrentCall('server1', 'channel-id', 'myUserId', CallsTransport.Rtcd);
         });
 
@@ -1500,7 +1581,7 @@ describe('Actions.Calls', () => {
         addFakeCall('server1', 'channel-id');
 
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -1516,7 +1597,7 @@ describe('Actions.Calls', () => {
         addFakeCall('server1', 'channel-id');
 
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -1544,7 +1625,7 @@ describe('Actions.Calls', () => {
         intl.formatMessage = jest.fn();
 
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
+            response = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, intl);
 
             // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId', CallsTransport.Rtcd);
@@ -1553,7 +1634,7 @@ describe('Actions.Calls', () => {
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newCallConnection).toHaveBeenCalled();
-        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection.mock.calls[0][1]).toEqual({type: 'channel', channelID: 'channel-id'});
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {
@@ -1587,7 +1668,7 @@ describe('Actions.Calls', () => {
         intl.formatMessage = jest.fn();
 
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
+            response = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, intl);
 
             // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId', CallsTransport.Rtcd);
@@ -1596,7 +1677,7 @@ describe('Actions.Calls', () => {
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newCallConnection).toHaveBeenCalled();
-        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection.mock.calls[0][1]).toEqual({type: 'channel', channelID: 'channel-id'});
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {
@@ -1630,7 +1711,7 @@ describe('Actions.Calls', () => {
         intl.formatMessage = jest.fn();
 
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
+            response = await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, intl);
 
             // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId', CallsTransport.Rtcd);
@@ -1639,7 +1720,7 @@ describe('Actions.Calls', () => {
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newCallConnection).toHaveBeenCalled();
-        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection.mock.calls[0][1]).toEqual({type: 'channel', channelID: 'channel-id'});
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {

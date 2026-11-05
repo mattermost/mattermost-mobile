@@ -197,6 +197,18 @@ export type LiveKitSessionResponse = {
     call_state: CallState;
 }
 
+export type PhoneCallResponse = LiveKitSessionResponse & {
+    call_id: string;
+    channel_id: string;
+    bot_user_id: string;
+}
+
+export type PhoneTarget = {number: string; targetUserId?: string; displayLabel?: string};
+
+export type CallTarget =
+    | {type: 'channel'; channelID: string}
+    | {type: 'phone'; phone: PhoneTarget};
+
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
@@ -212,6 +224,7 @@ export type CallsConnection = {
 export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
     GroupCallsAllowed: boolean;
+    EnableSIPOutbound: boolean;
     pluginEnabled: boolean;
     version: CallsVersionInfo;
     last_retrieved_at: number;
@@ -240,6 +253,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     TranscribeAPI: TranscribeAPI.WhisperCPP,
     GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
     EnableDCSignaling: false,
+    EnableSIPOutbound: false,
 };
 
 export type ApiResp = {
