@@ -6,6 +6,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.Log
 import androidx.core.graphics.withTranslation
+import com.mattermost.securepdfviewer.R
 import com.mattermost.securepdfviewer.pdfium.shared.PdfContext
 import com.mattermost.securepdfviewer.pdfium.shared.PdfViewInterface
 import kotlinx.coroutines.Job
@@ -412,15 +413,15 @@ class PdfRenderManager(private val context: PdfContext, private val view: PdfVie
         when {
             context.isViewDestroyed() -> return
             context.documentManager.isDocumentLoading() -> {
-                drawMessage(canvas, "Loading Document...")
+                drawMessage(canvas, context.getString(R.string.mm_pdf_loading))
                 return
             }
             !context.document.isValid() -> {
-                drawMessage(canvas, "No Document")
+                drawMessage(canvas, context.getString(R.string.mm_pdf_no_document))
                 return
             }
             !context.isViewReady -> {
-                drawMessage(canvas, "Preparing...")
+                drawMessage(canvas, context.getString(R.string.mm_pdf_preparing))
                 return
             }
             else -> {

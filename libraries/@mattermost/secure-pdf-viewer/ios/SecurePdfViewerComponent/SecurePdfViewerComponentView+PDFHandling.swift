@@ -40,7 +40,7 @@ extension SecurePdfViewerComponentView {
         }
 
         guard isValidCachedFile(path: filePath) else {
-            onLoadError?(["message": "Invalid file path"])
+            onLoadError?(["message": NSLocalizedString("native.ios.pdf.invalid_path", bundle: .main, value: "Invalid file path", comment: "PDF loading error")])
             return
         }
 

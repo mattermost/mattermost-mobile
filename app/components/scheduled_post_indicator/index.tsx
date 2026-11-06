@@ -56,19 +56,13 @@ function ScheduledPostIndicator({
     const scheduledPostText = isThread ? (
         <FormattedMessage
             id='scheduled_post.channel_indicator.thread'
-            defaultMessage={`{count, plural,
-                one {# scheduled message in thread.}
-                other {# scheduled messages in thread.}
-            }`}
+            defaultMessage='{count, plural, one {# scheduled message in thread.} other {# scheduled messages in thread.}}'
             values={{count: scheduledPostCount}}
         />
     ) : (
         <FormattedMessage
             id='scheduled_post.channel_indicator'
-            defaultMessage={`{count, plural,
-                one {# scheduled message in channel.}
-                other {# scheduled messages in channel.}
-            }`}
+            defaultMessage='{count, plural, one {# scheduled message in channel.} other {# scheduled messages in channel.}}'
             values={{count: scheduledPostCount}}
         />
     );

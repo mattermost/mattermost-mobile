@@ -319,7 +319,7 @@ const ChannelBookmarkScreen = ({
                 <View style={styles.deleteContainer}>
                     <Button
                         size='m'
-                        text='Delete bookmark'
+                        text={formatMessage({id: 'channel_bookmark.delete.confirm_title', defaultMessage: 'Delete bookmark'})}
                         iconName='trash-can-outline'
                         emphasis='tertiary'
                         onPress={onDelete}

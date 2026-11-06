@@ -222,9 +222,9 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
 
     private fun createForegroundInfo(): ForegroundInfo {
         val notification = NotificationCompat.Builder(applicationContext, "SHARE_CHANNEL")
-                .setContentTitle("Uploading Files")
-                .setTicker("Uploading Files")
-                .setContentText("File upload in progress")
+                .setContentTitle(applicationContext.getString(R.string.mm_share_upload_title))
+                .setTicker(applicationContext.getString(R.string.mm_share_upload_title))
+                .setContentText(applicationContext.getString(R.string.mm_share_upload_progress))
                 .setSmallIcon(applicationContext.resources.getIdentifier("ic_notification", "mipmap", applicationContext.packageName))
                 .setOngoing(true)
                 .build()

@@ -1,0 +1,24 @@
+<resources>
+    <string name="inAppPinCode_title">Código de acesso no aplicativo</string>
+    <string name="inAppPinCode_description">Exigir que o usuário se autentique como proprietário do telefone antes de usar o aplicativo. Solicita impressão digital ou código de acesso ao abrir o aplicativo e quando ele ficou em segundo plano por mais de 5 minutos.</string>
+    <string name="blurApplicationScreen_title">Desfocar a tela do aplicativo</string>
+    <string name="blurApplicationScreen_description">Desfocar o aplicativo quando ele estiver em segundo plano para proteger informações confidenciais na tela. Também impede capturas de tela do aplicativo.</string>
+    <string name="jailbreakProtection_title">Detecção de jailbreak ou root</string>
+    <string name="jailbreakProtection_description">Impedir a abertura do aplicativo em dispositivos com jailbreak ou acesso root.</string>
+    <string name="copyAndPasteProtection_title">Proteção contra copiar e colar</string>
+    <string name="copyAndPasteProtection_description">Desativar a cópia e a colagem em todos os campos de texto do aplicativo.</string>
+    <string name="serverUrl_title">URL do servidor Mattermost</string>
+    <string name="serverUrl_description">Definir uma URL de servidor padrão para sua instância do Mattermost.</string>
+    <string name="serverName_title">Nome do servidor Mattermost</string>
+    <string name="serverName_description">Definir um nome de servidor padrão para sua instância do Mattermost.</string>
+    <string name="allowOtherServers_title">Permitir outros servidores</string>
+    <string name="allowOtherServers_description">Permitir que o usuário altere a URL do servidor acima.</string>
+    <string name="username_title">Nome de usuário padrão</string>
+    <string name="username_description">Definir o nome de usuário ou e-mail usado para autenticação no servidor Mattermost.</string>
+    <string name="timeout_title">Tempo limite padrão de requisição</string>
+    <string name="timeout_description">Tempo em milissegundos que o aplicativo móvel deve aguardar uma resposta do servidor.</string>
+    <string name="vendor_title">Nome do fornecedor de EMM ou da empresa</string>
+    <string name="vendor_description">Nome do fornecedor de EMM ou da empresa que distribui o aplicativo. Usado no texto de ajuda ao solicitar códigos de acesso, para que os usuários saibam por que o aplicativo está protegido.</string>
+    <string name="inAppSessionAuth_title">Autenticação de sessão no aplicativo</string>
+    <string name="inAppSessionAuth_description">Exigir SSO pela WebView em vez do fluxo padrão pelo navegador móvel.</string>
+</resources>

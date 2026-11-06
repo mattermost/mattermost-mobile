@@ -3,13 +3,13 @@ package com.mattermost.securepdfviewer.view.manager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import com.mattermost.securepdfviewer.R
 import com.mattermost.securepdfviewer.manager.PasswordAttemptStore
 import com.mattermost.securepdfviewer.pdfium.PdfView
 import com.mattermost.securepdfviewer.util.FileValidator
 import com.mattermost.securepdfviewer.util.HashUtils
 import com.mattermost.securepdfviewer.util.MemoryUtil
 import com.mattermost.securepdfviewer.view.emitter.PdfEventEmitter
-import java.util.Locale
 
 /**
  * Manages PDF document loading and validation logic.
@@ -46,7 +46,7 @@ class PdfLoadManager(
      */
     fun loadPdf(source: String?, password: String?) {
         if (source == null) {
-            eventEmitter()?.emitLoadFailed("No source specified")
+            eventEmitter()?.emitLoadFailed(context.getString(R.string.mm_pdf_no_source))
             return
         }
 
@@ -61,7 +61,7 @@ class PdfLoadManager(
         val allowedDirs = listOfNotNull(context.cacheDir, context.externalCacheDir)
         val file = FileValidator.parseSourceToFile(source, allowedDirs)
         if (file == null) {
-            eventEmitter()?.emitLoadFailed("Invalid or unauthorized file")
+            eventEmitter()?.emitLoadFailed(context.getString(R.string.mm_pdf_invalid_file))
             return
         }
 
@@ -69,16 +69,15 @@ class PdfLoadManager(
         val fileSize = FileValidator.getSafeFileSize(file)
         val maxSize = MemoryUtil.getMaxPdfSize(context)
         if (fileSize == null) {
-            eventEmitter()?.emitLoadFailed("Unable to read file size")
+            eventEmitter()?.emitLoadFailed(context.getString(R.string.mm_pdf_unreadable_size))
             return
         }
 
         if (fileSize > maxSize) {
             val sizeInMB = fileSize / (1024.0 * 1024.0)
             val limitInMB = maxSize / (1024.0 * 1024.0)
-            val error = String.format(
-                Locale.US,
-                "The PDF file is too large to process: %.1f MB. Maximum supported size is %.0f MB.",
+            val error = context.getString(
+                R.string.mm_pdf_too_large,
                 sizeInMB,
                 limitInMB
             )

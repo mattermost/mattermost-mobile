@@ -5,6 +5,7 @@ import {useBottomSheetScrollableCreator} from '@gorhom/bottom-sheet';
 import {FlashList, type FlashListRef, type ListRenderItemInfo} from '@shopify/flash-list';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {defineMessage} from 'react-intl';
 import {View, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -89,8 +90,7 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
         if (imageUrl || file) {
             sectionsArray.unshift({
                 type: 'section',
-                id: 'emoji_picker.default',
-                defaultMessage: 'Default',
+                ...defineMessage({id: 'emoji_picker.default', defaultMessage: 'Default'}),
                 icon: 'bookmark-outline',
                 key: 'default',
             });

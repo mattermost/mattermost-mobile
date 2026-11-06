@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -190,8 +190,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
         if (rootId) {
             return (
                 <ChannelInfo
-                    id='channel_info.thread_in'
-                    defaultMessage='Thread in:'
+                    {...defineMessage({id: 'channel_info.thread_in', defaultMessage: 'Thread in:'})}
                 />
             );
         }
@@ -199,16 +198,14 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
         if (isDM) {
             return (
                 <ChannelInfo
-                    id='channel_info.draft_to_user'
-                    defaultMessage='To:'
+                    {...defineMessage({id: 'channel_info.draft_to_user', defaultMessage: 'To:'})}
                 />
             );
         }
 
         return (
             <ChannelInfo
-                id='channel_info.draft_in_channel'
-                defaultMessage='In:'
+                {...defineMessage({id: 'channel_info.draft_in_channel', defaultMessage: 'In:'})}
             />
         );
     };
