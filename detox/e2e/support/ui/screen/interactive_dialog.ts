@@ -241,6 +241,8 @@ class InteractiveDialogScreen {
 
     getFieldInput = (fieldName: string) => element(by.id(`AppFormElement.${fieldName}.input`));
 
+    getBooleanToggle = (fieldName: string, toggled: boolean) => element(by.id(`AppFormElement.${fieldName}.toggled.${toggled}.button`));
+
     // Tap a collapsible section header to expand or collapse it. Expanding an outer
     // section grows the form, so a deeper section's header can land below the fold;
     // scroll it into view (like fillTextElement) before asserting visibility and tapping.
