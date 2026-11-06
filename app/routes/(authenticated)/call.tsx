@@ -8,6 +8,7 @@ import CallScreen from '@calls/screens/call_screen';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
+import {lockPortraitOnPhones} from '@utils/helpers';
 
 export default function CallRoute() {
     const intl = useIntl();
@@ -17,7 +18,7 @@ export default function CallRoute() {
         RNUtils.unlockOrientation();
 
         return () => {
-            RNUtils.lockPortrait();
+            lockPortraitOnPhones();
         };
     });
 
