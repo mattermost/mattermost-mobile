@@ -23,6 +23,7 @@ import {useTheme} from '@context/theme';
 import {useUserLocale} from '@context/user_locale';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
+import EphemeralStore from '@store/ephemeral_store';
 import {isErrorWithStatusCode} from '@utils/errors';
 import {getPermalinkRedactedFileCount, getPostTranslatedMessage, getPostTranslation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -42,22 +43,20 @@ const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 const MIN_PERMALINK_WIDTH = 340;
 const TABLET_PADDING_OFFSET = 40;
 
-// FlatList windowing remounts previews constantly. Without this, a linked post the fetch cannot
-// populate (deleted, or one the user may not read) would be requested again on every remount.
-const linkedPostFetchAttempts = new Set<string>();
-
 // Forbidden or not found is the server's final answer until access changes; any other failure may
 // resolve on a later mount.
 const isFinalFetchAnswer = (error: unknown) => isErrorWithStatusCode(error) && (error.status_code === HTTP_FORBIDDEN || error.status_code === HTTP_NOT_FOUND);
 
+// FlatList windowing remounts previews constantly. Without the recorded attempt, a linked post the
+// fetch cannot populate (deleted, or one the user may not read) would be requested again on every remount.
 const fetchLinkedPostOnce = async (serverUrl: string, postId: string, attemptKey: string) => {
-    if (linkedPostFetchAttempts.has(attemptKey)) {
+    if (EphemeralStore.hasLinkedPostFetchAttempt(serverUrl, attemptKey)) {
         return;
     }
-    linkedPostFetchAttempts.add(attemptKey);
+    EphemeralStore.addLinkedPostFetchAttempt(serverUrl, attemptKey);
     const {error} = await fetchLinkedPost(serverUrl, postId);
     if (!error || !isFinalFetchAnswer(error)) {
-        linkedPostFetchAttempts.delete(attemptKey);
+        EphemeralStore.removeLinkedPostFetchAttempt(serverUrl, attemptKey);
     }
 };
 
@@ -204,7 +203,7 @@ const PermalinkPreview = ({
         if (!post) {
             // Per epoch: a refusal stops holding once access changes. Forgotten once stored, so a post
             // evicted later can be fetched again.
-            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|missing|${embedRequiredEpoch}`);
+            fetchLinkedPostOnce(serverUrl, linkedPostId, `${linkedPostId}|missing|${embedRequiredEpoch}`);
         }
     }, [linkedPostId, post, serverUrl, embedRequiredEpoch]);
 

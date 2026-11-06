@@ -3,13 +3,17 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
+import {CHANNEL_MANAGEMENT_PERMISSIONS, CHANNEL_WRITE_PERMISSIONS} from '@constants/permissions';
+import DatabaseManager from '@database/manager';
 import {isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
 import {observeChannel, observeMyChannelRoles} from './channel';
+import {observeChannelActionDenied} from './render_permissions';
 import {observeConfigBooleanValue} from './system';
 import {observeMyTeam, observeMyTeamRoles} from './team';
 
@@ -38,7 +42,12 @@ export const queryRolesByNames = (database: Database, names: string[]) => {
     return database.get<RoleModel>(ROLE).query(Q.where('name', Q.oneOf(names)));
 };
 
-export function observePermissionForChannel(database: Database, channel: ChannelModel | null | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
+/**
+ * The role grant alone, with no ABAC policy applied. For a surface that stays visible under a policy
+ * denial, rendering its controls disabled rather than hiding them. Prefer observePermissionForChannel
+ * for anything that gates an actual action.
+ */
+export function observePermissionForChannelRBACOnly(database: Database, channel: ChannelModel | null | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
     if (!user || !channel) {
         return of$(defaultValue);
     }
@@ -58,6 +67,42 @@ export function observePermissionForChannel(database: Database, channel: Channel
         );
     }),
     distinctUntilChanged(),
+    );
+}
+
+const getChannelAccessAction = (permission: string) => {
+    if (CHANNEL_WRITE_PERMISSIONS.has(permission)) {
+        return RenderPermissionAction.ChannelWriteAccess;
+    }
+    if (CHANNEL_MANAGEMENT_PERMISSIONS.has(permission)) {
+        return RenderPermissionAction.ChannelManagementAccess;
+    }
+    return undefined;
+};
+
+/**
+ * The role grant, denied as well by an ABAC write or management policy on the channel when the
+ * permission is one of those actions. Mirrors the webapp's haveIChannelPermission. DMs and GMs are
+ * exempt from channel access policies.
+ */
+export function observePermissionForChannel(database: Database, channel: ChannelModel | null | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
+    const rbacAllowed = observePermissionForChannelRBACOnly(database, channel, user, permission, defaultValue);
+    const action = getChannelAccessAction(permission);
+    if (!action || !channel || isDMorGM(channel)) {
+        return rbacAllowed;
+    }
+
+    const serverUrl = DatabaseManager.getServerUrlForDatabase(database);
+    if (!serverUrl) {
+        return rbacAllowed;
+    }
+
+    return combineLatest([
+        rbacAllowed,
+        observeChannelActionDenied(database, serverUrl, channel.id, action),
+    ]).pipe(
+        map(([allowed, denied]) => allowed && !denied),
+        distinctUntilChanged(),
     );
 }
 
@@ -103,7 +148,8 @@ export function observeCanManageChannelMembers(database: Database, channelId: st
     );
 }
 
-export function observeCanManageChannelSettings(database: Database, channelId: string, user: UserModel) {
+export function observeCanManageChannelSettings(database: Database, channelId: string, user: UserModel, rbacOnly = false) {
+    const observePermission = rbacOnly ? observePermissionForChannelRBACOnly : observePermissionForChannel;
     return observeChannel(database, channelId).pipe(
         switchMap((c) => {
             if (!c || c.deleteAt !== 0 || isDMorGM(c)) {
@@ -111,13 +157,14 @@ export function observeCanManageChannelSettings(database: Database, channelId: s
             }
 
             const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES : Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES;
-            return observePermissionForChannel(database, c, user, permission, true);
+            return observePermission(database, c, user, permission, true);
         }),
         distinctUntilChanged(),
     );
 }
 
-export function observeCanManageChannelAutotranslations(database: Database, channelId: string, user: UserModel) {
+export function observeCanManageChannelAutotranslations(database: Database, channelId: string, user: UserModel, rbacOnly = false) {
+    const observePermission = rbacOnly ? observePermissionForChannelRBACOnly : observePermissionForChannel;
     const featureEnabled = observeConfigBooleanValue(database, 'EnableAutoTranslation');
     const channel = observeChannel(database, channelId);
     const restrictDMAndGMAutotranslation = observeConfigBooleanValue(database, 'RestrictDMAndGMAutotranslation');
@@ -136,7 +183,7 @@ export function observeCanManageChannelAutotranslations(database: Database, chan
             }
 
             const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION : Permissions.MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION;
-            return observePermissionForChannel(database, c, user, permission, false);
+            return observePermission(database, c, user, permission, false);
         }),
         distinctUntilChanged(),
     );

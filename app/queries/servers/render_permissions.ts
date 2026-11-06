@@ -2,15 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {combineLatest, of as of$, type Observable} from 'rxjs';
-import {distinctUntilChanged, map} from 'rxjs/operators';
+import {distinctUntilChanged, map, shareReplay, switchMap} from 'rxjs/operators';
 
 import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {License} from '@constants';
 import {RENDER_PERMISSIONS_VERSION} from '@constants/versions';
 import RenderPermissionsStore from '@store/render_permissions_store';
-import {isMinimumServerVersion} from '@utils/helpers';
+import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
 
-import {observeConfigValue} from './system';
+import {getConfigValue, getLicense, isRedactionEnforced, observeConfigBooleanValue, observeConfigValue, observeLicense} from './system';
 
 import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';
@@ -48,6 +49,71 @@ export const observeRenderPermission = (
         channelId ? RenderPermissionsStore.observeEntry(serverUrl, channelId) : of$(undefined),
     ]).pipe(
         map(([enforced, entry]) => resolveRenderPermission(enforced, entry, action, allowWhenUnenforced, allowWhenNotEvaluated)),
+        distinctUntilChanged(),
+    );
+};
+
+// The server only enforces channel access actions behind the ChannelPermissionActions feature flag, on
+// Enterprise Advanced.
+const isChannelAccessActive = (enforced: boolean, license: ClientLicense | undefined, flag: boolean) => {
+    return enforced && flag && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+};
+
+/**
+ * Mirrors channelReadAccessEnforcementActive (server app/channel_read_access.go): ABAC enforced, the
+ * ChannelPermissionActions flag on, and an Enterprise Advanced license.
+ */
+export const isChannelAccessEnforced = async (database: Database) => {
+    const [enforced, license, flag] = await Promise.all([
+        isRedactionEnforced(database),
+        getLicense(database),
+        getConfigValue(database, 'FeatureFlagChannelPermissionActions'),
+    ]);
+    return isChannelAccessActive(enforced, license, flag === 'true');
+};
+
+// Shared per database like observeRedactionEnforced: the write check of every post row reads it.
+const channelAccessEnforcedStreams = new WeakMap<Database, Observable<boolean>>();
+
+const observeChannelAccessEnforced = (database: Database): Observable<boolean> => {
+    const existing = channelAccessEnforcedStreams.get(database);
+    if (existing) {
+        return existing;
+    }
+
+    const stream = combineLatest([
+        observeRedactionEnforced(database),
+        observeLicense(database),
+        observeConfigBooleanValue(database, 'FeatureFlagChannelPermissionActions'),
+    ]).pipe(
+        map(([enforced, license, flag]) => isChannelAccessActive(enforced, license, flag)),
+        distinctUntilChanged(),
+        shareReplay({bufferSize: 1, refCount: true}),
+    );
+    channelAccessEnforcedStreams.set(database, stream);
+    return stream;
+};
+
+/**
+ * Whether an ABAC policy denies the current user a channel access action (write, management). Only
+ * while the server enforces channel access (ABAC on, the ChannelPermissionActions flag on, Enterprise
+ * Advanced): otherwise the decisions API can still deny, from policies kept while the flag is off or by
+ * failing closed below Enterprise Advanced, and those denies would lock controls the server allows. When
+ * enforced, a fail-closed deny (one with a reason) counts, as enforcement fails closed too. Emits false
+ * until a decision is stored; it never fetches one itself (see useFetchRenderPermissions).
+ */
+export const observeChannelActionDenied = (
+    database: Database,
+    serverUrl: string,
+    channelId: string,
+    action: RenderPermissionActionName,
+): Observable<boolean> => {
+    return observeChannelAccessEnforced(database).pipe(
+        switchMap((enforced) => (enforced ? RenderPermissionsStore.observeEntry(serverUrl, channelId) : of$(undefined))),
+        map((entry) => {
+            const decision = entry?.decisions[action];
+            return Boolean(decision?.evaluated && !decision.allowed);
+        }),
         distinctUntilChanged(),
     );
 };
