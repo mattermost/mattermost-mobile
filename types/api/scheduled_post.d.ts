@@ -1,10 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+type ScheduledPostRepeatType = '' | 'weekly';
+
 type SchedulingInfo = {
     scheduled_at: number;
     processed_at?: number;
     error_code?: string;
+    repeat_type?: ScheduledPostRepeatType;
+    repeat_timezone?: string;
 }
 
 type ScheduledPost = Draft & SchedulingInfo & {

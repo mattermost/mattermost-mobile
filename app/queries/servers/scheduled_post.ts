@@ -96,6 +96,15 @@ export const observeScheduledPostEnabled = (database: Database) => {
     return isScheduledPostEnabled;
 };
 
+// Recurrence only needs the feature flag on top of the scheduled-post enablement the entry points
+// already apply, so this stays a pure flag check rather than duplicating the config/license checks.
+// The flag is still default-off and has no announced removal release, so it cannot use the
+// removed-version helpers in @queries/servers/features; move it there once the server GAs the feature
+// and drops the flag from the client config.
+export const observeRecurringScheduledPostsEnabled = (database: Database) => {
+    return observeConfigBooleanValue(database, 'FeatureFlagRecurringScheduledPosts');
+};
+
 export const getIsScheduledPostEnabled = async (database: Database) => {
     return (await getConfigValue(database, 'ScheduledPosts')) === 'true' && (await getLicense(database))?.IsLicensed === 'true';
 };

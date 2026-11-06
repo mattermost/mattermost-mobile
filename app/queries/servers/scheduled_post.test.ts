@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
+import {firstValueFrom} from 'rxjs';
 
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -10,6 +11,7 @@ import TestHelper from '@test/test_helper';
 
 import {
     observeFirstScheduledPost,
+    observeRecurringScheduledPostsEnabled,
     observeScheduledPostCount,
     observeScheduledPostCountForChannel,
     observeScheduledPostCountForThread,
@@ -282,6 +284,27 @@ describe('Scheduled Post Queries', () => {
                     done();
                 }
             });
+        });
+    });
+
+    describe('observeRecurringScheduledPostsEnabled', () => {
+        const setFlag = (value: string) => operator.handleConfigs({
+            configs: [{id: 'FeatureFlagRecurringScheduledPosts', value}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        it.each([
+            {value: 'true', expected: true},
+            {value: 'false', expected: false},
+        ])('should be $expected when the feature flag is $value', async ({value, expected}) => {
+            await setFlag(value);
+            expect(await firstValueFrom(observeRecurringScheduledPostsEnabled(database))).toBe(expected);
+        });
+
+        // Servers that predate the feature never send the flag at all.
+        it('should be false when the server does not send the feature flag', async () => {
+            expect(await firstValueFrom(observeRecurringScheduledPostsEnabled(database))).toBe(false);
         });
     });
 });
