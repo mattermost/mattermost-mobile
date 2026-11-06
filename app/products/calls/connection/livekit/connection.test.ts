@@ -11,6 +11,7 @@ import {hostRemovedErr} from '@calls/errors';
 import {
     clearStartUnmuted,
     getCurrentCall,
+    phoneCallAnswered,
     setCallForChannel,
     setCallQualityAlert,
     setCaptioningState,
@@ -38,6 +39,7 @@ jest.mock('@actions/remote/user', () => ({
 jest.mock('@calls/state', () => ({
     clearStartUnmuted: jest.fn(),
     getCurrentCall: jest.fn(),
+    phoneCallAnswered: jest.fn(),
     setCallForChannel: jest.fn(),
     setCallQualityAlert: jest.fn(),
     setCaptioningState: jest.fn(),
@@ -66,6 +68,7 @@ const mockAudioRouteManager = {
     stop: jest.fn(),
 };
 
+const SIP_KIND = 3;
 const SERVER_URL = 'http://localhost:8065';
 const CHANNEL_ID = 'channelID';
 const SESSION_ID = 'mysession';
@@ -93,9 +96,11 @@ const callState: CallState = {
 
 // Builds a participant the way LiveKit exposes one: identity carries userID___sessionID,
 // mute state lives on the microphone publication, raised hand on attributes.
-const participant = (userID: string, sessionID: string, opts: {muted?: boolean; raisedHand?: string; bot?: boolean} = {}) => ({
+const participant = (userID: string, sessionID: string, opts: {muted?: boolean; raisedHand?: string; bot?: boolean; kind?: number; sipCallStatus?: string} = {}) => ({
     identity: `${userID}___${sessionID}`,
+    kind: opts.kind,
     attributes: {
+        ...(opts.sipCallStatus === undefined ? {} : {'sip.callStatus': opts.sipCallStatus}),
         ...(opts.raisedHand === undefined ? {} : {raised_hand: opts.raisedHand}),
         ...(opts.bot ? {bot: 'true'} : {}),
     },
@@ -287,12 +292,56 @@ describe('newLiveKitConnection', () => {
         expect(order).toEqual(['resolved', 'audio']);
     });
 
-    it('should not look up a profile for a sip participant present at connect', async () => {
-        await connect([participant('userA', 'sessionA'), {...participant('', ''), identity: 'sip:+15551234567'}]);
+    it('keeps a phone participant present at connect out of the roster and marks the call answered when its status is active', async () => {
+        await connect([participant('userA', 'sessionA'), participant('', '', {kind: SIP_KIND, sipCallStatus: 'active'})]);
 
-        const fetchedIDs = jest.mocked(fetchMissingProfilesByIds).mock.calls.flatMap(([, ids]) => ids);
-        expect(fetchedIDs).not.toContain('');
-        expect(fetchedIDs).toContain('userA');
+        expect(jest.mocked(userJoinedCall).mock.calls.map(([, , userID]) => userID)).toEqual(['myuser', 'userA']);
+        expect(jest.mocked(fetchMissingProfilesByIds).mock.calls.flatMap(([, ids]) => ids)).not.toContain('');
+        expect(phoneCallAnswered).toHaveBeenCalledWith(CHANNEL_ID);
+    });
+
+    it('keeps a phone participant joining after connect out of the roster and marks the call answered when its status is active', async () => {
+        await connect();
+        jest.mocked(userJoinedCall).mockClear();
+
+        roomHandlers[RoomEvent.ParticipantConnected](participant('', '', {kind: SIP_KIND, sipCallStatus: 'active'}));
+
+        expect(userJoinedCall).not.toHaveBeenCalled();
+        expect(phoneCallAnswered).toHaveBeenCalledWith(CHANNEL_ID);
+    });
+
+    it('marks the call answered only once the phone participant\'s status turns active', async () => {
+        await connect();
+        const sip = participant('', '', {kind: SIP_KIND, sipCallStatus: 'ringing'});
+
+        roomHandlers[RoomEvent.ParticipantAttributesChanged]({'sip.callStatus': 'ringing'}, sip);
+        expect(phoneCallAnswered).not.toHaveBeenCalled();
+
+        sip.attributes['sip.callStatus'] = 'active';
+        roomHandlers[RoomEvent.ParticipantAttributesChanged]({'sip.callStatus': 'active'}, sip);
+        expect(phoneCallAnswered).toHaveBeenCalledTimes(1);
+        expect(phoneCallAnswered).toHaveBeenCalledWith(CHANNEL_ID);
+    });
+
+    it('seeds a phone call before resolving its channel', async () => {
+        mockClient.phoneCall.mockResolvedValue({
+            session_id: SESSION_ID,
+            token: LIVEKIT_TOKEN,
+            url: LIVEKIT_URL,
+            call_state: {...callState, type: 'phone', phone_number: '+15551234567'},
+            call_id: 'call-id',
+            channel_id: 'bot-dm-channel',
+            bot_user_id: 'bot',
+        });
+        let seededBeforeResolve: unknown[] | undefined;
+        onChannelResolved.mockImplementationOnce(async () => {
+            seededBeforeResolve = jest.mocked(setCallForChannel).mock.calls[0];
+        });
+
+        await newLiveKitConnection(SERVER_URL, {type: 'phone', phone: {number: '+15551234567'}}, () => {}, onChannelResolved, () => {}, false, mockIntl);
+
+        expect(seededBeforeResolve?.[1]).toBe('bot-dm-channel');
+        expect(seededBeforeResolve?.[2]).toMatchObject({id: 'call-id', phone: '+15551234567'});
     });
 
     it('should seed the channel call with the other sessions from the join response, leaving ours to the room', async () => {

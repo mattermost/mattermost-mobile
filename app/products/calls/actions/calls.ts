@@ -12,6 +12,7 @@ import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
     endCallConfirmationAlert,
+    expectPhoneCallOutcome,
     leaveAndJoinWithAlert,
     needsRecordingErrorAlert,
     needsRecordingWillBePostedAlert,
@@ -308,6 +309,11 @@ export const joinCall = async (
         setCurrentCallConnected(channelId, sessionId);
         reportNativeCallConnected(ownedNativeUUID);
 
+        const call = getCallsState(serverUrl).calls[channelId];
+        if (target.type === 'phone') {
+            expectPhoneCallOutcome(serverUrl, call?.id, intl);
+        }
+
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (!database) {
@@ -317,7 +323,6 @@ export const joinCall = async (
         // If this was a call started by ourselves, then we should have subscribed in the start_call ws handler
         // (unless we received the start_call ws before the post/thread ws).
         // If this was us joining an existing call, follow the thread here.
-        const call = getCallsState(serverUrl).calls[channelId];
         if (call && call.threadId) {
             const thread = await getThreadById(database, call.threadId);
             if (thread && !thread.isFollowing) {

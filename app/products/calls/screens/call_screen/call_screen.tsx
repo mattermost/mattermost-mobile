@@ -394,13 +394,14 @@ const CallScreen = ({
         }
 
         // DM callee gets a placeholder card until their answered session appears; removed once they leave.
-        const calleeIsExpected = isDM && dmCallee?.id && (
+        // The SIP participant never gets a session, so keep its card for the whole call.
+        const calleeIsExpected = isDM && (currentCall.phone || (dmCallee?.id && (
             isDMConnecting ||
             isDMCalling ||
             Object.values(currentCall.sessions).some((session) => session.userId === dmCallee.id)
-        );
+        )));
         if (calleeIsExpected && !calleeKeyTaken) {
-            cardItems.push({key: CALLEE_CARD_KEY, session: pendingCalleeSession, isRinging: true});
+            cardItems.push({key: CALLEE_CARD_KEY, session: pendingCalleeSession, isRinging: !currentCall.phone || isDMConnecting || isDMCalling, name: currentCall.phone});
         }
 
         return cardItems;
@@ -677,11 +678,12 @@ const CallScreen = ({
                         onPress={toggleControlsInLandscape}
                         style={style.users}
                     >
-                        {cards.map(({key, session, isRinging}) => (
+                        {cards.map(({key, session, isRinging, name}) => (
                             <ParticipantCard
                                 key={key}
                                 session={session}
                                 isRinging={isRinging}
+                                name={name}
                                 smallerAvatar={smallerAvatar}
                                 teammateNameDisplay={teammateNameDisplay}
                                 showHostBadge={!isDM}
@@ -733,7 +735,7 @@ const CallScreen = ({
                 raisedHands={raisedHands}
                 sessionId={currentCall.mySessionId}
                 teammateNameDisplay={teammateNameDisplay}
-                displayName={displayName}
+                displayName={currentCall.phone ?? displayName}
                 isOwnDirectMessage={isOwnDirectMessage}
             />
             <Pressable

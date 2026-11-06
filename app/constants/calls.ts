@@ -39,6 +39,9 @@ const RING_LENGTH = 30000;
 // The same window the callee's phone rings for, so both ends give up together.
 const RINGBACK_TONE_TIMEOUT = RING_LENGTH;
 
+// Matches the server's sipNoAnswerTimeout: a phone keeps ringing that long.
+const PHONE_RINGBACK_TONE_TIMEOUT = toMilliseconds({seconds: 60});
+
 export enum Ringtone {
     Calm = 'Calm',
     Dynamic = 'Dynamic',
@@ -74,5 +77,6 @@ export default {
     JOB_TYPE_CAPTIONING,
     RING_LENGTH,
     RINGBACK_TONE_TIMEOUT,
+    PHONE_RINGBACK_TONE_TIMEOUT,
     RINGTONE_DEFAULT,
 };

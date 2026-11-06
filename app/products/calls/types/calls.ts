@@ -6,6 +6,7 @@ import {
     type CallJobState,
     type CallPostProps,
     type CallState,
+    type SessionState,
     type CallsConfig,
     type EmojiData,
     type UserReactionData,
@@ -24,6 +25,7 @@ export const CallPostStatus = {
     NoAnswer: 'no_answer',
     CanceledByCaller: 'canceled_by_caller',
     Declined: 'declined',
+    Failed: 'failed',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
@@ -119,7 +121,18 @@ export type Call = {
     capState?: CallJobState;
     hostId: string;
     dismissed: Dictionary<boolean>;
+
+    // Set only for phone calls; its presence marks the call as one.
+    phone?: string;
 }
+
+// What the calls plugin adds to a call and its sessions for phone calls; @mattermost/calls doesn't declare them.
+export type PhoneCallFields = {
+    type?: string;
+    phone_number?: string;
+    display_number?: string;
+    sessions?: Array<SessionState & {is_sip_participant?: boolean}>;
+};
 
 export const DefaultCall: Call = {
     id: '',

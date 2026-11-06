@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {defineMessages, type IntlShape, type MessageDescriptor} from 'react-intl';
+import {defineMessage, defineMessages, type IntlShape, type MessageDescriptor} from 'react-intl';
 import {Alert, type AlertButton, Platform} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
@@ -16,8 +16,9 @@ import {
     removeIncomingCall,
     setMicPermissionsGranted,
 } from '@calls/state';
-import {EndCallReturn} from '@calls/types/calls';
+import {CallPostStatus, EndCallReturn} from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
+import ClientError from '@client/rest/error';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -41,6 +42,11 @@ let recordingWillBePostedLock = true;
 
 // Only unlock when starting/stopping a recording.
 let recordingErrorLock = true;
+
+const phoneCallErrorTitle = defineMessage({
+    id: 'mobile.calls_phone_error.title',
+    defaultMessage: 'Unable to place phone call',
+});
 
 const phoneCallErrors = defineMessages({
     invalidNumber: {
@@ -67,6 +73,10 @@ const phoneCallErrors = defineMessages({
         id: 'mobile.calls_phone_error.call_in_progress',
         defaultMessage: 'You\'re already on a phone call.',
     },
+    noResponse: {
+        id: 'mobile.calls_phone_error.no_response',
+        defaultMessage: 'Couldn\'t reach the server. Check your connection and try again.',
+    },
     fallback: {
         id: 'mobile.calls_phone_error.fallback',
         defaultMessage: 'The call couldn\'t be placed. Please try again.',
@@ -81,6 +91,57 @@ const phoneCallErrorByServerID: Record<string, MessageDescriptor> = {
     sip_number_not_allowed: phoneCallErrors.numberNotAllowed,
     sip_team_not_allowed: phoneCallErrors.teamNotAllowed,
     call_in_progress: phoneCallErrors.callInProgress,
+};
+
+const phoneCallOutcomes = defineMessages({
+    noAnswerTitle: {
+        id: 'mobile.calls_phone_outcome.no_answer_title',
+        defaultMessage: 'No answer',
+    },
+    noAnswer: {
+        id: 'mobile.calls_phone_outcome.no_answer',
+        defaultMessage: 'Nobody answered the call.',
+    },
+    declinedTitle: {
+        id: 'mobile.calls_phone_outcome.declined_title',
+        defaultMessage: 'Call declined',
+    },
+    declined: {
+        id: 'mobile.calls_phone_outcome.declined',
+        defaultMessage: 'The number you called is busy or declined the call.',
+    },
+});
+
+// Keyed on call ID, not channel: every phone call reuses the same bot DM.
+let placedPhoneCall: {serverUrl: string; callId: string; intl: IntlShape} | undefined;
+
+export const expectPhoneCallOutcome = (serverUrl: string, callId: string | undefined, intl: IntlShape) => {
+    if (callId) {
+        placedPhoneCall = {serverUrl, callId, intl};
+    }
+};
+
+export const showPhoneCallOutcome = (serverUrl: string, callId: string | undefined, reason?: string) => {
+    if (!placedPhoneCall || placedPhoneCall.serverUrl !== serverUrl || placedPhoneCall.callId !== callId) {
+        return;
+    }
+
+    const {intl} = placedPhoneCall;
+    placedPhoneCall = undefined;
+
+    switch (reason) {
+        case CallPostStatus.NoAnswer:
+            Alert.alert(intl.formatMessage(phoneCallOutcomes.noAnswerTitle), intl.formatMessage(phoneCallOutcomes.noAnswer));
+            break;
+        case CallPostStatus.Declined:
+            Alert.alert(intl.formatMessage(phoneCallOutcomes.declinedTitle), intl.formatMessage(phoneCallOutcomes.declined));
+            break;
+        case CallPostStatus.Failed:
+            showPhoneCallError(intl, phoneCallErrors.fallback);
+            break;
+        default:
+            logDebug('showPhoneCallOutcome: no alert for the call ending reason');
+    }
 };
 
 export const showLimitRestrictedAlert = (info: LimitRestrictedInfo, intl: IntlShape) => {
@@ -284,7 +345,7 @@ const doJoinCall = async (
 };
 
 const showPhoneCallError = (intl: IntlShape, message: MessageDescriptor) => {
-    Alert.alert(intl.formatMessage({id: 'mobile.calls_error_title', defaultMessage: 'Error'}), intl.formatMessage(message));
+    Alert.alert(intl.formatMessage(phoneCallErrorTitle), intl.formatMessage(message));
 };
 
 let phoneCallInProgress = false;
@@ -321,7 +382,8 @@ export const startPhoneCall = async (intl: IntlShape, serverUrl: string, number:
         });
         if (res.error) {
             const serverErrorId = isServerError(res.error) ? res.error.server_error_id : undefined;
-            showPhoneCallError(intl, (serverErrorId && phoneCallErrorByServerID[serverErrorId]) || phoneCallErrors.fallback);
+            const noResponse = res.error instanceof ClientError && res.error.status_code === undefined;
+            showPhoneCallError(intl, (serverErrorId && phoneCallErrorByServerID[serverErrorId]) || (noResponse ? phoneCallErrors.noResponse : phoneCallErrors.fallback));
             return;
         }
 

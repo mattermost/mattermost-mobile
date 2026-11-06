@@ -12,7 +12,7 @@ import {Alert} from 'react-native';
 import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmation, switchToCallThread} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
-import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
+import {expectPhoneCallOutcome, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import * as State from '@calls/state';
 import {
@@ -39,6 +39,7 @@ import {
     type ChannelsWithCalls,
     type CurrentCall,
     AudioDevice,
+    DefaultCall,
     DefaultCallsConfig,
     DefaultCallsState,
     DefaultCurrentCall,
@@ -134,6 +135,7 @@ jest.mock('@queries/servers/thread', () => ({
 jest.mock('@calls/alerts', () => {
     const alerts = jest.requireActual('../alerts');
     return {
+        expectPhoneCallOutcome: jest.fn(),
         needsRecordingErrorAlert: jest.fn(),
         needsRecordingWillBePostedAlert: jest.fn(),
         showErrorAlertOnClose: alerts.showErrorAlertOnClose,
@@ -239,6 +241,7 @@ describe('Actions.Calls', () => {
     });
 
     beforeEach(() => {
+        jest.mocked(expectPhoneCallOutcome).mockClear();
         newCallConnection.mockClear();
         updateThreadFollowing.mockClear();
         mockClient.getCalls.mockClear();
@@ -289,6 +292,7 @@ describe('Actions.Calls', () => {
         });
 
         assert.equal(response!.data, 'channel-id');
+        expect(expectPhoneCallOutcome).not.toHaveBeenCalled();
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newCallConnection).toHaveBeenCalled();
         expect(newCallConnection.mock.calls[0][1]).toEqual({type: 'channel', channelID: 'channel-id'});
@@ -325,6 +329,7 @@ describe('Actions.Calls', () => {
             }));
             expect(res).toStrictEqual({error: 'unable to connect to the voice call: Error: failed to connect'});
             expect(connection.disconnect).toHaveBeenCalled();
+            expect(expectPhoneCallOutcome).not.toHaveBeenCalled();
         });
     });
 
@@ -337,6 +342,7 @@ describe('Actions.Calls', () => {
             jest.mocked(getChannelById).mockResolvedValue({id: 'bot-dm'} as never);
             newCallConnection.mockImplementationOnce(async (_url: string, _target: unknown, _onClose: unknown, onChannelResolved: (id: string) => Promise<void>) => {
                 await onChannelResolved('bot-dm');
+                State.setCallForChannel('server1', 'bot-dm', {...DefaultCall, id: 'phone-call-id', channelId: 'bot-dm'});
                 return {disconnect: jest.fn(), waitForPeerConnection: jest.fn(() => Promise.resolve('session-id'))};
             });
 
@@ -344,6 +350,8 @@ describe('Actions.Calls', () => {
             await act(async () => {
                 res = await CallsActions.joinCall('server1', {type: 'phone', phone}, 'myUserId', true, intl, undefined, undefined, {startedByMe: true});
             });
+
+            expect(expectPhoneCallOutcome).toHaveBeenCalledWith('server1', 'phone-call-id', intl);
 
             expect(res!).toEqual({data: 'bot-dm'});
             expect(getCurrentCall()?.channelId).toBe('bot-dm');

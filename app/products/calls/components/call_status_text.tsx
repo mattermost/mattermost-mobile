@@ -33,6 +33,7 @@ type Props = {
     // name takes the place of the speaker.
     showCallee: boolean;
     dmCallee?: UserModel;
+    phoneNumber?: string;
 }
 
 export function CallStatusText({
@@ -41,6 +42,7 @@ export function CallStatusText({
     teammateNameDisplay,
     showCallee,
     dmCallee,
+    phoneNumber,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
@@ -53,7 +55,7 @@ export function CallStatusText({
                 numberOfLines={1}
                 ellipsizeMode='tail'
             >
-                {displayUsername(dmCallee, intl.locale, teammateNameDisplay)}
+                {phoneNumber ?? displayUsername(dmCallee, intl.locale, teammateNameDisplay)}
             </Text>
         );
     }
