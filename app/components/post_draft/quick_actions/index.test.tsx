@@ -3,6 +3,8 @@
 
 import React from 'react';
 
+import {setCurrentCall} from '@calls/state';
+import {DefaultCurrentCall} from '@calls/types/calls';
 import {License, Screens} from '@constants';
 import {RenderPermissionAction} from '@constants/access_control';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -31,6 +33,7 @@ const serverUrl = 'https://quick-actions.test.com';
 const channelId = 'channelid1';
 const attachmentTestID = 'channel.post_draft.quick_actions.attachment_action';
 const borTestID = 'channel.post_draft.quick_actions.bor_action';
+const voiceTestID = 'channel.post_draft.quick_actions.voice_action';
 
 describe('QuickActions upload permission', () => {
     let database: Database;
@@ -211,5 +214,58 @@ describe('QuickActions burn-on-read permission', () => {
 
         await waitFor(() => expect(getByTestId(attachmentTestID)).toBeTruthy());
         expect(queryByTestId(borTestID)).toBeNull();
+    });
+});
+
+describe('QuickActions voice note availability', () => {
+    let database: Database;
+    let unmountQuickActions: (() => void) | undefined;
+
+    const renderQuickActions = () => {
+        const result = renderWithEverything(
+            <QuickActions
+                testID='channel.post_draft.quick_actions'
+                channelId={channelId}
+                fileCount={0}
+                addFiles={jest.fn()}
+                onStartVoiceRecording={jest.fn()}
+                updateValue={jest.fn()}
+                value=''
+                postPriority={{priority: PostPriorityType.STANDARD}}
+                updatePostPriority={jest.fn()}
+                focus={jest.fn()}
+                location={Screens.CHANNEL}
+            />,
+            {database, serverUrl},
+        );
+        unmountQuickActions = result.unmount;
+        return result;
+    };
+
+    beforeEach(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        database = server.database;
+    });
+
+    afterEach(async () => {
+        // Unmount before tearing down the database so the observers don't update outside act().
+        unmountQuickActions?.();
+        unmountQuickActions = undefined;
+        setCurrentCall(null);
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should offer voice notes when no call is in progress', async () => {
+        const {getByTestId} = renderQuickActions();
+
+        await waitFor(() => expect(getByTestId(voiceTestID)).not.toBeDisabled());
+    });
+
+    it('should disable voice notes while the user is in a call, as the microphone is in use', async () => {
+        setCurrentCall({...DefaultCurrentCall, serverUrl, channelId: 'call-channel-id', myUserId: 'user-id'});
+
+        const {getByTestId} = renderQuickActions();
+
+        await waitFor(() => expect(getByTestId(`${voiceTestID}.disabled`)).toBeDisabled());
     });
 });

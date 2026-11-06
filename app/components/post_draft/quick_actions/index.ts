@@ -7,6 +7,7 @@ import {combineLatest} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {observeIsAgentsEnabled} from '@agents/queries/agents';
+import {observeCurrentCall} from '@calls/state';
 import {Preferences} from '@constants';
 import {RenderPermissionAction} from '@constants/access_control';
 import {withServerUrl} from '@context/server';
@@ -53,6 +54,10 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
     return {
         canUploadFiles,
         isAgentsEnabled: observeIsAgentsEnabled(serverUrl),
+        isCallActive: observeCurrentCall().pipe(
+            map((call) => Boolean(call)),
+            distinctUntilChanged(),
+        ),
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         isBoREnabled,
         maxFileCount,

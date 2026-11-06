@@ -40,7 +40,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
-    addFiles: (file: FileInfo[]) => void;
+    addFiles: (files: FileInfo[]) => boolean;
     uploadFileError: React.ReactNode;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;

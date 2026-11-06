@@ -24,25 +24,3 @@ export const hasBluetoothPermission = async () => {
             return true;
     }
 };
-
-export const hasMicrophonePermission = async () => {
-    const microphone = Platform.select({
-        ios: Permissions.PERMISSIONS.IOS.MICROPHONE,
-        default: Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO,
-    });
-
-    const hasMicrophone = await Permissions.check(microphone);
-
-    switch (hasMicrophone) {
-        case Permissions.RESULTS.DENIED:
-        case Permissions.RESULTS.UNAVAILABLE: {
-            const permissionRequest = await Permissions.request(microphone);
-            return permissionRequest === Permissions.RESULTS.GRANTED;
-        }
-        case Permissions.RESULTS.BLOCKED:
-            return false;
-        default:
-            return true;
-    }
-};
-

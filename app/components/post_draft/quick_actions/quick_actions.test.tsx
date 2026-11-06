@@ -1,11 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fireEvent, waitFor} from '@testing-library/react-native';
+
 import {Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {openAttachmentOptions} from '@utils/navigation';
 
 import QuickActions from './quick_actions';
+
+jest.mock('@utils/navigation', () => ({
+    ...jest.requireActual('@utils/navigation'),
+    openAttachmentOptions: jest.fn(),
+}));
 
 jest.mock('@components/post_draft/quick_actions/bor_quick_action', () => ({
     __esModule: true,
@@ -20,6 +28,7 @@ describe('Quick Actions', () => {
         canUploadFiles: true,
         fileCount: 0,
         isAgentsEnabled: true,
+        isCallActive: false,
         isPostPriorityEnabled: true,
         canShowPostPriority: true,
         canShowSlashCommands: true,
@@ -27,6 +36,7 @@ describe('Quick Actions', () => {
         value: '',
         updateValue: jest.fn(),
         addFiles: jest.fn(),
+        onStartVoiceRecording: jest.fn(),
         postPriority: {
             priority: PostPriorityType.STANDARD,
         },
@@ -177,6 +187,63 @@ describe('Quick Actions', () => {
             const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
             const attachmentAction = getByTestId('test-quick-actions.attachment_action');
             expect(attachmentAction).not.toBeDisabled();
+        });
+    });
+
+    describe('voice action', () => {
+        it('should enable the voice action when files can be uploaded and no call is active', () => {
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...baseProps}/>);
+            expect(getByTestId('test-quick-actions.voice_action')).not.toBeDisabled();
+        });
+
+        it('should disable the voice action when canUploadFiles is false', () => {
+            const props = {
+                ...baseProps,
+                canUploadFiles: false,
+            };
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(getByTestId('test-quick-actions.voice_action.disabled')).toBeDisabled();
+        });
+
+        it('should disable the voice action when the max file count is reached', () => {
+            const props = {
+                ...baseProps,
+                fileCount: 10,
+                maxFileCount: 10,
+            };
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(getByTestId('test-quick-actions.voice_action.disabled')).toBeDisabled();
+        });
+
+        it('should disable the voice action while a call is active', () => {
+            const props = {
+                ...baseProps,
+                isCallActive: true,
+            };
+            const {getByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(getByTestId('test-quick-actions.voice_action.disabled')).toBeDisabled();
+        });
+
+        it('should offer voice notes in the attachment sheet only when recording is available', async () => {
+            const {getByTestId, rerender} = renderWithIntlAndTheme(<QuickActions {...baseProps}/>);
+
+            fireEvent.press(getByTestId('test-quick-actions.attachment_action'));
+            await waitFor(() => {
+                expect(openAttachmentOptions).toHaveBeenCalledTimes(1);
+            });
+            expect(jest.mocked(openAttachmentOptions).mock.calls[0][0].onRecordVoiceNote).toBe(baseProps.onStartVoiceRecording);
+
+            rerender(
+                <QuickActions
+                    {...baseProps}
+                    isCallActive={true}
+                />,
+            );
+            fireEvent.press(getByTestId('test-quick-actions.attachment_action'));
+            await waitFor(() => {
+                expect(openAttachmentOptions).toHaveBeenCalledTimes(2);
+            });
+            expect(jest.mocked(openAttachmentOptions).mock.calls[1][0].onRecordVoiceNote).toBeUndefined();
         });
     });
 
