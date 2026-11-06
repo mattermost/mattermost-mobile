@@ -49,13 +49,13 @@ const isFinalFetchAnswer = (error: unknown) => isErrorWithStatusCode(error) && (
 
 // FlatList windowing remounts previews constantly. Without the recorded attempt, a linked post the
 // fetch cannot populate (deleted, or one the user may not read) would be requested again on every remount.
-const fetchLinkedPostOnce = async (serverUrl: string, postId: string, attemptKey: string, forgetOnSuccess = false) => {
+const fetchLinkedPostOnce = async (serverUrl: string, postId: string, attemptKey: string) => {
     if (EphemeralStore.hasLinkedPostFetchAttempt(serverUrl, attemptKey)) {
         return;
     }
     EphemeralStore.addLinkedPostFetchAttempt(serverUrl, attemptKey);
     const {error} = await fetchLinkedPost(serverUrl, postId);
-    if (error ? !isFinalFetchAnswer(error) : forgetOnSuccess) {
+    if (!error || !isFinalFetchAnswer(error)) {
         EphemeralStore.removeLinkedPostFetchAttempt(serverUrl, attemptKey);
     }
 };
@@ -203,18 +203,9 @@ const PermalinkPreview = ({
         if (!post) {
             // Per epoch: a refusal stops holding once access changes. Forgotten once stored, so a post
             // evicted later can be fetched again.
-            fetchLinkedPostOnce(serverUrl, linkedPostId, `${linkedPostId}|missing|${embedRequiredEpoch}`, true);
-            return;
+            fetchLinkedPostOnce(serverUrl, linkedPostId, `${linkedPostId}|missing|${embedRequiredEpoch}`);
         }
-
-        // When the embed shows accessible files but DB records are missing (e.g. after ABAC
-        // access is granted and file records were deleted during the denial period), re-fetch
-        // the linked post so handlePosts repopulates the file records. Once per epoch: a newer
-        // decision is worth another attempt.
-        if (isEmbedRedactionVerified && embedFilesCount > 0 && !hasLinkedPostFiles) {
-            fetchLinkedPostOnce(serverUrl, linkedPostId, `${linkedPostId}|files|${embedRequiredEpoch}`);
-        }
-    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isEmbedRedactionVerified, embedRequiredEpoch]);
+    }, [linkedPostId, post, serverUrl, embedRequiredEpoch]);
 
     if (isOriginPostDeleted) {
         return null;
