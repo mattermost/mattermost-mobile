@@ -107,18 +107,23 @@ object RealPathUtil {
         }
 
         val name = fileName ?: sanitizeFilename(uri.lastPathSegment?.trim()) ?: return null
-        return try {
-            val tmpDir = File(File(context.cacheDir, CACHE_DIR_NAME), UUID.randomUUID().toString())
+        val tmpDir = File(File(context.cacheDir, CACHE_DIR_NAME), UUID.randomUUID().toString())
+        val tmpFile = File(tmpDir, name)
+        val copied = try {
             tmpDir.mkdirs()
-            val tmpFile = File(tmpDir, name)
             context.contentResolver.openInputStream(uri)?.use { input ->
                 FileOutputStream(tmpFile).use { output -> input.copyTo(output) }
-            } ?: return null
-            tmpFile.absolutePath
+            } != null
         } catch (e: Exception) {
             Log.w("ReactNative", "RealPathUtil failed to copy content uri: ${e.javaClass.simpleName}")
-            null
+            false
         }
+
+        if (!copied) {
+            tmpDir.deleteRecursively()
+            return null
+        }
+        return tmpFile.absolutePath
     }
 
     private fun sanitizeFilename(filename: String?): String? {

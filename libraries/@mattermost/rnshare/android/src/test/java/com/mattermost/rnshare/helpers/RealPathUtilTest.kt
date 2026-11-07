@@ -181,6 +181,16 @@ class RealPathUtilTest {
         assertCopiedToShareCache(RealPathUtil.getRealPathFromURI(context, uri), "photo.jpg")
     }
 
+    @Test
+    fun `should not leave a partial copy when a content uri cannot be read`() {
+        registerContentProvider(GENUINE_AUTHORITY, displayName = "report.pdf")
+        FakeProvider.source = File(context.filesDir, "missing")
+        val uri = Uri.parse("content://$GENUINE_AUTHORITY/files/1")
+
+        assertNull(RealPathUtil.getRealPathFromURI(context, uri))
+        assertEquals(0, File(context.cacheDir, RealPathUtil.CACHE_DIR_NAME).listFiles()?.size ?: 0)
+    }
+
     private fun assertCopiedToShareCache(path: String?, expectedName: String) {
         val copy = File(requireNotNull(path))
         assertEquals(expectedName, copy.name)
