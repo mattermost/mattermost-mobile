@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Events} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {useIsInViewPort} from './in_viewport';
+import {useClearViewableItemsOnUnmount, useIsInViewPort} from './in_viewport';
 
 describe('useIsInViewPort', () => {
     afterEach(() => {
@@ -35,5 +35,34 @@ describe('useIsInViewPort', () => {
         });
 
         expect(result.current).toBe(true);
+    });
+});
+
+describe('useClearViewableItemsOnUnmount', () => {
+    afterEach(() => {
+        EphemeralStore.clearViewableItems();
+    });
+
+    it('should clear the location\'s entry on unmount', () => {
+        EphemeralStore.setViewableItems('Channel', {'Channel-post1': true});
+        EphemeralStore.setViewableItems('Thread', {'Thread-post2': true});
+
+        const {unmount} = renderHook(() => useClearViewableItemsOnUnmount('Channel'));
+        expect(EphemeralStore.isItemInViewPort('Channel-post1')).toBe(true);
+
+        unmount();
+
+        expect(EphemeralStore.isItemInViewPort('Channel-post1')).toBe(false);
+        expect(EphemeralStore.isItemInViewPort('Thread-post2')).toBe(true);
+    });
+
+    it('should not seed visible after the list remounts', () => {
+        EphemeralStore.setViewableItems('Channel', {'Channel-post1': true});
+        const {unmount} = renderHook(() => useClearViewableItemsOnUnmount('Channel'));
+        unmount();
+
+        const {result} = renderHook(() => useIsInViewPort('Channel', 'post1'));
+
+        expect(result.current).toBe(false);
     });
 });

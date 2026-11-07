@@ -23,6 +23,7 @@ import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useClearViewableItemsOnUnmount} from '@hooks/in_viewport';
 import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gesture';
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
@@ -178,6 +179,7 @@ const PostList = ({
 
     const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
     const theme = useTheme();
+    useClearViewableItemsOnUnmount(location);
     const serverUrl = useServerUrl();
     const {state} = useAnimatedKeyboard();
 
