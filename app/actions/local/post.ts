@@ -3,18 +3,20 @@
 
 import {Q, type Database, type Model} from '@nozbe/watermelondb';
 
+import {getRequiredRedactionEpoch} from '@actions/local/redaction';
 import {fetchPostAuthors} from '@actions/remote/post';
-import {ActionType, Post} from '@constants';
+import {ActionType, General, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
-import {getCurrentUserId} from '@queries/servers/system';
+import {queryFilesForPosts} from '@queries/servers/file';
+import {countUsersFromMentions, getPostById, prepareDeletePost, queryNewestThreadReplies, queryPostsById} from '@queries/servers/post';
+import {getCurrentUserId, isRedactionEnforced} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {deleteDownloadedFiles} from '@utils/file';
 import {generateId} from '@utils/general';
 import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
-import {getLastFetchedAtFromPosts} from '@utils/post';
+import {getLastFetchedAtFromPosts, isPostPendingOrFailed, isPostRedactionVerified} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
@@ -571,4 +573,44 @@ export const updatePostTranslation = async (serverUrl: string, postId: string, l
         logError('Failed updatePostTranslation', error);
         return {error};
     }
+};
+
+const hasPermalinkEmbed = (post: PostModel) => Boolean(post.metadata?.embeds?.some((embed) => embed.type === 'permalink'));
+
+/**
+ * A policy or attribute change while the user was elsewhere leaves cached posts behind the epoch
+ * they now must satisfy. Read from the stored posts rather than remembered, so it survives a restart.
+ *
+ * Callers pass only the newest page, because that is all a re-verification page can re-stamp; older
+ * posts are revalidated one by one when they come on screen. Within it, only posts whose rendering
+ * depends on the decision count: a text-only or pending post is never re-stamped by anything, so
+ * counting it would page the channel again on every visit.
+ */
+export const hasUnverifiedAttachmentPosts = async (database: Database, channelId: string, posts: PostModel[]) => {
+    if (!posts.length || !(await isRedactionEnforced(database))) {
+        return false;
+    }
+    const requiredEpoch = await getRequiredRedactionEpoch(database, channelId);
+    const unverified = posts.filter((p) => !isPostPendingOrFailed(p) && !isPostRedactionVerified(p.redactionVerifiedEpoch, requiredEpoch));
+    if (!unverified.length) {
+        return false;
+    }
+    if (unverified.some((p) => (p.metadata?.redacted_file_count ?? 0) > 0 || hasPermalinkEmbed(p))) {
+        return true;
+    }
+    const files = await queryFilesForPosts(database, unverified.map((p) => p.id)).fetch();
+    return files.length > 0;
+};
+
+/**
+ * Thread counterpart of hasUnverifiedAttachmentPosts over the root and the newest page of replies,
+ * the posts a thread page fetch re-stamps. False when the root is not stored: nothing to re-verify.
+ */
+export const hasUnverifiedAttachmentPostsInThread = async (database: Database, rootId: string) => {
+    const root = await getPostById(database, rootId);
+    if (!root) {
+        return false;
+    }
+    const replies = await queryNewestThreadReplies(database, rootId, General.POST_CHUNK_SIZE).fetch();
+    return hasUnverifiedAttachmentPosts(database, root.channelId, [root, ...replies]);
 };

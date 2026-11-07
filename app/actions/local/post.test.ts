@@ -5,7 +5,7 @@ import {ActionType, Post} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
-import {getPostById, queryPostsInChannel} from '@queries/servers/post';
+import {getPostById, queryPostsById, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {deleteDownloadedFiles} from '@utils/file';
 import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
@@ -24,7 +24,10 @@ import {
     deletePostsInChannelsByCutoff,
     getUsersCountFromMentions,
     updatePostTranslation,
+    hasUnverifiedAttachmentPosts,
+    hasUnverifiedAttachmentPostsInThread,
 } from './post';
+import {RedactionInvalidationReason, invalidateRedactionGlobally} from './redaction';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {RevokedFile} from '@typings/database/database';
@@ -695,5 +698,97 @@ describe('deletePostsInChannelsByCutoff', () => {
                 ]),
             }),
         );
+    });
+});
+
+describe('hasUnverifiedAttachmentPosts', () => {
+    const enforceRedaction = async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    };
+
+    const storePosts = async (posts: Post[]) => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: posts.map((p) => p.id),
+            posts,
+            prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
+        });
+        return queryPostsById(operator.database, posts.map((p) => p.id)).fetch();
+    };
+
+    const storeUnverifiedPost = async (overrides: Partial<Post>) => {
+        const models = await storePosts([TestHelper.fakePost({id: 'postid', channel_id: channelId, ...overrides})]);
+        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+        return models;
+    };
+
+    it('should return false when redaction is not enforced', async () => {
+        const posts = await storeUnverifiedPost({metadata: {redacted_file_count: 1}});
+
+        expect(await hasUnverifiedAttachmentPosts(operator.database, channelId, posts)).toBe(false);
+    });
+
+    it('should return false when the unverified posts are text-only', async () => {
+        await enforceRedaction();
+        const posts = await storeUnverifiedPost({metadata: {}});
+
+        expect(await hasUnverifiedAttachmentPosts(operator.database, channelId, posts)).toBe(false);
+    });
+
+    it('should return false when the posts are verified', async () => {
+        await enforceRedaction();
+        const posts = await storePosts([TestHelper.fakePost({id: 'postid', channel_id: channelId, metadata: {redacted_file_count: 1}})]);
+
+        expect(await hasUnverifiedAttachmentPosts(operator.database, channelId, posts)).toBe(false);
+    });
+
+    it('should return true for an unverified post with a stored file', async () => {
+        await enforceRedaction();
+        const posts = await storeUnverifiedPost({metadata: {files: [TestHelper.fakeFileInfo({id: 'fileid', post_id: 'postid'})]}});
+
+        expect(await hasUnverifiedAttachmentPosts(operator.database, channelId, posts)).toBe(true);
+    });
+
+    it('should return true for an unverified post with redacted files', async () => {
+        await enforceRedaction();
+        const posts = await storeUnverifiedPost({metadata: {redacted_file_count: 1}});
+
+        expect(await hasUnverifiedAttachmentPosts(operator.database, channelId, posts)).toBe(true);
+    });
+
+    it('should return true for an unverified post with a permalink embed', async () => {
+        await enforceRedaction();
+        const posts = await storeUnverifiedPost({metadata: {embeds: [{type: 'permalink', url: '', data: {}}]}});
+
+        expect(await hasUnverifiedAttachmentPosts(operator.database, channelId, posts)).toBe(true);
+    });
+
+    describe('hasUnverifiedAttachmentPostsInThread', () => {
+        it('should return true when only the root has files', async () => {
+            await enforceRedaction();
+            await storePosts([
+                TestHelper.fakePost({id: 'rootid', channel_id: channelId, metadata: {redacted_file_count: 1}}),
+                TestHelper.fakePost({id: 'replyid', channel_id: channelId, root_id: 'rootid', metadata: {}}),
+            ]);
+            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+
+            expect(await hasUnverifiedAttachmentPostsInThread(operator.database, 'rootid')).toBe(true);
+        });
+
+        it('should return false when the root is not stored', async () => {
+            await enforceRedaction();
+            await storePosts([TestHelper.fakePost({id: 'replyid', channel_id: channelId, root_id: 'rootid', metadata: {redacted_file_count: 1}})]);
+            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+
+            expect(await hasUnverifiedAttachmentPostsInThread(operator.database, 'rootid')).toBe(false);
+        });
     });
 });

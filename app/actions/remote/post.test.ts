@@ -30,7 +30,6 @@ import {
     unacknowledgePost,
     revealBoRPost,
     fetchPostsForChannel,
-    refetchPostsForRedaction,
     refreshPostsForChannel,
     fetchPostsForUnreadChannels,
     fetchPosts,
@@ -904,8 +903,16 @@ describe('get posts', () => {
         expect(result.posts?.length).toBe(2);
     });
 
-    it('refetchPostsForRedaction - should re-verify with a page after the since-fetch when the channel already has posts', async () => {
+    it('fetchPostsForChannel - should page after the since-fetch when forced, even when cached posts are verified', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
         await operator.handleMyChannel({channels: [{
             id: channelId,
             team_id: teamId,
@@ -922,14 +929,15 @@ describe('get posts', () => {
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post1.id],
-            posts: [post1],
+            posts: [{...post1, metadata: {redacted_file_count: 1}}],
             prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
         });
 
         mockClient.getPosts.mockClear();
         mockClient.getPostsSince.mockClear();
 
-        const result = await refetchPostsForRedaction(serverUrl, channelId);
+        const result = await fetchPostsForChannel(serverUrl, channelId, false, false, undefined, true);
 
         // The page re-verifies what we hold; only the since-fetch carries deletions and edits.
         expect(result.error).toBeUndefined();
