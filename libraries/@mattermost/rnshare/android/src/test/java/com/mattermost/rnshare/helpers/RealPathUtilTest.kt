@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.IntentFilter
 import android.content.pm.ProviderInfo
 import android.database.Cursor
@@ -37,6 +38,7 @@ private const val DOWNLOADS_AUTHORITY = "com.android.providers.downloads.documen
 private const val GENUINE_AUTHORITY = "com.example.genuine.provider"
 private const val SECRET = "secret-session-cookie"
 private const val SHARED_CONTENT = "shared-content"
+private val MEDIA_AND_OBB = listOf("media", "obb")
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -83,6 +85,34 @@ class RealPathUtilTest {
         val appFile = File(context.getExternalFilesDir(null), "attachment.pdf").apply { writeText(SECRET) }
 
         assertNull(RealPathUtil.getRealPathFromURI(context, Uri.fromFile(appFile)))
+    }
+
+    @Test
+    fun `should not resolve a file uri in this app's external media or obb storage`() {
+        val root = addSharedStorageVolume()
+        val deviceContext = withMediaAndObbDirs(root)
+
+        for (type in MEDIA_AND_OBB) {
+            val appFile = File(root, "Android/$type/${context.packageName}/attachment.pdf").apply {
+                parentFile?.mkdirs()
+                writeText(SECRET)
+            }
+            assertNull(RealPathUtil.getRealPathFromURI(deviceContext, Uri.fromFile(appFile)))
+        }
+    }
+
+    @Test
+    fun `should resolve a file uri in another app's external media or obb storage`() {
+        val root = addSharedStorageVolume()
+        val deviceContext = withMediaAndObbDirs(root)
+
+        for (type in MEDIA_AND_OBB) {
+            val otherAppFile = File(root, "Android/$type/com.example.other/photo.jpg").apply {
+                parentFile?.mkdirs()
+                writeText(SHARED_CONTENT)
+            }
+            assertEquals(otherAppFile.canonicalPath, RealPathUtil.getRealPathFromURI(deviceContext, Uri.fromFile(otherAppFile)))
+        }
     }
 
     @Test
@@ -167,6 +197,16 @@ class RealPathUtilTest {
             .build()
         shadowOf(context.getSystemService(StorageManager::class.java)).addStorageVolume(volume)
         return root
+    }
+
+    // Robolectric provides no media or obb dirs, so lay them out as a device volume does.
+    private fun withMediaAndObbDirs(root: File): Context {
+        val packageName = context.packageName
+        return object : ContextWrapper(context) {
+            @Deprecated("Deprecated in Java")
+            override fun getExternalMediaDirs() = arrayOf(File(root, "Android/media/$packageName"))
+            override fun getObbDirs() = arrayOf(File(root, "Android/obb/$packageName"))
+        }
     }
 
     private fun registerDocumentsProvider(authority: String) {

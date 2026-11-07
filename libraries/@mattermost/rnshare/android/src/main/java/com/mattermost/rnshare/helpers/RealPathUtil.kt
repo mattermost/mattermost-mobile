@@ -72,9 +72,9 @@ object RealPathUtil {
 
     @Suppress("DEPRECATION")
     private fun getPrivateDirs(context: Context): List<File> {
-        val appSpecificExternalDirs = (context.externalCacheDirs + context.getExternalFilesDirs(null) + context.obbDirs + context.externalMediaDirs)
-            .mapNotNull { it?.parentFile }
-        return appSpecificExternalDirs + context.dataDir + context.createDeviceProtectedStorageContext().dataDir
+        val appDataDirs = (context.externalCacheDirs + context.getExternalFilesDirs(null)).mapNotNull { it?.parentFile }
+        val appMediaAndObbDirs = (context.externalMediaDirs + context.obbDirs).filterNotNull()
+        return appDataDirs + appMediaAndObbDirs + context.dataDir + context.createDeviceProtectedStorageContext().dataDir
     }
 
     private fun File.canonicalOrNull(): File? {
