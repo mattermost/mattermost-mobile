@@ -7,6 +7,7 @@ import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {getPostById, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
+import {deleteDownloadedFiles} from '@utils/file';
 import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
 
 import {
@@ -15,6 +16,7 @@ import {
     removePost,
     markPostAsDeleted,
     storePostsForChannel,
+    batchRecordsAndDeleteRevokedFiles,
     getPosts,
     addPostAcknowledgement,
     removePostAcknowledgement,
@@ -25,6 +27,7 @@ import {
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {RevokedFile} from '@typings/database/database';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
@@ -42,6 +45,11 @@ jest.mock('@utils/general', () => {
         generateId: mockGenerateId,
     };
 });
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
+}));
 
 let mockGetIsCRTEnabled: jest.Mock;
 jest.mock('@queries/servers/thread', () => {
@@ -255,6 +263,49 @@ describe('storePostsForChannel', () => {
         const intervalsAfter = await queryPostsInChannel(database, channelId).fetch();
         expect(intervalsAfter.length).toBe(1);
         expect(intervalsAfter[0].latest).toBe(110);
+    });
+
+    it('should return revoked files when only preparing', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await storePostsForChannel(serverUrl, channelId, [{...post, file_ids: ['fileid']}], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user]);
+        await operator.handleFiles({
+            files: [TestHelper.fakeFileInfo({id: 'fileid', post_id: post.id})],
+            prepareRecordsOnly: false,
+        });
+        jest.mocked(deleteDownloadedFiles).mockClear();
+
+        const redacted = {...post, file_ids: [], metadata: {redacted_file_count: 1}};
+        const {models, revokedFiles, error} = await storePostsForChannel(serverUrl, channelId, [redacted], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user], true);
+        await operator.batchRecords(models ?? [], 'test');
+
+        expect(error).toBeUndefined();
+        expect(revokedFiles).toHaveLength(1);
+        expect(revokedFiles?.[0].id).toBe('fileid');
+        expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+    });
+});
+
+describe('batchRecordsAndDeleteRevokedFiles', () => {
+    const revokedFiles: RevokedFile[] = [{id: 'fileid', name: 'secret.png', extension: 'png', mime_type: 'image/png', localPath: '/tmp/secret.png'}];
+
+    it('should delete the files after the batch commits', async () => {
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id});
+        const {models} = await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [post.id], posts: [post], prepareRecordsOnly: true});
+
+        await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'test');
+
+        const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+        expect(await getPostById(database, post.id)).toBeDefined();
+        expect(deleteDownloadedFiles).toHaveBeenCalledWith(serverUrl, revokedFiles);
+    });
+
+    it('should keep the files when the batch fails', async () => {
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id});
+        const {models} = await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [post.id], posts: [post], prepareRecordsOnly: true});
+        jest.spyOn(operator.database, 'write').mockRejectedValueOnce(new Error('write failed'));
+
+        await expect(batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'test')).rejects.toThrow('write failed');
+        expect(deleteDownloadedFiles).not.toHaveBeenCalled();
     });
 });
 

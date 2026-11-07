@@ -207,7 +207,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
 
         // Deliberately unstamped: thread payloads (REST and thread_updated alike) carry the root post
         // without file metadata, so they say nothing about its attachments and must not vouch for them.
-        const postModels = await operator.handlePosts({
+        const {models: postModels} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [],
             posts,

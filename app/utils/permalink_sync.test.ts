@@ -41,7 +41,7 @@ describe('Permalink Sync Utils', () => {
                 metadata: undefined,
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [postWithoutMetadata.id],
                 posts: [postWithoutMetadata],
@@ -68,7 +68,7 @@ describe('Permalink Sync Utils', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [postWithEmptyEmbeds.id],
                 posts: [postWithEmptyEmbeds],
@@ -110,7 +110,7 @@ describe('Permalink Sync Utils', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [referencingPost.id],
                 posts: [referencingPost],
@@ -165,7 +165,7 @@ describe('Permalink Sync Utils', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [referencingPost.id],
                 posts: [referencingPost],
@@ -256,7 +256,7 @@ describe('Permalink Sync Utils', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [referencingPost.id],
                 posts: [referencingPost],
@@ -323,7 +323,7 @@ describe('Permalink Sync Utils', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [referencingPost.id],
                 posts: [referencingPost],

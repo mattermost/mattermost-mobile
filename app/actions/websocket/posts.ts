@@ -4,7 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
-import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement, updatePostTranslation} from '@actions/local/post';
+import {addPostAcknowledgement, batchRecordsAndDeleteRevokedFiles, markPostAsDeleted, removePostAcknowledgement, updatePostTranslation} from '@actions/local/post';
 import {captureRedactionEpoch} from '@actions/local/redaction';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {getCurrentUserLocale} from '@actions/local/user';
@@ -25,8 +25,9 @@ import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
-import {logDebug, logWarning} from '@utils/log';
+import {logDebug, logError, logWarning} from '@utils/log';
 import {isFromWebhook, isPostEphemeral, isSystemMessage, restoreEphemeralIdentityFieldsForEdit, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -220,7 +221,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         redactionVerifiedEpoch = (editedPost as PostWithRedactionEpoch).redaction_verified_epoch;
     }
 
-    const postModels = await operator.handlePosts({
+    const {models: postModels, revokedFiles} = await operator.handlePosts({
         actionType,
         order: [post.id],
         posts: [post],
@@ -230,7 +231,11 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     models.push(...postModels);
 
-    await operator.batchRecords(models, 'handleNewPostEvent');
+    try {
+        await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'handleNewPostEvent');
+    } catch (error) {
+        logError('error on handleNewPostEvent', getFullErrorMessage(error));
+    }
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
@@ -299,7 +304,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
     }
 
-    const postModels = await operator.handlePosts({
+    const {models: postModels, revokedFiles} = await operator.handlePosts({
         actionType,
         order: [post.id],
         posts: [post],
@@ -308,7 +313,11 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     });
     models.push(...postModels);
 
-    await operator.batchRecords(models, 'handlePostEdited');
+    try {
+        await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'handlePostEdited');
+    } catch (error) {
+        logError('error on handlePostEdited', getFullErrorMessage(error));
+    }
 
     // Conversation-backed agent posts are edited before the stream's `end`;
     // their streaming state is dropped once the post-stream refetch lands.

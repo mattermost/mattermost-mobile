@@ -355,7 +355,7 @@ describe('backgroundNotification boolean conversion', () => {
         } as any; // Use 'as any' to bypass strict type checking for test data
 
         // Spy on the actual function and provide a mock implementation that matches the return type
-        storePostsSpy = jest.spyOn(PostActions, 'storePostsForChannel').mockImplementation(async () => ({models: []}));
+        storePostsSpy = jest.spyOn(PostActions, 'storePostsForChannel').mockImplementation(async () => ({models: [], revokedFiles: []}));
 
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
     });
