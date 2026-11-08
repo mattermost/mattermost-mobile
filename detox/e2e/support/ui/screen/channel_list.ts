@@ -12,7 +12,6 @@ import {HomeScreen} from '@support/ui/screen';
 import {
     isAndroid,
     isIos,
-    safeEnableSynchronization,
     tapNativeBackButton,
     timeouts,
     wait,
@@ -473,11 +472,7 @@ class ChannelListScreen {
         await this.toBeVisible();
         await waitForElementToExist(this.headerPlusButton, timeouts.HALF_MIN);
 
-        const disableSyncForOpen = isAndroid();
-        if (disableSyncForOpen) {
-            await device.disableSynchronization();
-        }
-        try {
+        const open = async () => {
             let plusTapError: unknown;
             /* eslint-disable no-await-in-loop -- retry plus-button tap while transition overlay clears */
             for (let i = 0; i < 3; i++) {
@@ -509,10 +504,13 @@ class ChannelListScreen {
 
             // Android: menu items mount before they pass the 15% visibility threshold.
             await waitForElementToExist(this.openDirectMessageItem, timeouts.TEN_SEC);
-        } finally {
-            if (disableSyncForOpen) {
-                await safeEnableSynchronization();
-            }
+        };
+
+        // Depth-counted, so a caller that taps a menu item next can hold sync off across both.
+        if (isAndroid()) {
+            await withSynchronizationDisabled(open);
+        } else {
+            await open();
         }
     };
 

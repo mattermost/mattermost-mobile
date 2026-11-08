@@ -65,26 +65,19 @@ class BrowseChannelsScreen {
         }
 
         // # Open browse channels screen from the channel list header plus button.
-        await ChannelListScreen.openPlusMenu();
-
-        // openPlusMenu disables synchronization for the plus tap on Android precisely because
-        // the app is busy there, but re-enables it in its own finally -- so this tap, one line
-        // later, met the same busy app with sync back on. Detox then waits for idle before
-        // dispatching, and MM-T1719_1 timed out with both RN loopers ("mqt_v_js",
-        // "mqt_v_native") executing and this exact invocation unanswered:
-        //   matcherForTestId("plus_menu_item.browse_channels") ... click
-        // Extend the same Android-only window over the menu-item tap. withSynchronizationDisabled
-        // is depth-counted, so it nests safely.
-        //
-        // NOTE: unverified against MM-T1719_1 -- that failure does not reproduce locally, clean
-        // or under CPU load. This closes a real gap in sync coverage and matches the treatment
-        // the adjacent tap already gets, but it is not confirmed to be the cause.
-        if (isAndroid()) {
-            await withSynchronizationDisabled(async () => {
-                await ChannelListScreen.browseChannelsItem.tap();
-            });
-        } else {
+        const openFromPlusMenu = async () => {
+            await ChannelListScreen.openPlusMenu();
             await ChannelListScreen.browseChannelsItem.tap();
+        };
+
+        // Android keeps sync off for both taps in one window. Re-enabling between them and
+        // disabling again at once lets Espresso release a looper idling resource before the busy
+        // RN JS thread has initialised it: that throws (Looper.mQueue NPE, MM-T4932_3) and leaves
+        // the resource reporting "mqt_v_js is executing" until the app process restarts.
+        if (isAndroid()) {
+            await withSynchronizationDisabled(openFromPlusMenu);
+        } else {
+            await openFromPlusMenu();
         }
         await wait(timeouts.ONE_SEC);
 
