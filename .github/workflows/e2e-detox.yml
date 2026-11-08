@@ -50,6 +50,18 @@ on:
         required: false
         type: string
         default: "{}"
+      results-suffix:
+        description: >
+          Android re-run only: inserted into the results artifact name and report path, so several
+          re-runs in one workflow run (e2e-flake-verify.yml iterations) keep separate results.
+        required: false
+        type: string
+        default: ""
+      max-attempts:
+        description: 'Android only: attempts per shard; "1" turns off the re-run of failed specs (flake verification).'
+        required: false
+        type: string
+        default: "2"
 
 permissions:
   contents: read
@@ -115,9 +127,11 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       spec_files: ${{ inputs.rerun-specs != '{}' && fromJSON(inputs.rerun-specs)['detox-android'] || '' }}
-      results-artifact: ${{ inputs.rerun-specs != '{}' && format('e2e-rerun-results-detox-android-a{0}', github.run_attempt) || '' }}
+      results-artifact: ${{ inputs.rerun-specs != '{}' && format('e2e-rerun-results-detox-android{0}-a{1}', inputs.results-suffix, github.run_attempt) || '' }}
       # The failed specs of a re-run run one after another on one fresh device (mutation specs on their own).
       parallelism: ${{ inputs.rerun-specs != '{}' && '1' || '32' }}
+      max_attempts: ${{ inputs.max-attempts }}
+      report-suffix: ${{ inputs.results-suffix }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}

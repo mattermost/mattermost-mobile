@@ -136,6 +136,20 @@ on:
         required: false
         type: string
         default: ""
+      max_attempts:
+        description: >
+          Attempts per shard (run_android_ci_shard.sh MAX_ATTEMPTS). "1" disables the re-run of
+          failed specs, so a fail-then-pass shows as a failure (flake verification).
+        required: false
+        type: string
+        default: "2"
+      report-suffix:
+        description: >
+          Appended to a re-run's report path, so several re-runs in one workflow run (flake
+          verification iterations) do not write the same S3 report.
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -521,7 +535,7 @@ jobs:
           SITE_1_URL: ${{ env.SITE_1_URL }}
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
-          MAX_ATTEMPTS: "2"
+          MAX_ATTEMPTS: ${{ inputs.max_attempts }}
           ATTEMPT_TIMEOUT_MIN: "60"
         shell: bash
         # Attempt 2 retries failed/unrun files only. Cold-boots only if the emulator is dead.
@@ -659,7 +673,7 @@ jobs:
           MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
           MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
           # A re-run of failed specs runs in the same workflow run: its own report, not over the run's.
-          RERUN: ${{ inputs.results-artifact != '' && '-rerun' || '' }}
+          RERUN: ${{ inputs.results-artifact != '' && format('-rerun{0}', inputs.report-suffix) || '' }}
         run: |
           path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}${RERUN}"
           echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"

@@ -450,6 +450,34 @@ jobs:
             echo "site-3-url=$SITE_3_URL"
           } >> "$GITHUB_OUTPUT"
 
+      # e2e-flake-verify.yml re-runs specs against this run's servers, which live as long as the PR,
+      # but the URLs exist only as this run's dispatch inputs. They are test-server addresses, not
+      # secrets, so they are kept as an artifact for that workflow to read.
+      - name: Write server topology
+        env:
+          ANDROID_SITE_1_URL: ${{ steps.topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ steps.topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ steps.topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ steps.topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ steps.topology.outputs.site-3-url }}
+        run: |
+          jq -n '{
+            "android-site-1-url": env.ANDROID_SITE_1_URL,
+            "android-site-2-url": env.ANDROID_SITE_2_URL,
+            "ios-site-1-url": env.IOS_SITE_1_URL,
+            "ios-site-2-url": env.IOS_SITE_2_URL,
+            "site-3-url": env.SITE_3_URL
+          }' > e2e-topology.json
+
+      - name: Upload server topology
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-topology-${{ github.run_id }}
+          path: e2e-topology.json
+          retention-days: 7
+          # A re-run of all jobs uploads it again under the same name.
+          overwrite: true
+
   build-ios-simulator:
     if: >-
       !cancelled()
