@@ -1,0 +1,6 @@
+# actionlint does not know the job key cache-mode yet (rhysd/actionlint#745, #762). The autofix
+# workflow needs it to save its ledger of sent requests from a workflow_run job.
+paths:
+  .github/workflows/e2e-tests-autofix-on-merge.yml:
+    ignore:
+      - 'unexpected key "cache-mode" for "job" section'
