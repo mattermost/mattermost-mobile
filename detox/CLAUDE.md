@@ -117,6 +117,18 @@ PR E2E runs the full `detox/e2e/test` tree when labeled.
 | `.github/workflows/e2e-android-template.yml` | Detox Android shard runner |
 | `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android runner |
 | `.github/workflows/compatibility-matrix-testing.yml` | CMT / release multi-server matrix |
+| `.github/workflows/e2e-flake-verify.yml` | Repeats named specs on a PR commit and a main commit to verify a flake fix |
+| `.github/workflows/e2e-tests-autofix-on-merge.yml` | After each main E2E run, sends repeating failures to the E2E autofix automation |
+
+### Flake verification and autofix
+
+`e2e-flake-verify.yml` runs named Detox specs REPEATS times on a PR commit and on a main commit, each on a fresh device with no retry, against the servers and app build of the PR's finished E2E run. It then posts one verdict comment on the PR and the informational `e2e-test/flake-verify` status (`detox/utils/flake-verify.js` explains the verdict).
+- It is Detox Android only.
+- Dispatch it from main once the PR's E2E run has finished, with the PR ready for review: `gh workflow run e2e-flake-verify.yml --ref main -f PR_NUMBER=<n> -f SOURCE_RUN_ID=<E2E run id> -f CANDIDATE_SHA=<PR head> -f BASELINE_SHA=<main commit> -f PLATFORM=android -f SPECS='<spec files>' -f TARGETS='<test ids>' -f REPEATS=10`.
+
+`e2e-tests-autofix-on-merge.yml` runs after every main E2E run. It picks the tests that keep failing on main and sends them to the Cursor automation in `.cursor/automations/e2e-autofix.md`.
+- It does nothing without its webhook secrets.
+- Set the repository variable `E2E_ENABLE_AUTOFIX` to `false` to turn it off.
 
 ### Checks for CI PRs
 
@@ -586,7 +598,7 @@ Artifacts saved to `detox/artifacts/` after each run:
 | Symptom | Likely Cause | Fix |
 |---------|-------------|-----|
 | `element not found` timeout | testID mismatch or screen not loaded | Check actual testID in app source; add `toBeVisible()` wait before interaction |
-| Test passes locally, fails on CI | Race condition or emulator timing | Add `wait(timeouts.ONE_SEC)` before flaky assertion; verify emulator fully booted |
+| Test passes locally, fails on CI | Race condition or emulator timing | Read the failure artifacts (see "Debugging E2E failures") and wait on the app signal the test needs; never add a fixed wait |
 | All tests fail with login error | Server not reachable | Check the platform-specific server URL; verify server is up |
 | `element is not visible` on tap | Element exists but off-screen | Scroll to element first: `await scrollView.scroll(100, 'down')` |
 | Android emulator hangs | AVD not fully booted | `create_android_emulator.sh` waits for `boot_completed`; check its output in CI logs |
