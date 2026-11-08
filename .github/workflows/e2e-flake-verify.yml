@@ -9,8 +9,9 @@
 #   - only after the PR's full E2E run has finished: both runs would mutate the same servers;
 #   - the PR must be ready for review: a draft PR gets no E2E run, so it has no servers or build.
 # Detox Android only for now (the iOS template retries failed specs and tests in place, with no switch to
-# turn that off); Maestro is not covered. Both arms use the PR's app build, so a fix in app code cannot be
-# verified here: only the test code differs between baseline and candidate.
+# turn that off); Maestro is not covered. Both arms install the PR's native build, and Metro bundles the app
+# JavaScript and the specs from each arm's own commit. The baseline must be an ancestor of the candidate, so
+# the arms differ by the PR's commits only. A change to native code cannot be verified here.
 name: E2E flake verify
 
 on:
@@ -45,7 +46,7 @@ on:
         required: true
         type: string
       TARGETS:
-        description: "Space-separated test ids the PR claims to fix (e.g. MM-T4932_3); empty: every test in SPECS"
+        description: "Space-separated test ids the PR claims to fix (e.g. MM-T4932_3); a test that is not a target and never fails has no say"
         required: false
         type: string
         default: ""
@@ -140,6 +141,10 @@ jobs:
             if (env.BASELINE_SHA) {
               const {data: cmp} = await github.rest.repos.compareCommitsWithBasehead({owner, repo, basehead: `${env.BASELINE_SHA}...main`});
               if (cmp.status !== 'ahead' && cmp.status !== 'identical') fail('BASELINE_SHA is not a commit on main');
+
+              // Each arm bundles the app JavaScript of its own commit: only the PR's commits may differ.
+              const {data: toCandidate} = await github.rest.repos.compareCommitsWithBasehead({owner, repo, basehead: `${env.BASELINE_SHA}...${env.CANDIDATE_SHA}`});
+              if (toCandidate.status !== 'ahead' && toCandidate.status !== 'identical') fail('BASELINE_SHA is not an ancestor of CANDIDATE_SHA (use the PR base, e.g. the request base.commit)');
             }
 
             // The servers are shared with the PR's E2E runs: never run on them at the same time.
@@ -258,6 +263,25 @@ jobs:
           pattern: e2e-rerun-results-*-fv-*
           path: fv-results
           merge-multiple: false
+
+      # download-artifact extracts a single match straight into the path, without the artifact-named folder.
+      - name: Keep a single result in its artifact folder
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ ! -f fv-results/jest-results-merged.json ]; then
+            exit 0
+          fi
+          name=$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[] | select(.name | test("^e2e-rerun-results-.+-fv-(baseline|candidate)-i[0-9]+-a[0-9]+$")) | .name')
+          if [ "$(printf '%s\n' "$name" | grep -c .)" != "1" ]; then
+            echo "::warning::A single result was downloaded but $(printf '%s\n' "$name" | grep -c .) verify artifacts are listed; leaving it unread"
+            exit 0
+          fi
+          mkdir -p "fv-results/$name"
+          mv fv-results/jest-results-merged.json "fv-results/$name/"
 
       - name: Compute verdict
         id: verdict
