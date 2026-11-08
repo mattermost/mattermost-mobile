@@ -101,4 +101,6 @@ jobs:
         if: always() && steps.plan.outcome == 'success'
         uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-watch/record@main # actions/e2e-test-watch/record
         with:
+          # Must match the plan step's branch: the ledger's cache key includes it, and the default is master.
+          branch: ${{ env.TRUNK }}
           results: ${{ steps.send.outputs.results || '[]' }}
