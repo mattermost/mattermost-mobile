@@ -6,7 +6,8 @@ To set it up in the Cursor dashboard (Automations > New):
   - Repository: mattermost/mattermost-mobile, base branch main. Environment: this repository's
     .cursor/environment.json.
   - Model: claude-opus-5-5.
-  - Prompt: everything below the line, pasted as is. Keep this file and the dashboard copy the same.
+  - Prompt: paste from the "# Mobile E2E Autofix" heading to the end of the file, as is. Leave out this comment
+    and the "---" line after it. Keep this file and the dashboard copy the same.
 First test: POST .cursor/automations/dry-run-example.json to the webhook (a dry run of a real failure).
 -->
 
