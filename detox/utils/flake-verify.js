@@ -134,6 +134,9 @@ const isTarget = (title, targets) => targets.some((target) => title === target |
 
 function verdictFor(row, targets) {
     const {baseline, candidate} = row;
+    if (row.noResults) {
+        return 'no-data';
+    }
     if (!isTarget(row.title, targets) && baseline.fail === 0 && candidate.fail === 0) {
         return 'stable';
     }
@@ -155,8 +158,8 @@ function verdictFor(row, targets) {
 }
 
 /**
- * One row per (lane, test title): how often each arm ran it and failed it, and its verdict. A target that no run
- * reported gets a no-data row, so a PR cannot pass by renaming or skipping the test it claims to fix.
+ * One row per (lane, test title): how often each arm ran it and failed it, and its verdict. A spec or target that no
+ * run reported gets a no-data row, so a PR cannot pass by renaming or skipping what it claims to fix.
  * @param {ReturnType<typeof readRuns>} runs
  * @param {{repeats: number, specs?: string[], targets?: string[]}} options
  */
@@ -174,6 +177,11 @@ function summarize(runs, {repeats, specs = [], targets = []}) {
         }
     }
     const out = [...rows.values()].filter((row) => matchesSpec(row.file, specs));
+    for (const spec of specs) {
+        if (!out.some((row) => matchesSpec(row.file, [spec]))) {
+            out.push({lane: '-', title: `(no results) ${spec}`, file: spec, baseline: {n: 0, fail: 0}, candidate: {n: 0, fail: 0}, noResults: true});
+        }
+    }
     for (const target of targets) {
         if (!out.some((row) => isTarget(row.title, [target]))) {
             out.push({lane: '-', title: target, file: '', baseline: {n: 0, fail: 0}, candidate: {n: 0, fail: 0}});

@@ -198,6 +198,19 @@ describe('verdicts', () => {
         assert.equal(verify(makeDir(), 10, []).state, 'NO_DATA');
     });
 
+    it('should not pass while a selected spec has no results', () => {
+        const dir = makeDir();
+        const missingSpec = 'detox/e2e/test/products/channels/channels/channel_info.e2e.ts';
+        writeArm(dir, 'baseline', 10, 4);
+        writeArm(dir, 'candidate', 10, 0);
+
+        const rows = summarize(readRuns(dir), {repeats: 10, specs: [SPEC, missingSpec], targets: []});
+
+        assert.equal(rows.find((r) => r.title === TARGET).verdict, 'fixed');
+        assert.equal(rows.find((r) => r.file === missingSpec).verdict, 'no-data');
+        assert.equal(overall(rows), 'UNPROVEN');
+    });
+
     it('should not let a PR pass by dropping the target it claims to fix', () => {
         const dir = makeDir();
         writeArm(dir, 'baseline', 10, 4, [{title: SIBLING, status: 'passed'}]);
