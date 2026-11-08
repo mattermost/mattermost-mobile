@@ -145,7 +145,9 @@ function verdictFor(row, targets) {
     }
     if (baseline.n > 0 && baseline.fail > 0) {
         row.p = fisherLess(candidate.fail, candidate.n, baseline.fail, baseline.n);
-        if (row.p < CONFIDENCE) {
+
+        // A candidate run with no result may be the flake itself (a crashed shard), so it cannot count as fixed.
+        if (row.p < CONFIDENCE && candidate.missing === 0) {
             return 'fixed';
         }
     }
@@ -244,7 +246,7 @@ function toMarkdown(rows, state, repeats) {
     }
     lines.push('');
     if (rows.some((row) => row.verdict === 'unproven')) {
-        lines.push('_unproven_: main did not fail (significantly more) in these runs, so the clean PR runs only bound the failure rate shown; they do not show that the change fixed anything.');
+        lines.push('_unproven_: main did not fail significantly more in these runs, or some PR runs gave no result, so the clean PR runs only bound the failure rate shown; they do not show that the change fixed anything.');
     }
     const incomplete = rows.filter((row) => row.candidate.missing > 0 || (hasBaseline && row.baseline.missing > 0)).length;
     if (incomplete) {

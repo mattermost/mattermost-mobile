@@ -145,6 +145,19 @@ describe('verdicts', () => {
         assert.match(toMarkdown(rows, overall(rows), 10), /1 test\(s\) have iterations with no result/);
     });
 
+    it('should not call a fix proven while a candidate iteration has no result', () => {
+        const dir = makeDir();
+        writeArm(dir, 'baseline', 10, 6);
+        writeArm(dir, 'candidate', 9, 0);
+        writeRun(dir, 'candidate', 10, null);
+
+        const {row, state} = verify(dir, 10);
+
+        assert.ok(row.p < 0.05);
+        assert.equal(row.verdict, 'unproven');
+        assert.equal(state, 'UNPROVEN');
+    });
+
     it('should count a retry inside one run as a failure', () => {
         const dir = makeDir();
         writeArm(dir, 'baseline', 10, 4);
@@ -228,7 +241,7 @@ describe('markdown', () => {
         const unproven = verify(unprovenDir, 10);
         const markdown = toMarkdown(unproven.rows, unproven.state, 10);
         assert.match(markdown, /\| - \| 0\/10 \|/);
-        assert.match(markdown, /_unproven_: main did not fail/);
+        assert.match(markdown, /_unproven_: main did not fail significantly more/);
     });
 });
 
