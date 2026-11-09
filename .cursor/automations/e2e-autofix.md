@@ -170,7 +170,7 @@ Every check must pass before you open a PR. In a dry run, report the results.
    - **UNPROVEN**: main never failed (or not significantly more), so passing proves nothing beyond the printed bound. Write in the PR that the fix is argued from its mechanism. **Never** write "fixed" or "verified". Do not claim more.
    - **NO_DATA**: dispatch once more. If it is NO_DATA again, call it infrastructure in the PR.
 4. iOS, iPad and Maestro are not covered by verify. For those the PR may say only "argued from the mechanism; the PR's lanes passed once".
-5. Both arms install the PR's native build. Metro bundles the app JavaScript and the specs from each arm's own commit, and verify requires BASELINE_SHA to be an ancestor of the PR head, so a JavaScript app fix is compared fairly. If the change touches native code (`android/`, `ios/`, or the native parts of `libraries/`), baseline and candidate need different native builds, which verify cannot provide. Say so, and stop short of claiming verification.
+5. Both arms install the PR's native build. Metro bundles the app JavaScript and the specs from each arm's own commit, and verify requires BASELINE_SHA to be the merge base of the PR head and main (the PR branch point), so a JavaScript app fix is compared fairly. If the change touches native code (`android/`, `ios/`, or the native parts of `libraries/`), baseline and candidate need different native builds, which verify cannot provide. Say so, and stop short of claiming verification.
 
 ## Remember the outcome
 

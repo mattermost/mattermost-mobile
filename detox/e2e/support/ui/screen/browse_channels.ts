@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -64,24 +64,16 @@ class BrowseChannelsScreen {
             // Browse Channels is not open — proceed normally
         }
 
-        // # Open browse channels screen from the channel list header plus button.
-        const openFromPlusMenu = async () => {
-            await ChannelListScreen.openPlusMenu();
+        // # Open browse channels screen from the channel list header plus button, tapping the menu item
+        // while the menu is still open. On Android the plus tap and this tap share one sync-off window:
+        // re-enabling sync between them and disabling again at once lets Espresso release a looper
+        // idling resource before the busy RN JS thread has initialised it (Looper.mQueue NPE, MM-T4932_3).
+        await ChannelListScreen.openPlusMenu(async () => {
             await ChannelListScreen.browseChannelsItem.tap();
-        };
-
-        // Android keeps sync off for both taps in one window. Re-enabling between them and
-        // disabling again at once lets Espresso release a looper idling resource before the busy
-        // RN JS thread has initialised it: that throws (Looper.mQueue NPE, MM-T4932_3) and leaves
-        // the resource reporting "mqt_v_js is executing" until the app process restarts.
-        if (isAndroid()) {
-            await withSynchronizationDisabled(openFromPlusMenu);
-        } else {
-            await openFromPlusMenu();
-        }
+        });
         await wait(timeouts.ONE_SEC);
 
-        // openPlusMenu disables sync on Android; wait for the screen before returning.
+        // The plus menu is closed on Android by now; wait for the screen before returning.
         await waitForElementToExist(this.browseChannelsScreen, timeouts.TWENTY_SEC);
 
         return this.browseChannelsScreen;

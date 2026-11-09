@@ -10,8 +10,8 @@
 #   - the PR must be ready for review: a draft PR gets no E2E run, so it has no servers or build.
 # Detox Android only for now (the iOS template retries failed specs and tests in place, with no switch to
 # turn that off); Maestro is not covered. Both arms install the PR's native build, and Metro bundles the app
-# JavaScript and the specs from each arm's own commit. The baseline must be an ancestor of the candidate, so
-# the arms differ by the PR's commits only. A change to native code cannot be verified here.
+# JavaScript and the specs from each arm's own commit. The baseline must be the PR's branch point (the merge
+# base of the candidate and main), so the arms differ by the PR's commits only. A change to native code cannot be verified here.
 name: E2E flake verify
 
 on:
@@ -145,6 +145,11 @@ jobs:
               // Each arm bundles the app JavaScript of its own commit: only the PR's commits may differ.
               const {data: toCandidate} = await github.rest.repos.compareCommitsWithBasehead({owner, repo, basehead: `${env.BASELINE_SHA}...${env.CANDIDATE_SHA}`});
               if (toCandidate.status !== 'ahead' && toCandidate.status !== 'identical') fail('BASELINE_SHA is not an ancestor of CANDIDATE_SHA (use the PR base, e.g. the request base.commit)');
+
+              // The baseline must be the PR's branch point. An older main commit would also pass the ancestor
+              // check, and then main's changes between it and the branch point would count as the PR's fix.
+              const {data: forkPoint} = await github.rest.repos.compareCommitsWithBasehead({owner, repo, basehead: `${env.CANDIDATE_SHA}...main`});
+              if (forkPoint.merge_base_commit?.sha !== env.BASELINE_SHA) fail(`BASELINE_SHA must be the merge base of CANDIDATE_SHA and main (${forkPoint.merge_base_commit?.sha ?? 'unknown'}), the PR branch point`);
             }
 
             // The servers are shared with the PR's E2E runs: never run on them at the same time.

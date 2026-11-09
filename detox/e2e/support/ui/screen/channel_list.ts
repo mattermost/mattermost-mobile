@@ -467,7 +467,11 @@ class ChannelListScreen {
         return this.toBeVisible();
     };
 
-    openPlusMenu = async () => {
+    // afterMenuOpen runs with the plus menu open and, on Android, inside the same sync-off window as the
+    // plus tap. A caller that taps a menu item passes it here instead of calling openPlusMenu and tapping
+    // afterwards: re-enabling sync between the two taps is what raced the Android looper (see
+    // BrowseChannelsScreen.open). The pre-tap checks stay synchronized, as they were before that window.
+    openPlusMenu = async (afterMenuOpen?: () => Promise<void>) => {
         await dismissKnownModals(2);
         await this.toBeVisible();
         await waitForElementToExist(this.headerPlusButton, timeouts.HALF_MIN);
@@ -504,9 +508,10 @@ class ChannelListScreen {
 
             // Android: menu items mount before they pass the 15% visibility threshold.
             await waitForElementToExist(this.openDirectMessageItem, timeouts.TEN_SEC);
+            await afterMenuOpen?.();
         };
 
-        // Depth-counted, so a caller that taps a menu item next can hold sync off across both.
+        // Depth-counted, so a caller that is already inside withSynchronizationDisabled keeps sync off too.
         if (isAndroid()) {
             await withSynchronizationDisabled(open);
         } else {
