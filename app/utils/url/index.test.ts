@@ -4,6 +4,8 @@
 import GenericClient, {type ClientResponse} from '@mattermost/react-native-network-client';
 import {Linking} from 'react-native';
 
+import * as ClientConstants from '@client/rest/constants';
+
 import {
     cleanUpUrlable,
     cleanUrlForLogging,
@@ -157,6 +159,10 @@ describe('sanitizeUrl', () => {
         const result = sanitizeUrl(url, false);
         expect(result).toBe('https://example.com');
     });
+
+    test('should keep an explicit https protocol when useHttp is true', () => {
+        expect(sanitizeUrl('https://example.com', true)).toBe('https://example.com');
+    });
 });
 
 describe('getUrlAfterRedirect', () => {
@@ -192,6 +198,32 @@ describe('getServerUrlAfterRedirect', () => {
         const serverUrl = 'https://example.com';
         const result = await getServerUrlAfterRedirect(serverUrl);
         expect(result).toEqual({error});
+    });
+
+    test('should preserve the https scheme of a redirect target instead of forcing http back onto it', async () => {
+        mockedHead.mockResolvedValue({redirectUrls: ['https://final-url.com']} as ClientResponse);
+        const result = await getServerUrlAfterRedirect('http://example.com', true);
+        expect(result).toEqual({url: 'https://final-url.com'});
+    });
+
+    test('should strip the query string and fragment from a redirect target', async () => {
+        mockedHead.mockResolvedValue({redirectUrls: ['https://final-url.com/login?redirect_to=%2F#top']} as ClientResponse);
+        const result = await getServerUrlAfterRedirect('https://example.com');
+        expect(result).toEqual({url: 'https://final-url.com/login'});
+    });
+
+    test('should not send the preauth secret header when the resolved URL is not https', async () => {
+        mockedHead.mockResolvedValue({} as ClientResponse);
+        await getServerUrlAfterRedirect('http://example.com', true, 'test-secret');
+        expect(mockedHead).toHaveBeenCalledWith('http://example.com', {headers: {}});
+    });
+
+    test('should send the preauth secret header when the resolved URL is https', async () => {
+        mockedHead.mockResolvedValue({} as ClientResponse);
+        await getServerUrlAfterRedirect('https://example.com', false, 'test-secret');
+        expect(mockedHead).toHaveBeenCalledWith('https://example.com', {
+            headers: {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: 'test-secret'},
+        });
     });
 });
 

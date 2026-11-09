@@ -31,6 +31,10 @@ inputs:
     description: Comma-separated commit-status contexts the one PR-wide triage check summarises
     required: false
     default: e2e-test/detox-ios,e2e-test/detox-ipad,e2e-test/detox-android,e2e-test/maestro-ios,e2e-test/maestro-android
+  rerun-attempts:
+    description: Automatic re-runs a lane red only on infrastructure may get (see e2e-tests-rerun.yml); 0 turns it off. The calling job needs actions read.
+    required: false
+    default: "0"
 
 runs:
   using: composite
@@ -71,6 +75,8 @@ runs:
         lane: ${{ inputs.job-key }}
         evidence-dir: triage-evidence
         test-root: .
+        # A failure in an unchanged spec is "merge main" when main changed the code it runs through.
+        support-paths: detox/e2e/support,detox/maestro/lib,detox/maestro/subflows,detox/maestro/fixtures
         github-token: ${{ inputs.github-token }}
         # The PR changes the app, which can't take the separate test server down or put a
         # proxy page in front of it: a test that failed on that environment is not the PR's.
@@ -78,6 +84,18 @@ runs:
         anthropic-api-key: ${{ inputs.anthropic-api-key }}
         mode: ${{ inputs.mode }}
         answers-cache: e2e-triage-answers.json
+        rerun-attempts: ${{ inputs.rerun-attempts }}
+        findings-file: e2e-triage-findings.json
+    # The verdict on each failed test, which the channel message reads (tsio-channel-notify).
+    - name: Upload triage findings
+      if: always() && hashFiles('e2e-triage-findings.json') != ''
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        # One artifact per attempt: the channel message of a re-run reads only that attempt's verdicts.
+        name: e2e-triage-findings-${{ inputs.job-key }}-a${{ github.run_attempt }}
+        path: e2e-triage-findings.json
+        retention-days: 1
     - name: Save triage answers
       if: always() && hashFiles('e2e-triage-answers.json') != ''
       continue-on-error: true

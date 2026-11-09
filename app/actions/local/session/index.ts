@@ -165,6 +165,8 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
     EphemeralStore.clearClassificationCache(serverUrl);
     EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
+    EphemeralStore.clearLinkedPostFetchAttempts(serverUrl);
+    EphemeralStore.clearPendingChannelAccessChecks(serverUrl);
 
     // Post ids are not namespaced by server, so leaving the last viewable items behind would
     // let a stale entry read as "on screen" for whatever list mounts next.

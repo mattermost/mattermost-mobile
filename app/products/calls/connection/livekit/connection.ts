@@ -41,6 +41,7 @@ import {
     userReacted,
 } from '@calls/state';
 import {type CallsConnection} from '@calls/types/calls';
+import Calls from '@constants/calls';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
@@ -57,14 +58,25 @@ type ReactionPayload = {
     timestamp: number;
 }
 
+const MAX_EMOJI_NAME_LENGTH = 128;
+const MAX_EMOJI_LITERAL_LENGTH = 32;
+
+const isEmojiData = (v: unknown): v is EmojiData => {
+    if (typeof v !== 'object' || !v) {
+        return false;
+    }
+    const {name, unified, literal} = v as Record<string, unknown>;
+    return typeof name === 'string' && name.length > 0 && name.length <= MAX_EMOJI_NAME_LENGTH &&
+        typeof unified === 'string' && unified.length > 0 &&
+        (literal === undefined || (typeof literal === 'string' && literal.length <= MAX_EMOJI_LITERAL_LENGTH));
+};
+
 // Mirrors callRoomMetadata in the calls plugin (server/livekit_state.go).
 type RoomMetadata = {
     host_id?: string;
     recording?: CallJobState;
     live_captions?: CallJobState;
 }
-
-const isBot = (participant: Participant) => participant.attributes?.[CALL_ATTRIBUTES.BOT] === 'true';
 
 const isMicMuted = (participant: Participant) =>
     participant.getTrackPublication(Track.Source.Microphone)?.isMuted ?? true;
@@ -90,6 +102,7 @@ export async function newLiveKitConnection(
     let micTrackPromise: Promise<void> | null = null;
     let onPeerConnected: ((sessionId: string) => void) | null = null;
     let activeSessions = new Set<string>();
+    const lastReactionAt = new Map<string, number>();
 
     // LiveKit's audio session management is left off: @mattermost/calls-native owns
     // AVAudioSession, and autoConfigureAudioSession defaults to true.
@@ -127,7 +140,10 @@ export async function newLiveKitConnection(
         throw err;
     }
 
-    const {session_id: mySessionID, token, url, call_state: callState} = session;
+    const {session_id: mySessionID, token, url, bot_user_id: botUserID, call_state: callState} = session;
+
+    // Attributes are self-set, so the bot is matched by its server-minted identity instead.
+    const isBot = (participant: Participant) => parseIdentity(participant.identity).userID === botUserID;
 
     // Ours joins with the room, once mySessionId is set; until then the call view shows a placeholder for us.
     const otherSessions = callState.sessions.filter(({session_id: sessionID}) => sessionID !== mySessionID);
@@ -414,18 +430,34 @@ export async function newLiveKitConnection(
             return;
         }
 
-        const reaction = safeParseJSON(new TextDecoder().decode(payload)) as ReactionPayload | string | null;
+        const reaction = safeParseJSON(new TextDecoder().decode(payload)) as Partial<ReactionPayload> | string | null;
         if (!reaction || typeof reaction === 'string') {
-            logError('calls: failed to parse received reaction');
+            logDebug('calls: failed to parse received reaction');
+            return;
+        }
+
+        // Peers publish this directly, so it must be checked before it reaches the reaction UI.
+        const emoji: unknown = reaction.emojiData;
+        if (!isEmojiData(emoji)) {
+            logDebug('calls: dropped malformed reaction');
             return;
         }
 
         const {userID, sessionID} = parseIdentity(participant.identity);
+        const now = Date.now();
+        if (now - (lastReactionAt.get(sessionID) ?? -Infinity) < Calls.REACTION_MIN_INTERVAL_MS) {
+            logDebug('calls: dropped reaction sent too quickly');
+            return;
+        }
+        lastReactionAt.set(sessionID, now);
+
         userReacted(serverUrl, channelID, {
             user_id: userID,
             session_id: sessionID,
-            emoji: reaction.emojiData,
-            timestamp: reaction.timestamp,
+            emoji,
+
+            // The sender's timestamp is the expiry key, so a peer must not choose it.
+            timestamp: now,
         });
     });
 

@@ -24,6 +24,7 @@ import {
     userReacted,
 } from '@calls/state';
 import {DefaultCurrentCall} from '@calls/types/calls';
+import Calls from '@constants/calls';
 import NetworkManager from '@managers/network_manager';
 import {advanceTimers, enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
 import {logError} from '@utils/log';
@@ -140,6 +141,7 @@ describe('newLiveKitConnection', () => {
             session_id: SESSION_ID,
             token: LIVEKIT_TOKEN,
             url: LIVEKIT_URL,
+            bot_user_id: 'botuser',
             call_state: callState,
         });
         jest.mocked(getCurrentCall).mockReturnValue({...DefaultCurrentCall, channelId: CHANNEL_ID});
@@ -300,14 +302,14 @@ describe('newLiveKitConnection', () => {
         expect(reseedOrder).toBeLessThan(joinedOrder);
     });
 
-    it('should populate the roster from participants present at connect and those joining later, excluding bots', async () => {
+    it('should populate the roster from participants present at connect and those joining later, excluding the bot', async () => {
         await connect([
             participant('userA', 'sessionA'),
-            participant('botuser', 'botsession', {bot: true}),
+            participant('botuser', 'botsession'),
         ]);
 
         roomHandlers[RoomEvent.ParticipantConnected](participant('userC', 'sessionC'));
-        roomHandlers[RoomEvent.ParticipantConnected](participant('botuser', 'botsession2', {bot: true}));
+        roomHandlers[RoomEvent.ParticipantConnected](participant('botuser', 'botsession2'));
 
         expect(jest.mocked(userJoinedCall).mock.calls).toEqual([
             [SERVER_URL, CHANNEL_ID, 'myuser', SESSION_ID],
@@ -320,6 +322,12 @@ describe('newLiveKitConnection', () => {
             [SERVER_URL, ['userC']],
         ]);
         expect(setUserMuted).not.toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'botsession', expect.anything());
+    });
+
+    it('should keep a participant that sets the bot attribute on itself in the roster', async () => {
+        await connect([participant('userA', 'sessionA', {bot: true})]);
+
+        expect(userJoinedCall).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'userA', 'sessionA');
     });
 
     it('should remove the session of a participant leaving the room', async () => {
@@ -641,10 +649,11 @@ describe('newLiveKitConnection', () => {
         }));
     });
 
-    it('delivers a received reaction to the reaction stream', async () => {
+    it('delivers a received reaction to the reaction stream stamped with the receivers clock', async () => {
         await connect();
+        jest.setSystemTime(1700000000000);
         const emoji = {name: 'thumbsup', unified: '1F44D'};
-        const payload = new TextEncoder().encode(JSON.stringify({emojiData: emoji, timestamp: 1700000000000}));
+        const payload = new TextEncoder().encode(JSON.stringify({emojiData: emoji, timestamp: 1}));
 
         roomHandlers[RoomEvent.DataReceived](payload, participant('userA', 'sessionA'), undefined, 'reaction');
 
@@ -654,6 +663,47 @@ describe('newLiveKitConnection', () => {
             emoji,
             timestamp: 1700000000000,
         });
+    });
+
+    it.each([
+        ['has no emoji', {timestamp: 1}],
+        ['has a null emoji', {emojiData: null}],
+        ['has a non-string emoji name', {emojiData: {name: 1, unified: '1F44D'}}],
+        ['has an empty emoji name', {emojiData: {name: '', unified: '1F44D'}}],
+        ['has a non-string literal', {emojiData: {name: 'thumbsup', unified: '1F44D', literal: {}}}],
+        ['has no unified', {emojiData: {name: 'thumbsup'}}],
+        ['has an oversized name', {emojiData: {name: 'a'.repeat(129), unified: '1F44D'}}],
+        ['has an oversized literal', {emojiData: {name: 'thumbsup', unified: '1F44D', literal: 'a'.repeat(33)}}],
+    ])('ignores a received reaction that %s', async (_, body) => {
+        await connect();
+
+        roomHandlers[RoomEvent.DataReceived](new TextEncoder().encode(JSON.stringify(body)), participant('userA', 'sessionA'), undefined, 'reaction');
+
+        expect(userReacted).not.toHaveBeenCalled();
+    });
+
+    it('drops a reaction from the same session inside the minimum interval and accepts it after', async () => {
+        await connect();
+        const payload = new TextEncoder().encode(JSON.stringify({emojiData: {name: 'thumbsup', unified: '1F44D'}}));
+        const react = () => roomHandlers[RoomEvent.DataReceived](payload, participant('userA', 'sessionA'), undefined, 'reaction');
+
+        react();
+        jest.advanceTimersByTime(Calls.REACTION_MIN_INTERVAL_MS - 1);
+        react();
+        jest.advanceTimersByTime(1);
+        react();
+
+        expect(userReacted).toHaveBeenCalledTimes(2);
+    });
+
+    it('accepts reactions from different sessions inside the minimum interval', async () => {
+        await connect();
+        const payload = new TextEncoder().encode(JSON.stringify({emojiData: {name: 'thumbsup', unified: '1F44D'}}));
+
+        roomHandlers[RoomEvent.DataReceived](payload, participant('userA', 'sessionA'), undefined, 'reaction');
+        roomHandlers[RoomEvent.DataReceived](payload, participant('userB', 'sessionB'), undefined, 'reaction');
+
+        expect(userReacted).toHaveBeenCalledTimes(2);
     });
 
     it('ignores a received reaction whose payload is not valid json', async () => {

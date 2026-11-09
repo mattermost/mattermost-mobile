@@ -15,7 +15,7 @@ import {getFormattedFileSize} from '@utils/file';
 import {isPreauthRejection} from '@utils/headers';
 import {logDebug, logInfo, logWarning} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
-import {cleanUrlForLogging} from '@utils/url';
+import {cleanUrlForLogging, isSecureUrl} from '@utils/url';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -82,7 +82,8 @@ export default class ClientTracking {
 
         // Undefined means leave the in-memory header alone (token-only refresh must not drop it).
         // Clear the header with setPreauthSecretHeader(''); clear storage with removePreauthSecret.
-        if (preauthSecret) {
+        // The secret is still persisted below, but it is only sent over TLS.
+        if (preauthSecret && isSecureUrl(this.apiClient.baseUrl)) {
             this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
         }
 
@@ -104,20 +105,22 @@ export default class ClientTracking {
 
     /**
      * Updates the pre-auth secret on the live native session. Passing an empty string clears it.
+     * The secret is only sent over TLS, so it is cleared on an insecure base URL.
      *
      * Deliberately not implemented by invalidating and recreating the client: tearing down a
      * URLSession that still has requests in flight aborts the process from CFNetwork with
      * "Task created in a session that has been invalidated".
      */
     setPreauthSecretHeader(preauthSecret: string) {
-        if (preauthSecret) {
-            this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
+        const headerValue = isSecureUrl(this.apiClient.baseUrl) ? preauthSecret : '';
+        if (headerValue) {
+            this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = headerValue;
         } else {
             delete this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET];
         }
 
         return this.apiClient.addHeaders({
-            [ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret,
+            [ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: headerValue,
         });
     }
 

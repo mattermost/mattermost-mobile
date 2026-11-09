@@ -19,6 +19,7 @@ import type RoleModel from '@typings/database/models/servers/role';
 
 type Props = {
     channel?: ChannelModel;
+    managementDenied: boolean;
     roles: RoleModel[];
 }
 
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Intro = ({channel, roles}: Props) => {
+const Intro = ({channel, managementDenied, roles}: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [fetching, setFetching] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
@@ -48,6 +49,7 @@ const Intro = ({channel, roles}: Props) => {
                 <TownSquare
                     channelId={channel.id}
                     displayName={channel.displayName}
+                    managementDenied={managementDenied}
                     roles={roles}
                     theme={theme}
                 />
@@ -60,6 +62,7 @@ const Intro = ({channel, roles}: Props) => {
                 return (
                     <PublicOrPrivateChannel
                         channel={channel}
+                        managementDenied={managementDenied}
                         roles={roles}
                         theme={theme}
                     />
@@ -72,7 +75,7 @@ const Intro = ({channel, roles}: Props) => {
                     />
                 );
         }
-    }, [channel, roles, theme]);
+    }, [channel, managementDenied, roles, theme]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {

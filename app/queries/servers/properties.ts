@@ -6,7 +6,7 @@ import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {License} from '@constants';
-import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
+import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES, FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
@@ -17,7 +17,7 @@ import {
     deriveChannelAttributeBanner,
     renderNativeBannerText,
     resolveChannelAttributes,
-    resolvedAttributesEqual,
+    resolvedAttributesSignature,
     type ChannelAttributeBannerState,
     type ResolvedChannelAttribute,
 } from '@utils/channel_attributes';
@@ -46,26 +46,6 @@ export const getPropertyValuesByFieldId = (database: Database, fieldId: string) 
 };
 
 /**
- * The values stored against one target that belong to the access_control group.
- *
- * Scoped by group on purpose: several features keep per-channel values in this
- * table, so anything that deletes "everything for this target" has to be narrowed
- * or it takes another feature's data with it. Returns nothing when the group id is
- * not yet known, which is the safe direction for a destructive caller.
- */
-export const getAccessControlValuesForTarget = async (database: Database, targetId: string) => {
-    const groupId = await getAccessControlGroupId(database);
-    if (!groupId) {
-        return [];
-    }
-
-    return database.get<PropertyValueModel>(PROPERTY_VALUE).query(
-        Q.where('target_id', targetId),
-        Q.where('group_id', groupId),
-    ).fetch();
-};
-
-/**
  * Returns true when at least one of the two access_control features is on.
  *
  * A pure DB read — no remote I/O — so it belongs in the query layer rather than
@@ -80,18 +60,39 @@ export const isAccessControlPropertiesEnabled = async (database: Database) => {
     return classification === 'true' || channelAttributes === 'true';
 };
 
+const EMPTY_FIELDS: PropertyFieldModel[] = [];
+const EMPTY_VALUES: PropertyValueModel[] = [];
+
 export const observeClassificationFields = (database: Database) => {
-    return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(
-        Q.where('name', CLASSIFICATIONS_FIELD_NAME),
-        Q.where('delete_at', 0),
-    ).observeWithColumns(['update_at', 'delete_at', 'attrs']);
+    return observeAccessControlGroupId(database).pipe(
+        switchMap((groupId) => {
+            if (!groupId) {
+                return of$(EMPTY_FIELDS);
+            }
+
+            return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(
+                Q.where('group_id', groupId),
+                Q.where('name', CLASSIFICATIONS_FIELD_NAME),
+                Q.where('delete_at', 0),
+            ).observeWithColumns(['update_at', 'delete_at', 'attrs']);
+        }),
+    );
 };
 
 export const observePropertyValuesByTargetId = (database: Database, targetId: string) => {
-    return database.get<PropertyValueModel>(PROPERTY_VALUE).query(
-        Q.where('target_id', targetId),
-        Q.where('delete_at', 0),
-    ).observeWithColumns(['value', 'update_at', 'delete_at']);
+    return observeAccessControlGroupId(database).pipe(
+        switchMap((groupId) => {
+            if (!groupId) {
+                return of$(EMPTY_VALUES);
+            }
+
+            return database.get<PropertyValueModel>(PROPERTY_VALUE).query(
+                Q.where('group_id', groupId),
+                Q.where('target_id', targetId),
+                Q.where('delete_at', 0),
+            ).observeWithColumns(['value', 'update_at', 'delete_at']);
+        }),
+    );
 };
 
 export const observeClassificationBannerState = (database: Database) => {
@@ -103,8 +104,6 @@ export const observeClassificationBannerState = (database: Database) => {
         distinctUntilChanged((a, b) => a.visible === b.visible && a.levelName === b.levelName && a.color === b.color),
     );
 };
-
-const EMPTY_FIELDS: PropertyFieldModel[] = [];
 
 /**
  * Whether channel attributes are available on this server.
@@ -119,13 +118,38 @@ const EMPTY_FIELDS: PropertyFieldModel[] = [];
  * with Custom Profile Attributes and Classification Markings.
  */
 export const observeChannelAttributesEnabled = (database: Database) => {
-    const flag = observeConfigBooleanValue(database, 'FeatureFlagChannelAttributes', false);
+    const flag = observeConfigBooleanValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES, false);
     const isLicensed = observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.EnterpriseAdvanced);
 
     return combineLatest([flag, isLicensed]).pipe(
         map(([enabled, licensed]) => enabled && licensed),
         distinctUntilChanged(),
     );
+};
+
+/**
+ * Whether the server refuses a channel create that is missing a required
+ * attribute. Mirrors the webapp isChannelAttributesRequiredEnabled selector and
+ * the server's IsChannelAttributesRequiredEnabled(): the flag is a kill switch,
+ * so with it off a field can still carry required=true without anything
+ * enforcing it.
+ */
+export const observeChannelAttributesRequiredEnabled = (database: Database) => {
+    const required = observeConfigBooleanValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES_REQUIRED, false);
+
+    return combineLatest([observeChannelAttributesEnabled(database), required]).pipe(
+        map(([enabled, requiredEnabled]) => enabled && requiredEnabled),
+        distinctUntilChanged(),
+    );
+};
+
+/**
+ * Whether the classification field is available. The server also wants an
+ * Enterprise licence, which callers here already imply by sitting behind the
+ * Enterprise Advanced gate of observeChannelAttributesEnabled.
+ */
+export const observeClassificationMarkingsEnabled = (database: Database) => {
+    return observeConfigBooleanValue(database, FEATURE_FLAG_CLASSIFICATION_MARKINGS, false);
 };
 
 /**
@@ -169,7 +193,11 @@ export const observeChannelAttributeFields = (database: Database) => {
                 Q.where('group_id', groupId),
                 Q.where('object_type', CHANNEL_ATTRIBUTE_OBJECT_TYPE),
                 Q.where('delete_at', 0),
-            ).observeWithColumns(['update_at', 'delete_at', 'attrs']);
+
+            // permission_values is its own column, not part of attrs, so it has
+            // to be listed: relying on update_at moving would miss a patch that
+            // lands in the same millisecond as the last one.
+            ).observeWithColumns(['update_at', 'delete_at', 'attrs', 'permission_values']);
         }),
     );
 };
@@ -188,8 +216,19 @@ export const observeResolvedChannelAttributes = (
         observeChannelAttributeFields(database),
         observePropertyValuesByTargetId(database, channelId),
     ]).pipe(
-        map(([fields, values]) => resolveChannelAttributes(fields, values)),
-        distinctUntilChanged(resolvedAttributesEqual),
+        map(([fields, values]) => {
+            const attributes = resolveChannelAttributes(fields, values);
+
+            // The signature is computed here, not inside distinctUntilChanged.
+            // WatermelonDB updates a record in place and re-emits the same model
+            // instance, so by the time a comparator ran, the *previous* emission's
+            // field already reported the new attrs and every comparison of a
+            // configuration change came out equal. Snapshotting it as a string at
+            // emission time is what makes the comparison mean anything.
+            return {attributes, signature: resolvedAttributesSignature(attributes)};
+        }),
+        distinctUntilChanged((a, b) => a.signature === b.signature),
+        map(({attributes}) => attributes),
     );
 };
 
@@ -213,4 +252,3 @@ export const observeChannelAttributeBanner = (
             a.nativeText === b.nativeText),
     );
 };
-

@@ -69,11 +69,13 @@ configure_autofill_offline() {
 }
 
 seed_password_defaults() {
-    log "Seeding Passwords.app defaults (best-effort)..."
+    log "Seeding Passwords.app and keyboard onboarding defaults (best-effort)..."
     xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoFill -bool NO 2>/dev/null || true
     xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoSave -bool NO 2>/dev/null || true
     xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords credentialSaveNotificationsEnabled -bool NO 2>/dev/null || true
     xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.springboard AutoFillPasswords -bool NO 2>/dev/null || true
+    xcrun simctl spawn "$SIMULATOR_ID" defaults write -g DidShowContinuousPathIntroduction -bool YES 2>/dev/null || true
+    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Preferences DidShowContinuousPathIntroduction -bool YES 2>/dev/null || true
 }
 
 install_app() {
