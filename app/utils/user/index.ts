@@ -729,6 +729,10 @@ export const isCustomFieldSamlLinked = (customField?: CustomProfileFieldModel): 
     return Boolean(customField?.attrs?.saml);
 };
 
+export const isCustomFieldReadOnly = (customField?: CustomProfileFieldModel): boolean => {
+    return isCustomFieldSamlLinked(customField) || customField?.attrs?.managed === 'admin';
+};
+
 /**
  * Order-insensitive comparison of space-separated role lists. An unknown previous value reads as a
  * change, so a caller deciding whether to invalidate something fails closed.

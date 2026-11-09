@@ -208,6 +208,7 @@ export type LiveKitSessionResponse = {
     session_id: string;
     token: string;
     url: string;
+    bot_user_id: string;
     call_state: CallState;
 }
 

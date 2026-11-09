@@ -50,7 +50,7 @@ export const iosPermissions = defineMessages({
     },
 });
 
-export default {
+const Permissions = {
     PERMISSIONS_ALL: 'all',
     PERMISSIONS_CHANNEL_ADMIN: 'channel_admin',
     PERMISSIONS_TEAM_ADMIN: 'team_admin',
@@ -91,6 +91,8 @@ export default {
     CREATE_GROUP_CHANNEL: 'create_group_channel',
     MANAGE_PUBLIC_CHANNEL_PROPERTIES: 'manage_public_channel_properties',
     MANAGE_PRIVATE_CHANNEL_PROPERTIES: 'manage_private_channel_properties',
+    MANAGE_PRIVATE_CHANNEL_DISCOVERABILITY: 'manage_private_channel_discoverability',
+    MANAGE_CHANNEL_JOIN_REQUESTS: 'manage_channel_join_requests',
     LIST_PUBLIC_TEAMS: 'list_public_teams',
     JOIN_PUBLIC_TEAMS: 'join_public_teams',
     LIST_PRIVATE_TEAMS: 'list_private_teams',
@@ -99,6 +101,9 @@ export default {
     JOIN_PUBLIC_CHANNELS: 'join_public_channels',
     DELETE_PUBLIC_CHANNEL: 'delete_public_channel',
     CONVERT_PUBLIC_CHANNEL_TO_PRIVATE: 'convert_public_channel_to_private',
+    CONVERT_PRIVATE_CHANNEL_TO_PUBLIC: 'convert_private_channel_to_public',
+    MANAGE_PUBLIC_CHANNEL_BANNER: 'manage_public_channel_banner',
+    MANAGE_PRIVATE_CHANNEL_BANNER: 'manage_private_channel_banner',
     DELETE_PRIVATE_CHANNEL: 'delete_private_channel',
     EDIT_OTHER_USERS: 'edit_other_users',
     READ_CHANNEL: 'read_channel',
@@ -108,6 +113,7 @@ export default {
     REMOVE_OTHERS_REACTIONS: 'remove_others_reactions',
     PERMANENT_DELETE_USER: 'permanent_delete_user',
     UPLOAD_FILE: 'upload_file',
+    EDIT_FILE_ATTACHMENT: 'edit_file_attachment',
     GET_PUBLIC_LINK: 'get_public_link',
     MANAGE_WEBHOOKS: 'manage_webhooks',
     MANAGE_OTHERS_WEBHOOKS: 'manage_others_webhooks',
@@ -119,6 +125,7 @@ export default {
     MANAGE_SYSTEM_WIDE_OAUTH: 'manage_system_wide_oauth',
     CREATE_POST: 'create_post',
     CREATE_POST_PUBLIC: 'create_post_public',
+    CREATE_POST_EPHEMERAL: 'create_post_ephemeral',
     EDIT_POST: 'edit_post',
     EDIT_OTHERS_POSTS: 'edit_others_posts',
     DELETE_POST: 'delete_post',
@@ -159,6 +166,8 @@ export default {
     EDIT_BOOKMARK_PRIVATE_CHANNEL: 'edit_bookmark_private_channel',
     DELETE_BOOKMARK_PUBLIC_CHANNEL: 'delete_bookmark_public_channel',
     DELETE_BOOKMARK_PRIVATE_CHANNEL: 'delete_bookmark_private_channel',
+    ORDER_BOOKMARK_PUBLIC_CHANNEL: 'order_bookmark_public_channel',
+    ORDER_BOOKMARK_PRIVATE_CHANNEL: 'order_bookmark_private_channel',
 
     // Autotranslations
     MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION: 'manage_public_channel_auto_translation',
@@ -167,3 +176,50 @@ export default {
     // Shared channels (connected workspaces)
     MANAGE_SHARED_CHANNELS: 'manage_shared_channels',
 };
+
+// Mirror the server's isChannelWritePermission and isChannelManagementPermission (app/channel_access.go).
+export const CHANNEL_WRITE_PERMISSIONS: ReadonlySet<string> = new Set([
+    Permissions.ADD_REACTION,
+    Permissions.CREATE_POST,
+    Permissions.CREATE_POST_EPHEMERAL,
+    Permissions.CREATE_POST_PUBLIC,
+    Permissions.DELETE_OTHERS_POSTS,
+    Permissions.DELETE_POST,
+    Permissions.EDIT_FILE_ATTACHMENT,
+    Permissions.EDIT_OTHERS_POSTS,
+    Permissions.EDIT_POST,
+    Permissions.REMOVE_OTHERS_REACTIONS,
+    Permissions.REMOVE_REACTION,
+    Permissions.UPLOAD_FILE,
+    Permissions.USE_CHANNEL_MENTIONS,
+    Permissions.USE_GROUP_MENTIONS,
+    Permissions.USE_SLASH_COMMANDS,
+]);
+
+export const CHANNEL_MANAGEMENT_PERMISSIONS: ReadonlySet<string> = new Set([
+    Permissions.ADD_BOOKMARK_PRIVATE_CHANNEL,
+    Permissions.ADD_BOOKMARK_PUBLIC_CHANNEL,
+    Permissions.CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
+    Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
+    Permissions.DELETE_BOOKMARK_PRIVATE_CHANNEL,
+    Permissions.DELETE_BOOKMARK_PUBLIC_CHANNEL,
+    Permissions.DELETE_PRIVATE_CHANNEL,
+    Permissions.DELETE_PUBLIC_CHANNEL,
+    Permissions.EDIT_BOOKMARK_PRIVATE_CHANNEL,
+    Permissions.EDIT_BOOKMARK_PUBLIC_CHANNEL,
+    Permissions.MANAGE_CHANNEL_JOIN_REQUESTS,
+    Permissions.MANAGE_CHANNEL_ROLES,
+    Permissions.MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION,
+    Permissions.MANAGE_PRIVATE_CHANNEL_BANNER,
+    Permissions.MANAGE_PRIVATE_CHANNEL_DISCOVERABILITY,
+    Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS,
+    Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES,
+    Permissions.MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION,
+    Permissions.MANAGE_PUBLIC_CHANNEL_BANNER,
+    Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS,
+    Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES,
+    Permissions.ORDER_BOOKMARK_PRIVATE_CHANNEL,
+    Permissions.ORDER_BOOKMARK_PUBLIC_CHANNEL,
+]);
+
+export default Permissions;
