@@ -22,6 +22,7 @@ type Props = {
     user: UserModel;
     enableCustomAttributes?: boolean;
     customAttributesSet?: CustomAttributeSet;
+    callTargetUserId?: string;
 }
 
 const emptyList: CustomAttribute[] = []; /** avoid re-renders **/
@@ -35,6 +36,7 @@ const UserInfo = ({
     user,
     enableCustomAttributes,
     customAttributesSet,
+    callTargetUserId,
 }: Props) => {
     const customStatus = getUserCustomStatus(user);
     const serverUrl = useServerUrl();
@@ -69,6 +71,7 @@ const UserInfo = ({
                 position={showPosition ? user.position : undefined}
                 localTime={showLocalTime ? localTime : undefined}
                 customAttributes={customAttributes}
+                callTargetUserId={callTargetUserId}
             />
         </>
     );

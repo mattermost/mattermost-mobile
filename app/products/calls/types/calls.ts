@@ -54,6 +54,7 @@ export const CallCardState = {
     NoAnswer: 'no_answer',
     Canceled: 'canceled',
     Declined: 'declined',
+    Failed: 'failed',
     Ended: 'ended',
 } as const;
 
@@ -217,6 +218,15 @@ export type PhoneCallResponse = LiveKitSessionResponse & {
 }
 
 export type PhoneTarget = {number: string; targetUserId?: string; displayLabel?: string};
+
+export type PhoneCallPostProps = {
+    number: string;
+    displayNumber: string;
+    label: string;
+    targetUserId: string;
+};
+
+export type DialablePhone = {label: string; number: string};
 
 export type CallTarget =
     | {type: 'channel'; channelID: string}

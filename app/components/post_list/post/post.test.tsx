@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import PhoneCallCustomMessage from '@calls/components/phone_call_custom_message';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
@@ -22,6 +23,7 @@ import type {Database} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
 
 jest.mock('@managers/performance_metrics_manager');
+jest.mock('@calls/components/phone_call_custom_message', () => jest.fn(() => null));
 jest.mock('@components/post_list/post/burn_on_read/unrevealed');
 jest.mock('@components/system_header', () => jest.fn());
 jest.mock('./avatar', () => jest.fn());
@@ -91,6 +93,19 @@ describe('performance metrics', () => {
         await waitFor(() => {
             expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('THREAD', serverUrl);
             expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
+        });
+    });
+
+    it('should render the phone call card for a phone call post', async () => {
+        const props = getBaseProps();
+        props.post = TestHelper.fakePostModel({
+            type: PostTypes.CUSTOM_CALLS,
+            props: {call_type: 'phone', phone_number: '+15551234567'},
+        });
+
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(PhoneCallCustomMessage).toHaveBeenCalled();
         });
     });
 

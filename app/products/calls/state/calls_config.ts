@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {useState} from 'react';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, combineLatest} from 'rxjs';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
 import useDidMount from '@hooks/did_mount';
 
-import {getCurrentCall} from './current_call';
+import {getCurrentCall, observeCurrentCall} from './current_call';
 
 const callsConfigSubjects: Dictionary<BehaviorSubject<CallsConfigState>> = {};
 
@@ -33,6 +34,13 @@ export const setCallsConfig = (serverUrl: string, callsConfig: CallsConfigState)
 
 export const observeCallsConfig = (serverUrl: string) => {
     return getCallsConfigSubject(serverUrl).asObservable();
+};
+
+export const observeIsPhoneDialingAvailable = (serverUrl: string) => {
+    return combineLatest([observeCallsConfig(serverUrl), observeCurrentCall()]).pipe(
+        map(() => isPhoneDialingAvailable(serverUrl)),
+        distinctUntilChanged(),
+    );
 };
 
 export const useCallsConfig = (serverUrl: string) => {

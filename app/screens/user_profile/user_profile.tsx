@@ -8,13 +8,14 @@ import {defineMessages, useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
+import {getDialablePhones, NO_PHONES} from '@calls/utils';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useDidMount from '@hooks/did_mount';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
+import {getUserCustomStatus, getUserTimezone, isBot, isCustomStatusExpired, isDeactivated} from '@utils/user';
 
 import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
 import UserProfileOptions, {type OptionsType} from './options';
@@ -138,6 +139,14 @@ const UserProfile = ({
     const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
     const showLocalTime = Boolean(localTime) && !override && !user.isBot && !manageMode;
 
+    // The server rejects calling yourself, a bot or a deactivated user.
+    const phones = useMemo(() => {
+        if (user.id === currentUserId || isBot(user) || isDeactivated(user)) {
+            return NO_PHONES;
+        }
+        return getDialablePhones(Object.values(customAttributesSet ?? {}));
+    }, [customAttributesSet, user, currentUserId]);
+
     const headerText = manageMode ? formatMessage(messages.manageMember) : undefined;
 
     const snapPoints = useMemo(() => {
@@ -220,6 +229,7 @@ const UserProfile = ({
                         type={showOptions}
                         username={user.username}
                         userId={user.id}
+                        phones={phones}
                     />
                 }
                 {!manageMode && (
@@ -232,6 +242,7 @@ const UserProfile = ({
                         user={user}
                         enableCustomAttributes={enableCustomAttributes}
                         customAttributesSet={customAttributesSet}
+                        callTargetUserId={phones.length ? user.id : undefined}
                     />
                 )}
                 {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&

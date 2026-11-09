@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import {fetchCustomProfileAttributes} from '@actions/remote/custom_profile';
 import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import {DefaultCallsConfig} from '@calls/types/calls';
@@ -22,6 +23,7 @@ jest.mock('@components/navigation_header', () => ({
 }));
 jest.mocked(NavigationHeader).mockImplementation((props) => React.createElement('NavigationHeader', {testID: 'navigation-header', ...props}));
 
+jest.mock('@actions/remote/custom_profile');
 jest.mock('@screens/navigation');
 jest.mock('@playbooks/screens/navigation');
 jest.mock('@playbooks/actions/remote/runs');
@@ -65,6 +67,7 @@ describe('ChannelHeader', () => {
             isPlaybooksEnabled: true,
             isChannelAutotranslated: false,
             channelAttributes: [],
+            dmUserPhones: [],
         };
     }
 
@@ -96,7 +99,20 @@ describe('ChannelHeader', () => {
         const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
 
         expect(getQuickCallButton(getByTestId('navigation-header'))).toBeTruthy();
-        expect(useNavigationHeaderCallButtonForDM).toHaveBeenCalledWith('channel-id', General.DM_CHANNEL);
+        expect(useNavigationHeaderCallButtonForDM).toHaveBeenCalledWith('channel-id', General.DM_CHANNEL, undefined, []);
+        expect(fetchCustomProfileAttributes).not.toHaveBeenCalled();
+    });
+
+    it('should fetch the DM user\'s profile attributes when phone dialing is enabled', () => {
+        const props = getBaseProps();
+        props.channelType = General.DM_CHANNEL;
+        props.dmPhoneUserId = 'dm-user-id';
+        enableCalls(props);
+        jest.mocked(getCallsConfig).mockReturnValue({...DefaultCallsConfig, pluginEnabled: true, EnableSIPOutbound: true});
+
+        renderWithIntl(<ChannelHeader {...props}/>);
+
+        expect(fetchCustomProfileAttributes).toHaveBeenCalledWith(serverUrl, 'dm-user-id', true);
     });
 
     it('should not show the quick call button when calls are disabled in the DM', () => {

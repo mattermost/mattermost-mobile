@@ -759,6 +759,18 @@ describe('convertProfileAttributesToCustomAttributes', () => {
         }),
     ];
 
+    it('should use attrs.display_name as the attribute name when the field has one', () => {
+        const field = TestHelper.fakeCustomProfileFieldModel({
+            id: 'field1',
+            name: 'unique_name',
+            type: 'text',
+            attrs: {display_name: 'Display Name'},
+        });
+
+        const result = convertProfileAttributesToCustomAttributes([mockAttributes[0]], [field]);
+        expect(result.map(({name}) => name)).toEqual(['Display Name']);
+    });
+
     it('should convert profile attributes to custom attributes', () => {
         const result = convertProfileAttributesToCustomAttributes(mockAttributes, mockFields);
         expect(result).toEqual([

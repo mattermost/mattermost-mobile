@@ -506,7 +506,7 @@ describe('alerts', () => {
             joinCall.mockResolvedValueOnce({error: {server_error_id: 'sip_number_not_allowed'}});
             const mockAlert = jest.spyOn(Alert, 'alert');
 
-            await startPhoneCall(intl as any, 'server1', '+15551234567');
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
 
             expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'Calling this number isn\'t permitted.');
         });
@@ -516,7 +516,7 @@ describe('alerts', () => {
             joinCall.mockResolvedValueOnce({error: new ClientError('http://localhost', {message: 'no response', url: '/phone-call'})});
             const mockAlert = jest.spyOn(Alert, 'alert');
 
-            await startPhoneCall(intl as any, 'server1', '+15551234567');
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
 
             expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'Couldn\'t reach the server. Check your connection and try again.');
         });
@@ -526,7 +526,7 @@ describe('alerts', () => {
             joinCall.mockResolvedValueOnce({error: 'unable to connect to the voice call: Error: failed to connect'});
             const mockAlert = jest.spyOn(Alert, 'alert');
 
-            await startPhoneCall(intl as any, 'server1', '+15551234567');
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
 
             expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'The call couldn\'t be placed. Please try again.');
         });
@@ -538,8 +538,8 @@ describe('alerts', () => {
                 finishJoin = resolve;
             }));
 
-            const first = startPhoneCall(intl as any, 'server1', '+15551234567');
-            await startPhoneCall(intl as any, 'server1', '+15551234567');
+            const first = startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
             finishJoin({});
             await first;
 

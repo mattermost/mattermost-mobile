@@ -87,7 +87,7 @@ describe('MarkdownLink', () => {
 
         fireEvent.press(getSheetText('Call with Mattermost'));
 
-        expect(startPhoneCall).toHaveBeenCalledWith(expect.any(Object), 'https://server.example.com', '+15551234567');
+        expect(startPhoneCall).toHaveBeenCalledWith(expect.any(Object), 'https://server.example.com', {number: '+15551234567'});
     });
 
     it('should offer copy phone number on long press of a tel: link', () => {

@@ -16,7 +16,7 @@ import {
     removeIncomingCall,
     setMicPermissionsGranted,
 } from '@calls/state';
-import {CallPostStatus, EndCallReturn} from '@calls/types/calls';
+import {CallPostStatus, EndCallReturn, type PhoneTarget} from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
 import ClientError from '@client/rest/error';
 import {Screens} from '@constants';
@@ -69,6 +69,10 @@ const phoneCallErrors = defineMessages({
         id: 'mobile.calls_phone_error.team_not_allowed',
         defaultMessage: 'You don\'t have permission to place phone calls.',
     },
+    invalidTarget: {
+        id: 'mobile.calls_phone_error.invalid_target',
+        defaultMessage: 'The person you\'re trying to call couldn\'t be found.',
+    },
     callInProgress: {
         id: 'mobile.calls_phone_error.call_in_progress',
         defaultMessage: 'You\'re already on a phone call.',
@@ -90,6 +94,7 @@ const phoneCallErrorByServerID: Record<string, MessageDescriptor> = {
     outbound_not_configured: phoneCallErrors.outboundUnavailable,
     sip_number_not_allowed: phoneCallErrors.numberNotAllowed,
     sip_team_not_allowed: phoneCallErrors.teamNotAllowed,
+    invalid_target: phoneCallErrors.invalidTarget,
     call_in_progress: phoneCallErrors.callInProgress,
 };
 
@@ -350,7 +355,7 @@ const showPhoneCallError = (intl: IntlShape, message: MessageDescriptor) => {
 
 let phoneCallInProgress = false;
 
-export const startPhoneCall = async (intl: IntlShape, serverUrl: string, number: string) => {
+export const startPhoneCall = async (intl: IntlShape, serverUrl: string, phone: PhoneTarget) => {
     if (phoneCallInProgress) {
         return;
     }
@@ -376,7 +381,7 @@ export const startPhoneCall = async (intl: IntlShape, serverUrl: string, number:
         const hasPermission = await hasMicrophonePermission();
         setMicPermissionsGranted(hasPermission);
 
-        const res = await joinCall(serverUrl, {type: 'phone', phone: {number}}, user.id, hasPermission, intl, undefined, undefined, {
+        const res = await joinCall(serverUrl, {type: 'phone', phone}, user.id, hasPermission, intl, undefined, undefined, {
             startedByMe: true,
             startUnmuted: hasPermission,
         });

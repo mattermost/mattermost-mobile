@@ -12,7 +12,8 @@ import AgentMentionReminderPost from '@agents/components/agent_mention_reminder_
 import AgentPost from '@agents/components/agent_post';
 import {isAgentMentionReminderPost, isAgentPost} from '@agents/utils';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
-import {isCallsCustomMessage} from '@calls/utils';
+import PhoneCallCustomMessage from '@calls/components/phone_call_custom_message';
+import {getPhoneCallPropsFromPost, isCallsCustomMessage} from '@calls/utils';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
@@ -379,6 +380,13 @@ const Post = ({
         body = (
             <SystemMessage
                 location={location}
+                post={post}
+            />
+        );
+    } else if (isCallsPost && !hasBeenDeleted && getPhoneCallPropsFromPost(post)) {
+        body = (
+            <PhoneCallCustomMessage
+                serverUrl={serverUrl}
                 post={post}
             />
         );

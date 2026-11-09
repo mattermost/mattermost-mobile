@@ -1,12 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, screen} from '@testing-library/react-native';
+import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
+import {startPhoneCall} from '@calls/alerts';
+import {isPhoneDialingAvailable} from '@calls/state';
+import {bottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import UserProfileLink from './label_link';
+
+jest.mock('@calls/alerts', () => ({startPhoneCall: jest.fn()}));
+jest.mock('@calls/state', () => ({isPhoneDialingAvailable: jest.fn(() => false)}));
+jest.mock('@screens/navigation', () => ({bottomSheet: jest.fn(), dismissBottomSheet: jest.fn()}));
+jest.mock('@context/server', () => ({useServerUrl: jest.fn(() => 'https://server.example.com')}));
 
 // Mock the URL utilities
 jest.mock('@utils/url', () => ({
@@ -314,6 +322,35 @@ describe('UserProfileLink', () => {
             fireEvent.press(linkElement);
 
             expect(mockTryOpenURL).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('phone dialing through Mattermost', () => {
+        it('should let the user dial a profile phone number through Mattermost, naming the viewed user as the target', async () => {
+            jest.mocked(isPhoneDialingAvailable).mockReturnValueOnce(true);
+            renderWithIntlAndTheme(
+                <UserProfileLink
+                    description=' +15551234567 '
+                    linkType='phone'
+                    testID='test-phone'
+                    title='Mobile'
+                    userId='user-2'
+                />,
+            );
+
+            fireEvent.press(screen.getByTestId('test-phone.phone'));
+
+            await waitFor(() => expect(bottomSheet).toHaveBeenCalled());
+            expect(mockTryOpenURL).not.toHaveBeenCalled();
+            const renderContent = jest.mocked(bottomSheet).mock.calls[0][0] as () => React.ReactElement;
+            const sheet = renderWithIntlAndTheme(renderContent());
+            fireEvent.press(sheet.getByText('Call with Mattermost'));
+
+            expect(startPhoneCall).toHaveBeenCalledWith(expect.any(Object), 'https://server.example.com', {
+                number: '+15551234567',
+                targetUserId: 'user-2',
+                displayLabel: 'Mobile',
+            });
         });
     });
 });

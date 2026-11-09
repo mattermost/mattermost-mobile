@@ -15,6 +15,7 @@ type Props = {
     description: string;
     testID?: string;
     type?: string;
+    userId?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -38,7 +39,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const UserProfileLabel = ({title, description, testID, type = 'text'}: Props) => {
+const UserProfileLabel = ({title, description, testID, type = 'text', userId}: Props) => {
     const styles = getStyleSheet(useTheme());
     let descriptionComponent;
     switch (type) {
@@ -49,6 +50,8 @@ const UserProfileLabel = ({title, description, testID, type = 'text'}: Props) =>
                     description={description}
                     linkType={type}
                     testID={testID}
+                    title={title}
+                    userId={userId}
                 />
             );
             break;
