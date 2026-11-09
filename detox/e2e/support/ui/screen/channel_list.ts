@@ -12,6 +12,7 @@ import {HomeScreen} from '@support/ui/screen';
 import {
     isAndroid,
     isIos,
+    safeEnableSynchronization,
     tapNativeBackButton,
     timeouts,
     wait,
@@ -467,16 +468,16 @@ class ChannelListScreen {
         return this.toBeVisible();
     };
 
-    // afterMenuOpen runs with the plus menu open and, on Android, inside the same sync-off window as the
-    // plus tap. A caller that taps a menu item passes it here instead of calling openPlusMenu and tapping
-    // afterwards: re-enabling sync between the two taps is what raced the Android looper (see
-    // BrowseChannelsScreen.open). The pre-tap checks stay synchronized, as they were before that window.
-    openPlusMenu = async (afterMenuOpen?: () => Promise<void>) => {
+    openPlusMenu = async () => {
         await dismissKnownModals(2);
         await this.toBeVisible();
         await waitForElementToExist(this.headerPlusButton, timeouts.HALF_MIN);
 
-        const open = async () => {
+        const disableSyncForOpen = isAndroid();
+        if (disableSyncForOpen) {
+            await device.disableSynchronization();
+        }
+        try {
             let plusTapError: unknown;
             /* eslint-disable no-await-in-loop -- retry plus-button tap while transition overlay clears */
             for (let i = 0; i < 3; i++) {
@@ -508,14 +509,10 @@ class ChannelListScreen {
 
             // Android: menu items mount before they pass the 15% visibility threshold.
             await waitForElementToExist(this.openDirectMessageItem, timeouts.TEN_SEC);
-            await afterMenuOpen?.();
-        };
-
-        // Depth-counted, so a caller that is already inside withSynchronizationDisabled keeps sync off too.
-        if (isAndroid()) {
-            await withSynchronizationDisabled(open);
-        } else {
-            await open();
+        } finally {
+            if (disableSyncForOpen) {
+                await safeEnableSynchronization();
+            }
         }
     };
 
