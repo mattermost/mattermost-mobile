@@ -85,7 +85,7 @@ async function waitForArchivedChannelDestination() {
 }
 
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
-    await BrowseChannelsScreen.open();
+    await BrowseChannelsScreen.open({holdSyncAcrossTap: true});
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
 

@@ -53,7 +53,8 @@ class BrowseChannelsScreen {
         return this.browseChannelsScreen;
     };
 
-    open = async () => {
+    // holdSyncAcrossTap: Android only. Keep sync off across the plus tap and the menu-item tap (see below).
+    open = async (options: {holdSyncAcrossTap?: boolean} = {}) => {
         // If Browse Channels is already open (e.g. a previous test failed mid-navigation
         // and left the modal on screen), close it first so we start from the channel list.
         try {
@@ -65,26 +66,24 @@ class BrowseChannelsScreen {
         }
 
         // # Open browse channels screen from the channel list header plus button.
-        await ChannelListScreen.openPlusMenu();
-
-        // openPlusMenu disables synchronization for the plus tap on Android precisely because
-        // the app is busy there, but re-enables it in its own finally -- so this tap, one line
-        // later, met the same busy app with sync back on. Detox then waits for idle before
-        // dispatching, and MM-T1719_1 timed out with both RN loopers ("mqt_v_js",
-        // "mqt_v_native") executing and this exact invocation unanswered:
-        //   matcherForTestId("plus_menu_item.browse_channels") ... click
-        // Extend the same Android-only window over the menu-item tap. withSynchronizationDisabled
-        // is depth-counted, so it nests safely.
-        //
-        // NOTE: unverified against MM-T1719_1 -- that failure does not reproduce locally, clean
-        // or under CPU load. This closes a real gap in sync coverage and matches the treatment
-        // the adjacent tap already gets, but it is not confirmed to be the cause.
-        if (isAndroid()) {
-            await withSynchronizationDisabled(async () => {
+        if (options.holdSyncAcrossTap) {
+            // Android race path: the plus tap and the menu-item tap share one sync-off window, so sync
+            // is never re-enabled while the RN JS thread is still busy between them (MM-T1719_1).
+            // Opt-in only: archive_channel waits for the browse screen after this tap, and with sync
+            // re-enabled there it hangs on mqt_v_js (run 42620618054), so it keeps the default sequence.
+            await ChannelListScreen.openPlusMenu(async () => {
                 await ChannelListScreen.browseChannelsItem.tap();
             });
         } else {
-            await ChannelListScreen.browseChannelsItem.tap();
+            // Default (main): sync is re-enabled between the plus tap and the menu-item tap.
+            await ChannelListScreen.openPlusMenu();
+            if (isAndroid()) {
+                await withSynchronizationDisabled(async () => {
+                    await ChannelListScreen.browseChannelsItem.tap();
+                });
+            } else {
+                await ChannelListScreen.browseChannelsItem.tap();
+            }
         }
         await wait(timeouts.ONE_SEC);
 
