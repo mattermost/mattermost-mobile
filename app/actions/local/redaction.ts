@@ -8,7 +8,7 @@ import {distinctUntilChanged, map, shareReplay, switchMap} from 'rxjs/operators'
 import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {observeMyChannel} from '@queries/servers/channel';
-import {getConfigValue, observeConfigBooleanValue, querySystemValue} from '@queries/servers/system';
+import {isRedactionEnforced, observeConfigBooleanValue, querySystemValue} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
@@ -82,18 +82,6 @@ const getMyChannelRecord = async (database: Database, channelId: string): Promis
 export const getRedactionEpochState = async (database: Database): Promise<RedactionEpochState> => {
     const record = await getEpochRecord(database);
     return parseEpochState(record?.value);
-};
-
-/**
- * Mirrors attributeBasedAccessControlEnabled (server app/access_control.go). No license term: the
- * client gate must be neither narrower nor broader than the server predicate it mirrors.
- */
-export const isRedactionEnforced = async (database: Database): Promise<boolean> => {
-    const [flag, setting] = await Promise.all([
-        getConfigValue(database, 'FeatureFlagPermissionPolicies'),
-        getConfigValue(database, 'EnableAttributeBasedAccessControl'),
-    ]);
-    return flag === 'true' && setting === 'true';
 };
 
 // Shared per database for the same reason as the required-epoch stream below: every

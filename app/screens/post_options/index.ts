@@ -6,6 +6,7 @@ import {combineLatest, of as of$, Observable} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {withServerUrl} from '@context/server';
@@ -14,6 +15,7 @@ import AppsManager from '@managers/apps_manager';
 import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated, observeChannelInfo} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
+import {observeChannelActionDenied} from '@queries/servers/render_permissions';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
@@ -131,8 +133,10 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         return of$(!isArchived && !isReadOnly && sourceScreen !== Screens.THREAD && !isSystemMessage(post) && canPost);
     }));
 
-    const canPin = borPost ? of$(false) : combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
-        return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
+    // The server refuses pinning under a write access policy, which no permission covers.
+    const writeDenied = observeChannelActionDenied(database, serverUrl, post.channelId, RenderPermissionAction.ChannelWriteAccess);
+    const canPin = borPost ? of$(false) : combineLatest([channelIsArchived, channelIsReadOnly, writeDenied]).pipe(switchMap(([isArchived, isReadOnly, isWriteDenied]) => {
+        return of$(!isSystemMessage(post) && !isArchived && !isReadOnly && !isWriteDenied);
     }));
 
     const isSaved = observePostSaved(database, post.id, serverUrl);

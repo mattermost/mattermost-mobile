@@ -5,7 +5,6 @@ import RNUtils from '@mattermost/rnutils';
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
-import {isRedactionEnforced} from '@actions/local/redaction';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
@@ -37,6 +36,7 @@ import {
     getCurrentTeamId,
     getLicense,
     getLastFullSync,
+    isRedactionEnforced,
     setLastFullSync,
 } from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';

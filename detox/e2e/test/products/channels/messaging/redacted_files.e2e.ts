@@ -23,6 +23,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {Post as PostComponent} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -140,13 +141,13 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Sales user does not satisfy the policy — placeholder is shown, the file is not
-        await waitFor(element(by.id('redacted-files-placeholder'))).
+        await waitFor(PostComponent.redactedFilesPlaceholder).
             toBeVisible().
             withTimeout(timeouts.TEN_SEC);
 
         // `-file-container`, not `-file`: the attachment is a .txt, and only image and video files
         // carry the `-file` testID
-        await expect(element(by.id(`${fileId}-file-container`))).not.toExist();
+        await expect(PostComponent.getFileContainer(fileId)).not.toExist();
 
         await ChannelScreen.back();
         await HomeScreen.logout();
@@ -160,11 +161,11 @@ describe('Messaging - Redacted Files (ABAC)', () => {
 
         // * Wait for the attachment itself: absence of the placeholder alone would also hold before
         // the list loads, or while the post is still unverified
-        await waitFor(element(by.id(`${fileId}-file-container`))).
+        await waitFor(PostComponent.getFileContainer(fileId)).
             toExist().
             withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id('redacted-files-placeholder'))).not.toExist();
-        await expect(element(by.id('unverified-files-placeholder'))).not.toExist();
+        await expect(PostComponent.redactedFilesPlaceholder).not.toExist();
+        await expect(PostComponent.unverifiedFilesPlaceholder).not.toExist();
 
         await ChannelScreen.back();
         await HomeScreen.logout();

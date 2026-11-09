@@ -10,6 +10,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getLicense} from '@queries/servers/system';
+import RenderPermissionsStore from '@store/render_permissions_store';
 
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 
@@ -156,6 +157,20 @@ describe('WebSocket System Actions', () => {
             jest.mocked(getConfig).mockResolvedValue(enforced);
             await handleConfigChangedEvent(serverUrl, {data: {config: notEnforced}} as WebSocketMessage);
             expect(invalidateRedactionGlobally).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.ConfigChanged);
+        });
+
+        it('should expire cached decisions only when the ChannelPermissionActions flag changes', async () => {
+            const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
+            const flagOn = {FeatureFlagChannelPermissionActions: 'true'} as ClientConfig;
+            const flagOff = {FeatureFlagChannelPermissionActions: 'false'} as ClientConfig;
+
+            jest.mocked(getConfig).mockResolvedValue(flagOn);
+            await handleConfigChangedEvent(serverUrl, {data: {config: flagOn}} as WebSocketMessage);
+            expect(expireServer).not.toHaveBeenCalled();
+
+            await handleConfigChangedEvent(serverUrl, {data: {config: flagOff}} as WebSocketMessage);
+            expect(expireServer).toHaveBeenCalledTimes(1);
+            expect(expireServer).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should handle config update with no display name change', async () => {

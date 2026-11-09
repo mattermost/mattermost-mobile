@@ -108,6 +108,21 @@ describe('RenderPermissionsStore', () => {
         subscription.unsubscribe();
     });
 
+    it('should revoke the requests in flight for one channel, or for the whole server', () => {
+        const first = RenderPermissionsStore.startFetch(serverUrl, channelId);
+        const second = RenderPermissionsStore.startFetch(serverUrl, 'another-channel');
+        const otherServer = RenderPermissionsStore.startFetch(otherServerUrl, channelId);
+
+        RenderPermissionsStore.revokeFetches(serverUrl, channelId);
+        expect(RenderPermissionsStore.startFetch(serverUrl, 'another-channel')).toBeUndefined();
+        expect(RenderPermissionsStore.finishFetch(serverUrl, channelId, first as object, entry)).toBe(false);
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)).toBeUndefined();
+
+        RenderPermissionsStore.revokeFetches(serverUrl);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, 'another-channel', second as object, entry)).toBe(false);
+        expect(RenderPermissionsStore.finishFetch(otherServerUrl, channelId, otherServer as object, entry)).toBe(true);
+    });
+
     it('should back off exponentially on consecutive transient outcomes, up to the time to live', () => {
         expect(RenderPermissionsStore.nextRetryDelay(serverUrl, channelId)).toBe(RETRY);
         expect(RenderPermissionsStore.nextRetryDelay(serverUrl, channelId)).toBe(RETRY * 2);

@@ -38,7 +38,7 @@ const {
 // The flag-off tests and the required-attribute test change server-wide state, so they live in
 // channel_attributes_flag_off.e2e.ts on the mutation server.
 // FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
-// so enableChannelAttributes() can never succeed and every test here fails in beforeAll.
+// so the server baseline cannot turn it on.
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Header chips and Channel Info section', () => {
     const serverOneDisplayName = 'Server 1';
     let testUser: any;
@@ -64,10 +64,20 @@ const {
     });
 
     afterAll(async () => {
+        let cleanupError: unknown;
         try {
             await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
-        } finally {
+        } catch (error) {
+            cleanupError = error;
+        }
+        try {
             await HomeScreen.logout();
+        } catch (error) {
+            cleanupError ??= error;
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -78,12 +88,27 @@ const {
     });
 
     afterEach(async () => {
+        let cleanupError: unknown;
+
         // Delete the per-test channel so attribute fields on it do not leak into the next test.
         if (testChannel) {
-            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            if (testChannel.type !== 'D') {
+                const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+                if (result.error) {
+                    cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
+                }
+            }
             testChannel = null;
         }
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+        } catch (error) {
+            cleanupError ??= error;
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
+        }
     });
 
     describe('with the flag on', () => {

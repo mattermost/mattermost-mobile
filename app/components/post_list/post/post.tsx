@@ -73,6 +73,7 @@ type PostProps = {
     isSaved?: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
+    isChannelWriteDenied: boolean;
     location: AvailableScreens;
     post: PostModel;
     rootId?: string;
@@ -152,6 +153,7 @@ const Post = ({
     isLastReply,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
+    isChannelWriteDenied,
     location,
     post,
     rootId,
@@ -430,6 +432,7 @@ const Post = ({
                 isPendingOrFailed={isPendingOrFailed}
                 isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
                 isPostAddChannelMember={isPostAddChannelMember}
+                isChannelWriteDenied={isChannelWriteDenied}
                 location={location}
                 post={post}
                 searchPatterns={searchPatterns}
