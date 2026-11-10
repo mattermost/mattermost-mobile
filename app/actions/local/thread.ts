@@ -14,6 +14,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {navigateToScreen, dismissToStackRoot, navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {deleteDownloadedFiles} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 
@@ -206,7 +207,7 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         }
 
         // Unstamped: thread payloads omit the root post's file metadata.
-        const {models: postModels} = await operator.handlePosts({
+        const {models: postModels, revokedFiles} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [],
             posts,
@@ -230,9 +231,10 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         }
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords(models, 'processReceivedThreads');
+            await operator.batchRecords(models, 'processReceivedThreads', true);
+            deleteDownloadedFiles(serverUrl, revokedFiles);
         }
-        return {models};
+        return {models, revokedFiles};
     } catch (error) {
         logError('Failed processReceivedThreads', error);
         return {error};
