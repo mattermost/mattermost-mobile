@@ -24,6 +24,7 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
+import type {RevokedFile} from '@typings/database/database';
 
 type FetchThreadsOptions = {
     before?: string;
@@ -313,6 +314,7 @@ export const syncThreadsIfNeeded = async (
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const promises = [];
         const models: Model[][] = [];
+        const revokedFiles: RevokedFile[] = [];
 
         if (teams?.length) {
             for (const team of teams) {
@@ -326,15 +328,19 @@ export const syncThreadsIfNeeded = async (
                 if (r.models?.length) {
                     models.push(r.models);
                 }
+                if (r.revokedFiles?.length) {
+                    revokedFiles.push(...r.revokedFiles);
+                }
             }
         }
 
         const flat = removeDuplicatesModels(models.flat());
         if (!fetchOnly && flat.length) {
-            await operator.batchRecords(flat, 'syncThreadsIfNeeded');
+            await operator.batchRecords(flat, 'syncThreadsIfNeeded', true);
+            deleteDownloadedFiles(serverUrl, revokedFiles);
         }
 
-        return {models: flat};
+        return {models: flat, revokedFiles};
     } catch (error) {
         logError('syncThreadsIfNeeded: Error', error);
         return {error, models: undefined};
@@ -450,12 +456,15 @@ export const syncTeamThreads = async (
         }
 
         const models: Model[] = [];
+        const revokedFiles: RevokedFile[] = [];
 
         if (threads.length) {
-            const {error, models: threadModels = [], revokedFiles = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
-            if (error) {
-                return {error};
+            const processed = await processReceivedThreads(serverUrl, threads, teamId, true);
+            if (processed.error) {
+                return {error: processed.error};
             }
+            const threadModels = processed.models ?? [];
+            revokedFiles.push(...(processed.revokedFiles ?? []));
 
             if (threadModels?.length) {
                 models.push(...threadModels);
@@ -480,7 +489,7 @@ export const syncTeamThreads = async (
                 }
             }
         }
-        return {error: false, models};
+        return {error: false, models, revokedFiles};
     } catch (error) {
         return {error};
     }
@@ -508,13 +517,16 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
         }
 
         const models: Model[] = [];
+        const revokedFiles: RevokedFile[] = [];
         const threads = fetchedThreads.threads || [];
 
         if (threads?.length) {
-            const {error, models: threadModels = [], revokedFiles = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
-            if (error) {
-                return {error};
+            const processed = await processReceivedThreads(serverUrl, threads, teamId, true);
+            if (processed.error) {
+                return {error: processed.error};
             }
+            const threadModels = processed.models ?? [];
+            revokedFiles.push(...(processed.revokedFiles ?? []));
 
             if (threadModels?.length) {
                 models.push(...threadModels);
@@ -543,7 +555,7 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
             }
         }
 
-        return {models, threads};
+        return {models, threads, revokedFiles};
     } catch (error) {
         return {error};
     }
