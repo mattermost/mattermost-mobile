@@ -28,8 +28,8 @@ export const showPhoneLinkOptions = (intl: IntlShape, serverUrl: string, phone: 
         <View>
             <SlideUpPanelItem
                 leftIcon='phone-in-talk'
-                onPress={() => {
-                    dismissBottomSheet();
+                onPress={async () => {
+                    await dismissBottomSheet();
                     startPhoneCall(intl, serverUrl, phone);
                 }}
                 testID='markdown_link.bottom_sheet.call_with_mattermost'
@@ -37,8 +37,8 @@ export const showPhoneLinkOptions = (intl: IntlShape, serverUrl: string, phone: 
             />
             <SlideUpPanelItem
                 leftIcon='phone-outline'
-                onPress={() => {
-                    dismissBottomSheet();
+                onPress={async () => {
+                    await dismissBottomSheet();
                     callWithPhone();
                 }}
                 testID='markdown_link.bottom_sheet.call_with_phone'

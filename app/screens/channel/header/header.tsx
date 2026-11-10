@@ -350,7 +350,11 @@ const ChannelHeader = ({
             return;
         }
         lastPhoneAttributesFetch.set(key, now);
-        fetchCustomProfileAttributes(serverUrl, dmPhoneUserId, true);
+        fetchCustomProfileAttributes(serverUrl, dmPhoneUserId, true).then(({error}) => {
+            if (error && lastPhoneAttributesFetch.get(key) === now) {
+                lastPhoneAttributesFetch.delete(key);
+            }
+        });
     }, [dmPhoneUserId, callsConfig.EnableSIPOutbound, serverUrl]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;

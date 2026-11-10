@@ -109,10 +109,27 @@ describe('ChannelHeader', () => {
         props.dmPhoneUserId = 'dm-user-id';
         enableCalls(props);
         jest.mocked(getCallsConfig).mockReturnValue({...DefaultCallsConfig, pluginEnabled: true, EnableSIPOutbound: true});
+        jest.mocked(fetchCustomProfileAttributes).mockResolvedValue({attributes: {}, error: undefined});
 
         renderWithIntl(<ChannelHeader {...props}/>);
 
         expect(fetchCustomProfileAttributes).toHaveBeenCalledWith(serverUrl, 'dm-user-id', true);
+    });
+
+    it('should refetch the DM user\'s profile attributes on the next mount when the previous fetch failed', async () => {
+        const props = getBaseProps();
+        props.channelType = General.DM_CHANNEL;
+        props.dmPhoneUserId = 'offline-user-id';
+        enableCalls(props);
+        jest.mocked(getCallsConfig).mockReturnValue({...DefaultCallsConfig, pluginEnabled: true, EnableSIPOutbound: true});
+        jest.mocked(fetchCustomProfileAttributes).mockResolvedValue({attributes: {}, error: new Error('offline')});
+
+        const {unmount} = renderWithIntl(<ChannelHeader {...props}/>);
+        await waitFor(() => expect(fetchCustomProfileAttributes).toHaveBeenCalledTimes(1));
+        unmount();
+        renderWithIntl(<ChannelHeader {...props}/>);
+
+        expect(fetchCustomProfileAttributes).toHaveBeenCalledTimes(2);
     });
 
     it('should not show the quick call button when calls are disabled in the DM', () => {

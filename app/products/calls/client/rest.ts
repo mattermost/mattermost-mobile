@@ -77,10 +77,16 @@ const ClientCalls = (superclass: any) => class extends superclass {
     };
 
     phoneCall = async ({number, targetUserId, displayLabel}: PhoneTarget) => {
-        return this.doFetch(
+        const session = await this.doFetch(
             `${this.getCallsRoute()}/phone-call`,
             {method: 'post', body: {number, target_user_id: targetUserId, display_label: displayLabel}},
-        ) as PhoneCallResponse;
+        );
+
+        if (!isLiveKitSessionResponse(session, this.getBaseRoute()) || typeof (session as PhoneCallResponse).channel_id !== 'string') {
+            throw new Error('Invalid phone call response');
+        }
+
+        return session as PhoneCallResponse;
     };
 
     getVersion = async (groupLabel?: RequestGroupLabel) => {
