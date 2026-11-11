@@ -183,11 +183,7 @@ describe('AppsFormComponent submit button', () => {
     });
 
     describe('checkbox_matrix validation on submit', () => {
-        // Exercises the PRODUCTION path: values are validated against elements built by
-        // fieldsAsElements(), and checkDialogElementForError's matrix format checks are
-        // guarded on matrix_config. When fieldsAsElements omitted matrix_config the whole
-        // block was unreachable and malformed row:col entries submitted verbatim. Tests
-        // that hand-build DialogElements cannot catch that, which is how it shipped.
+        // Goes through fieldsAsElements() so a dropped matrix_config would skip validation.
         const matrixForm = (value: string[]): Partial<AppForm> => ({
             fields: [{
                 name: 'permissions',
