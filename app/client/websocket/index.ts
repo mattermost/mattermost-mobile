@@ -121,7 +121,7 @@ export default class WebSocketClient {
         const reliableWebSockets = hasReliableWebsocket(version, reliableWebsocketConfig);
         if (reliableWebSockets) {
             // Add connection id, and last_sequence_number to the query param.
-            // We cannot also send it as part of the auth_challenge, because the session cookie is already sent with the request.
+            // We cannot also send it as part of the auth_challenge, because on iOS the session cookie is already sent with the request and on Android the bearer header is.
             this.url = `${connectionUrl}?connection_id=${this.connectionId}&sequence_number=${this.serverSequence}`;
         }
 
