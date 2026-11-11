@@ -21,7 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
@@ -240,7 +240,7 @@ describe('Messaging - File Preview Gallery', () => {
         // Wait for the gallery open animation to settle: the UITransitionView overlay still
         // intercepts taps after toBeVisible() resolves.
         await wait(timeouts.TWO_SEC);
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await copyPublicLinkButton.tap();
 
@@ -250,7 +250,7 @@ describe('Messaging - File Preview Gallery', () => {
                 toExist().
                 withTimeout(timeouts.HALF_MIN);
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // # Dismiss the gallery and wait for overlay to clear

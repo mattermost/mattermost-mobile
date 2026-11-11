@@ -52,7 +52,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 // Stacked dialogs are separate expo-router screens pushed by
@@ -369,11 +369,11 @@ async function openIncidentBoard() {
     await ChannelScreen.postSlashCommand('/dialog action-buttons');
 
     // Sync off so the push animation does not block the poll.
-    await device.disableSynchronization();
+    await disableSynchronization();
     try {
         await waitForVisibleText(BOARD_TITLE);
     } finally {
-        await safeEnableSynchronization();
+        await enableSynchronization();
     }
 }
 
@@ -632,7 +632,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
 
             // Sync off, otherwise Detox waits for the request to settle and the
             // loading state is never observable.
-            await device.disableSynchronization();
+            await disableSynchronization();
             try {
                 // # Tap the action button, then tap it again while it is loading
                 await tapActionButton(BTN_TRIAGE_INC301);
@@ -662,7 +662,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
                     await waitFor(InteractiveDialogScreen.getActionButtonLoader(BTN_TRIAGE_INC301)).toBeVisible().withTimeout(timeouts.FIVE_SEC);
                 }
             } finally {
-                await safeEnableSynchronization();
+                await enableSynchronization();
             }
 
             // * A child opened

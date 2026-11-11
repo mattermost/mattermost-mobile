@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
-import {isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class AddMembersScreen {
@@ -77,7 +77,7 @@ class AddMembersScreen {
 
         const tapUserRow = async () => {
             if (isIos()) {
-                await device.disableSynchronization();
+                await disableSynchronization();
             }
             try {
                 // display_name is less likely to be clipped than the full row container
@@ -90,7 +90,7 @@ class AddMembersScreen {
                 await this.getUserItem(userId).tap({x: 10, y: 20});
             } finally {
                 if (isIos()) {
-                    await device.enableSynchronization();
+                    await enableSynchronization();
                 }
             }
         };

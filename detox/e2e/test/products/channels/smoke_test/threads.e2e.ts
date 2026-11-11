@@ -28,7 +28,7 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 const itNotAndroid = isAndroid() ? it.skip : it;
@@ -77,27 +77,27 @@ describe('Smoke Test - Threads', () => {
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await device.disableSynchronization();
+        await disableSynchronization();
         await waitForElementToBeVisible(ThreadScreen.followingButton, timeouts.HALF_MIN);
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         // # Unfollow thread via thread navigation
         await ThreadScreen.followingButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not followed by user via thread navigation
-        await device.disableSynchronization();
+        await disableSynchronization();
         await waitForElementToBeVisible(ThreadScreen.followButton, timeouts.TEN_SEC);
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         // # Follow thread via thread navigation
         await ThreadScreen.followButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify thread is followed by user via thread navigation
-        await device.disableSynchronization();
+        await disableSynchronization();
         await waitForElementToBeVisible(ThreadScreen.followingButton, timeouts.TEN_SEC);
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         // # Go back to channel list screen, then go to global threads screen, tap on all your threads button, open thread options for thread, tap on mark as unread option, and tap on unread threads button
         await ThreadScreen.back();
@@ -113,19 +113,19 @@ describe('Smoke Test - Threads', () => {
 
         // * Verify thread is marked unread in all threads before switching filters.
         // The unread badge/footer update drives membership in the Unreads tab.
-        await device.disableSynchronization();
+        await disableSynchronization();
         await waitForElementToBeVisible(GlobalThreadsScreen.getThreadItem(parentPost.id), timeouts.HALF_MIN);
         await waitFor(GlobalThreadsScreen.getThreadItemUnreadDotBadge(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toHaveText('1 new reply').withTimeout(timeouts.TEN_SEC);
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
         // * Verify thread is displayed in unread threads section
         // Disable sync: tab filter + WS refresh can keep the bridge busy while the unread list repopulates.
-        await device.disableSynchronization();
+        await disableSynchronization();
         await waitForElementToBeVisible(GlobalThreadsScreen.getThreadItem(parentPost.id), timeouts.HALF_MIN);
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         // # Open thread options for thread and tap on mark as read option
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
@@ -133,9 +133,9 @@ describe('Smoke Test - Threads', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify thread is not displayed anymore in unread threads section
-        await device.disableSynchronization();
+        await disableSynchronization();
         await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         // # Tap on all your threads button, tap on the thread, and add new reply to thread
         await GlobalThreadsScreen.headerAllThreadsButton.tap();

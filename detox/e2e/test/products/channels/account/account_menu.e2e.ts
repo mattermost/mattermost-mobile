@@ -22,7 +22,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - Account Menu', () => {
@@ -76,7 +76,7 @@ describe('Account - Account Menu', () => {
     it('MM-T4988_2 - should be able to set user presence', async () => {
         // The status update fires an async request before dismissing the sheet, which can hold
         // Detox's bridge past the Jest timeout — run unsynchronized and verify UI state instead.
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             // # Tap on user presence option and tap on offline user status option
             await AccountScreen.userPresenceOption.tap();
@@ -122,7 +122,7 @@ describe('Account - Account Menu', () => {
             await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     });
 

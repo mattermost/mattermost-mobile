@@ -27,7 +27,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, expectVisible, wait, waitForElementToBeVisible} from '@support/utils';
+import {expectVisible, reloadApp, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel List', () => {
@@ -199,7 +199,7 @@ describe('Channels - Channel List', () => {
         // # As admin, create a second team and add user to the second team; as user, terminate app and relaunch app
         const {team: testTeamTwo} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, testTeamTwo.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // * Verify on first team and team sidebar item is selected and has correct display name abbreviation

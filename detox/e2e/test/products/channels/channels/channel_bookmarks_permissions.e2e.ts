@@ -30,8 +30,8 @@ import {
     openArchivedChannel,
     postArchivedChannelSentinel,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {reloadApp, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Permissions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -157,7 +157,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
     });
 

@@ -21,7 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {reloadApp, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Team Switching', () => {
@@ -43,7 +43,7 @@ describe('Channels - Team Switching', () => {
         // # Log in to server and reload so the second team appears in the sidebar
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
     });
 

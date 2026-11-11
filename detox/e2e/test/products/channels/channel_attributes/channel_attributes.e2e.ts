@@ -20,8 +20,8 @@ import {assertServerBaseline} from '@support/server_baseline';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {reloadApp, timeouts, wait} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -257,7 +257,7 @@ const {
 
             // # Set an attribute value on the DM channel (server accepts it; mobile must not show it).
             await Properties.apiSetChannelAttributeValue(siteOneUrl, dmChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
 
@@ -447,7 +447,7 @@ const {
             }
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -460,7 +460,7 @@ const {
 
             // # Change the value to LOW via the API and reload.
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'LOW'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -495,7 +495,7 @@ const {
             });
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -544,7 +544,7 @@ const {
             });
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -595,7 +595,7 @@ const {
             });
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);

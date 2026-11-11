@@ -26,7 +26,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 const itNotIos = isIos() ? it.skip : it;
@@ -162,7 +162,7 @@ describe('Search - Modifiers', () => {
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await SearchMessagesScreen.searchInput.tapReturnKey();
 
@@ -174,7 +174,7 @@ describe('Search - Modifiers', () => {
             const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
             await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
 
         // Cleanup must run with sync on — under disableSynchronization the recent-item
@@ -215,7 +215,7 @@ describe('Search - Modifiers', () => {
 
         // # Open search messages screen and search for the full special username
         await SearchMessagesScreen.open();
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await SearchMessagesScreen.searchInput.typeText(specialUser.username);
             await SearchMessagesScreen.searchInput.tapReturnKey();
@@ -225,7 +225,7 @@ describe('Search - Modifiers', () => {
             const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(mentionPost.id, mentionMessage);
             await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
 
         // # Clear search, remove recent search item, and go back to channel list screen

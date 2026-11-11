@@ -21,7 +21,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, isIpad, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, isIos, isIpad, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import {logDebug} from '../../../../provision/log';
@@ -300,21 +300,31 @@ class ChannelScreen {
     back = async () => {
         await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
         let navigated = false;
+        let backButtonShown = false;
         try {
             await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
+            backButtonShown = true;
+        } catch {
+            // Back button not in hierarchy — fall through to tab/native back.
+        }
+        if (backButtonShown) {
+            // Only the tap may fail over to the fallbacks below; an error turning sync off or on surfaces.
+            const tapBack = async () => {
+                try {
+                    await NavigationHeader.tapBackButton(0);
+                    navigated = true;
+                } catch {
+                    // Not tappable — fall through to tab/native back.
+                }
+            };
 
             // iOS: tap with synchronization disabled, the same way ChannelInfoScreen.close()
             // and PinnedMessagesScreen.back() already do.
             if (isIos()) {
-                await withSynchronizationDisabled(async () => {
-                    await NavigationHeader.tapBackButton(0);
-                });
+                await withSynchronizationDisabled(tapBack);
             } else {
-                await NavigationHeader.tapBackButton(0);
+                await tapBack();
             }
-            navigated = true;
-        } catch {
-            // Back button not in hierarchy — fall through to tab/native back.
         }
         if (!navigated) {
             if (isAndroid()) {
@@ -580,7 +590,7 @@ class ChannelScreen {
             await this.dismissKeyboardForSchedulePicker();
         }
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await this.sendButton.longPress(timeouts.TWO_SEC);
 
@@ -589,7 +599,7 @@ class ChannelScreen {
                 timeouts.HALF_MIN,
             );
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     };
 

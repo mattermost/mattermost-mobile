@@ -33,7 +33,7 @@ import {
     HomeScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, reloadApp, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels', () => {
@@ -271,7 +271,7 @@ describe('Channels', () => {
         // channelWithMetadata (added in beforeAll) is present in the sidebar. Without
         // this, the join event from beforeAll can fail to propagate by the time this
         // test runs, leaving waitForSidebarPublicChannelDisplayNameVisible to time out.
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // # Navigate to the channel with metadata
@@ -295,7 +295,7 @@ describe('Channels', () => {
     it('MM-T865 - RN apps Copying channel purpose text', async () => {
         // # Reload React Native for the same reason as MM-T867 — guarantees the sidebar
         // reflects the API-joined channel even if MM-T867 was skipped or failed.
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // # Navigate to the channel with metadata

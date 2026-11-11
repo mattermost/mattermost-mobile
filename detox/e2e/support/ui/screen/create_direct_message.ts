@@ -4,7 +4,7 @@
 import {ProfilePicture} from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist, withSynchronizationDisabledOnAndroid} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateDirectMessageScreen {
@@ -140,15 +140,14 @@ class CreateDirectMessageScreen {
         }
 
         await dismissKnownModals(2);
-        await ChannelListScreen.openPlusMenu();
-        await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
-        await wait(timeouts.HALF_SEC);
 
-        const disableSyncForOpen = isAndroid();
-        if (disableSyncForOpen) {
-            await device.disableSynchronization();
-        }
-        try {
+        // Android: sync stays off from the plus tap through the menu-item tap, in one window, and comes back on
+        // before waiting for the screen — navigation must settle while the bridge is tracked (machine-9 log:
+        // 60s toExist timeout with sync off).
+        await withSynchronizationDisabledOnAndroid(async () => {
+            await ChannelListScreen.openPlusMenu();
+            await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+            await wait(timeouts.HALF_SEC);
 
             /* eslint-disable no-await-in-loop -- retry menu item tap while plus-menu animation settles */
             for (let i = 0; i < 3; i++) {
@@ -163,13 +162,7 @@ class CreateDirectMessageScreen {
                 }
             }
             /* eslint-enable no-await-in-loop */
-        } finally {
-            if (disableSyncForOpen) {
-                // Re-enable sync before waiting for the screen — navigation must settle while
-                // the bridge is tracked (machine-9 log: 60s toExist timeout with sync off).
-                await safeEnableSynchronization();
-            }
-        }
+        });
 
         if (isAndroid()) {
             // A long-press tutorial Modal holds the Dialog window focus, so Espresso cannot see

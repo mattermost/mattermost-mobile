@@ -26,12 +26,16 @@ const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 // Detox actions carry no timeout, so one that never completes takes the whole file with it
 // (main 0869dc8). Only for optional scrolls — if the result is asserted right after, the
 // scroll must stay synchronized so the list settles.
+// Only the scroll is best effort: an error from turning synchronization off or on is not, since the idling
+// resources it leaves broken report the app busy until the file times out.
 async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
-    try {
-        await withSynchronizationDisabled(scroll);
-    } catch {
-        // List not scrollable, already at the boundary, or not mounted yet.
-    }
+    await withSynchronizationDisabled(async () => {
+        try {
+            await scroll();
+        } catch {
+            // List not scrollable, already at the boundary, or not mounted yet.
+        }
+    });
 }
 
 class ChannelListScreen {

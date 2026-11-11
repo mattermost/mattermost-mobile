@@ -13,8 +13,8 @@ import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {reloadApp, timeouts, wait} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -63,7 +63,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
 
@@ -77,7 +77,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
         await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
@@ -96,7 +96,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
         await GlobalThreadsScreen.open();
@@ -109,7 +109,7 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6200_1 - should not render the banner when no classification value is set', async () => {
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
 
@@ -121,7 +121,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -150,7 +150,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         if (!secretOptionId) {
             throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);
         }
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
 
@@ -161,7 +161,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             {field_id: linkedFieldId, value: secretOptionId},
         ]);
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         await GlobalClassificationBanner.toBeVisible();
@@ -174,7 +174,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
 
@@ -182,7 +182,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
         await Properties.apiCleanupClassification(siteOneUrl);
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
 
@@ -194,13 +194,13 @@ describe('Classification Banner - Global Classification Banner', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
 
         await Properties.apiCleanupClassification(siteOneUrl);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         await GlobalClassificationBanner.toNotBeVisible();
@@ -219,7 +219,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+        await reloadApp();
 
         await ChannelListScreen.toBeVisible();
 
@@ -237,7 +237,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 throw new Error(`Failed to turn ClassificationMarkings off: ${JSON.stringify(flagError)}`);
             }
 
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
 

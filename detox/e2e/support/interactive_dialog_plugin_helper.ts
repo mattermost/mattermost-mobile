@@ -29,7 +29,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 const FILE_UPLOAD_FIXTURE = path.resolve(__dirname, 'fixtures/sample.txt');
@@ -257,11 +257,11 @@ export async function ensureDialogClosed() {
 
 export async function ensureDialogOpen() {
     // Disable sync so the bottom sheet animation does not block the poll.
-    await device.disableSynchronization();
+    await disableSynchronization();
     try {
         await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
     } finally {
-        await safeEnableSynchronization();
+        await enableSynchronization();
     }
 }
 

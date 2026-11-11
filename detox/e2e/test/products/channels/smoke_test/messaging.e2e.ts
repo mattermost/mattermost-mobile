@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -150,12 +150,12 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
         await EmojiPickerScreen.open();
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await EmojiPickerScreen.searchInput.tapReturnKey();
         await waitFor(element(by.text('🤡'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await element(by.text('🤡')).tap();
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         // * Verify reaction is added to the message
         await waitFor(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toExist().withTimeout(timeouts.TEN_SEC);
