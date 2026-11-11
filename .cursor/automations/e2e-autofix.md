@@ -156,10 +156,12 @@ Every check must pass before you open a PR. In a dry run, report the results.
 
    ```bash
    gh workflow run e2e-flake-verify.yml --ref main -f PR_NUMBER=<n> -f SOURCE_RUN_ID=<finished E2E run id> \
-     -f CANDIDATE_SHA=<PR head sha> -f BASELINE_SHA=<request base.commit> -f PLATFORM=android \
+     -f CANDIDATE_SHA=<PR head sha> -f BASELINE_SHA=<merge base, see below> -f PLATFORM=android \
      -f SPECS='<spec files>' -f TARGETS='<test ids you claim to fix, e.g. MM-T4932_3>' \
      -f REPEATS=<n> -f PARALLEL=<2; 1 for specs that change server-wide settings>
    ```
+
+   BASELINE_SHA must be the PR's branch point: `git fetch origin main && git merge-base origin/main <PR head sha>`. It is `base.commit` until the PR is rebased or updated from main. If it has moved, check that main still failed the test at or after the new merge base (step 2's runs) before dispatching. If main no longer fails it there, the comparison cannot show a fix: say so, and do not dispatch.
 
    REPEATS is about ceil(3/p), capped at 30. Use 10 if the test failed in more than 25% of runs.
 

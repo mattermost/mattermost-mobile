@@ -124,7 +124,7 @@ PR E2E runs the full `detox/e2e/test` tree when labeled.
 
 `e2e-flake-verify.yml` runs named Detox specs REPEATS times on a PR commit and on a main commit, each on a fresh device with no retry, against the servers and app build of the PR's finished E2E run. It then posts one verdict comment on the PR and the informational `e2e-test/flake-verify` status (`detox/utils/flake-verify.js` explains the verdict).
 - It is Detox Android only.
-- Dispatch it from main once the PR's E2E run has finished, with the PR ready for review: `gh workflow run e2e-flake-verify.yml --ref main -f PR_NUMBER=<n> -f SOURCE_RUN_ID=<E2E run id> -f CANDIDATE_SHA=<PR head> -f BASELINE_SHA=<main commit> -f PLATFORM=android -f SPECS='<spec files>' -f TARGETS='<test ids>' -f REPEATS=10`. TARGETS is required: the ids of the tests the PR claims to fix. Other tests in SPECS count only if they fail, and BASELINE_SHA must be the PR's branch point.
+- Dispatch it from main once the PR's E2E run has finished, with the PR ready for review: `gh workflow run e2e-flake-verify.yml --ref main -f PR_NUMBER=<n> -f SOURCE_RUN_ID=<E2E run id> -f CANDIDATE_SHA=<PR head> -f BASELINE_SHA=$(git merge-base origin/main <PR head>) -f PLATFORM=android -f SPECS='<spec files>' -f TARGETS='<test ids>' -f REPEATS=10`. TARGETS is required: the ids of the tests the PR claims to fix. Other tests in SPECS count only if they fail, and BASELINE_SHA must be the PR's branch point.
 
 `e2e-tests-autofix-on-merge.yml` runs after every main E2E run. It picks the tests that keep failing on main and sends them to the Cursor automation in `.cursor/automations/e2e-autofix.md`.
 - It does nothing without its webhook secrets.
