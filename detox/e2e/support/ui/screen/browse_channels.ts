@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -53,8 +53,7 @@ class BrowseChannelsScreen {
         return this.browseChannelsScreen;
     };
 
-    // holdSyncAcrossTap: Android only. Keep sync off across the plus tap and the menu-item tap (see below).
-    open = async (options: {holdSyncAcrossTap?: boolean} = {}) => {
+    open = async () => {
         // If Browse Channels is already open (e.g. a previous test failed mid-navigation
         // and left the modal on screen), close it first so we start from the channel list.
         try {
@@ -66,25 +65,13 @@ class BrowseChannelsScreen {
         }
 
         // # Open browse channels screen from the channel list header plus button.
-        if (options.holdSyncAcrossTap) {
-            // Android race path: the plus tap and the menu-item tap share one sync-off window, so sync
-            // is never re-enabled while the RN JS thread is still busy between them (MM-T1719_1).
-            // Opt-in only: archive_channel waits for the browse screen after this tap, and with sync
-            // re-enabled there it hangs on mqt_v_js (run 42620618054), so it keeps the default sequence.
-            await ChannelListScreen.openPlusMenu(async () => {
-                await ChannelListScreen.browseChannelsItem.tap();
-            });
-        } else {
-            // Default (main): sync is re-enabled between the plus tap and the menu-item tap.
-            await ChannelListScreen.openPlusMenu();
-            if (isAndroid()) {
-                await withSynchronizationDisabled(async () => {
-                    await ChannelListScreen.browseChannelsItem.tap();
-                });
-            } else {
-                await ChannelListScreen.browseChannelsItem.tap();
-            }
-        }
+        // On Android the menu-item tap runs inside openPlusMenu's sync-off window, so sync is not turned back on
+        // between the plus tap and this tap and off again (the looper race of MM-T4932_3 / MM-T1719_1).
+        // archive_channel's hang on browse_channels.screen (runs 42521284188, 42620618054) began earlier: a
+        // disable 5s after reloadReactNative hit the same race; reloads now settle first (reloadApp).
+        await ChannelListScreen.openPlusMenu(async () => {
+            await ChannelListScreen.browseChannelsItem.tap();
+        });
         await wait(timeouts.ONE_SEC);
 
         // openPlusMenu disables sync on Android; wait for the screen before returning.
