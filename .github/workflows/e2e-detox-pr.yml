@@ -1326,10 +1326,21 @@ jobs:
       (!contains(fromJSON('["success", "skipped"]'), needs.run-detox-ios.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.run-detox-android.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-ios.result) ||
-       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result))
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-ios-simulator.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk-maestro.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result))
+    # A failed build or server leaves its lanes "skipped", which reads as not requested, and the lanes pending with no
+    # verdict (PR 10306, run 42193427343: npm ci refused a package.json the lock file did not match). Triage judges such
+    # a lane from the run's jobs: the change's (a build or install it broke) or the machine's, re-run.
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
+      - build-ios-simulator
+      - build-android-apk
+      - build-android-apk-maestro
+      - provision-servers
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios
