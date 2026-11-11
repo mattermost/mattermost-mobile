@@ -110,6 +110,18 @@ describe('verdicts', () => {
         assert.equal(state, 'FAIL');
     });
 
+    it('should treat every observed test as a target when no targets are given', () => {
+        const dir = makeDir();
+        writeArm(dir, 'baseline', 10, 0, [{title: SIBLING, status: 'passed'}]);
+        writeArm(dir, 'candidate', 10, 0, [{title: SIBLING, status: 'passed'}]);
+
+        const {rows, state} = verify(dir, 10, []);
+
+        assert.equal(rows.length, 2);
+        assert.ok(rows.every((r) => r.verdict === 'unproven'));
+        assert.equal(state, 'UNPROVEN');
+    });
+
     it('should give a stable sibling test no say in the result', () => {
         const dir = makeDir();
         writeArm(dir, 'baseline', 10, 4, [{title: SIBLING, status: 'passed'}]);

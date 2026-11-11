@@ -12,6 +12,7 @@
 # turn that off); Maestro is not covered. Both arms install the PR's native build, and Metro bundles the app
 # JavaScript and the specs from each arm's own commit. The baseline must be the PR's branch point (the merge
 # base of the candidate and main), so the arms differ by the PR's commits only. A change to native code cannot be verified here.
+# TARGETS is required: the test ids the PR claims to fix. Other tests in SPECS count only if they fail.
 name: E2E flake verify
 
 on:
@@ -47,9 +48,8 @@ on:
         type: string
       TARGETS:
         description: "Space-separated test ids the PR claims to fix (e.g. MM-T4932_3); a test that is not a target and never fails has no say"
-        required: false
+        required: true
         type: string
-        default: ""
       REPEATS:
         description: "Runs per arm (1-60)"
         required: false
@@ -120,7 +120,11 @@ jobs:
                 fail(`Not a Detox spec path: ${spec}`);
               }
             }
-            for (const target of env.TARGETS.split(/\s+/).filter(Boolean)) {
+            // Required: with no targets the verdict counts every test in SPECS, so one unrelated clean test would
+            // make it UNPROVEN.
+            const targets = env.TARGETS.split(/\s+/).filter(Boolean);
+            if (!targets.length) fail('TARGETS must name at least one test id the PR claims to fix');
+            for (const target of targets) {
               if (!(/^[A-Za-z0-9_.-]+$/).test(target)) fail(`Not a test id: ${target}`);
             }
 

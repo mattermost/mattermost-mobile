@@ -163,6 +163,9 @@ Every check must pass before you open a PR. In a dry run, report the results.
 
    REPEATS is about ceil(3/p), capped at 30. Use 10 if the test failed in more than 25% of runs.
 
+   TARGETS is required: always pass the ids of the tests you claim to fix, and only those. The workflow refuses an
+   empty TARGETS; other tests in SPECS then count only if they fail.
+
    If your GitHub credentials cannot dispatch workflows (a read-only `gh` token), put this exact command in the PR body under "Verification pending", and stop short of claiming verification.
 3. Read the verdict comment (it starts with `<!-- e2e-flake-verify -->`). Poll every 10 minutes.
    - **FAIL**: read that run's artifacts, find why, fix, push, and verify again. At most 3 rounds; then stop and report.

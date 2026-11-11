@@ -13,6 +13,9 @@
  *   node flake-verify.js --dir <results dir> --repeats <N> [--specs "<files>"] [--targets "<titles>"]
  *                        [--out verdict.json] [--markdown verdict.md] [--require-reproduction]
  *
+ * --targets names the tests the PR claims to fix; a test outside it that never fails has no say. Without
+ * --targets every observed test is a target (e2e-flake-verify.yml always passes it).
+ *
  * <dir> holds one folder per run, named as its artifact: e2e-rerun-results-<lane>-fv-<arm>-i<i>-a<attempt>,
  * each with the jest-results-merged.json of that run. Appends state=<STATE> to $GITHUB_OUTPUT.
  * Exit codes: 0 PASS or UNPROVEN, 1 FAIL, 2 NO_DATA (and UNPROVEN with --require-reproduction).
@@ -130,7 +133,15 @@ function fisherLess(candFail, nC, baseFail, nB) {
 }
 
 const matchesSpec = (file, specs) => !specs.length || specs.some((spec) => file.endsWith(spec) || (file && spec.endsWith(file)));
-const isTarget = (title, targets) => targets.some((target) => title === target || title.startsWith(`${target} `));
+
+/**
+ * Whether a test title is one the PR claims to fix. With no targets every observed test is one, so a clean run can
+ * only be UNPROVEN or PASS on its own evidence (e2e-flake-verify.yml always passes targets).
+ * @param {string} title - the test title
+ * @param {string[]} targets - test ids such as MM-T4932_3
+ * @returns {boolean}
+ */
+const isTarget = (title, targets) => !targets.length || targets.some((target) => title === target || title.startsWith(`${target} `));
 
 function verdictFor(row, targets) {
     const {baseline, candidate} = row;
