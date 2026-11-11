@@ -392,4 +392,59 @@ describe('AppsFormComponent refresh on return', () => {
 
         expect(mockFieldProps.notes.value).toBe('');
     });
+
+    it('should not restore a value when a removed field returns in a later refresh', async () => {
+        const props = {...getProps(), refreshForm: jest.fn().mockResolvedValue({data: {type: 'form'}})};
+        const formWithoutNotes = {title: 'Cargo', fields: formBefore.fields.filter((f) => f.name !== 'notes')} as AppForm;
+        const {rerender} = renderWithEverything(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={0}
+            />,
+            {database, serverUrl},
+        );
+
+        act(() => {
+            mockFieldProps.notes.onChange('notes', 'my notes');
+        });
+
+        // # The first refresh removes the field
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formBefore}
+                    refreshNonce={1}
+                />,
+            );
+        });
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formWithoutNotes}
+                refreshNonce={1}
+            />,
+        );
+
+        // # The second refresh brings it back
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formWithoutNotes}
+                    refreshNonce={2}
+                />,
+            );
+        });
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={2}
+            />,
+        );
+
+        expect(mockFieldProps.notes.value).toBe('');
+    });
 });

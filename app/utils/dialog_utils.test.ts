@@ -390,6 +390,39 @@ describe('dialog_utils', () => {
 
             expect(keepUserValue(text, text, 'my notes')).toBe('my notes');
         });
+
+        it('should drop checkbox group values whose options were removed', () => {
+            const group = {name: 'tags', type: AppFieldTypes.CHECKBOX_GROUP, options: [{label: 'A', value: 'a'}]} as AppField;
+
+            expect(keepUserValue(group, group, ['a', 'b'])).toEqual(['a']);
+        });
+
+        it('should drop matrix rows and columns that were removed', () => {
+            const matrix = {
+                name: 'perms',
+                type: AppFieldTypes.CHECKBOX_MATRIX,
+                matrix_config: {
+                    rows: [{label: 'R1', value: 'r1'}],
+                    columns: [{label: 'C1', value: 'c1'}],
+                },
+            } as AppField;
+
+            expect(keepUserValue(matrix, matrix, ['r1:c1,c2', 'r2:c1'])).toEqual(['r1:c1']);
+        });
+
+        it('should drop a single-select matrix row left with several columns', () => {
+            const matrix = {
+                name: 'perms',
+                type: AppFieldTypes.CHECKBOX_MATRIX,
+                matrix_config: {
+                    rows: [{label: 'R1', value: 'r1'}, {label: 'R2', value: 'r2'}],
+                    columns: [{label: 'C1', value: 'c1'}, {label: 'C2', value: 'c2'}],
+                    row_selection: 'single',
+                },
+            } as AppField;
+
+            expect(keepUserValue(matrix, matrix, ['r1:c1,c2', 'r2:c2'])).toEqual(['r2:c2']);
+        });
     });
 
     describe('flattenAppFields', () => {

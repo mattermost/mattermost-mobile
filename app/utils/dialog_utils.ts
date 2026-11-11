@@ -202,27 +202,50 @@ export function supportsDataSource(fieldType: InteractiveDialogElementType): boo
 
 // Returns the value the user entered for a field, adapted to the refreshed version of
 // that field, or undefined when it no longer fits: the field changed type, or the
-// options the user picked were removed.
+// options the user picked were removed. Matrix selections are filtered against the
+// refreshed rows and columns instead of options.
 export function keepUserValue(field: AppField, previousField: AppField | undefined, value: AppFormValue): AppFormValue | undefined {
     if (previousField && previousField.type !== field.type) {
         return undefined;
     }
 
-    if (field.type !== AppFieldTypes.STATIC_SELECT && field.type !== AppFieldTypes.RADIO) {
-        return value;
-    }
-
     const optionValues = new Set((field.options || []).map((option) => option.value));
     const hasOption = (v: string | AppSelectOption) => optionValues.has(typeof v === 'string' ? v : v.value);
 
-    if (Array.isArray(value)) {
-        // string[] only comes from checkbox fields, which returned above.
-        return (value as AppSelectOption[]).filter(hasOption);
+    switch (field.type) {
+        case AppFieldTypes.STATIC_SELECT:
+        case AppFieldTypes.RADIO:
+        case AppFieldTypes.CHECKBOX_GROUP:
+            if (Array.isArray(value)) {
+                return (value as Array<string | AppSelectOption>).filter(hasOption) as AppFormValue;
+            }
+            if (typeof value === 'string' || (value && typeof value === 'object')) {
+                return hasOption(value) ? value : undefined;
+            }
+            return value;
+        case AppFieldTypes.CHECKBOX_MATRIX: {
+            const rowValues = new Set((field.matrix_config?.rows || []).map((row) => row.value));
+            const columnValues = new Set((field.matrix_config?.columns || []).map((column) => column.value));
+            const singlePerRow = field.matrix_config?.row_selection === 'single';
+            const kept = new Map<string, Set<string>>();
+            const entries = (value as unknown[]).filter((entry): entry is string => typeof entry === 'string');
+            parseMatrixValue(entries).forEach((columns, rowValue) => {
+                if (!rowValues.has(rowValue)) {
+                    return;
+                }
+                const keptColumns = Array.from(columns).filter((column) => columnValues.has(column));
+
+                // A single-select row can't hold several columns, and picking one would be a guess.
+                if (singlePerRow && keptColumns.length > 1) {
+                    return;
+                }
+                kept.set(rowValue, new Set(keptColumns));
+            });
+            return encodeMatrixValue(kept);
+        }
+        default:
+            return value;
     }
-    if (typeof value === 'string' || (value && typeof value === 'object')) {
-        return hasOption(value) ? value : undefined;
-    }
-    return value;
 }
 
 // Initial values of the refreshed fields, with what the user entered re-applied where it

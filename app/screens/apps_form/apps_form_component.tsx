@@ -309,7 +309,17 @@ function AppsFormComponent({
         const previousFields = refreshPreviousFieldsRef.current;
         if (previousFields) {
             refreshPreviousFieldsRef.current = undefined;
-            dispatchValues({values: mergeUserValues(flattenAppFields(form.fields || []), initValues(form.fields), previousFields, userValuesRef.current)});
+            const refreshedFields = flattenAppFields(form.fields || []);
+
+            // Forget values for removed fields so a later refresh can't restore them.
+            const refreshedNames = new Set(refreshedFields.map((f) => f.name));
+            for (const name of Object.keys(userValuesRef.current)) {
+                if (!refreshedNames.has(name)) {
+                    delete userValuesRef.current[name];
+                }
+            }
+
+            dispatchValues({values: mergeUserValues(refreshedFields, initValues(form.fields), previousFields, userValuesRef.current)});
             return;
         }
 
