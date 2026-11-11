@@ -183,6 +183,37 @@ const goOnlineAndroid = async (serverUrl: string) => {
     );
 };
 
+const wifiStatusMatches = (enabled: boolean): boolean => {
+    try {
+        const status = run('adb shell cmd wifi status');
+        return enabled ? status.includes('Wifi is connected to') : status.includes('Wifi is disabled');
+    } catch {
+        return false;
+    }
+};
+
+/**
+ * Turn the Android emulator's Wi-Fi on or off. With Wi-Fi off the emulator falls back to its
+ * cellular network, so the device stays online and only its network type changes. Polls until
+ * Wi-Fi reached the requested state and the server is reachable over the new network, and
+ * throws otherwise. Android only: an iOS simulator shares the host's network.
+ */
+export const setAndroidWifiEnabled = async (enabled: boolean, serverUrl: string): Promise<void> => {
+    execSync(`adb shell svc wifi ${enabled ? 'enable' : 'disable'}`);
+    await pollUntil(
+        () => wifiStatusMatches(enabled),
+        ONLINE_VERIFY_TIMEOUT_MS,
+        `Wi-Fi did not become ${enabled ? 'connected' : 'disabled'} on the emulator within ${ONLINE_VERIFY_TIMEOUT_MS}ms`,
+    );
+
+    const {hostname, port} = await resolveHost(serverUrl);
+    await pollUntil(
+        () => emulatorCanTcpReachHost(hostname, port),
+        ONLINE_VERIFY_TIMEOUT_MS,
+        `the server is unreachable from the emulator ${ONLINE_VERIFY_TIMEOUT_MS}ms after turning Wi-Fi ${enabled ? 'on' : 'off'}`,
+    );
+};
+
 const goOfflineIos = async (serverUrl: string, ips: string[], port: string) => {
     const {hostname} = new URL(serverUrl);
     const blocked = new Set(ips);
