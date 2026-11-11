@@ -11,7 +11,9 @@
 # Detox Android only for now (the iOS template retries failed specs and tests in place, with no switch to
 # turn that off); Maestro is not covered. Both arms install the PR's native build, and Metro bundles the app
 # JavaScript and the specs from each arm's own commit. The baseline must be the PR's branch point (the merge
-# base of the candidate and main), so the arms differ by the PR's commits only. A change to native code cannot be verified here.
+# base of the candidate and main), so the arms differ by the PR's commits only, and the verdict credits the PR as a
+# whole (app JavaScript and specs together), never a test change alone. A change to native code cannot be verified here.
+# The baseline arm itself must reproduce the failure: a failure on a later main commit does not count.
 # TARGETS is required: the test ids the PR claims to fix. Other tests in SPECS count only if they fail.
 name: E2E flake verify
 

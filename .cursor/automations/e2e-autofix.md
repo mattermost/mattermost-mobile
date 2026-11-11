@@ -161,7 +161,7 @@ Every check must pass before you open a PR. In a dry run, report the results.
      -f REPEATS=<n> -f PARALLEL=<2; 1 for specs that change server-wide settings>
    ```
 
-   BASELINE_SHA must be the PR's branch point: `git fetch origin main && git merge-base origin/main <PR head sha>`. It is `base.commit` until the PR is rebased or updated from main. If it has moved, check that main still failed the test at or after the new merge base (step 2's runs) before dispatching. If main no longer fails it there, the comparison cannot show a fix: say so, and do not dispatch.
+   BASELINE_SHA must be the PR's branch point: `git fetch origin main && git merge-base origin/main <PR head sha>`. It is `base.commit` until the PR is rebased or updated from main. If it has moved, check that main still failed the test at or after the new merge base (step 2's runs) before dispatching. If main no longer fails it there, the comparison cannot show a fix: say so, and do not dispatch. Either way, only the baseline arm's own runs show that the merge base reproduces the failure; without that the verdict is UNPROVEN.
 
    REPEATS is about ceil(3/p), capped at 30. Use 10 if the test failed in more than 25% of runs.
 
@@ -175,7 +175,7 @@ Every check must pass before you open a PR. In a dry run, report the results.
    - **UNPROVEN**: main never failed (or not significantly more), so passing proves nothing beyond the printed bound. Write in the PR that the fix is argued from its mechanism. **Never** write "fixed" or "verified". Do not claim more.
    - **NO_DATA**: dispatch once more. If it is NO_DATA again, call it infrastructure in the PR.
 4. iOS, iPad and Maestro are not covered by verify. For those the PR may say only "argued from the mechanism; the PR's lanes passed once".
-5. Both arms install the PR's native build. Metro bundles the app JavaScript and the specs from each arm's own commit, and verify requires BASELINE_SHA to be the merge base of the PR head and main (the PR branch point), so a JavaScript app fix is compared fairly. If the change touches native code (`android/`, `ios/`, or the native parts of `libraries/`), baseline and candidate need different native builds, which verify cannot provide. Say so, and stop short of claiming verification.
+5. Both arms install the PR's native build. Metro bundles the app JavaScript and the specs from each arm's own commit, and verify requires BASELINE_SHA to be the merge base of the PR head and main (the PR branch point), so the arms differ by the PR's commits only. The verdict credits the PR as a whole: if it changes app JavaScript as well as specs, never claim the test change alone fixed it. If the change touches native code (`android/`, `ios/`, or the native parts of `libraries/`), baseline and candidate need different native builds, which verify cannot provide. Say so, and stop short of claiming verification.
 
 ## Remember the outcome
 
