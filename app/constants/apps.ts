@@ -39,6 +39,7 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     FILE: 'file',
     DATE: 'date',
     DATETIME: 'datetime',
+    ACTION_BUTTON: 'action_button',
     COLLAPSIBLE: 'collapsible',
 };
 
