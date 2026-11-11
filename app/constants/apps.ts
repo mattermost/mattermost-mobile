@@ -41,6 +41,7 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     DATETIME: 'datetime',
     CHECKBOX_GROUP: 'checkbox_group',
     CHECKBOX_MATRIX: 'checkbox_matrix',
+    ACTION_BUTTON: 'action_button',
     COLLAPSIBLE: 'collapsible',
 };
 

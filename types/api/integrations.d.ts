@@ -52,6 +52,17 @@ type DialogSubmission = {
     file_ids?: string[];
 };
 
+type ExecuteDialogActionRequest = {
+    url: string;
+    context?: Record<string, string>;
+    channel_id: string;
+    team_id: string;
+};
+
+type ExecuteDialogActionResponse = {
+    trigger_id?: string;
+};
+
 type DialogOption = {
     text: string;
     value: string;
@@ -91,6 +102,12 @@ type DialogElement = {
     time_interval?: number;
     datetime_config?: DateTimeConfig;
 
+    // Action button fields
+    action_button?: {
+        url: string;
+        context?: Record<string, string>;
+    };
+
     // Collapsible section fields
     collapsible_config?: {
         elements?: DialogElement[];
@@ -113,6 +130,12 @@ type InteractiveDialogConfig = {
         notify_on_cancel: boolean;
         state: string;
         source_url?: string;
+
+        // Name of a select element whose options render as submit buttons.
+        submit_buttons?: string;
+
+        // Re-fetch the dialog from source_url when a dialog opened on top of it closes.
+        refresh_on_return?: boolean;
     };
 };
 
@@ -153,5 +176,5 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'collapsible' | 'checkbox_group' | 'checkbox_matrix'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button' | 'collapsible' | 'checkbox_group' | 'checkbox_matrix'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'
