@@ -13,6 +13,12 @@ import {createSynchronization, type SynchronizationDriver} from './synchronizati
  */
 function recordingDriver(fail?: keyof SynchronizationDriver) {
     const calls: string[] = [];
+
+    /**
+     * A driver call that records its name, and throws when it is the failing one.
+     * @param name - the driver call
+     * @returns the call
+     */
     const record = (name: keyof SynchronizationDriver) => async () => {
         calls.push(name);
         if (fail === name) {

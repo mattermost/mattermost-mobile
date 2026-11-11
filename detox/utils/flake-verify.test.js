@@ -16,6 +16,10 @@ const SPEC = 'detox/e2e/test/products/channels/channels/archive_channel_from_set
 const TARGET = 'MM-T4932_3 - should be able to archive a private channel and confirm';
 const SIBLING = 'MM-T4932_1 - should be able to archive a public channel and confirm';
 
+/**
+ * A fresh temporary results directory.
+ * @returns {string}
+ */
 function makeDir() {
     return fs.mkdtempSync(path.join(os.tmpdir(), 'flake-verify-'));
 }
@@ -25,6 +29,7 @@ function makeDir() {
  * @param {'baseline'|'candidate'} arm
  * @param {number} iteration
  * @param {Array<{title: string, status: string, retryReasons?: string[]}>|null} tests - null writes unreadable JSON
+ * @param {{lane?: string, attempt?: number}} options - artifact lane and attempt
  */
 function writeRun(dir, arm, iteration, tests, {lane = 'detox-android', attempt = 1} = {}) {
     const folder = path.join(dir, `e2e-rerun-results-${lane}-fv-${arm}-i${iteration}-a${attempt}`);
@@ -33,13 +38,27 @@ function writeRun(dir, arm, iteration, tests, {lane = 'detox-android', attempt =
     fs.writeFileSync(path.join(folder, 'jest-results-merged.json'), body);
 }
 
-/** Writes `runs` iterations of one arm, the first `failures` of them failing the target. */
+/**
+ * Writes `runs` iterations of one arm, the first `failures` of them failing the target.
+ * @param {string} dir
+ * @param {'baseline'|'candidate'} arm
+ * @param {number} runs
+ * @param {number} failures
+ * @param {Array<{title: string, status: string}>} extra - more tests in every iteration
+ */
 function writeArm(dir, arm, runs, failures, extra = []) {
     for (let i = 1; i <= runs; i++) {
         writeRun(dir, arm, i, [{title: TARGET, status: i <= failures ? 'failed' : 'passed'}, ...extra]);
     }
 }
 
+/**
+ * Summarizes a results directory for SPEC the way the workflow does.
+ * @param {string} dir
+ * @param {number} repeats
+ * @param {string[]} targets
+ * @returns {{rows: object[], state: string, row: object|undefined}} rows, overall state and the target row
+ */
 const verify = (dir, repeats, targets = ['MM-T4932_3']) => {
     const rows = summarize(readRuns(dir), {repeats, specs: [SPEC], targets});
     return {rows, state: overall(rows), row: rows.find((r) => r.title === TARGET)};
@@ -271,6 +290,12 @@ describe('markdown', () => {
 });
 
 describe('cli', () => {
+    /**
+     * Runs the CLI on a results directory with $GITHUB_OUTPUT inside it.
+     * @param {string} dir
+     * @param {string[]} extra - more CLI arguments
+     * @returns {import('node:child_process').SpawnSyncReturns<string>}
+     */
     const run = (dir, extra = []) => spawnSync(process.execPath, [path.join(__dirname, 'flake-verify.js'), '--dir', dir, '--repeats', '10', '--specs', SPEC, '--targets', 'MM-T4932_3', ...extra], {encoding: 'utf8', env: {GITHUB_OUTPUT: path.join(dir, 'out.txt')}});
 
     it('should exit 0 on UNPROVEN, or 2 with --require-reproduction, and write the state and files', () => {

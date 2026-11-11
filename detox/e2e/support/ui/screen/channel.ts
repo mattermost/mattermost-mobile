@@ -308,7 +308,7 @@ class ChannelScreen {
             // Back button not in hierarchy — fall through to tab/native back.
         }
         if (backButtonShown) {
-            // Only the tap may fail over to the fallbacks below; an error turning sync off or on surfaces.
+            /** Taps the header back button; only the tap may fail over to the fallbacks below, an error turning sync off or on surfaces. */
             const tapBack = async () => {
                 try {
                     await NavigationHeader.tapBackButton(0);

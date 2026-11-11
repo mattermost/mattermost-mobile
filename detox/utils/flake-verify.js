@@ -104,6 +104,12 @@ function runsNeeded(rate) {
     return Math.ceil(Math.log(CONFIDENCE) / Math.log(1 - rate));
 }
 
+/**
+ * Exact binomial coefficient C(n, k), as a BigInt so large run counts stay exact.
+ * @param {number} n
+ * @param {number} k
+ * @returns {bigint} 0n when k is outside 0..n
+ */
 function choose(n, k) {
     if (k < 0 || k > n) {
         return 0n;
@@ -132,6 +138,12 @@ function fisherLess(candFail, nC, baseFail, nB) {
     return Number(favourable) / Number(choose(nC + nB, total));
 }
 
+/**
+ * Whether a test file is one of the selected specs; either path may be the longer one.
+ * @param {string} file - testFilePath from the results
+ * @param {string[]} specs - selected spec files; empty selects every file
+ * @returns {boolean}
+ */
 const matchesSpec = (file, specs) => !specs.length || specs.some((spec) => file.endsWith(spec) || (file && spec.endsWith(file)));
 
 /**
@@ -143,6 +155,12 @@ const matchesSpec = (file, specs) => !specs.length || specs.some((spec) => file.
  */
 const isTarget = (title, targets) => !targets.length || targets.some((target) => title === target || title.startsWith(`${target} `));
 
+/**
+ * The verdict for one row: stable, no-data, still-flaky, fixed (sets row.p) or unproven.
+ * @param {object} row - a summarize row with baseline/candidate counts
+ * @param {string[]} targets - test ids the PR claims to fix
+ * @returns {string}
+ */
 function verdictFor(row, targets) {
     const {baseline, candidate} = row;
     if (row.noResults) {
@@ -228,9 +246,19 @@ function overall(rows) {
     return 'PASS';
 }
 
-// Titles come from the PR's own tests: nothing in them may end the cell, start markup or mention anyone.
+/**
+ * One table cell: titles come from the PR's own tests, so nothing in them may end the cell, start markup or mention
+ * anyone.
+ * @param {unknown} value
+ * @returns {string} at most MAX_CELL characters
+ */
 const cell = (value) => String(value ?? '').replace(/[|\r\n`<>@]/g, ' ').slice(0, MAX_CELL);
 
+/**
+ * The failure-rate cell for one arm: "failed", "no data", or the 95% upper bound of a clean arm.
+ * @param {{fail: number, upperBound: number|null}} arm
+ * @returns {string}
+ */
 function rateCell(arm) {
     if (arm.fail > 0) {
         return 'failed';
@@ -238,6 +266,11 @@ function rateCell(arm) {
     return arm.upperBound === null ? 'no data' : `<= ${(arm.upperBound * 100).toFixed(1)}%`;
 }
 
+/**
+ * The verdict cell, with the p-value for a fixed row.
+ * @param {{verdict: string, p?: number}} row
+ * @returns {string}
+ */
 function verdictCell(row) {
     return row.verdict === 'fixed' ? `fixed (p=${row.p.toFixed(3)})` : row.verdict;
 }
@@ -274,8 +307,16 @@ function toMarkdown(rows, state, repeats) {
     return lines.join('\n') + '\n';
 }
 
+/**
+ * A space-separated CLI value as a list; a bare flag (parseArgs gives "true") or no value is an empty list.
+ * @param {string|undefined} value
+ * @returns {string[]}
+ */
 const splitList = (value) => (value && value !== 'true' ? value.split(/\s+/).filter(Boolean) : []);
 
+/**
+ * CLI entry: reads the runs, writes the verdict files and $GITHUB_OUTPUT, and exits with the state's code.
+ */
 function main() {
     const args = parseArgs(process.argv);
     const repeats = Number(args.repeats);
