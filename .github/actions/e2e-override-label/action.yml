@@ -18,6 +18,11 @@ outputs:
   override:
     description: '"true" when E2E/Override is set on the PR, "false" otherwise'
     value: ${{ steps.check.outputs.override }}
+  triage_report_only:
+    description: >-
+      "true" when E2E/Triage-report-only is set on the PR, or its labels cannot be read: triage
+      then runs report-only and never settles the e2e-test/triage check, so nothing may announce it.
+    value: ${{ steps.check.outputs.triage_report_only }}
 
 runs:
   using: composite
@@ -32,6 +37,7 @@ runs:
           if (!Number.isFinite(prNumber)) {
             core.info('No PR number for this run — E2E/Override cannot apply.');
             core.setOutput('override', 'false');
+            core.setOutput('triage_report_only', 'false');
             return;
           }
 
@@ -44,8 +50,13 @@ runs:
             const override = labels.some((label) => label.name === 'E2E/Override');
             core.info(`PR #${prNumber} E2E/Override=${override}`);
             core.setOutput('override', override ? 'true' : 'false');
+            // The toolkit's default report-only label (e2e-test-triage report-only-label).
+            const reportOnly = labels.some((label) => label.name === 'E2E/Triage-report-only');
+            core.setOutput('triage_report_only', reportOnly ? 'true' : 'false');
           } catch (err) {
             // Fail closed: an unreadable label list must not turn a real failure green.
             core.warning(`Could not read labels for PR #${prNumber}: ${err.message}`);
             core.setOutput('override', 'false');
+            // Unreadable labels make triage report-only too (it cannot check the opt-out).
+            core.setOutput('triage_report_only', 'true');
           }

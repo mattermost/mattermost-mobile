@@ -12,11 +12,12 @@ import {alertErrorWithFallback} from '@utils/draft';
 
 type Props = {
     channelId: string;
+    disabled?: boolean;
     enabled: boolean;
     displayName: string;
 }
 
-const ChannelAutotranslation = ({channelId, displayName, enabled}: Props) => {
+const ChannelAutotranslation = ({channelId, disabled, displayName, enabled}: Props) => {
     const [autotranslation, setAutotranslation] = useState(enabled);
     const serverUrl = useServerUrl();
     const intl = useIntl();
@@ -49,6 +50,7 @@ const ChannelAutotranslation = ({channelId, displayName, enabled}: Props) => {
                 id: 'channel_settings.channel_autotranslation_description',
                 defaultMessage: 'When enabled, channel members can turn on auto-translation to view messages in their preferred language.',
             })}
+            disabled={disabled}
             icon='translate'
             type='toggle'
             selected={autotranslation}

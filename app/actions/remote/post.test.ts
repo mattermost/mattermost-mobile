@@ -270,6 +270,22 @@ describe('create, update & delete posts', () => {
         expect(result.data).toBeTruthy();
     });
 
+    it('createPost - should expire the channel decisions and keep the post failed when a channel policy denies it', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.CHANNEL_WRITE_ACCESS_DENIED, status_code: 403};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await createPost(serverUrl, {...post1, pending_post_id: 'pendingid1'});
+        expect(result.error).toBeUndefined();
+        expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
+
+        const stored = await getPostById(operator.database, 'pendingid1');
+        expect(stored?.props?.failed).toBe(true);
+    });
+
     it('createPost - should revalidate the channel decisions when the server refuses a burn-on-read post', async () => {
         const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
         mockClient.createPost.mockImplementationOnce(jest.fn(() => {

@@ -8,8 +8,10 @@ import {distinctUntilChanged, map, switchMap, combineLatestWith} from 'rxjs/oper
 import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
 import {observeChannel} from '@queries/servers/channel';
-import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel} from '@queries/servers/role';
+import {observeChannelActionDenied} from '@queries/servers/render_permissions';
+import {observePermissionForChannelRBACOnly, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel} from '@queries/servers/role';
 import {
     observeConfigValue,
     observeConfigBooleanValue,
@@ -98,8 +100,12 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
     );
     const isCallsEnabledInChannel = observeIsCallsEnabledInChannel(database, serverUrl, of$(channelId));
 
+    // The management settings are listed on the roles alone: under a management policy denial they
+    // stay visible for reference, disabled (isReadOnly).
+    const isReadOnly = observeChannelActionDenied(database, serverUrl, channelId, RenderPermissionAction.ChannelManagementAccess);
+
     const canManageSettings = currentUser.pipe(
-        switchMap((u) => (u ? observeCanManageChannelSettings(database, channelId, u) : of$(false))),
+        switchMap((u) => (u ? observeCanManageChannelSettings(database, channelId, u, true) : of$(false))),
         distinctUntilChanged(),
     );
 
@@ -113,7 +119,7 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
             if (ch.type !== General.OPEN_CHANNEL) {
                 return of$(false);
             }
-            return observePermissionForChannel(database, ch, u, Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE, false);
+            return observePermissionForChannelRBACOnly(database, ch, u, Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE, false);
         }),
     );
 
@@ -138,10 +144,10 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
             }
 
             if (chType === General.OPEN_CHANNEL) {
-                return observePermissionForChannel(database, ch, u, Permissions.DELETE_PUBLIC_CHANNEL, true);
+                return observePermissionForChannelRBACOnly(database, ch, u, Permissions.DELETE_PUBLIC_CHANNEL, true);
             }
 
-            return observePermissionForChannel(database, ch, u, Permissions.DELETE_PRIVATE_CHANNEL, true);
+            return observePermissionForChannelRBACOnly(database, ch, u, Permissions.DELETE_PRIVATE_CHANNEL, true);
         }),
     );
 
@@ -175,7 +181,7 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
 
     // Channel autotranslation observable
     const canManageAutotranslations = currentUser.pipe(
-        switchMap((u) => (u ? observeCanManageChannelAutotranslations(database, channelId, u) : of$(false))),
+        switchMap((u) => (u ? observeCanManageChannelAutotranslations(database, channelId, u, true) : of$(false))),
     );
 
     // Shared channels (connected workspaces)
@@ -199,6 +205,7 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         canManageAutotranslations,
         canManageSharedChannel,
         isGuestUser,
+        isReadOnly,
         type,
     };
 });

@@ -9,7 +9,7 @@ import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, s
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
-import {DeepLink, Events, General, Preferences, Screens} from '@constants';
+import {DeepLink, Events, General, Preferences, Screens, ServerErrors} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -26,7 +26,8 @@ import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
-import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
+import {expireChannelDecisionsOnDenial} from '@utils/channel_policy';
+import {getFullErrorMessage, getServerError, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
@@ -62,6 +63,8 @@ export type ChannelMembersRequest = {
     error?: unknown;
 }
 
+const channelAccessDenialsInFlight = new Set<string>();
+
 export async function removeMemberFromChannel(serverUrl: string, channelId: string, userId: string) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -74,6 +77,7 @@ export async function removeMemberFromChannel(serverUrl: string, channelId: stri
     } catch (error) {
         logDebug('error on removeMemberFromChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -119,6 +123,7 @@ export async function updateChannelMemberSchemeRoles(serverUrl: string, channelI
     } catch (error) {
         logDebug('error on updateChannelMemberSchemeRoles', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -188,6 +193,7 @@ export async function addMembersToChannel(serverUrl: string, channelId: string, 
     } catch (error) {
         logDebug('error on addMembersToChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -296,6 +302,7 @@ export async function patchChannel(serverUrl: string, channelId: string, channel
     } catch (error) {
         logDebug('error on patchChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -755,6 +762,9 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
         return {};
     } catch (error) {
         logDebug('error on markChannelAsRead', getFullErrorMessage(error));
+        if (getServerError(error) === ServerErrors.CHANNEL_ACCESS_DENIED) {
+            await handleChannelAccessDenied(serverUrl, channelId);
+        }
         return {error};
     }
 }
@@ -1319,6 +1329,7 @@ export const setChannelAutotranslation = async (serverUrl: string, channelId: st
     } catch (error) {
         logDebug('error on setChannelAutotranslation', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 };
@@ -1408,6 +1419,7 @@ export const archiveChannel = async (serverUrl: string, channelId: string) => {
     } catch (error) {
         logDebug('error on archiveChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     } finally {
         EphemeralStore.removeArchivingChannel(channelId);
@@ -1424,6 +1436,7 @@ export const unarchiveChannel = async (serverUrl: string, channelId: string) => 
     } catch (error) {
         logDebug('error on unarchiveChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     } finally {
         EphemeralStore.removeArchivingChannel(channelId);
@@ -1449,6 +1462,7 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
     } catch (error) {
         logDebug('error on convertChannelToPrivate', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     } finally {
         EphemeralStore.removeConvertingChannel(channelId);
@@ -1465,10 +1479,14 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         }
 
         const currentServer = await getActiveServer();
+        let displayName: string | undefined;
         if (currentServer?.url === serverUrl) {
             const channel = await getChannelById(database, channelId);
             if (channel) {
-                DeviceEventEmitter.emit(event, channel.displayName);
+                // Storing display name here to display the inaccessible channel bottom sheet
+                // after navigation to the root as this navigation closes the bottom sheet first so we
+                // navigate to root first, then later open the bottom sheet.
+                displayName = channel.displayName;
                 await navigateToRoot();
             }
         }
@@ -1489,16 +1507,65 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
                         await switchToChannelById(serverUrl, newChannelId, teamId, true);
                     }
                 } else {
-                    await setCurrentTeamAndChannelId(operator, teamId, channelId);
+                    // Threads and Drafts are screens, not channels: as when switching to them, no channel is current.
+                    const isGlobalScreen = newChannelId === Screens.GLOBAL_THREADS || newChannelId === Screens.GLOBAL_DRAFTS;
+                    await setCurrentTeamAndChannelId(operator, teamId, isGlobalScreen ? '' : newChannelId);
                 }
-            } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
+            } else if (currentServer?.url === serverUrl && await getIsCRTEnabled(database)) {
+                // Nothing left in the team to fall back to: show Threads, as the tablet does for a team
+                // with no current channel.
+                await switchToGlobalThreads(serverUrl, teamId, false);
+            } else {
+                // The kicked channel is about to be removed, so it must not stay the open one.
+                await setCurrentChannelId(operator, '');
+            }
         } else {
             await setCurrentChannelId(operator, '');
+        }
+
+        if (displayName != null) {
+            DeviceEventEmitter.emit(event, displayName);
         }
         return {};
     } catch (error) {
         logDebug('cannot kick user from channel', error);
         return {error};
+    }
+};
+
+export const handleChannelAccessDenied = async (serverUrl: string, channelId: string) => {
+    const key = `${serverUrl}|${channelId}`;
+    if (channelAccessDenialsInFlight.has(key)) {
+        logDebug('handleChannelAccessDenied: denial already being handled', channelId);
+        return {};
+    }
+
+    channelAccessDenialsInFlight.add(key);
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const myChannel = await getMyChannel(database, channelId);
+        if (!myChannel) {
+            logDebug('handleChannelAccessDenied: no membership for channel', channelId);
+            return {};
+        }
+
+        const channel = await myChannel.channel.fetch();
+        if (isDMorGM(channel)) {
+            logDebug('handleChannelAccessDenied: ignoring denial for a direct or group channel', channelId);
+            return {};
+        }
+
+        if (channelId === await getCurrentChannelId(database)) {
+            await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ACCESS_REVOKED);
+        }
+        await removeCurrentUserFromChannel(serverUrl, channelId);
+        return {};
+    } catch (error) {
+        logDebug('error on handleChannelAccessDenied', getFullErrorMessage(error));
+        return {error};
+    } finally {
+        channelAccessDenialsInFlight.delete(key);
     }
 };
 

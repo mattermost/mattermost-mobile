@@ -449,3 +449,21 @@ describe('mutation manifest and target helpers', () => {
         expect(() => resolveMutationTarget('B', ['site3'])).toThrow(/mutation target B is not available/);
     });
 });
+
+describe('Specs.useFiles', () => {
+    it('keeps only existing specs under the search path, once each', () => {
+        const s = new Specs('detox/e2e/test', 1, new DeviceInfo('iPhone', 'iOS 26.2'));
+        s.useFiles([
+            'detox/e2e/test/products/channels/smoke_test/account.e2e.ts',
+            'detox/e2e/test/products/channels/smoke_test/account.e2e.ts',
+            'detox/e2e/test/products/channels/smoke_test/channels.e2e.ts',
+            'detox/e2e/test/products/channels/smoke_test/no_such_spec.e2e.ts',
+            'detox/e2e/test/../support/server_api/client.ts',
+            'detox/maestro/flows/timezone/clock_display.yml',
+        ]);
+        expect(s.rawFiles).toEqual([
+            'detox/e2e/test/products/channels/smoke_test/account.e2e.ts',
+            'detox/e2e/test/products/channels/smoke_test/channels.e2e.ts',
+        ]);
+    });
+});

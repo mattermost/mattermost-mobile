@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
+
 import client from './client';
 import {getResponseFromError} from './common';
 
@@ -51,12 +54,14 @@ export const apiEnableABAC = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {fields} on success or {error, status} on error
  */
 export const apiGetCustomProfileAttributeFields = async (baseUrl: string): Promise<any> => {
-    try {
-        const response = await client.get(`${baseUrl}/api/v4/custom_profile_attributes/fields`);
-        return {fields: response.data ?? []};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.get(`${baseUrl}/api/v4/custom_profile_attributes/fields`);
+            return {fields: response.data ?? []};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiGetCustomProfileAttributeFields', budgetMs: timeouts.ONE_MIN});
 };
 
 /**
@@ -66,12 +71,14 @@ export const apiGetCustomProfileAttributeFields = async (baseUrl: string): Promi
  * @return {Object} returns {} on success or {error, status} on error
  */
 export const apiDeleteCustomProfileAttributeField = async (baseUrl: string, fieldId: string): Promise<any> => {
-    try {
-        await client.delete(`${baseUrl}/api/v4/custom_profile_attributes/fields/${fieldId}`);
-        return {};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            await client.delete(`${baseUrl}/api/v4/custom_profile_attributes/fields/${fieldId}`);
+            return {};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiDeleteCustomProfileAttributeField', budgetMs: timeouts.ONE_MIN});
 };
 
 /**
@@ -147,15 +154,17 @@ export const apiSetUserPropertyValues = async (
     userId: string,
     values: Record<string, string>,
 ): Promise<any> => {
-    try {
-        const response = await client.patch(
-            `${baseUrl}/api/v4/users/${userId}/custom_profile_attributes`,
-            values,
-        );
-        return {status: response.status};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.patch(
+                `${baseUrl}/api/v4/users/${userId}/custom_profile_attributes`,
+                values,
+            );
+            return {status: response.status};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiSetUserPropertyValues', budgetMs: timeouts.ONE_MIN});
 };
 
 // ------------------------------------------------------------
@@ -212,15 +221,17 @@ export const apiCreateChannelPermissionPolicy = async (
     channelId: string,
     rules: Array<{name: string; role: string; actions: string[]; expression: string}>,
 ): Promise<any> => {
-    try {
-        const response = await client.put(
-            `${baseUrl}/api/v4/access_control_policies`,
-            {id: channelId, type: 'channel', version: 'v0.4', rules},
-        );
-        return {policy: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(
+                `${baseUrl}/api/v4/access_control_policies`,
+                {id: channelId, type: 'channel', version: 'v0.4', rules},
+            );
+            return {policy: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiCreateChannelPermissionPolicy', budgetMs: timeouts.ONE_MIN});
 };
 
 /**
@@ -231,12 +242,14 @@ export const apiCreateChannelPermissionPolicy = async (
  * @return {Object} returns {} on success or {error, status} on error
  */
 export const apiDeletePermissionPolicy = async (baseUrl: string, policyId: string): Promise<any> => {
-    try {
-        await client.delete(`${baseUrl}/api/v4/access_control_policies/${policyId}`);
-        return {};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            await client.delete(`${baseUrl}/api/v4/access_control_policies/${policyId}`);
+            return {};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiDeletePermissionPolicy', budgetMs: timeouts.ONE_MIN});
 };
 
 // ------------------------------------------------------------
@@ -259,15 +272,17 @@ export const apiSetPolicyActive = async (
     policyId: string,
     active = true,
 ): Promise<any> => {
-    try {
-        await client.put(
-            `${baseUrl}/api/v4/access_control_policies/activate`,
-            {entries: [{id: policyId, active}]},
-        );
-        return {};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            await client.put(
+                `${baseUrl}/api/v4/access_control_policies/activate`,
+                {entries: [{id: policyId, active}]},
+            );
+            return {};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiSetPolicyActive', budgetMs: timeouts.ONE_MIN});
 };
 
 export const AccessControl = {
