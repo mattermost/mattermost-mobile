@@ -259,7 +259,7 @@ describe('verdicts', () => {
 describe('markdown', () => {
     it('should keep a hostile title inside one table cell', () => {
         const dir = makeDir();
-        const hostile = 'MM-T1_1 x|y\n<script>alert(1)</script>` @team';
+        const hostile = 'MM-T1_1 x|y\n<script>alert(1)</script>` @team [Review details](https://example.invalid/) ![i](http://x.invalid/a.png) www.evil.invalid https://evil.invalid';
         writeArm(dir, 'baseline', 2, 1, [{title: hostile, status: 'failed'}]);
         writeArm(dir, 'candidate', 2, 0, [{title: hostile, status: 'passed'}]);
         const rows = summarize(readRuns(dir), {repeats: 2, specs: [SPEC], targets: []});
@@ -270,6 +270,11 @@ describe('markdown', () => {
         assert.ok(markdown.startsWith('<!-- e2e-flake-verify -->\n### E2E flake verify: '));
         assert.ok(!markdown.includes('<script>'));
         assert.ok(!markdown.includes('@team'));
+        assert.ok(!(/(^|[^\\])\[Review details\]\(/).test(markdown));
+        assert.ok(!(/(^|[^\\])!\[i\]\(/).test(markdown));
+        assert.ok(!markdown.includes('https://'));
+        assert.ok(!markdown.includes('http://'));
+        assert.ok(!markdown.includes('www.evil'));
         assert.equal(row.split('|').length, 8);
     });
 

@@ -247,12 +247,17 @@ function overall(rows) {
 }
 
 /**
- * One table cell: titles come from the PR's own tests, so nothing in them may end the cell, start markup or mention
- * anyone.
+ * One table cell: titles come from the PR's own tests, so nothing in them may end the cell, start markup, form a
+ * link or image, or mention anyone. Brackets are escaped, and "://" and "www." are broken up so GitHub does not autolink a URL.
  * @param {unknown} value
  * @returns {string} at most MAX_CELL characters
  */
-const cell = (value) => String(value ?? '').replace(/[|\r\n`<>@]/g, ' ').slice(0, MAX_CELL);
+const cell = (value) => String(value ?? '').
+    replace(/[|\r\n`<>@]/g, ' ').
+    replace(/[[\]]/g, (bracket) => `\\${bracket}`).
+    replace(/:\/\//g, ': //').
+    replace(/\bwww\./gi, (www) => `${www.slice(0, 3)} .`).
+    slice(0, MAX_CELL);
 
 /**
  * The failure-rate cell for one arm: "failed", "no data", or the 95% upper bound of a clean arm.
