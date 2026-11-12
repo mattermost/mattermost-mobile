@@ -6,6 +6,7 @@
 import Emm, {AuthenticationOutcome} from '@mattermost/react-native-emm';
 import {setSessionAttributesServerValues} from '@mattermost/react-native-network-client';
 import {isRootedExperimentalAsync} from 'expo-device';
+import {type AppStateStatus} from 'react-native';
 
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
@@ -84,6 +85,7 @@ describe('SecurityManager', () => {
         SecurityManager.activeServer = undefined;
         SecurityManager.isCheckingBiometrics = false;
         SecurityManager.backgroundSince = 0;
+        SecurityManager.previousAppState = undefined;
 
         // These resolve only when an alert button is pressed, which would hang.
         jest.spyOn(alerts, 'showNotSecuredAlert').mockResolvedValue(undefined);
@@ -573,7 +575,7 @@ describe('SecurityManager', () => {
             expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-9', {biometric_authenticated: 'true'});
         });
 
-        test('should report biometric_authenticated false once the re-prompt window has lapsed', async () => {
+        it('should report biometric_authenticated false once the re-prompt window has lapsed', async () => {
             await SecurityManager.addServer('server-9a', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);
             SecurityManager.serverConfig['server-9a'].lastAccessed = 1;
             jest.mocked(setSessionAttributesServerValues).mockClear();
@@ -581,6 +583,63 @@ describe('SecurityManager', () => {
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-9a')).resolves.toBe(true);
             expect(SecurityManager.getServerConfig('server-9a')?.authenticated).toBe(false);
             expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-9a', {biometric_authenticated: 'false'});
+        });
+
+        it('should keep biometric_authenticated true when setActiveServer runs with skipBiometricCheck after switchToServer authentication', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer('server-9b', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-9b')).resolves.toBe(true);
+            jest.mocked(setSessionAttributesServerValues).mockClear();
+
+            await SecurityManager.setActiveServer({serverUrl: 'server-9b', options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true, skipBiometricCheck: true}});
+
+            expect(SecurityManager.getServerConfig('server-9b')?.authenticated).toBe(true);
+            expect(setSessionAttributesServerValues).not.toHaveBeenCalledWith('server-9b', {biometric_authenticated: 'false'});
+        });
+
+        it('should expire biometric_authenticated automatically once an inactive server passes the re-prompt window', async () => {
+            jest.useFakeTimers({doNotFake: ['nextTick']});
+            try {
+                await SecurityManager.addServer('server-9c', {MobileEnableBiometrics: 'true'} as SecurityClientConfig, true);
+                await SecurityManager.addServer('server-9d', {MobileEnableBiometrics: 'false'} as SecurityClientConfig);
+                await SecurityManager.setActiveServer({serverUrl: 'server-9c', options: {skipBiometricCheck: true, skipMAMEnrollmentCheck: true, skipJailbreakCheck: true}});
+                jest.mocked(setSessionAttributesServerValues).mockClear();
+
+                await SecurityManager.setActiveServer({serverUrl: 'server-9d', options: {skipBiometricCheck: true, skipMAMEnrollmentCheck: true, skipJailbreakCheck: true}});
+                expect(SecurityManager.getServerConfig('server-9c')?.authenticated).toBe(true);
+
+                jest.advanceTimersByTime(25000);
+                expect(SecurityManager.getServerConfig('server-9c')?.authenticated).toBe(false);
+                expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-9c', {biometric_authenticated: 'false'});
+            } finally {
+                jest.useRealTimers();
+            }
+        });
+
+        it('should reset biometric_authenticated across all servers on resume only after the re-prompt window lapses', async () => {
+            await SecurityManager.addServer('server-active', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);
+            await SecurityManager.addServer('server-inactive', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);
+            SecurityManager.serverConfig['server-inactive'].lastAccessed = Date.now();
+            await SecurityManager.setActiveServer({serverUrl: 'server-active', options: {skipBiometricCheck: true, skipMAMEnrollmentCheck: true, skipJailbreakCheck: true}});
+            jest.mocked(setSessionAttributesServerValues).mockClear();
+
+            // Short backgrounding keeps biometric_authenticated true.
+            await SecurityManager.onAppStateChange('background' as AppStateStatus);
+            await SecurityManager.onAppStateChange('active' as AppStateStatus);
+            expect(SecurityManager.getServerConfig('server-active')?.authenticated).toBe(true);
+            expect(SecurityManager.getServerConfig('server-inactive')?.authenticated).toBe(true);
+            expect(setSessionAttributesServerValues).not.toHaveBeenCalled();
+
+            // Resuming after PROMPT_AUTH_AFTER resets every server even when MobileEnableBiometrics is false.
+            await SecurityManager.onAppStateChange('background' as AppStateStatus);
+            SecurityManager.backgroundSince = Date.now() - 25000;
+            await SecurityManager.onAppStateChange('active' as AppStateStatus);
+            expect(SecurityManager.getServerConfig('server-active')?.authenticated).toBe(false);
+            expect(SecurityManager.getServerConfig('server-inactive')?.authenticated).toBe(false);
+            expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-active', {biometric_authenticated: 'false'});
+            expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-inactive', {biometric_authenticated: 'false'});
         });
 
         test('should offer logout when authentication genuinely fails', async () => {

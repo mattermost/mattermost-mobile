@@ -76,6 +76,7 @@ class SecurityManagerSingleton {
     isEnrolling = false;
     isCheckingBiometrics = false;
     needsEnrollmentCheck = false;
+    private authExpiryTimers: Record<string, ReturnType<typeof setTimeout>> = {};
     intunePolicySubscription?: EventSubscription;
     intuneEnrollmentSubscription?: EventSubscription;
     intuneWipeSubscription?: EventSubscription;
@@ -181,6 +182,7 @@ class SecurityManagerSingleton {
         this.intuneBlockedSubscription?.remove();
         this.intuneIdentitySwitchSubscription?.remove();
         this.intuneComplianceFailedSubscription?.remove();
+        this.clearAllAuthenticationExpiries();
 
         this.initialized = false;
         this.serverConfig = {};
@@ -194,6 +196,27 @@ class SecurityManagerSingleton {
     onAppStateChange = async (appState: AppStateStatus) => {
         const server = this.activeServer ?? '';
         const config = this.getServerConfig(server);
+
+        if (appState === 'background' && this.activeServer) {
+            this.scheduleAuthenticationExpiry(this.activeServer);
+        } else if (appState === 'active' && this.previousAppState === 'background') {
+            const now = Date.now();
+            const backgroundExpired = this.backgroundSince > 0 && (now - this.backgroundSince) >= PROMPT_AUTH_AFTER;
+            for (const [serverUrl, serverCfg] of Object.entries(this.serverConfig)) {
+                if (backgroundExpired) {
+                    this.setAuthenticated(serverUrl, false);
+                } else if (serverUrl === this.activeServer) {
+                    this.clearAuthenticationExpiry(serverUrl);
+                } else if (serverCfg.authenticated) {
+                    const elapsed = now - (serverCfg.lastAccessed ?? 0);
+                    if (elapsed >= PROMPT_AUTH_AFTER) {
+                        this.setAuthenticated(serverUrl, false);
+                    } else {
+                        this.scheduleAuthenticationExpiry(serverUrl, PROMPT_AUTH_AFTER - elapsed);
+                    }
+                }
+            }
+        }
 
         await handleAppStateResume(appState, this, {
             isEnabled: () => {
@@ -538,14 +561,19 @@ class SecurityManagerSingleton {
             intunePolicy,
         };
 
+        this.clearAuthenticationExpiry(server);
         this.serverConfig[server] = mobileConfig;
         SessionAttributesManager.setBiometricAuthenticated(server, authenticated);
+        if (authenticated && (server !== this.activeServer || this.previousAppState === 'background')) {
+            this.scheduleAuthenticationExpiry(server);
+        }
     };
 
     /**
      * Removes a configured server, to be called on logout.
      */
     removeServer = async (server: string) => {
+        this.clearAuthenticationExpiry(server);
         delete this.serverConfig[server];
         SessionAttributesManager.clearServerValues(server);
         if (server === this.activeServer) {
@@ -555,13 +583,50 @@ class SecurityManagerSingleton {
         }
     };
 
+    private clearAuthenticationExpiry = (server: string) => {
+        const timer = this.authExpiryTimers[server];
+        if (timer) {
+            clearTimeout(timer);
+            delete this.authExpiryTimers[server];
+        }
+    };
+
+    private clearAllAuthenticationExpiries = () => {
+        for (const server of Object.keys(this.authExpiryTimers)) {
+            this.clearAuthenticationExpiry(server);
+        }
+    };
+
+    private scheduleAuthenticationExpiry = (server: string, delayMs = PROMPT_AUTH_AFTER) => {
+        this.clearAuthenticationExpiry(server);
+        if (!this.getServerConfig(server)?.authenticated) {
+            return;
+        }
+        const timer = setTimeout(() => {
+            delete this.authExpiryTimers[server];
+            this.setAuthenticated(server, false);
+        }, Math.max(0, delayMs));
+        (timer as {unref?: () => void}).unref?.();
+        this.authExpiryTimers[server] = timer;
+    };
+
     /**
      * Records whether the user passed the biometric prompt for a server, and reports it as the
      * biometric_authenticated session attribute.
      */
     private setAuthenticated = (server: string, authenticated: boolean) => {
         const config = this.getServerConfig(server);
-        if (!config || config.authenticated === authenticated) {
+        if (!config) {
+            return;
+        }
+        this.clearAuthenticationExpiry(server);
+        if (authenticated) {
+            config.lastAccessed = Date.now();
+            if (server !== this.activeServer || this.previousAppState === 'background') {
+                this.scheduleAuthenticationExpiry(server);
+            }
+        }
+        if (config.authenticated === authenticated) {
             return;
         }
         config.authenticated = authenticated;
@@ -702,21 +767,26 @@ class SecurityManagerSingleton {
         }
 
         // Update active server tracking
-        if (this.activeServer && this.serverConfig[this.activeServer]) {
-            this.serverConfig[this.activeServer].lastAccessed = Date.now();
+        const previousActiveServer = this.activeServer;
+        if (previousActiveServer && this.serverConfig[previousActiveServer]) {
+            this.serverConfig[previousActiveServer].lastAccessed = Date.now();
         }
 
         if (!this.serverConfig[serverUrl]) {
             return;
         }
 
-        const previousLastAccessed = this.serverConfig[serverUrl].lastAccessed ?? 0;
-        if (Date.now() - previousLastAccessed >= PROMPT_AUTH_AFTER) {
+        const previousLastAccessed = this.serverConfig[serverUrl].lastAccessed;
+        if (previousLastAccessed !== undefined && Date.now() - previousLastAccessed >= PROMPT_AUTH_AFTER) {
             this.setAuthenticated(serverUrl, false);
         }
 
         this.activeServer = serverUrl;
         this.serverConfig[serverUrl].lastAccessed = Date.now();
+        this.clearAuthenticationExpiry(serverUrl);
+        if (previousActiveServer && previousActiveServer !== serverUrl) {
+            this.scheduleAuthenticationExpiry(previousActiveServer);
+        }
         this.setScreenCapturePolicy(serverUrl);
 
         // Security checks (moved from start() method)
@@ -750,12 +820,18 @@ class SecurityManagerSingleton {
      * MAM policy takes precedence over server config.
      */
     authenticateWithBiometricsIfNeeded = async (server: string) => {
-        if (this.isAuthenticationHandledByEmm()) {
+        const config = this.getServerConfig(server);
+        if (!config) {
             return true;
         }
 
-        const config = this.getServerConfig(server);
-        if (!config) {
+        const lastAccessed = config.lastAccessed ?? 0;
+        const timeSinceLastAccessed = Date.now() - lastAccessed;
+        if (timeSinceLastAccessed >= PROMPT_AUTH_AFTER) {
+            this.setAuthenticated(server, false);
+        }
+
+        if (this.isAuthenticationHandledByEmm()) {
             return true;
         }
 
@@ -764,14 +840,8 @@ class SecurityManagerSingleton {
             return true;
         }
 
-        const lastAccessed = config?.lastAccessed ?? 0;
-        const timeSinceLastAccessed = Date.now() - lastAccessed;
-        if (timeSinceLastAccessed >= PROMPT_AUTH_AFTER) {
-            this.setAuthenticated(server, false);
-        }
-
         // Fall back to server config if MAM doesn't require PIN
-        if (config?.Biometrics && (timeSinceLastAccessed >= PROMPT_AUTH_AFTER || config.authenticated === false)) {
+        if (config.Biometrics && (timeSinceLastAccessed >= PROMPT_AUTH_AFTER || config.authenticated === false)) {
             return this.authenticateWithBiometrics(server);
         }
 
