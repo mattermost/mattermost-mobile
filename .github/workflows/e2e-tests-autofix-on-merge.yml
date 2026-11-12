@@ -3,7 +3,7 @@
 # Maestro tests that keep failing on main. The agent's PRs carry AI/babysit (review feedback, CI) and
 # AI/ConflictsBabysit (merge conflicts), whose automations take them from there. This workflow adds the
 # tested main commit as `base` and sends each request to the "Mobile E2E Autofix" Cursor automation,
-# whose instructions are kept in .cursor/automations/e2e-autofix.md.
+# whose instructions live in that automation in the Cursor dashboard, not in this repository.
 #
 # Without the webhook secrets it only writes the job summary. Set the variable E2E_ENABLE_AUTOFIX to
 # "false" to turn it off.

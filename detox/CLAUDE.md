@@ -126,7 +126,7 @@ PR E2E runs the full `detox/e2e/test` tree when labeled.
 - It is Detox Android only.
 - Dispatch it from main once the PR's E2E run has finished, with the PR ready for review: `gh workflow run e2e-flake-verify.yml --ref main -f PR_NUMBER=<n> -f SOURCE_RUN_ID=<E2E run id> -f CANDIDATE_SHA=<PR head> -f BASELINE_SHA=$(git merge-base origin/main <PR head>) -f PLATFORM=android -f SPECS='<spec files>' -f TARGETS='<test ids>' -f REPEATS=10`. TARGETS is required: the ids of the tests the PR claims to fix. Other tests in SPECS count only if they fail, and BASELINE_SHA must be the PR's branch point.
 
-`e2e-tests-autofix-on-merge.yml` runs after every main E2E run. It picks the tests that keep failing on main and sends them to the Cursor automation in `.cursor/automations/e2e-autofix.md`.
+`e2e-tests-autofix-on-merge.yml` runs after every main E2E run. It picks the tests that keep failing on main and sends them to the Cursor automation "Mobile E2E Autofix". Its instructions (self-review rules, lessons, how it dispatches verify) live in the Cursor dashboard, not in this repository.
 - It does nothing without its webhook secrets.
 - Set the repository variable `E2E_ENABLE_AUTOFIX` to `false` to turn it off.
 
