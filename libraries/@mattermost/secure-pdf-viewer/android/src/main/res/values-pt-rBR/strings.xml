@@ -1,0 +1,9 @@
+<resources>
+    <string name="mm_pdf_loading">Carregando documento...</string>
+    <string name="mm_pdf_no_document">Nenhum documento</string>
+    <string name="mm_pdf_preparing">Preparando...</string>
+    <string name="mm_pdf_no_source">Nenhum arquivo de origem especificado</string>
+    <string name="mm_pdf_invalid_file">Arquivo inválido ou não autorizado</string>
+    <string name="mm_pdf_unreadable_size">Não foi possível ler o tamanho do arquivo</string>
+    <string name="mm_pdf_too_large">O arquivo PDF é grande demais para ser processado: %1$.1f MB. O tamanho máximo permitido é %2$.0f MB.</string>
+</resources>

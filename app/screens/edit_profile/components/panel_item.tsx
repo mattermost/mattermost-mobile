@@ -3,7 +3,7 @@
 
 import {types} from '@react-native-documents/picker';
 import React, {useMemo} from 'react';
-import {type MessageDescriptor, useIntl} from 'react-intl';
+import {defineMessage, type MessageDescriptor, useIntl} from 'react-intl';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -64,7 +64,7 @@ const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItem
                 return onRemoveProfileImage && onRemoveProfileImage();
             },
             testID: 'attachment.removeImage',
-            text: {id: 'mobile.edit_profile.remove_profile_photo', defaultMessage: 'Remove Photo'},
+            text: defineMessage({id: 'mobile.edit_profile.remove_profile_photo', defaultMessage: 'Remove Photo'}),
         },
     }), [pictureUtils, onRemoveProfileImage]);
 
