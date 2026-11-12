@@ -4,6 +4,7 @@
 /* eslint-disable max-lines */
 
 import Emm, {AuthenticationOutcome} from '@mattermost/react-native-emm';
+import {setSessionAttributesServerValues} from '@mattermost/react-native-network-client';
 import {isRootedExperimentalAsync} from 'expo-device';
 
 import DatabaseManager from '@database/manager';
@@ -334,6 +335,7 @@ describe('SecurityManager', () => {
             await SecurityManager.addServer('server-3');
             SecurityManager.removeServer('server-3');
             expect(SecurityManager.serverConfig['server-3']).toBeUndefined();
+            expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-3', {});
         });
     });
 
@@ -558,14 +560,27 @@ describe('SecurityManager', () => {
             expect(Emm.authenticate).not.toHaveBeenCalled();
         });
 
-        test('should resolve with true if biometric authentication succeeds', async () => {
+        test('should resolve with true and report biometric_authenticated if biometric authentication succeeds', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockResolvedValue(true);
             await SecurityManager.addServer('server-9', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+            expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-9', {biometric_authenticated: 'false'});
+
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-9')).resolves.toBe(true);
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
             expect(Emm.authenticate).toHaveBeenCalled();
             expect(SecurityManager.getServerConfig('server-9')?.authenticated).toBe(true);
+            expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-9', {biometric_authenticated: 'true'});
+        });
+
+        test('should report biometric_authenticated false once the re-prompt window has lapsed', async () => {
+            await SecurityManager.addServer('server-9a', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);
+            SecurityManager.serverConfig['server-9a'].lastAccessed = 1;
+            jest.mocked(setSessionAttributesServerValues).mockClear();
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-9a')).resolves.toBe(true);
+            expect(SecurityManager.getServerConfig('server-9a')?.authenticated).toBe(false);
+            expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-9a', {biometric_authenticated: 'false'});
         });
 
         test('should offer logout when authentication genuinely fails', async () => {

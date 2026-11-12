@@ -26,6 +26,7 @@ import {
     type IntunePolicyChangedEvent,
     type IntuneWipeRequestedEvent,
 } from '@managers/intune_manager/types';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getConfig, getConfigValue, getSecurityConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
@@ -209,7 +210,10 @@ class SecurityManagerSingleton {
             },
             isGateOpen: () => this.isCheckingBiometrics,
             shouldBlock: () => this.isDeviceJailbroken(server),
-            authenticate: () => this.authenticateWithBiometrics(server),
+            authenticate: () => {
+                this.setAuthenticated(server, false);
+                return this.authenticateWithBiometrics(server);
+            },
             promptWhenNotExpired: false,
             source: AuthenticationSource.SecurityManager,
         });
@@ -535,6 +539,7 @@ class SecurityManagerSingleton {
         };
 
         this.serverConfig[server] = mobileConfig;
+        SessionAttributesManager.setBiometricAuthenticated(server, authenticated);
     };
 
     /**
@@ -542,11 +547,25 @@ class SecurityManagerSingleton {
      */
     removeServer = async (server: string) => {
         delete this.serverConfig[server];
+        SessionAttributesManager.clearServerValues(server);
         if (server === this.activeServer) {
             this.initialized = false;
             this.activeServer = undefined;
             this.setScreenCapturePolicy('');
         }
+    };
+
+    /**
+     * Records whether the user passed the biometric prompt for a server, and reports it as the
+     * biometric_authenticated session attribute.
+     */
+    private setAuthenticated = (server: string, authenticated: boolean) => {
+        const config = this.getServerConfig(server);
+        if (!config || config.authenticated === authenticated) {
+            return;
+        }
+        config.authenticated = authenticated;
+        SessionAttributesManager.setBiometricAuthenticated(server, authenticated);
     };
 
     /**
@@ -691,6 +710,11 @@ class SecurityManagerSingleton {
             return;
         }
 
+        const previousLastAccessed = this.serverConfig[serverUrl].lastAccessed ?? 0;
+        if (Date.now() - previousLastAccessed >= PROMPT_AUTH_AFTER) {
+            this.setAuthenticated(serverUrl, false);
+        }
+
         this.activeServer = serverUrl;
         this.serverConfig[serverUrl].lastAccessed = Date.now();
         this.setScreenCapturePolicy(serverUrl);
@@ -740,13 +764,15 @@ class SecurityManagerSingleton {
             return true;
         }
 
+        const lastAccessed = config?.lastAccessed ?? 0;
+        const timeSinceLastAccessed = Date.now() - lastAccessed;
+        if (timeSinceLastAccessed >= PROMPT_AUTH_AFTER) {
+            this.setAuthenticated(server, false);
+        }
+
         // Fall back to server config if MAM doesn't require PIN
-        if (config?.Biometrics) {
-            const lastAccessed = config?.lastAccessed ?? 0;
-            const timeSinceLastAccessed = Date.now() - lastAccessed;
-            if (timeSinceLastAccessed >= PROMPT_AUTH_AFTER || config.authenticated === false) {
-                return this.authenticateWithBiometrics(server);
-            }
+        if (config?.Biometrics && (timeSinceLastAccessed >= PROMPT_AUTH_AFTER || config.authenticated === false)) {
+            return this.authenticateWithBiometrics(server);
         }
 
         return true;
@@ -766,8 +792,8 @@ class SecurityManagerSingleton {
         locale: string,
     ): Promise<AuthenticationAttemptOutcome> => {
         const secured = await probeDeviceSecured(AuthenticationSource.SecurityManager);
-        if (secured === 'notSecured' && config) {
-            config.authenticated = false;
+        if (secured === 'notSecured') {
+            this.setAuthenticated(server, false);
         }
         if (secured !== 'secured') {
             return secured;
@@ -783,9 +809,7 @@ class SecurityManagerSingleton {
                 blurOnAuthenticate: this.shouldBlurOnAuthenticate(server),
             });
 
-            if (config) {
-                config.authenticated = true;
-            }
+            this.setAuthenticated(server, true);
 
             return 'success';
         } catch (error) {
@@ -793,9 +817,7 @@ class SecurityManagerSingleton {
 
             // Anything other than success leaves the user unauthenticated, so later entry
             // points must re-prompt even inside the lastAccessed window.
-            if (config) {
-                config.authenticated = false;
-            }
+            this.setAuthenticated(server, false);
 
             logDebug('SecurityManager: Authentication attempt did not succeed', {outcome, reason: getFullErrorMessage(error)});
 
