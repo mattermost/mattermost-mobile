@@ -72,7 +72,9 @@ Stop with a no-op (and say which) if any of these holds:
 - Another open PR fixes it. Check `open_prs_touching` and `gh pr list --search '<spec file name>' --state open`. Never read or run fork PRs.
 - Memory says you handled this spec in the last 7 days and nothing has changed since.
 - The spec was removed or renamed on main since `base.commit`.
-- Main is green on the tests since the failing run. Check the last 3 main E2E runs: `gh run list -R mattermost/mattermost-mobile --workflow E2E --branch main`.
+- It is already fixed on main: a commit merged after `base.commit` changes the spec or the helpers it uses in a way that explains the failure, and the main runs since then pass it (`gh run list -R mattermost/mattermost-mobile --workflow E2E --branch main`).
+  - For **broken**, passing runs since that commit are enough.
+  - For **flaky**, green runs alone prove nothing (a flake recurs after a few passes): without such a commit, carry on to step 2.
 
 ## 2 Establish the failure from CI
 
@@ -152,7 +154,7 @@ Every check must pass before you open a PR. In a dry run, report the results.
 ## 6 Verify in CI
 
 1. Wait for the PR's own full E2E run to **finish**: the verify run shares its servers. Take its run id: `gh run list --workflow E2E --branch <pr branch> --limit 1`.
-2. Dispatch from main:
+2. Dispatch only when the request's failing suites include `mobile-main-detox-android` for the spec. Verify runs Detox Android only. For an iOS-, iPad- or Maestro-only request, skip this dispatch and say so in the PR under point 4 below. Dispatch from main:
 
    ```bash
    gh workflow run e2e-flake-verify.yml --ref main -f PR_NUMBER=<n> -f SOURCE_RUN_ID=<finished E2E run id> \

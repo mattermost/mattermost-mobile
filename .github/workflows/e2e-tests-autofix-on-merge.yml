@@ -16,9 +16,12 @@ on:
 
 permissions: {}
 
+# Runs are serialized (the ledger is read at the start and saved at the end) and queued, not replaced: with the
+# default queue a third run would cancel the pending second one before it planned its requests.
 concurrency:
   group: e2e-tests-autofix-on-merge
   cancel-in-progress: false
+  queue: max
 
 env:
   TRUNK: main

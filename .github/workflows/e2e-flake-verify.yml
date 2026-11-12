@@ -307,8 +307,38 @@ jobs:
           echo "flake-verify exit=$?"
           cat verdict.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Post verdict comment
+      # The plan refused to start while an E2E run was going on the PR branch, but one can start later and share the
+      # servers while the arms run (the E2E workflow is in another concurrency group). Such a comparison is not valid.
+      - name: Check no E2E run shared the servers
+        id: servers
         if: always() && steps.verdict.outputs.state != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.PR_NUMBER }}
+          STATE: ${{ steps.verdict.outputs.state }}
+        with:
+          script: |
+            const fs = require('fs');
+            const {owner, repo} = context.repo;
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: Number(process.env.PR_NUMBER)});
+            const {data: self} = await github.rest.actions.getWorkflowRun({owner, repo, run_id: context.runId});
+            const started = Date.parse(self.run_started_at || self.created_at);
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner, repo, workflow_id: 'e2e-detox-pr.yml', branch: pr.head.ref, per_page: 100,
+            });
+            const overlapping = runs.filter((run) => run.name === 'E2E' && Date.parse(run.created_at) >= started);
+            if (!overlapping.length) {
+              core.setOutput('state', process.env.STATE);
+              return;
+            }
+            const ids = overlapping.map((run) => run.id).join(', ');
+            const markdown = fs.readFileSync('verdict.md', 'utf8').replace(/^### E2E flake verify: .*$/m, '### E2E flake verify: NO_DATA');
+            fs.writeFileSync('verdict.md', `${markdown}\n**Not valid:** E2E run(s) ${ids} used the PR's servers while this verification ran, so the result is NO_DATA (was ${process.env.STATE}). Dispatch it again once they finish.\n`);
+            core.warning(`E2E run(s) ${ids} overlapped the verification; reporting NO_DATA`);
+            core.setOutput('state', 'NO_DATA');
+
+      - name: Post verdict comment
+        if: always() && steps.servers.outputs.state != ''
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ inputs.PR_NUMBER }}
@@ -335,7 +365,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           CANDIDATE_SHA: ${{ inputs.CANDIDATE_SHA }}
-          STATE: ${{ steps.verdict.outputs.state || 'NO_DATA' }}
+          STATE: ${{ steps.servers.outputs.state || 'NO_DATA' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
@@ -352,7 +382,7 @@ jobs:
       - name: Fail on FAIL or NO_DATA
         if: always()
         env:
-          STATE: ${{ steps.verdict.outputs.state }}
+          STATE: ${{ steps.servers.outputs.state }}
         run: |
           echo "Verdict: ${STATE:-none}"
           if [ "$STATE" != "PASS" ] && [ "$STATE" != "UNPROVEN" ]; then
