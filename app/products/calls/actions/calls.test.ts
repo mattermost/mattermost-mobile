@@ -11,7 +11,6 @@ import {Alert} from 'react-native';
 
 import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmation, switchToCallThread} from '@calls/actions/calls';
-import * as Permissions from '@calls/actions/permissions';
 import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import * as State from '@calls/state';
@@ -51,6 +50,7 @@ import {getChannelById} from '@queries/servers/channel';
 import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
+import * as Permissions from '@utils/permission';
 
 import type {CallJobState, CallsVersionInfo} from '@mattermost/calls/lib/types';
 

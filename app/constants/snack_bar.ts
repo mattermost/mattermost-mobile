@@ -44,6 +44,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     EPHEMERAL_MODE_DISCONNECTED: null,
     EPHEMERAL_MODE_WIPE_WARNING: null,
     EPHEMERAL_MODE_CACHE_CLEANUP: null,
+    VOICE_NOTE_MAX_DURATION: null,
 });
 
 export const MESSAGE_TYPE = {
@@ -145,6 +146,10 @@ const messages = defineMessages({
     PLUGIN_TOAST: {
         id: 'snack.bar.plugin.toast',
         defaultMessage: 'Notification',
+    },
+    VOICE_NOTE_MAX_DURATION: {
+        id: 'snack.bar.voice_note.max_duration',
+        defaultMessage: 'Recording stopped at the {minutes, plural, one {# minute} other {# minutes}} limit',
     },
     PLAYBOOK_ERROR: {
         id: 'snack.bar.playbook.error',
@@ -313,6 +318,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     PLUGIN_TOAST: {
         message: messages.PLUGIN_TOAST,
         iconName: 'information-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.DEFAULT,
+    },
+    VOICE_NOTE_MAX_DURATION: {
+        message: messages.VOICE_NOTE_MAX_DURATION,
+        iconName: 'microphone-outline',
         hasAction: false,
         type: MESSAGE_TYPE.DEFAULT,
     },

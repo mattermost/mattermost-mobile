@@ -1,18 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent} from '@testing-library/react-native';
+import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
+import {AudioModule} from 'expo-audio';
+import {File} from 'expo-file-system';
 import React from 'react';
+import {Alert} from 'react-native';
 
 import {License, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostPriorityType} from '@constants/post';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import NetworkManager from '@managers/network_manager';
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {persistentNotificationsConfirmation} from '@utils/post';
+import {showSnackBar} from '@utils/snack_bar';
 
 import DraftInput from './draft_input';
 
@@ -34,8 +41,28 @@ jest.mock('@context/server', () => ({
 
 jest.mock('@screens/navigation');
 
+jest.mock('@mattermost/hardware-keyboard', () => ({
+    useHardwareKeyboardEvents: jest.fn(),
+}));
+
+// The hardware keyboard only sends from the composer of the screen being shown.
+jest.mock('@store/navigation_store', () => ({
+    ...jest.requireActual('@store/navigation_store'),
+    useCurrentScreen: jest.fn(() => 'channel'),
+}));
+
 jest.mock('@utils/post', () => ({
     persistentNotificationsConfirmation: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
+}));
+
+// A short limit keeps the auto-stop test from having to run five minutes of fake time.
+jest.mock('@utils/file/voice_note', () => ({
+    ...jest.requireActual('@utils/file/voice_note'),
+    VOICE_NOTE_MAX_DURATION_MS: 3000,
 }));
 
 describe('DraftInput', () => {
@@ -58,7 +85,7 @@ describe('DraftInput', () => {
         value: '',
         uploadFileError: null,
         updateValue: jest.fn(),
-        addFiles: jest.fn(),
+        addFiles: jest.fn(() => true),
         updatePostInputTop: jest.fn(),
         setIsFocused: jest.fn(),
         scheduledPostsEnabled: true,
@@ -131,6 +158,168 @@ describe('DraftInput', () => {
             // Error should be within uploads section
             const uploadsSection = getByTestId('uploads');
             expect(uploadsSection).toContainElement(error);
+        });
+    });
+
+    describe('Voice note', () => {
+        const startRecording = async (getByTestId: ReturnType<typeof render>['getByTestId']) => {
+            await act(async () => {
+                fireEvent.press(getByTestId('draft_input.quick_actions.voice_action'));
+            });
+            await waitFor(() => {
+                expect(getByTestId('draft_input.voice_recorder')).toBeVisible();
+            });
+        };
+
+        beforeEach(() => {
+            enableFakeTimers();
+            jest.setSystemTime(new Date(2026, 9, 20, 14, 35, 1));
+        });
+
+        afterEach(() => {
+            disableFakeTimers();
+        });
+
+        it('should replace the quick actions with the recorder while recording', async () => {
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+
+            await startRecording(getByTestId);
+
+            expect(queryByTestId('draft_input.quick_actions')).toBeNull();
+            expect(queryByTestId('draft_input.send_action.send.button')).toBeNull();
+        });
+
+        it('should attach the recorded voice note to the draft when done is pressed', async () => {
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            await startRecording(getByTestId);
+
+            await act(async () => {
+                await advanceTimers(2000);
+                fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
+                await advanceTimers(0);
+            });
+
+            expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
+            expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({
+                mime_type: 'audio/mp4',
+                extension: 'm4a',
+                name: 'voice-note-20261020-143501-0m02s.m4a',
+                localPath: 'file:///mock/voice-note-20261020-143501-0m02s.m4a',
+            })]);
+            expect(showSnackBar).not.toHaveBeenCalled();
+            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+            expect(getByTestId('draft_input.quick_actions')).toBeVisible();
+        });
+
+        it('should delete the recorded file when the draft does not accept it', async () => {
+            const addFiles = jest.fn(() => false);
+            const {getByTestId, queryByTestId} = render(
+                <DraftInput
+                    {...baseProps}
+                    addFiles={addFiles}
+                />,
+                {database},
+            );
+            await startRecording(getByTestId);
+
+            await act(async () => {
+                await advanceTimers(2000);
+                fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
+                await advanceTimers(0);
+            });
+
+            expect(addFiles).toHaveBeenCalledTimes(1);
+            const MockFile = jest.mocked(File);
+            expect(MockFile).toHaveBeenLastCalledWith('file:///mock/voice-note-20261020-143501-0m02s.m4a');
+            expect(MockFile.mock.results[MockFile.mock.results.length - 1].value.delete).toHaveBeenCalledTimes(1);
+            expect(showSnackBar).not.toHaveBeenCalled();
+            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+        });
+
+        it('should discard a recording shorter than a second without attaching it', async () => {
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            await startRecording(getByTestId);
+
+            await act(async () => {
+                fireEvent.press(getByTestId('draft_input.voice_recorder.done'));
+            });
+
+            await waitFor(() => {
+                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+            });
+            expect(baseProps.addFiles).not.toHaveBeenCalled();
+            expect(getByTestId('draft_input.quick_actions')).toBeVisible();
+        });
+
+        it('should discard the recording and restore the quick actions on cancel', async () => {
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            await startRecording(getByTestId);
+
+            await act(async () => {
+                fireEvent.press(getByTestId('draft_input.voice_recorder.cancel'));
+            });
+
+            await waitFor(() => {
+                expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+            });
+            expect(baseProps.addFiles).not.toHaveBeenCalled();
+            expect(getByTestId('draft_input.quick_actions')).toBeVisible();
+        });
+
+        it('should attach the voice note and tell the user when the recording hits the time limit', async () => {
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            await startRecording(getByTestId);
+
+            await act(async () => {
+                await advanceTimers(3000);
+            });
+
+            expect(baseProps.addFiles).toHaveBeenCalledTimes(1);
+            expect(baseProps.addFiles).toHaveBeenCalledWith([expect.objectContaining({name: 'voice-note-20261020-143501-0m03s.m4a'})]);
+            expect(showSnackBar).toHaveBeenCalledTimes(1);
+            expect(showSnackBar).toHaveBeenCalledWith(expect.objectContaining({barType: SNACK_BAR_TYPE.VOICE_NOTE_MAX_DURATION}));
+            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+        });
+
+        it('should not send the message from a hardware keyboard while recording', async () => {
+            const pressHardwareEnter = () => jest.mocked(useHardwareKeyboardEvents).mock.lastCall?.[0].onEnterPressed?.();
+            const {getByTestId} = render(
+                <DraftInput
+                    {...baseProps}
+                    value='message'
+                />,
+                {database},
+            );
+
+            pressHardwareEnter();
+            expect(baseProps.sendMessage).toHaveBeenCalledTimes(1);
+
+            await startRecording(getByTestId);
+            pressHardwareEnter();
+
+            expect(baseProps.sendMessage).toHaveBeenCalledTimes(1);
+            expect(getByTestId('draft_input.voice_recorder')).toBeVisible();
+        });
+
+        it('should alert and restore the quick actions when the recording fails', async () => {
+            jest.spyOn(Alert, 'alert');
+            const MockAudioRecorder = AudioModule.AudioRecorder as unknown as jest.Mock;
+            const createDefaultRecorder = MockAudioRecorder.getMockImplementation() as () => object;
+            MockAudioRecorder.mockImplementationOnce(() => Object.assign(createDefaultRecorder(), {
+                prepareToRecordAsync: jest.fn(() => Promise.reject(new Error('mic busy'))),
+            }));
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
+
+            await act(async () => {
+                fireEvent.press(getByTestId('draft_input.quick_actions.voice_action'));
+            });
+
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledWith('Recording failed', 'Unable to record a voice note');
+            });
+            expect(queryByTestId('draft_input.voice_recorder')).toBeNull();
+            expect(getByTestId('draft_input.quick_actions')).toBeVisible();
+            expect(baseProps.addFiles).not.toHaveBeenCalled();
         });
     });
 

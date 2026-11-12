@@ -17,6 +17,7 @@ import {fileMaxWarning, pathWithPrefix, uploadDisabledWarning} from '@utils/file
 import PickerUtil from '@utils/file/file_picker';
 import {generateId} from '@utils/general';
 import {logError} from '@utils/log';
+import {requestMicrophonePermission} from '@utils/permission';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -30,6 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     onUploadFiles: (files: ExtractedFileInfo[]) => void;
+    onRecordVoiceNote?: () => void;
     maxFileCount?: number;
     fileCount?: number;
     maxFilesReached?: boolean;
@@ -40,6 +42,7 @@ type Props = {
 
 const AttachmentOptions: React.FC<Props> = ({
     onUploadFiles,
+    onRecordVoiceNote,
     maxFileCount,
     fileCount = 0,
     maxFilesReached = false,
@@ -126,6 +129,17 @@ const AttachmentOptions: React.FC<Props> = ({
         picker.attachFileFromFiles(undefined, true);
     };
 
+    const onRecordVoiceNotePressed = async () => {
+        await dismissBottomSheet();
+        if (!checkCanUpload() || checkMaxFiles()) {
+            return;
+        }
+        const granted = await requestMicrophonePermission(intl);
+        if (granted) {
+            onRecordVoiceNote?.();
+        }
+    };
+
     const onAttachLogs = async () => {
         if (attachingLogsRef.current) {
             return;
@@ -205,6 +219,14 @@ const AttachmentOptions: React.FC<Props> = ({
                 testID='file_attachment.attach_file'
                 text={intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Attach a file'})}
             />
+            {onRecordVoiceNote && (
+                <SlideUpPanelItem
+                    leftIcon='microphone-outline'
+                    onPress={onRecordVoiceNotePressed}
+                    testID='file_attachment.voice_note'
+                    text={intl.formatMessage({id: 'mobile.file_upload.voice_note', defaultMessage: 'Record a voice note'})}
+                />
+            )}
             {showAttachLogs && (
                 <SlideUpPanelItem
                     leftIcon='file-text-outline'
