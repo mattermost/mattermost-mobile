@@ -12,7 +12,7 @@ import {
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {modelName, osName, osVersion} from 'expo-device';
 import {defineMessages} from 'react-intl';
-import {Alert, DeviceEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter, Platform} from 'react-native';
 import urlParse from 'url-parse';
 
 import LocalConfig from '@assets/config.json';
@@ -75,6 +75,9 @@ class NetworkManagerSingleton {
             bearerAuthTokenResponseHeader: 'token',
             enableSessionAttributes: true,
         },
+
+        // iOS websocket handshake authenticates through the cookie jar
+        excludedCookies: Platform.select({android: ['MMAUTHTOKEN']}),
     };
 
     public init = async (serverCredentials: ServerCredential[]) => {
