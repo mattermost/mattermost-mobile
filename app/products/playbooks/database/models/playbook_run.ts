@@ -118,7 +118,11 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** participant_ids : An array of user IDs that participate in the run */
     @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
 
-    /** timeline_events : The run's task state change events, not its full timeline */
+    /**
+     * timeline_events : The run's task state change events, not its full timeline.
+     * memo keeps the array's reference until its JSON changes; the checklist enhancers rely on that
+     * to skip recomputing task activity on unrelated run changes.
+     */
     @json('timeline_events', safeParseTimelineEvents, {memo: true}) timelineEvents!: TimelineEvent[];
 
     /** summary : Summary of the playbook run */

@@ -45,12 +45,13 @@ const enhanced = withObservables(['item', 'channelId', 'playbookRunId', 'timelin
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
-        const run = observePlaybookRunById(database, playbookRunId).pipe(
-            shareReplay({bufferSize: 1, refCount: true}),
+        const runTimelineEvents = observePlaybookRunById(database, playbookRunId).pipe(
+            map((r) => r?.timelineEvents ?? timelineEvents),
+            distinctUntilChanged(),
         );
 
-        const activity = combineLatest([observedItem, run]).pipe(
-            map(([i, r]) => getTaskActivity(i, r?.timelineEvents ?? timelineEvents)),
+        const activity = combineLatest([observedItem, runTimelineEvents]).pipe(
+            map(([i, events]) => getTaskActivity(i, events)),
             distinctUntilChanged(isSameTaskActivity),
             shareReplay({bufferSize: 1, refCount: true}),
         );

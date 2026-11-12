@@ -39,9 +39,14 @@ const enhanced = withObservables(['item', 'runId', 'timelineEvents'], ({item, ru
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
+        const runTimelineEvents = run.pipe(
+            map((r) => r?.timelineEvents ?? timelineEvents),
+            distinctUntilChanged(),
+        );
+
         // Resolved here rather than passed from the row, so an open sheet follows changes made elsewhere.
-        const activity = combineLatest([observedItem, run]).pipe(
-            map(([i, r]) => getTaskActivity(i, r?.timelineEvents ?? timelineEvents)),
+        const activity = combineLatest([observedItem, runTimelineEvents]).pipe(
+            map(([i, events]) => getTaskActivity(i, events)),
             distinctUntilChanged(isSameTaskActivity),
             shareReplay({bufferSize: 1, refCount: true}),
         );

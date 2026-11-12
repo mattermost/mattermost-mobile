@@ -85,8 +85,9 @@ const runUpdateQueues = new Map<string, Promise<void>>();
 const serializePerRun = <T>(runId: string, apply: () => Promise<T>): Promise<T> => {
     const previous = runUpdateQueues.get(runId) ?? Promise.resolve();
 
+    const applied = previous.then(apply);
+
     // One failed update must not block the later ones.
-    const applied = previous.then(apply, apply);
     const settled = applied.then(() => undefined, () => undefined);
     runUpdateQueues.set(runId, settled);
 

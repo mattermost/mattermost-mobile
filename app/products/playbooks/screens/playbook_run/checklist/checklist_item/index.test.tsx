@@ -10,6 +10,7 @@ import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ChecklistItemComponent from './checklist_item';
+import {getTaskActivity} from './task_activity';
 
 import ChecklistItem from './';
 
@@ -18,6 +19,10 @@ import type {Database} from '@nozbe/watermelondb';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 
 jest.mock('./checklist_item');
+jest.mock('./task_activity', () => {
+    const actual = jest.requireActual('./task_activity');
+    return {...actual, getTaskActivity: jest.fn(actual.getTaskActivity)};
+});
 jest.mocked(ChecklistItemComponent).mockImplementation(
     (props: ComponentProps<typeof ChecklistItemComponent>) => React.createElement('ChecklistItem', {testID: 'checklist-item', ...props}),
 );
@@ -247,19 +252,20 @@ describe('ChecklistItem', () => {
             };
         }
 
+        const taskEvent = (id: string, taskId: string, eventAt: number): TimelineEvent => ({
+            id,
+            playbook_run_id: 'run-id',
+            create_at: eventAt,
+            event_at: eventAt,
+            event_type: 'task_state_modified',
+            summary: '',
+            details: JSON.stringify({action: 'check', item_id: taskId}),
+            post_id: '',
+            subject_user_id: 'user-id',
+            creator_user_id: 'user-id',
+        });
+
         it('should not re-render when a run change leaves this task activity the same', async () => {
-            const taskEvent = (id: string, taskId: string, eventAt: number): TimelineEvent => ({
-                id,
-                playbook_run_id: 'run-id',
-                create_at: eventAt,
-                event_at: eventAt,
-                event_type: 'task_state_modified',
-                summary: '',
-                details: JSON.stringify({action: 'check', item_id: taskId}),
-                post_id: '',
-                subject_user_id: 'user-id',
-                creator_user_id: 'user-id',
-            });
             const run = TestHelper.fakePlaybookRun({id: 'run-id', update_at: 1, timeline_events: [taskEvent('ours', itemId, 1000)]});
             await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false});
             const [item] = await operator.handlePlaybookChecklistItem({
@@ -280,6 +286,22 @@ describe('ChecklistItem', () => {
             });
 
             expect(jest.mocked(ChecklistItemComponent).mock.calls.length).toBe(renders);
+        });
+
+        it('should not recompute task activity when a run change leaves its timeline events the same', async () => {
+            const run = TestHelper.fakePlaybookRun({id: 'run-id', update_at: 1, name: 'Before', timeline_events: [taskEvent('ours', itemId, 1000)]});
+            await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false});
+            const props = {...(await getBaseProps()), timelineEvents: undefined};
+
+            renderWithEverything(<ChecklistItem {...props}/>, {database});
+            await waitFor(() => expect(getTaskActivity).toHaveBeenCalled());
+            jest.mocked(getTaskActivity).mockClear();
+
+            await act(async () => {
+                await operator.handlePlaybookRun({runs: [{...run, update_at: 2, name: 'After'}], prepareRecordsOnly: false});
+            });
+
+            expect(getTaskActivity).not.toHaveBeenCalled();
         });
 
         it('should render correctly without data', async () => {

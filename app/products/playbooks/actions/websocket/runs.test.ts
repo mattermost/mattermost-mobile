@@ -474,6 +474,29 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(await storedEventIds()).toEqual(['a', 'b', 'c']);
     });
 
+    it('should still apply an update queued behind one that failed', async () => {
+        await seedRunWithEvents([event('a', 1)]);
+        jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementationOnce(() => {
+            throw new Error('database unavailable');
+        });
+
+        const failing = dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: Date.now(),
+            changed_fields: {timeline_events: [event('b', 2)]},
+        });
+        const queued = dispatch({
+            id: playbookRunId,
+            playbook_run_updated_at: Date.now() + 1,
+            changed_fields: {timeline_events: [event('c', 3)]},
+        });
+
+        await expect(failing).rejects.toThrow('database unavailable');
+        await queued;
+
+        expect(await storedEventIds()).toEqual(['a', 'c']);
+    });
+
     it('should leave stored events alone when an update does not concern them', async () => {
         await seedRunWithEvents([event('a', 1), event('b', 2)]);
 

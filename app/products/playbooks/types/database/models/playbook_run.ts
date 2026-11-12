@@ -62,7 +62,7 @@ declare class PlaybookRunModel extends Model {
     // An array of user IDs that participate in the run
     participantIds: string[];
 
-    // Timeline events associated with the run
+    // The run's task_state_modified events only, not its full timeline
     timelineEvents: TimelineEvent[];
 
     // Summary of the playbook run
