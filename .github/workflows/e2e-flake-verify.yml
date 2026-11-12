@@ -305,7 +305,6 @@ jobs:
           node detox/utils/flake-verify.js --dir fv-results --repeats "$REPEATS" --specs "$SPECS" \
             --targets "$TARGETS" --markdown verdict.md --out verdict.json
           echo "flake-verify exit=$?"
-          cat verdict.md >> "$GITHUB_STEP_SUMMARY"
 
       # The plan refused to start while an E2E run was going on the PR branch, but one can start later and share the
       # servers while the arms run (the E2E workflow is in another concurrency group). Such a comparison is not valid.
@@ -327,15 +326,18 @@ jobs:
               owner, repo, workflow_id: 'e2e-detox-pr.yml', branch: pr.head.ref, per_page: 100,
             });
             const overlapping = runs.filter((run) => run.name === 'E2E' && Date.parse(run.created_at) >= started);
-            if (!overlapping.length) {
-              core.setOutput('state', process.env.STATE);
-              return;
+            let state = process.env.STATE;
+            if (overlapping.length) {
+              const ids = overlapping.map((run) => run.id).join(', ');
+              const markdown = fs.readFileSync('verdict.md', 'utf8').replace(/^### E2E flake verify: .*$/m, '### E2E flake verify: NO_DATA');
+              fs.writeFileSync('verdict.md', `${markdown}\n**Not valid:** E2E run(s) ${ids} used the PR's servers while this verification ran, so the result is NO_DATA (was ${state}). Dispatch it again once they finish.\n`);
+              core.warning(`E2E run(s) ${ids} overlapped the verification; reporting NO_DATA`);
+              state = 'NO_DATA';
             }
-            const ids = overlapping.map((run) => run.id).join(', ');
-            const markdown = fs.readFileSync('verdict.md', 'utf8').replace(/^### E2E flake verify: .*$/m, '### E2E flake verify: NO_DATA');
-            fs.writeFileSync('verdict.md', `${markdown}\n**Not valid:** E2E run(s) ${ids} used the PR's servers while this verification ran, so the result is NO_DATA (was ${process.env.STATE}). Dispatch it again once they finish.\n`);
-            core.warning(`E2E run(s) ${ids} overlapped the verification; reporting NO_DATA`);
-            core.setOutput('state', 'NO_DATA');
+
+            // Written only now, so the summary, the PR comment and the commit status report the same verdict.
+            await core.summary.addRaw(fs.readFileSync('verdict.md', 'utf8')).write();
+            core.setOutput('state', state);
 
       - name: Post verdict comment
         if: always() && steps.servers.outputs.state != ''

@@ -72,7 +72,7 @@ Stop with a no-op (and say which) if any of these holds:
 - Another open PR fixes it. Check `open_prs_touching` and `gh pr list --search '<spec file name>' --state open`. Never read or run fork PRs.
 - Memory says you handled this spec in the last 7 days and nothing has changed since.
 - The spec was removed or renamed on main since `base.commit`.
-- It is already fixed on main: a commit merged after `base.commit` changes the spec or the helpers it uses in a way that explains the failure, and the main runs since then pass it (`gh run list -R mattermost/mattermost-mobile --workflow E2E --branch main`).
+- It is already fixed on main: a commit merged after `base.commit` changes the spec, the helpers it uses, or the app code the test exercises in a way that explains the failure, and the main runs since then pass it (`gh run list -R mattermost/mattermost-mobile --workflow E2E --branch main`).
   - For **broken**, passing runs since that commit are enough.
   - For **flaky**, green runs alone prove nothing (a flake recurs after a few passes): without such a commit, carry on to step 2.
 
