@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 import ProfilePicture from './profile_picture';
 
@@ -129,12 +129,7 @@ class Autocomplete {
         }
         if (isIos()) {
             // Sync + keyboard often report false "not hittable"; disable briefly like alert dismiss.
-            try {
-                await device.disableSynchronization();
-            } catch {
-                // already off
-            }
-            try {
+            await withSynchronizationDisabled(async () => {
                 try {
                     await target.tapAtPoint({x: 12, y: 12});
                 } catch {
@@ -144,13 +139,7 @@ class Autocomplete {
                         await target.tap();
                     }
                 }
-            } finally {
-                try {
-                    await device.enableSynchronization();
-                } catch {
-                    // ignore
-                }
-            }
+            });
             return;
         }
         try {

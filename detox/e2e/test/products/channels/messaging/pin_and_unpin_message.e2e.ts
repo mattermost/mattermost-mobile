@@ -26,7 +26,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
@@ -184,7 +184,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
         // Do not use waitFor(toBeVisible/toExist) here — iOS Detox can ignore withTimeout and
         // hang until Jest's 300s cap. Bounded scroll, then a single expect so exhaustion fails.
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             /* eslint-disable no-await-in-loop -- bounded scroll with immediate expect */
             for (let i = 0; i < 8; i++) {
@@ -203,7 +203,7 @@ describe('Messaging - Pin and Unpin Message', () => {
             await expect(newerPost2Item).toBeVisible(40);
             /* eslint-enable no-await-in-loop */
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // # Open channel info and navigate to pinned messages screen

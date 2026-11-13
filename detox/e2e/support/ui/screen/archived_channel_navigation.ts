@@ -16,13 +16,7 @@ import ChannelScreen from '@support/ui/screen/channel';
 import ChannelDropdownMenuScreen from '@support/ui/screen/channel_dropdown_menu';
 import PermalinkScreen from '@support/ui/screen/permalink';
 import SearchMessagesScreen from '@support/ui/screen/search_messages';
-import {
-    isAndroid,
-    safeEnableSynchronization,
-    timeouts,
-    wait,
-    waitForElementToExist,
-} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 // Open Browse Channels and select the Archived filter.
@@ -118,7 +112,7 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string, 
     const backoffMs = [0, timeouts.TWO_SEC, timeouts.FIVE_SEC, timeouts.TEN_SEC, timeouts.TEN_SEC];
 
     // Sync MUST be disabled before tapReturnKey — search keeps the dispatch queue busy.
-    await device.disableSynchronization();
+    await disableSynchronization();
     try {
         /* eslint-disable no-await-in-loop -- search-index lag needs sequential re-submit with backoff */
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -139,18 +133,18 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string, 
         }
         /* eslint-enable no-await-in-loop */
     } finally {
-        await safeEnableSynchronization();
+        await enableSynchronization();
     }
 
     await searchResultElement.tap();
     await PermalinkScreen.toBeVisible();
     await PermalinkScreen.jumpToRecentMessages();
 
-    await device.disableSynchronization();
+    await disableSynchronization();
     try {
         await waitForArchivedChannelDestination();
     } finally {
-        await safeEnableSynchronization();
+        await enableSynchronization();
     }
 }
 

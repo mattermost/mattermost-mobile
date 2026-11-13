@@ -5,9 +5,9 @@ import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {
     Channel,
     Post,
-    System,
     User,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {siteOneUrl, hasStableWebhookIngress} from '@support/test_config';
 import {
     ChannelScreen,
@@ -170,9 +170,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
 
     itNeedsStableIngress('MM-T6233_1 - should keep username override after integration update in thread', async () => {
         await User.apiAdminLogin(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            ServiceSettings: {EnablePostUsernameOverride: true},
-        });
+        await assertServerBaseline(siteOneUrl, ['ServiceSettings.EnablePostUsernameOverride']);
 
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks anchor override');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks ephemeral override');

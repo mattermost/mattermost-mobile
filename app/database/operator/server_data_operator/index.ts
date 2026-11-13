@@ -52,9 +52,9 @@ class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     TeamThreadsSyncHandler,
     UserHandler,
 ) {
-    // eslint-disable-next-line no-useless-constructor
-    constructor(database: Database) {
+    constructor(database: Database, serverUrl?: string) {
         super(database);
+        this.serverUrl = serverUrl;
     }
 }
 

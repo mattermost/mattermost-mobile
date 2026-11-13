@@ -49,6 +49,18 @@ type DialogSubmission = {
         [x: string]: string;
     };
     cancelled: boolean;
+    file_ids?: string[];
+};
+
+type ExecuteDialogActionRequest = {
+    url: string;
+    context?: Record<string, string>;
+    channel_id: string;
+    team_id: string;
+};
+
+type ExecuteDialogActionResponse = {
+    trigger_id?: string;
 };
 
 type DialogOption = {
@@ -75,6 +87,7 @@ type DialogElement = {
     data_source_url?: string;
     options: DialogOption[];
     multiselect?: boolean;
+    allow_multiple?: boolean;
     refresh?: boolean;
 
     // Date/DateTime fields
@@ -82,6 +95,19 @@ type DialogElement = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Action button fields
+    action_button?: {
+        url: string;
+        context?: Record<string, string>;
+    };
+
+    // Collapsible section fields
+    collapsible_config?: {
+        elements?: DialogElement[];
+        collapsed?: boolean;
+        borderless?: boolean;
+    };
 };
 
 type InteractiveDialogConfig = {
@@ -98,6 +124,12 @@ type InteractiveDialogConfig = {
         notify_on_cancel: boolean;
         state: string;
         source_url?: string;
+
+        // Name of a select element whose options render as submit buttons.
+        submit_buttons?: string;
+
+        // Re-fetch the dialog from source_url when a dialog opened on top of it closes.
+        refresh_on_return?: boolean;
     };
 };
 
@@ -138,5 +170,5 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'date' | 'datetime'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button' | 'collapsible'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

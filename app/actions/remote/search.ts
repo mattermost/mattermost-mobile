@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {getPosts} from '@actions/local/post';
+import {captureRedactionEpoch} from '@actions/local/redaction';
 import {General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -62,6 +63,10 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
         const user = await getCurrentUser(database);
         const timezoneOffset = getUtcOffsetForTimeZone(getUserTimezone(user)) * 60;
 
+        // The epoch counter is at least every channel's requirement, so one capture covers results
+        // spanning channels.
+        const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
+
         let postsArray: Post[] = [];
         const data = await client.searchPostsWithParams(teamId, {
             ...params,
@@ -106,6 +111,7 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
                     posts: postsArray,
                     previousPostId: '',
                     prepareRecordsOnly: true,
+                    redactionVerifiedEpoch,
                 }),
             );
         }

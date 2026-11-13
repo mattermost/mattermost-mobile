@@ -4,9 +4,11 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
+import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
-import {Events} from '@constants';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
+import {Events, WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -33,6 +35,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/user');
+jest.mock('@actions/websocket/access_control');
 jest.mock('@actions/remote/user');
 jest.mock('@database/manager');
 jest.mock('@helpers/api/preference');
@@ -128,6 +131,22 @@ describe('WebSocket Users Actions', () => {
 
             expect(handleUsers).toHaveBeenCalled();
             expect(batchRecords).toHaveBeenCalled();
+        });
+
+        it('should invalidate file decisions only when an ABAC subject field of the current user changes', async () => {
+            // A nickname edit or a reordered role list must not invalidate every cached decision.
+            const mockCurrentUser = TestHelper.fakeUserModel({id: currentUserId, updateAt: 1000, locale: 'en', email: 'me@example.com', roles: 'system_user system_admin'});
+            jest.mocked(getCurrentUser).mockResolvedValue(mockCurrentUser);
+            const cosmetic = TestHelper.fakeUser({id: currentUserId, update_at: 1234, locale: 'en', email: 'me@example.com', roles: 'system_admin system_user', nickname: 'new'});
+            jest.mocked(fetchMe).mockResolvedValue({user: cosmetic});
+
+            await handleUserUpdatedEvent(serverUrl, {data: {user: cosmetic}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+
+            const demoted = {...cosmetic, roles: 'system_user'};
+            jest.mocked(fetchMe).mockResolvedValue({user: demoted});
+            await handleUserUpdatedEvent(serverUrl, {data: {user: demoted}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.UserFields);
         });
 
         it('should handle other user update', async () => {
@@ -383,6 +402,41 @@ describe('WebSocket Users Actions', () => {
 
             expect(logUtils.logError).toHaveBeenCalled();
         });
+
+        it('should invalidate every cached redaction decision when the current user attributes change', async () => {
+            // ABAC subjects are per-user and global to the server, so one attribute write can change
+            // the decision for any channel. Scope, coalescing and the visible-surface refresh are
+            // covered in access_control.test.ts; this only asserts the handler delegates.
+            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+
+            const msg = {
+                data: {
+                    user_id: currentUserId,
+                    values: {field1: 'newValue'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
+
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.UserAttributes, true);
+        });
+
+        it('should not invalidate when a different user attributes change', async () => {
+            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+
+            const msg = {
+                data: {
+                    user_id: otherUserId,
+                    values: {field1: 'newValue'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
+
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+        });
     });
 
     describe('handleCustomProfileAttributesFieldUpdatedEvent', () => {
@@ -437,6 +491,19 @@ describe('WebSocket Users Actions', () => {
                 fields: [mockField],
                 prepareRecordsOnly: false,
             });
+        });
+
+        it('should invalidate redaction when a field is updated but not when one is created', async () => {
+            // Renaming an option changes what policies evaluate with no values event; a new field
+            // has no values yet.
+            operator.handleCustomProfileFields = jest.fn().mockResolvedValue([]);
+            const data = {field: {id: 'field1'}};
+
+            await handleCustomProfileAttributesFieldUpdatedEvent(serverUrl, {event: WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED, data} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+
+            await handleCustomProfileAttributesFieldUpdatedEvent(serverUrl, {event: WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED, data} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.UserAttributes, true);
         });
 
         it('should handle errors during field update', async () => {

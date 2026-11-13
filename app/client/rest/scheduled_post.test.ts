@@ -79,9 +79,11 @@ describe('ClientScheduledPost', () => {
     });
 
     test('updateScheduledPost', async () => {
-        const updatedPost = {
+        const updatedPost: ScheduledPost = {
             ...scheduledPost,
             message: 'updated scheduled post message',
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
         };
         const connectionId = 'connection_id';
         await client.updateScheduledPost(updatedPost, connectionId);

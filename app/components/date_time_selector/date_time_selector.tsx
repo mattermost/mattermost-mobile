@@ -21,7 +21,7 @@ type Props = {
     handleChange: (currentDate: Moment) => void;
     showInitially?: AndroidMode;
     initialDate?: Moment;
-    minuteInterval?: number; // Default: 60 (matching webapp). iOS clamps to: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30
+    minuteInterval?: number; // Default: 60 (matching webapp). Clamped to: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30
     dateOnly?: boolean;
     testID?: string;
     allowPastDates?: boolean;
@@ -131,7 +131,8 @@ const DateTimeSelector = ({
         const currentDate = selectedDate || date;
         setShow(Platform.OS === 'ios');
 
-        const momentDate = moment.tz(currentDate, timezone);
+        // Fall back to local time when no timezone is set.
+        const momentDate = timezone ? moment.tz(currentDate, timezone) : moment(currentDate);
         setDate(momentDate);
         handleChange(momentDate);
     }, [date, timezone, handleChange]);

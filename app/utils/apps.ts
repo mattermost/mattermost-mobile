@@ -124,9 +124,25 @@ export function cleanForm(form?: AppForm): void {
         return;
     }
 
+    cleanFields(form.fields, {});
+}
+
+// Removes server-rejected fields in place. `usedLabels` is shared across nested
+// sections so labels stay unique across the flattened tree.
+function cleanFields(fields: AppField[] | undefined, usedLabels: {[label: string]: boolean}): void {
+    if (!fields) {
+        return;
+    }
+
     const toRemove: number[] = [];
-    const usedLabels: {[label: string]: boolean} = {};
-    form.fields?.forEach((field, i) => {
+    fields.forEach((field, i) => {
+        // A section is a display-only container: skip the field checks and just
+        // recurse so a required child isn't dropped along with it.
+        if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            cleanFields(field.collapsible_config?.fields, usedLabels);
+            return;
+        }
+
         if (!field.name) {
             toRemove.unshift(i);
             return;
@@ -171,7 +187,7 @@ export function cleanForm(form?: AppForm): void {
     });
 
     toRemove.forEach((i) => {
-        form.fields!.splice(i, 1);
+        fields.splice(i, 1);
     });
 }
 

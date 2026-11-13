@@ -89,7 +89,20 @@ export type HandlePostsArgs = {
   previousPostId?: string;
   posts?: Post[];
   prepareRecordsOnly?: boolean;
+
+  // Set when the posts are fetched on their own (e.g. the post behind a permalink preview)
+  // rather than as part of a channel's timeline, so they must not extend or create a
+  // PostsInChannel interval that claims continuity the client does not have.
+  skipPostsInChannel?: boolean;
+
+  // Supplied only for responses that went through ABAC sanitization; local mutations omit it so the
+  // stored value is preserved. Never sent to the server.
+  redactionVerifiedEpoch?: number;
 };
+
+// Threaded from handlePosts to the transformer on the raw itself, because transformers take no
+// arguments beyond the record pair. Not part of the server-facing Post contract.
+export type PostWithRedactionEpoch = Post & {redaction_verified_epoch?: number};
 
 export type HandleThreadsArgs = {
   threads?: ThreadWithLastFetchedAt[];
@@ -317,11 +330,19 @@ export type HandleCustomProfileAttributesArgs = PrepareOnly & {
 export type HandlePropertyFieldsArgs = PrepareOnly & {
   fields?: PropertyField[];
   groupId?: string;
+
+  // Restricts groupId-driven pruning to fields whose object_type is in this
+  // list. The access_control group also holds user/session fields owned by
+  // other features; a groupId-only prune would delete those too whenever a
+  // caller's fetch only covers a subset of object types. Optional so callers
+  // that genuinely fetch every object type in the group are unaffected.
+  objectTypes?: PropertyFieldObjectType[];
 };
 
 export type HandlePropertyValuesArgs = PrepareOnly & {
   values?: PropertyValue[];
   targetId?: string;
+  groupId?: string;
 };
 
 export type LoginArgs = {

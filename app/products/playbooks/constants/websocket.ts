@@ -7,4 +7,5 @@ export const WEBSOCKET_EVENTS = {
     WEBSOCKET_PLAYBOOK_RUN_UPDATED: `custom_${PLAYBOOKS_PLUGIN_ID}_playbook_run_updated`,
     WEBSOCKET_PLAYBOOK_RUN_CREATED: `custom_${PLAYBOOKS_PLUGIN_ID}_playbook_run_created`,
     WEBSOCKET_PLAYBOOK_RUN_UPDATED_INCREMENTAL: `custom_${PLAYBOOKS_PLUGIN_ID}_playbook_run_updated_incremental`,
+    WEBSOCKET_PLAYBOOKS_SETTINGS_CHANGED: `custom_${PLAYBOOKS_PLUGIN_ID}_settings_changed`,
 };

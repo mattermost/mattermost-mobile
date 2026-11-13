@@ -14,6 +14,7 @@ import {
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 
 import {
     updateChecklistItem,
@@ -54,6 +55,7 @@ const mockClient = {
 
 jest.mock('@playbooks/actions/local/checklist');
 jest.mock('@playbooks/actions/local/run');
+jest.mock('@playbooks/database/queries/item');
 
 const throwFunc = () => {
     throw Error('error');
@@ -65,6 +67,8 @@ beforeAll(() => {
 });
 
 beforeEach(async () => {
+    jest.clearAllMocks();
+    jest.mocked(localUpdateChecklistItem).mockResolvedValue({data: true});
     await DatabaseManager.init([serverUrl]);
 });
 
@@ -90,8 +94,61 @@ describe('checklist', () => {
             expect(result).toBeDefined();
             expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
-            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'closed');
-            expect(localUpdateChecklistItem).toHaveBeenCalledWith(serverUrl, itemId, 'closed');
+            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'closed', undefined);
+            expect(localUpdateChecklistItem).toHaveBeenCalledWith(serverUrl, itemId, 'closed', undefined);
+        });
+
+        it('should update local requirements when saving requirement values', async () => {
+            const requirementValues = {req1: 'https://example.com'};
+            const existingRequirements = [
+                {id: 'req1', label: 'Ticket URL', value: ''},
+                {id: 'req2', label: 'Notes', value: 'keep'},
+            ];
+            mockClient.setChecklistItemState.mockResolvedValueOnce({});
+            jest.mocked(getPlaybookChecklistItemById).mockResolvedValueOnce({
+                requirements: existingRequirements,
+            } as never);
+
+            const result = await updateChecklistItem(
+                serverUrl,
+                playbookRunId,
+                itemId,
+                checklistNumber,
+                itemNumber,
+                '',
+                requirementValues,
+            );
+
+            expect(result).toEqual({data: true});
+            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(
+                playbookRunId,
+                checklistNumber,
+                itemNumber,
+                '',
+                requirementValues,
+            );
+            expect(mockClient.fetchPlaybookRun).not.toHaveBeenCalled();
+            expect(handlePlaybookRuns).not.toHaveBeenCalled();
+            expect(localUpdateChecklistItem).toHaveBeenCalledWith(
+                serverUrl,
+                itemId,
+                '',
+                [
+                    {id: 'req1', label: 'Ticket URL', value: 'https://example.com'},
+                    {id: 'req2', label: 'Notes', value: 'keep'},
+                ],
+            );
+        });
+
+        it('should return local update errors after a successful server update', async () => {
+            const localError = new Error('local write failed');
+            mockClient.setChecklistItemState.mockResolvedValueOnce({});
+            jest.mocked(localUpdateChecklistItem).mockResolvedValueOnce({error: localError});
+
+            const result = await updateChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'closed');
+
+            expect(result).toEqual({error: localError});
+            expect(result.data).toBeUndefined();
         });
     });
 

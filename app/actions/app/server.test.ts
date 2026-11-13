@@ -165,6 +165,24 @@ describe('switchToServerAndLogin', () => {
         expect(callback).toHaveBeenCalledWith({config, license});
     });
 
+    it('should use the stored pre-auth secret for ping when reconnecting', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'} as ClientConfig;
+        const license = {} as ClientLicense;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce('secret-a');
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+        jest.mocked(SecurityManager.authenticateWithBiometrics).mockResolvedValueOnce(true);
+
+        const callback = jest.fn();
+        await Actions.switchToServerAndLogin('serverUrl', intl, callback);
+
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, 'secret-a');
+        expect(callback).toHaveBeenCalledWith({config, license});
+    });
+
     it('should not proceed if device is jailbroken', async () => {
         const server = {url: 'serverUrl'} as ServersModel;
         const config = {DiagnosticId: 'diagId', MobileJailbreakProtection: 'true'} as ClientConfig;

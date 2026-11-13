@@ -59,6 +59,8 @@ type PostProps = {
     currentUser?: UserModel;
     customEmojiNames: string[];
     filesInfo: FileInfo[];
+    isRedactionVerified: boolean;
+    redactionRequiredEpoch: number;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -72,6 +74,7 @@ type PostProps = {
     isSaved?: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
+    isChannelWriteDenied: boolean;
     location: AvailableScreens;
     post: PostModel;
     rootId?: string;
@@ -141,6 +144,8 @@ const Post = ({
     currentUser,
     customEmojiNames,
     filesInfo,
+    isRedactionVerified,
+    redactionRequiredEpoch,
     hasReplies,
     highlight,
     highlightPinnedOrSaved = true,
@@ -154,6 +159,7 @@ const Post = ({
     isLastReply,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
+    isChannelWriteDenied,
     location,
     post,
     rootId,
@@ -427,11 +433,14 @@ const Post = ({
                 mmBlocksEnabled={mmBlocksEnabled}
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}
+                isRedactionVerified={isRedactionVerified}
+                redactionRequiredEpoch={redactionRequiredEpoch}
                 highlight={Boolean(highlightedStyle)}
                 isJumboEmoji={isJumboEmoji}
                 isPendingOrFailed={isPendingOrFailed}
                 isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
                 isPostAddChannelMember={isPostAddChannelMember}
+                isChannelWriteDenied={isChannelWriteDenied}
                 isReplyPost={isReplyPost}
                 location={location}
                 post={post}

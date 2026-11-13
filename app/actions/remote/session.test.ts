@@ -68,6 +68,7 @@ jest.mock('@store/ephemeral_store', () => {
     return {
         ...original,
         getPushProxyVerificationState: mockGetPushProxyVerificationState,
+        clearPendingPreauthSecret: jest.fn(),
     };
 });
 

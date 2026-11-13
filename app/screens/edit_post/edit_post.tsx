@@ -20,10 +20,12 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
+import {useFetchRenderPermissions} from '@hooks/render_permissions';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import PostError from '@screens/edit_post/post_error';
 import {navigateBack} from '@screens/navigation';
-import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledWarning} from '@utils/file';
+import {expireChannelDecisionsOnDenial, writeDenialMessage} from '@utils/channel_policy';
+import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledByPolicyWarning, uploadDisabledWarning} from '@utils/file';
 import {dismissKeyboard} from '@utils/keyboard';
 
 import EditPostInput from './edit_post_input';
@@ -40,6 +42,8 @@ type EditPostProps = {
     maxFileCount: number;
     maxFileSize: number;
     canUploadFiles: boolean;
+    canUploadFilesByPolicy: boolean;
+    writeDenied: boolean;
 }
 
 const AUTOCOMPLETE_SEPARATION = 8;
@@ -71,6 +75,8 @@ const EditPost = ({
     maxFileCount,
     maxFileSize,
     canUploadFiles,
+    canUploadFilesByPolicy,
+    writeDenied,
 }: EditPostProps) => {
     const editingMessage = post.messageSource || post.message;
     const navigation = useNavigation();
@@ -90,6 +96,7 @@ const EditPost = ({
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    useFetchRenderPermissions(post.channelId);
 
     const hasNoCurrentFiles = postFiles.length === 0;
     const shouldDeleteOnSave = !postMessage && canDelete && hasNoCurrentFiles;
@@ -162,6 +169,11 @@ const EditPost = ({
             return;
         }
 
+        if (!canUploadFilesByPolicy) {
+            setErrorLine(uploadDisabledByPolicyWarning(intl));
+            return;
+        }
+
         const currentFileCount = postFiles?.length || 0;
         const availableCount = maxFileCount - currentFileCount;
         if (newFiles.length > availableCount) {
@@ -195,7 +207,7 @@ const EditPost = ({
         if (!currentMessageTooLong) {
             setErrorLine(undefined);
         }
-    }, [canUploadFiles, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles, postMessage, maxPostSize, handleUploadError]);
+    }, [canUploadFiles, canUploadFilesByPolicy, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles, postMessage, maxPostSize, handleUploadError]);
 
     const handleFileRemoval = useCallback((id: string) => {
         const fileToRemove = postFiles?.find((file) => {
@@ -325,14 +337,15 @@ const EditPost = ({
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
             setIsUpdating(false);
-            const errorMessage = intl.formatMessage({id: 'mobile.edit_post.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
+            expireChannelDecisionsOnDenial(serverUrl, post.channelId, res.error);
+            const errorMessage = writeDenialMessage(intl, res.error) ?? intl.formatMessage({id: 'mobile.edit_post.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
             setErrorLine(errorMessage);
             postInputRef?.current?.focus();
         } else {
             setIsUpdating(false);
             onClose();
         }
-    }, [intl, onClose]);
+    }, [intl, onClose, serverUrl, post.channelId]);
 
     const handleDeletePost = useCallback(async () => {
         Alert.alert(
@@ -385,13 +398,13 @@ const EditPost = ({
             headerRight: () => (
                 <NavigationButton
                     onPress={onSavePostMessage}
-                    disabled={!canSave}
+                    disabled={!canSave || writeDenied}
                     testID={'edit_post.save.button'}
                     text={intl.formatMessage({id: 'mobile.edit_post.save', defaultMessage: 'Save'})}
                 />
             ),
         });
-    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave, intl]);
+    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave, writeDenied, intl]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);

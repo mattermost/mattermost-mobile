@@ -127,6 +127,24 @@ export async function goToEditChecklistItem(
     navigateToScreen(Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM, props);
 }
 
+export async function goToFillRequirements(props: {
+    playbookRunId: string;
+    itemId: string;
+    checklistNumber: number;
+    itemNumber: number;
+    taskTitle: string;
+    requirements: TaskRequirement[];
+    currentState: ChecklistItemState;
+    editMode?: boolean;
+}) {
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_FILL_REQUIREMENTS, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOK_FILL_REQUIREMENTS, props);
+}
+
 export type GoToEditPlaybookRunOptions = {
     canEditSummary?: boolean;
 };

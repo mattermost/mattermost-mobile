@@ -186,6 +186,9 @@ type AppField = {
     multiselect?: boolean;
     lookup?: AppCall;
 
+    // File props
+    allow_multiple?: boolean;
+
     // Text props
     subtype?: string;
     min_length?: number;
@@ -196,6 +199,19 @@ type AppField = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Action button props
+    action_button_url?: string;
+    action_button_context?: Record<string, string>;
+
+    // Collapsible section props
+    collapsible_config?: AppCollapsibleConfig;
+};
+
+type AppCollapsibleConfig = {
+    fields?: AppField[];
+    expanded?: boolean;
+    bordered?: boolean;
 };
 
 type DateTimeConfig = {

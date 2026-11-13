@@ -1,0 +1,615 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {DeviceEventEmitter} from 'react-native';
+
+import {getRedactionEpochState, getRequiredRedactionEpoch} from '@actions/local/redaction';
+import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
+import {refetchPostsForRedaction} from '@actions/remote/post';
+import {Events, WebsocketEvents} from '@constants';
+import {DOWNLOAD_FILE_ATTACHMENT_ACTION, RenderPermissionAction} from '@constants/access_control';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+
+import {
+    clearRedactionInvalidations,
+    handleChannelAccessControlUpdatedEvent,
+    handlePermissionPolicyUpdatedEvent,
+    handleRedactionForPropertyFieldChanged,
+    handleRedactionForPropertyValuesUpdated,
+    invalidateRedactionForChannelMembership,
+    invalidateRedactionForCurrentUser,
+    invalidateRedactionOnResync,
+} from './access_control';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+
+jest.mock('@actions/remote/post', () => ({
+    refetchPostsForRedaction: jest.fn(() => Promise.resolve({})),
+    fetchPostThread: jest.fn(() => Promise.resolve({posts: []})),
+}));
+
+jest.mock('@actions/remote/channel_access', () => ({
+    checkChannelAccess: jest.fn(),
+    reconcileChannelAccess: jest.fn(),
+}));
+
+const serverUrl = 'access-control.test.com';
+const otherServerUrl = 'other-access-control.test.com';
+const channelId = 'channelid1';
+const otherChannelId = 'channelid2';
+const currentUserId = 'userid1';
+
+let operator: ServerDataOperator;
+
+const enableAbac = async (op: ServerDataOperator) => {
+    await op.handleConfigs({
+        configs: [
+            {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+            {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+        ],
+        configsToDelete: [],
+        prepareRecordsOnly: false,
+    });
+};
+
+const seedMyChannel = async (op: ServerDataOperator, id: string) => {
+    const channel = {id, team_id: 'teamid', total_msg_count: 0} as Channel;
+    const member = {id, channel_id: id, msg_count: 0} as ChannelMembership;
+    await op.handleChannel({channels: [channel], prepareRecordsOnly: false});
+    await op.handleMyChannel({channels: [channel], myChannels: [member], prepareRecordsOnly: false});
+};
+
+// The trigger reads the feature predicate from the database before it schedules anything, so the
+// timer does not exist yet when the call returns. Drain pending work first, then advance, then drain
+// again for the invalidation the timer starts.
+const flushCoalescer = async () => {
+    await advanceTimers(0);
+    await advanceTimers(COALESCE_WINDOW_MS + 50);
+    await advanceTimers(0);
+};
+
+// Each client delays its channel list request by up to the jitter window.
+const flushReconcileJitter = async () => {
+    await advanceTimers(ATTRIBUTE_VIEW_RETRY_JITTER_MS);
+    await advanceTimers(0);
+};
+
+const flushAttributeViewRetry = async () => {
+    await advanceTimers(ATTRIBUTE_VIEW_RETRY_MS + ATTRIBUTE_VIEW_RETRY_JITTER_MS + 100);
+    await advanceTimers(0);
+};
+
+// No actions is what a server that predates the action list sends.
+const permissionPolicyUpdated = (actions?: string[]) => ({
+    event: WebsocketEvents.PERMISSION_POLICY_UPDATED,
+    data: actions ? {actions} : {},
+} as unknown as WebSocketMessage);
+
+const COALESCE_WINDOW_MS = 250;
+const ATTRIBUTE_VIEW_RETRY_MS = 32000;
+const ATTRIBUTE_VIEW_RETRY_JITTER_MS = 3000;
+
+beforeEach(async () => {
+    enableFakeTimers();
+    await DatabaseManager.init([serverUrl]);
+    operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    await enableAbac(operator);
+    await operator.handleSystem({
+        systems: [{id: 'currentUserId', value: currentUserId}],
+        prepareRecordsOnly: false,
+    });
+    jest.mocked(refetchPostsForRedaction).mockClear();
+});
+
+afterEach(async () => {
+    jest.restoreAllMocks();
+    clearRedactionInvalidations(serverUrl);
+    clearRedactionInvalidations(otherServerUrl);
+    RenderPermissionsStore.removeServer(serverUrl);
+    await DatabaseManager.destroyServerDatabase(serverUrl);
+    disableFakeTimers();
+});
+
+describe('redaction invalidation triggers', () => {
+    it('should not advance anything while the server is not enforcing policies', async () => {
+        await operator.handleConfigs({
+            configs: [{id: 'EnableAttributeBasedAccessControl', value: 'false'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+    });
+
+    it('should raise the global epoch for a permission policy change', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+
+        expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+    });
+
+    it('should raise only the named channel for a channel policy change', async () => {
+        await seedMyChannel(operator, channelId);
+        await seedMyChannel(operator, otherChannelId);
+
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        await flushCoalescer();
+
+        const globalEpoch = (await getRedactionEpochState(operator.database)).global;
+        expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBeGreaterThan(globalEpoch);
+        expect(await getRequiredRedactionEpoch(operator.database, otherChannelId)).toBe(globalEpoch);
+    });
+
+    it('should read the channel id from the payload when the broadcast omits it', async () => {
+        await seedMyChannel(operator, channelId);
+
+        handleChannelAccessControlUpdatedEvent(serverUrl, {
+            broadcast: {},
+            data: {channel: JSON.stringify({id: channelId})},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBeGreaterThan(1);
+    });
+
+    it('should check the current team on a permission policy change and only the named channel on a channel policy change', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        await flushCoalescer();
+        await flushReconcileJitter();
+
+        expect(reconcileChannelAccess).toHaveBeenCalledTimes(1);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(checkChannelAccess).toHaveBeenCalledTimes(1);
+        expect(checkChannelAccess).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should revoke decision requests in flight before checking access, for the named channel or every channel', async () => {
+        const channelClaim = RenderPermissionsStore.startFetch(serverUrl, channelId);
+        const otherClaim = RenderPermissionsStore.startFetch(serverUrl, otherChannelId);
+
+        // Asserted synchronously: the access check starts right after, inside the coalescing window.
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, channelId, channelClaim as object)).toBe(false);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, otherChannelId, otherClaim as object)).toBe(true);
+
+        const claim = RenderPermissionsStore.startFetch(serverUrl, otherChannelId);
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        expect(RenderPermissionsStore.finishFetch(serverUrl, otherChannelId, claim as object)).toBe(false);
+        await flushCoalescer();
+    });
+
+    it('should collapse the duplicate events one CPA write emits into a single generation', async () => {
+        // A CPA API write emits both custom_profile_attributes_values_updated and the generic
+        // property_values_updated; without coalescing that is two epochs and two refetches.
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes');
+        await handleRedactionForPropertyValuesUpdated(serverUrl, {
+            data: {object_type: 'user', target_id: currentUserId},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(2);
+    });
+
+    it('should start a new batch for an event arriving after the window closed', async () => {
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes');
+        await flushCoalescer();
+        invalidateRedactionForCurrentUser(serverUrl, 'user_roles');
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(3);
+    });
+
+    it('should not coalesce a channel invalidation into a global one', async () => {
+        await seedMyChannel(operator, channelId);
+
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes');
+        invalidateRedactionForChannelMembership(serverUrl, channelId);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(3);
+    });
+
+    it('should ignore a property change that belongs to another user', async () => {
+        await handleRedactionForPropertyValuesUpdated(serverUrl, {
+            data: {object_type: 'user', target_id: 'someone-else'},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+    });
+
+    it('should raise the global epoch when every value of a field is cleared', async () => {
+        // The payload names only the field, so it cannot be told apart from a user attribute.
+        await handleRedactionForPropertyValuesUpdated(serverUrl, {
+            data: {field_id: 'fieldid1', values: '[]'},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
+    it('should raise the global epoch when a user attribute field changes', async () => {
+        // An option rename rewrites every subject's value with no values event to follow.
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_UPDATED,
+            data: {object_type: 'user', property_field: JSON.stringify({id: 'fieldid1', object_type: 'user'})},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
+    it('should raise the global epoch when the session attribute manifest changes, including a new field', async () => {
+        // The manifest decides which attributes every request carries, so even a new field changes
+        // the session subject from the next request on.
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_CREATED,
+            data: {object_type: 'session', property_field: JSON.stringify({id: 'fieldid3', object_type: 'session'})},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
+    it('should ignore field changes that cannot alter a subject', async () => {
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_CREATED,
+            data: {object_type: 'user', property_field: JSON.stringify({id: 'fieldid1', object_type: 'user'})},
+        } as unknown as WebSocketMessage);
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_UPDATED,
+            data: {object_type: 'channel', property_field: JSON.stringify({id: 'fieldid2', object_type: 'channel'})},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+    });
+
+    describe('channel attributes', () => {
+        const accessControlGroupId = 'accesscontrolgroupid';
+        const channelValuesEvent = (groupId: string) => ({
+            data: {
+                object_type: 'channel',
+                target_id: channelId,
+                values: JSON.stringify([{id: 'valueid1', field_id: 'fieldid1', target_id: channelId, group_id: groupId}]),
+            },
+        } as unknown as WebSocketMessage);
+
+        beforeEach(async () => {
+            await seedMyChannel(operator, channelId);
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: accessControlGroupId}], prepareRecordsOnly: false});
+        });
+
+        it('should raise only that channel when its access control attribute values change', async () => {
+            // Channel attribute values are the resource side of the channel's policies.
+            await handleRedactionForPropertyValuesUpdated(serverUrl, channelValuesEvent(accessControlGroupId));
+            await flushCoalescer();
+
+            const state = await getRedactionEpochState(operator.database);
+            expect(state.global).toBe(1);
+            expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBe(2);
+        });
+
+        it('should ignore channel values written by another property group', async () => {
+            // Managed channel categories keep per-channel values in the same tables.
+            await handleRedactionForPropertyValuesUpdated(serverUrl, channelValuesEvent('managedcategoriesgroupid'));
+            await flushCoalescer();
+
+            expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+        });
+
+        it('should raise only that channel when every value on it is cleared', async () => {
+            // A clear of every value on a target names no group, so it cannot be told apart from an
+            // access control write.
+            await handleRedactionForPropertyValuesUpdated(serverUrl, {
+                data: {object_type: 'channel', target_id: channelId, values: '[]'},
+            } as unknown as WebSocketMessage);
+            await flushCoalescer();
+
+            const state = await getRedactionEpochState(operator.database);
+            expect(state.global).toBe(1);
+            expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBe(2);
+        });
+
+        it('should raise the global epoch when an access control channel attribute field is edited', async () => {
+            // The payload does not say which channels hold a value for the field.
+            await handleRedactionForPropertyFieldChanged(serverUrl, {
+                event: WebsocketEvents.PROPERTY_FIELD_UPDATED,
+                data: {object_type: 'channel', property_field: JSON.stringify({id: 'fieldid2', object_type: 'channel', group_id: accessControlGroupId})},
+            } as unknown as WebSocketMessage);
+            await flushCoalescer();
+
+            expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+        });
+    });
+
+    it('should close any open viewer, which cannot observe the database', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, listener);
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+        subscription.remove();
+
+        expect(listener).toHaveBeenCalled();
+    });
+
+    it('should leave a viewer open when the change cannot affect what it shows', async () => {
+        // A background server, or a channel-scoped change for a channel other than the viewed post's.
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, listener);
+        await seedMyChannel(operator, channelId);
+        await operator.handlePosts({
+            actionType: 'POSTS.RECEIVED_NEW',
+            order: ['viewed-post'],
+            posts: [{id: 'viewed-post', channel_id: otherChannelId, create_at: 1, update_at: 1, delete_at: 0, message: '', user_id: currentUserId, metadata: {}} as unknown as Post],
+            prepareRecordsOnly: false,
+        });
+        jest.spyOn(EphemeralStore, 'getCurrentFileViewerPostId').mockReturnValue('viewed-post');
+        const activeServer = jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('some.other.server');
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+        activeServer.mockResolvedValue(serverUrl);
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        await flushCoalescer();
+        subscription.remove();
+
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('should raise a burst of channel policy changes in one write', async () => {
+        // A parent policy save sends one event per child channel.
+        await seedMyChannel(operator, channelId);
+        await seedMyChannel(operator, otherChannelId);
+
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: otherChannelId}} as WebSocketMessage);
+        await flushCoalescer();
+
+        const state = await getRedactionEpochState(operator.database);
+        expect(state.counter).toBe(2);
+        expect(state.global).toBe(1);
+        expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBe(2);
+        expect(await getRequiredRedactionEpoch(operator.database, otherChannelId)).toBe(2);
+    });
+
+    it('should refresh the visible channel without waiting to be rendered', async () => {
+        await operator.handleSystem({
+            systems: [{id: 'currentChannelId', value: channelId}],
+            prepareRecordsOnly: false,
+        });
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+
+        expect(refetchPostsForRedaction).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should not refetch for a server the user is not looking at', async () => {
+        await operator.handleSystem({
+            systems: [{id: 'currentChannelId', value: channelId}],
+            prepareRecordsOnly: false,
+        });
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('some.other.server');
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+
+        expect(refetchPostsForRedaction).not.toHaveBeenCalled();
+        expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+    });
+
+    it('should advance immediately and without coalescing on resync', async () => {
+        // The reconnect path fetches the visible channel right after, and that fetch must capture the
+        // raised epoch rather than the one it is replacing.
+        await invalidateRedactionOnResync(serverUrl);
+
+        expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+    });
+
+    it('should raise the epoch on resync even while policies are not enforced', async () => {
+        // ABAC may have been turned off while events were lost; cached denials must still be re-checked.
+        await operator.handleConfigs({
+            configs: [{id: 'EnableAttributeBasedAccessControl', value: 'false'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        await invalidateRedactionOnResync(serverUrl);
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
+    it('should keep pending work isolated between servers', async () => {
+        await DatabaseManager.init([otherServerUrl]);
+        const otherOperator = DatabaseManager.serverDatabases[otherServerUrl]!.operator;
+        await enableAbac(otherOperator);
+
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes');
+        invalidateRedactionForCurrentUser(otherServerUrl, 'user_attributes');
+
+        // Logging out of one server must not discard the other's queued invalidation.
+        clearRedactionInvalidations(serverUrl);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+        expect((await getRedactionEpochState(otherOperator.database)).counter).toBe(2);
+
+        await DatabaseManager.destroyServerDatabase(otherServerUrl);
+    });
+});
+
+describe('permission policy changed actions', () => {
+    const seedDecisions = () => {
+        RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {}}, 60000);
+    };
+
+    it('should raise the global epoch and reconcile the channel list when the server names no actions', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+        await flushReconcileJitter();
+
+        expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should raise the global epoch without reconciling the channel list when download_file_attachment changed', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([DOWNLOAD_FILE_ATTACHMENT_ACTION]));
+        await flushCoalescer();
+        await flushReconcileJitter();
+
+        expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+    });
+
+    it('should expire the decisions and reconcile the channel list without raising the epoch when channel_read_access changed', async () => {
+        seedDecisions();
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([RenderPermissionAction.ChannelReadAccess]));
+        await flushCoalescer();
+        await flushReconcileJitter();
+
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBe(true);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
+        expect(refetchPostsForRedaction).not.toHaveBeenCalled();
+    });
+
+    // The write and management gates read the render decisions, and neither action hides a channel or a file.
+    it.each([
+        RenderPermissionAction.ChannelWriteAccess,
+        RenderPermissionAction.ChannelManagementAccess,
+        RenderPermissionAction.UploadFileAttachment,
+    ])('should only expire the decisions when %s changed', async (action) => {
+        seedDecisions();
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([action]));
+        await flushCoalescer();
+        await flushReconcileJitter();
+
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBe(true);
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+        expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
+    });
+
+    it('should do nothing when the change touched no action, as an auto-add toggle does', async () => {
+        seedDecisions();
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated([]));
+        await flushCoalescer();
+        await flushReconcileJitter();
+
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBeUndefined();
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+        expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
+    });
+
+    it('should delay the channel list reconcile by a jitter and run it once for a burst of policy changes', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+
+        await flushReconcileJitter();
+
+        expect(reconcileChannelAccess).toHaveBeenCalledTimes(1);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        await flushCoalescer();
+    });
+
+    it('should cancel a pending channel list reconcile on logout', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        clearRedactionInvalidations(serverUrl);
+
+        await flushReconcileJitter();
+
+        expect(reconcileChannelAccess).not.toHaveBeenCalled();
+    });
+});
+
+describe('epoch write failure', () => {
+    it('should retry an invalidation whose epoch write failed instead of dropping it', async () => {
+        // A dropped write would leave every cached decision trusted.
+        const redaction = jest.requireActual<typeof import('@actions/local/redaction')>('@actions/local/redaction');
+        const spy = jest.spyOn(redaction, 'invalidateRedactionGlobally').mockResolvedValueOnce(undefined);
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+
+        await advanceTimers(2000);
+        await advanceTimers(0);
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(2);
+        spy.mockRestore();
+    });
+});
+
+describe('attribute view convergence retry', () => {
+    it('should re-evaluate once after the server attribute view refresh window', async () => {
+        // The server's materialized attribute view is up to 30s stale and its marker is node-local,
+        // so the first evaluation after an attribute write can still see the old attributes.
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
+        await flushCoalescer();
+        const afterFirst = (await getRedactionEpochState(operator.database)).counter;
+
+        await flushAttributeViewRetry();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(afterFirst + 1);
+    });
+
+    it('should still run the retry when a global invalidation lands inside the retry window', async () => {
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
+        await flushCoalescer();
+
+        // Evaluated against the same stale attribute view, so it cannot stand in for the retry.
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+        const beforeRetry = (await getRedactionEpochState(operator.database)).global;
+
+        await flushAttributeViewRetry();
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(beforeRetry + 1);
+    });
+
+    it('should still run the retry when a channel invalidation lands inside the retry window', async () => {
+        await seedMyChannel(operator, channelId);
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
+        await flushCoalescer();
+
+        invalidateRedactionForChannelMembership(serverUrl, channelId);
+        await flushCoalescer();
+        const before = await getRedactionEpochState(operator.database);
+
+        await flushAttributeViewRetry();
+
+        const after = await getRedactionEpochState(operator.database);
+        expect(after.counter).toBe(before.counter + 1);
+        expect(after.global).toBe(after.counter);
+    });
+});
+
+describe('EphemeralStore interaction', () => {
+    it('should refresh an open thread with a full fetch', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+        jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('rootpostid');
+
+        const {fetchPostThread} = require('@actions/remote/post');
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+
+        // No pagination options: an incremental thread fetch cannot re-deliver a cached reply whose
+        // only change was its redaction state.
+        expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, 'rootpostid');
+    });
+});

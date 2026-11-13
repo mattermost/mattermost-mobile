@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
+
 import {getIntlShape} from '@utils/general';
 
-import {formatTime, getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday, parseTimeString} from './datetime';
+import {formatTime, getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday, parseTimeString, toValidMinuteInterval} from './datetime';
 
 describe('Datetime', () => {
     test('isSameDate (isSameMonth / isSameYear)', () => {
@@ -258,5 +260,40 @@ describe('parseTimeString', () => {
 
     it('returns null for partial minutes (single-digit)', () => {
         expect(parseTimeString('14:3')).toBeNull();
+    });
+});
+
+describe('toValidMinuteInterval', () => {
+    it('should return the interval unchanged when it is supported', () => {
+        for (const interval of [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]) {
+            expect(toValidMinuteInterval(interval)).toBe(interval);
+        }
+    });
+
+    it('should clamp unsupported intervals to 30', () => {
+        expect(toValidMinuteInterval(60)).toBe(30);
+        expect(toValidMinuteInterval(45)).toBe(30);
+        expect(toValidMinuteInterval(7)).toBe(30);
+        expect(toValidMinuteInterval(0)).toBe(30);
+        expect(toValidMinuteInterval(-10)).toBe(30);
+    });
+
+    it('should clamp to 30 when no interval is provided', () => {
+        expect(toValidMinuteInterval()).toBe(30);
+    });
+
+    it('should honor supported intervals on Android (regression MM-10094)', () => {
+        // Regression: the old Android branch returned 30 unconditionally, so supported
+        // intervals like 10 and 15 were silently clamped. Jest defaults to Platform.OS='ios',
+        // so this case must explicitly run as android to catch the regression.
+        const origOS = Platform.OS;
+        Platform.OS = 'android';
+        try {
+            expect(toValidMinuteInterval(10)).toBe(10);
+            expect(toValidMinuteInterval(15)).toBe(15);
+            expect(toValidMinuteInterval(60)).toBe(30);
+        } finally {
+            Platform.OS = origOS;
+        }
     });
 });

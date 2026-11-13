@@ -94,6 +94,22 @@ describe('removeStoredFields', () => {
         expect(fields.map((field) => field.id).sort()).toEqual(['ca-field', 'foreign']);
     });
 
+    it('should fail closed when classification fields identify multiple groups', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({
+            fields: [
+                makeField('owned-classification', {name: CLASSIFICATIONS_FIELD_NAME}),
+                makeField('other-classification', {group_id: otherGroupId, name: CLASSIFICATIONS_FIELD_NAME}),
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        await removeStoredFields(serverUrl);
+
+        const fields = await getFields(database);
+        expect(fields).toHaveLength(2);
+    });
+
     it('should clean all owned fields by group when group ID is stored', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -144,22 +160,19 @@ describe('removeStoredFields', () => {
         expect(fields[0].id).toBe('foreign');
     });
 
-    it('should propagate error when clearing group ID fails', async () => {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    it('should propagate error and leave the field untouched when the batch write fails', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         await operator.handlePropertyFields({fields: [makeField('f1')], prepareRecordsOnly: false});
-        await setAccessControlGroupId(serverUrl, accessControlGroupId);
 
-        const real = DatabaseManager.getServerDatabaseAndOperator.bind(DatabaseManager);
-        let callCount = 0;
-        jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementation((url) => {
-            callCount++;
-            if (callCount === 2) {
-                throw new Error('db write error');
-            }
-            return real(url);
-        });
+        jest.spyOn(operator.database, 'write').mockRejectedValueOnce(new Error('db write error'));
 
         await expect(removeStoredFields(serverUrl)).rejects.toThrow('db write error');
+
+        // The field deletion and the group-id clear are one batch: a failed write
+        // must leave the owned field exactly as it was.
+        const fields = await getFields(database);
+        expect(fields).toHaveLength(1);
+        expect(fields[0].id).toBe('f1');
     });
 });

@@ -21,7 +21,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, isIpad, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, isIos, isIpad, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import {logDebug} from '../../../../provision/log';
@@ -64,6 +64,7 @@ class ChannelScreen {
         introUnfavoriteAction: 'channel_post_list.intro_options.unfavorite.action',
         introChannelInfoAction: 'channel_post_list.intro_options.channel_info.action',
         toastMessage: 'toast.message',
+        banner: 'channel.banner',
         postPriorityPicker: 'channel.post_draft.quick_actions.post_priority_action',
         postPriorityImportantMessage: 'post_priority_picker_item.important',
         postPriorityUrgentMessage: 'post_priority_picker_item.urgent',
@@ -121,6 +122,7 @@ class ChannelScreen {
     introUnfavoriteAction = element(by.id(this.testID.introUnfavoriteAction));
     introChannelInfoAction = element(by.id(this.testID.introChannelInfoAction));
     toastMessage = element(by.id(this.testID.toastMessage));
+    banner = element(by.id(this.testID.banner));
     applyPostPriority = element(by.text('Apply'));
 
     // convenience props
@@ -141,6 +143,9 @@ class ChannelScreen {
     postDraftArchivedCloseChannelButton = PostDraft.getPostDraftArchivedCloseChannelButton(this.testID.channelScreenPrefix);
     postDraftReadOnly = PostDraft.getPostDraftReadOnly(this.testID.channelScreenPrefix);
     postInput = PostDraft.getPostInput(this.testID.channelScreenPrefix);
+    attachmentAction = PostDraft.getAttachmentAction(this.testID.channelScreenPrefix);
+    attachmentActionDisabled = PostDraft.getAttachmentActionDisabled(this.testID.channelScreenPrefix);
+    borAction = PostDraft.getBoRAction(this.testID.channelScreenPrefix);
     sendButton = SendButton.getSendButton(this.testID.channelScreenPrefix);
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.channelScreenPrefix);
 
@@ -295,21 +300,31 @@ class ChannelScreen {
     back = async () => {
         await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
         let navigated = false;
+        let backButtonShown = false;
         try {
             await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
+            backButtonShown = true;
+        } catch {
+            // Back button not in hierarchy — fall through to tab/native back.
+        }
+        if (backButtonShown) {
+            /** Taps the header back button; only the tap may fail over to the fallbacks below, an error turning sync off or on surfaces. */
+            const tapBack = async () => {
+                try {
+                    await NavigationHeader.tapBackButton(0);
+                    navigated = true;
+                } catch {
+                    // Not tappable — fall through to tab/native back.
+                }
+            };
 
             // iOS: tap with synchronization disabled, the same way ChannelInfoScreen.close()
             // and PinnedMessagesScreen.back() already do.
             if (isIos()) {
-                await withSynchronizationDisabled(async () => {
-                    await NavigationHeader.tapBackButton(0);
-                });
+                await withSynchronizationDisabled(tapBack);
             } else {
-                await NavigationHeader.tapBackButton(0);
+                await tapBack();
             }
-            navigated = true;
-        } catch {
-            // Back button not in hierarchy — fall through to tab/native back.
         }
         if (!navigated) {
             if (isAndroid()) {
@@ -575,7 +590,7 @@ class ChannelScreen {
             await this.dismissKeyboardForSchedulePicker();
         }
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await this.sendButton.longPress(timeouts.TWO_SEC);
 
@@ -584,7 +599,7 @@ class ChannelScreen {
                 timeouts.HALF_MIN,
             );
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     };
 

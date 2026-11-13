@@ -36,8 +36,11 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     CHANNEL: 'channel',
     MARKDOWN: 'markdown',
     RADIO: 'radio',
+    FILE: 'file',
     DATE: 'date',
     DATETIME: 'datetime',
+    ACTION_BUTTON: 'action_button',
+    COLLAPSIBLE: 'collapsible',
 };
 
 export const SelectableAppFieldTypes = [

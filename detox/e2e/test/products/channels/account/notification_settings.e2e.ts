@@ -7,7 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup, System} from '@support/server_api';
+import {Setup} from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -35,8 +36,8 @@ describe('Account - Settings - Notification Settings', () => {
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
-        // # Enable ExperimentalEnableAutomaticReplies so the auto-responder option appears
-        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalEnableAutomaticReplies: true}});
+        // # Assert ExperimentalEnableAutomaticReplies (auto-responder option appears).
+        await assertServerBaseline(siteOneUrl, ['TeamSettings.ExperimentalEnableAutomaticReplies']);
 
         // # Log in to server, open account screen, open settings screen, and go to notification settings screen
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

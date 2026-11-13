@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AccessControl from './access_control';
 import Bot from './bot';
 import Channel from './channel';
 import ChannelBookmark from './channel_bookmark';
@@ -21,6 +22,7 @@ import User from './user';
 import Webhook from './webhook';
 
 export {
+    AccessControl,
     AgentsPlugin,
     Bot,
     CallsPlugin,

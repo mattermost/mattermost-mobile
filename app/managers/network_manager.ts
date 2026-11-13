@@ -12,7 +12,7 @@ import {
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {modelName, osName, osVersion} from 'expo-device';
 import {defineMessages} from 'react-intl';
-import {Alert, DeviceEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter, Platform} from 'react-native';
 import urlParse from 'url-parse';
 
 import LocalConfig from '@assets/config.json';
@@ -25,6 +25,7 @@ import {toMilliseconds} from '@utils/datetime';
 import {getIntlShape} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
+import {isSecureUrl} from '@utils/url';
 
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
@@ -74,6 +75,9 @@ class NetworkManagerSingleton {
             bearerAuthTokenResponseHeader: 'token',
             enableSessionAttributes: true,
         },
+
+        // iOS websocket handshake authenticates through the cookie jar
+        excludedCookies: Platform.select({android: ['MMAUTHTOKEN']}),
     };
 
     public init = async (serverCredentials: ServerCredential[]) => {
@@ -102,7 +106,7 @@ class NetworkManagerSingleton {
     };
 
     public createClient = async (serverUrl: string, bearerToken?: string, preauthSecret?: string) => {
-        const config = await this.buildConfig(preauthSecret);
+        const config = await this.buildConfig(serverUrl, preauthSecret);
 
         try {
             const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
@@ -125,12 +129,12 @@ class NetworkManagerSingleton {
         return this.clients[serverUrl];
     };
 
-    private buildConfig = async (preauthSecret?: string) => {
+    private buildConfig = async (serverUrl: string, preauthSecret?: string) => {
         const userAgent = `Mattermost Mobile/${nativeApplicationVersion}+${nativeBuildVersion} (${osName}; ${osVersion}; ${modelName})`;
         const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
-            ...(preauthSecret ? {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret} : {}),
+            ...(preauthSecret && isSecureUrl(serverUrl) ? {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret} : {}),
             ...this.DEFAULT_CONFIG.headers,
         };
 

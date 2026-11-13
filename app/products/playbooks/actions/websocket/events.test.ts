@@ -12,11 +12,13 @@ import {
     handlePlaybookRunUpdated,
     handlePlaybookRunUpdatedIncremental,
 } from './runs';
+import {handlePlaybooksSettingsChanged} from './settings';
 import {handlePlaybookPluginDisabled, handlePlaybookPluginEnabled} from './version';
 
 const serverUrl = 'test-server.com';
 
 jest.mock('./runs');
+jest.mock('./settings');
 jest.mock('./version');
 
 describe('handlePlaybookEvents', () => {
@@ -131,6 +133,20 @@ describe('handlePlaybookEvents', () => {
         expect(handlePlaybookRunUpdated).not.toHaveBeenCalled();
         expect(handlePlaybookPluginEnabled).not.toHaveBeenCalled();
         expect(handlePlaybookPluginDisabled).not.toHaveBeenCalled();
+    });
+
+    it('should handle settings changed event', async () => {
+        const msg = TestHelper.fakeWebsocketMessage({
+            event: WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOKS_SETTINGS_CHANGED,
+            data: {
+                payload: JSON.stringify({enable_task_requirements: true}),
+            },
+        });
+
+        await handlePlaybookEvents(serverUrl, msg);
+
+        expect(handlePlaybooksSettingsChanged).toHaveBeenCalledWith(serverUrl, msg);
+        expect(handlePlaybooksSettingsChanged).toHaveBeenCalledTimes(1);
     });
 
     it('should handle unknown event by doing nothing', async () => {

@@ -4,18 +4,22 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged, map, shareReplay} from 'rxjs/operators';
 
+import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
 import {Permissions, Preferences, Screens} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
+import DatabaseManager from '@database/manager';
 import {queryFilesForPost} from '@queries/servers/file';
 import {observePost, observePostAuthor, queryPostsBetween, queryPostReplies} from '@queries/servers/post';
 import {queryReactionsForPost} from '@queries/servers/reaction';
+import {observeChannelActionDenied} from '@queries/servers/render_permissions';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeUser} from '@queries/servers/user';
 import {isBoRPost} from '@utils/bor';
 import {fileModelsToFileInfo} from '@utils/file';
-import {areConsecutivePosts, hasAiGeneratedMetadata, isPostEphemeral} from '@utils/post';
+import {areConsecutivePosts, hasAiGeneratedMetadata, isAttachmentDecisionCurrent, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
 
@@ -24,6 +28,19 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type UserModel from '@typings/database/models/servers/user';
+
+const NO_ATTACHMENT_REDACTION_STATE = {isVerified: true, requiredEpoch: 0};
+
+const observeAttachmentRedactionState = (database: Database, post: PostModel) => {
+    return combineLatest([
+        observeRedactionEnforced(database),
+        observeRequiredRedactionEpoch(database, post.channelId),
+        post.observe(),
+    ]).pipe(map(([enforced, requiredEpoch, p]) => ({
+        isVerified: isAttachmentDecisionCurrent(enforced, p.redactionVerifiedEpoch, requiredEpoch, p.metadata?.redacted_file_count ?? 0),
+        requiredEpoch,
+    })));
+};
 
 type PropsInput = WithDatabaseArgs & {
     currentUser: UserModel;
@@ -131,11 +148,33 @@ const withPost = withObservables(
             distinctUntilChanged(),
         );
 
+        const files = queryFilesForPost(database, post.id).observe().pipe(
+            shareReplay({bufferSize: 1, refCount: true}),
+        );
+
         // Convert FileModel[] to FileInfo[] without validation
         // Validation will be done by Files component after render
-        const filesInfo = queryFilesForPost(database, post.id).observe().pipe(
+        const filesInfo = files.pipe(
             switchMap((fs) => of$(fileModelsToFileInfo(fs, post.userId))),
         );
+
+        // An ABAC decision bumps no post row, so a cached post can carry an attachment decision the
+        // server has since changed. While its confirmed epoch is behind what the channel requires,
+        // neither the files nor the denial placeholder may be shown. Only posts with attachment
+        // evidence follow the epoch: a text-only row would otherwise re-render on every invalidation.
+        // Permalink embeds are gated by the preview's own enhancer.
+        const redactionState = combineLatest([files, post.observe()]).pipe(
+            map(([fs, p]) => fs.length > 0 || (p.metadata?.redacted_file_count ?? 0) > 0),
+            distinctUntilChanged(),
+            switchMap((hasAttachmentEvidence) => (hasAttachmentEvidence ? observeAttachmentRedactionState(database, post) : of$(NO_ATTACHMENT_REDACTION_STATE))),
+            shareReplay({bufferSize: 1, refCount: true}),
+        );
+        const isRedactionVerified = redactionState.pipe(map((state) => state.isVerified), distinctUntilChanged());
+        const redactionRequiredEpoch = redactionState.pipe(map((state) => state.requiredEpoch), distinctUntilChanged());
+
+        // Only a post that requests acknowledgement shows a write control in the body.
+        const serverUrl = DatabaseManager.getServerUrlForDatabase(database);
+        const isChannelWriteDenied = serverUrl && post.metadata?.priority?.requested_ack ? observeChannelActionDenied(database, serverUrl, post.channelId, RenderPermissionAction.ChannelWriteAccess) : of$(false);
 
         const hasReactions = queryReactionsForPost(database, post.id).observe().pipe(
             switchMap((c) => of$(c.length > 0)),
@@ -167,11 +206,14 @@ const withPost = withObservables(
             isFirstReply: of$(isFirstReply(post, previousPost)),
             isLastReply,
             isPostAddChannelMember,
+            isChannelWriteDenied,
             post: post.observe(),
             rootPostAuthor,
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             hasReactions,
             isLastPost: of$(!nextPost),
+            isRedactionVerified,
+            redactionRequiredEpoch,
         };
     });
 

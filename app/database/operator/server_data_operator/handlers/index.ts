@@ -29,6 +29,10 @@ import type SystemModel from '@typings/database/models/servers/system';
 const {SERVER: {CONFIG, CUSTOM_EMOJI, FILE, ROLE, SYSTEM, REACTION}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
+    // Set by DatabaseManager; the operator otherwise only knows its database, and a few handlers
+    // need the server to locate files it owns on disk.
+    serverUrl?: string;
+
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
         if (!roles?.length) {
             logWarning(

@@ -3,7 +3,8 @@
 
 // Post-level archived-channel tests split from archived_channel_interactions.e2e.ts for CI time limits.
 
-import {Channel, Post, Setup, System} from '@support/server_api';
+import {Channel, Post, Setup} from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -27,9 +28,7 @@ describe('Channels - Archived Channel Post Interactions', () => {
 
     beforeAll(async () => {
         // # Ensure archived channels are visible in browse channels
-        await System.apiUpdateConfig(siteOneUrl, {
-            TeamSettings: {ExperimentalViewArchivedChannels: true},
-        });
+        await assertServerBaseline(siteOneUrl, ['TeamSettings.ExperimentalViewArchivedChannels']);
         await wait(timeouts.ONE_SEC);
 
         const {team, user} = await Setup.apiInit(siteOneUrl);

@@ -9,298 +9,47 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {execSync} from 'child_process';
+
 import {
-    Command,
-    DemoPlugin,
-    Plugin,
-    Setup,
-    System,
-    User,
-    Post,
-} from '@support/server_api';
+    cleanUpAfterDialogTest,
+    dismissAttachmentOptions,
+    ensureDialogClosed,
+    ensureDialogOpen,
+    ISO_DATETIME_PATTERN,
+    logOutAfterDialogSuite,
+    postSlashCommandDirect,
+    seedFileUploadDialogViaApi,
+    selectChannel,
+    selectUser,
+    setUpDialogSuite,
+    waitForDialogSelectorButton,
+} from '@support/interactive_dialog_plugin_helper';
+import {Post} from '@support/server_api';
+import {siteOneUrl} from '@support/test_config';
+import {AttachmentOptions} from '@support/ui/component';
 import {
-    serverOneUrl,
-    siteOneUrl,
-} from '@support/test_config';
-import {
-    ChannelListScreen,
     ChannelScreen,
-    HomeScreen,
     IntegrationSelectorScreen,
     InteractiveDialogScreen,
-    LoginScreen,
-    ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {wait, isAndroid, isIos, timeouts} from '@support/utils';
 import {expect} from 'detox';
-
-const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
-
-// MM-66558: dialog fields use replaceText instead of typeText.
-
-// ===== Helper Functions =====
-async function waitForDialogSelectorButton(testId: string) {
-    await wait(timeouts.HALF_SEC);
-    await waitForElementToExist(element(by.id(testId)), timeouts.TEN_SEC);
-}
-
-async function selectUser(user: {id: string; username: string}, {multiselect = false} = {}) {
-    const userItemId = `integration_selector.user_list.user_item.${user.id}.${user.id}`;
-    const displayNameId = `${userItemId}.display_name`;
-
-    await IntegrationSelectorScreen.searchFor(user.username);
-    try {
-        await IntegrationSelectorScreen.searchInput.tapReturnKey();
-    } catch {
-        // Keyboard may already be dismissed.
-    }
-    await wait(timeouts.HALF_SEC);
-
-    const displayName = element(by.id(displayNameId));
-    const userItem = element(by.id(userItemId));
-    await waitFor(displayName).toExist().withTimeout(timeouts.TEN_SEC);
-
-    try {
-        await displayName.tap({x: 1, y: 1});
-    } catch {
-        await userItem.tap({x: 10, y: 20});
-    }
-    await wait(timeouts.ONE_SEC);
-
-    if (multiselect) {
-        // Selected chip + Done stay on the selector; field is optional so submit alone is not proof.
-        await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-            toExist().
-            withTimeout(timeouts.FIVE_SEC);
-        await expect(element(by.id('integration_selector.screen'))).toExist();
-        await expect(userItem).toExist();
-        return;
-    }
-
-    await waitFor(element(by.id('integration_selector.screen'))).
-        not.toExist().
-        withTimeout(timeouts.TEN_SEC);
-}
-
-async function selectChannel(channel?: {id: string; display_name: string}, {multiselect = false} = {}) {
-    const waitForSelectorClosed = async () => {
-        await waitFor(element(by.id('integration_selector.screen'))).
-            not.toExist().
-            withTimeout(timeouts.TEN_SEC);
-    };
-
-    if (channel) {
-        const rowContent = element(by.id(`integration_selector.channel_list.${channel.id}`));
-        let rowTapped = false;
-        try {
-            await waitFor(rowContent).toExist().withTimeout(timeouts.FIVE_SEC);
-            await rowContent.tap();
-            rowTapped = true;
-            await wait(timeouts.ONE_SEC);
-            if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                    toExist().
-                    withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
-            } else {
-                await waitForSelectorClosed();
-            }
-            return;
-        } catch {
-            if (rowTapped) {
-                throw new Error('selectChannel: row tapped but selector state did not settle');
-            }
-
-            // Fall through only when the row itself was not tappable.
-        }
-
-        try {
-            // Only use text fallback while the selector is still open.
-            await expect(element(by.id('integration_selector.screen'))).toExist();
-            await element(by.text(channel.display_name)).tap();
-            await wait(timeouts.ONE_SEC);
-            if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                    toExist().
-                    withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
-            } else {
-                await waitForSelectorClosed();
-            }
-            return;
-        } catch {
-            // Fall through.
-        }
-    }
-
-    try {
-        await expect(element(by.id('integration_selector.screen'))).toExist();
-        const sharedRow = element(by.id('integration_selector.channel_list')).atIndex(0);
-        await expect(sharedRow).toExist();
-        await sharedRow.tap();
-        await wait(timeouts.ONE_SEC);
-        if (multiselect) {
-            await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                toExist().
-                withTimeout(timeouts.FIVE_SEC);
-            await expect(element(by.id('integration_selector.screen'))).toExist();
-        } else {
-            await waitForSelectorClosed();
-        }
-        return;
-    } catch {
-        // Fall through to well-known channel names.
-    }
-
-    for (const name of ['Town Square', 'Off-Topic', 'General']) {
-        try {
-            await expect(element(by.id('integration_selector.screen'))).toExist();
-            await element(by.text(name)).tap();
-            await wait(timeouts.ONE_SEC);
-            if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                    toExist().
-                    withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
-            } else {
-                await waitForSelectorClosed();
-            }
-            return;
-        } catch {
-            // Try next name.
-        }
-    }
-
-    throw new Error('selectChannel: could not select a channel row');
-}
-
-async function ensureDialogClosed() {
-    try {
-        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
-    } catch {
-        try {
-            await InteractiveDialogScreen.cancel();
-            await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
-        } catch {}
-    }
-
-    try {
-        await element(by.id('channel.post_list.flat_list')).tapAtPoint({x: 200, y: 10});
-        await wait(500);
-    } catch {}
-
-    // Swipe up on post list to reveal new posts that might be hidden behind input
-    try {
-        await element(by.id('channel.post_list.flat_list')).swipe('up', 'fast', 0.2);
-        await wait(300);
-    } catch {}
-
-    try {
-        await waitFor(element(by.id('channel.post_draft.post.input'))).toBeVisible().withTimeout(2000);
-    } catch {
-        try {
-            await element(by.id('navigation.header.back')).tap();
-            await wait(500);
-        } catch {}
-    }
-}
-
-async function ensureDialogOpen() {
-    // Disable sync so the bottom sheet animation does not block the poll.
-    await device.disableSynchronization();
-    try {
-        await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
-    } finally {
-        await safeEnableSynchronization();
-    }
-}
-
-async function dismissErrorAlert() {
-    try {
-        isAndroid() ? await element(by.text('OK')).tap() : await element(by.label('OK')).atIndex(1);
-        await wait(300);
-    } catch {}
-}
 
 const itNotIos = isIos() ? it.skip : it;
 
-const DIALOG_PLUGIN_CONFIG = {
-    PluginSettings: {
-        PluginStates: {
-            [DemoPlugin.id]: {Enable: true},
-        },
-        Plugins: {
-            [DemoPlugin.id]: {
-                DialogOnlyMode: true,
-            },
-        },
-    },
-};
-
-const isDialogOnlyModeConfigured = async (): Promise<boolean> => {
-    const {config} = await System.apiGetConfig(siteOneUrl);
-    const pluginSettings = config?.PluginSettings;
-    return pluginSettings?.PluginStates?.[DemoPlugin.id]?.Enable === true &&
-        pluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode === true;
-};
-
-// Provisioning already applies this config, and re-sending it re-enters the server's
-// plugin-activation path, which outran the client's 45s timeout. Patch only when the state is
-// actually wrong, and gate on the read-back — a save that times out in transit often landed.
-const ensureDialogOnlyMode = async () => {
-    if (await isDialogOnlyModeConfigured()) {
-        return;
-    }
-
-    const {error} = await System.apiUpdateConfig(siteOneUrl, DIALOG_PLUGIN_CONFIG);
-    for (let attempt = 0; attempt < 15; attempt++) {
-        if (await isDialogOnlyModeConfigured()) {
-            return;
-        }
-        await wait(timeouts.TWO_SEC);
-    }
-
-    throw new Error(`Failed to configure demo plugin for dialog tests: ${error ? (error.message || JSON.stringify(error)) : 'config never reported DialogOnlyMode'}`);
-};
-
+// Runs on the pool servers: every full-suite server has the demo plugin, in DialogOnlyMode, and this spec
+// changes no server-wide state.
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
-    const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
     let setupFailed = false;
 
-    const setUpSuite = async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
-        testUser = user;
-
-        await User.apiAdminLogin(siteOneUrl);
-        await ensureDialogOnlyMode();
-
-        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-        if (!statusCheck.isActive) {
-            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
-        }
-        await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
-
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(testUser);
-        await ChannelListScreen.toBeVisible();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-
-        // Warm slash-command / IntegrationsManager state — first /dialog after login
-        // can return "Error Executing Command" before commands are ready (CI MM-T4101/4102).
-        try {
-            await ChannelScreen.postInput.typeText('/');
-            await wait(timeouts.TWO_SEC);
-            await ChannelScreen.postInput.clearText();
-        } catch { /* best-effort */ }
-    };
-
     beforeAll(async () => {
         try {
-            await setUpSuite();
+            ({channel: testChannel, team: testTeam, user: testUser} = await setUpDialogSuite(channelsCategory));
         } catch (error) {
             setupFailed = true;
             throw error;
@@ -308,50 +57,25 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     afterAll(async () => {
-        try {
-            await HomeScreen.logout();
-        } catch {
-            // best-effort logout so later specs on this shard start clean
-        }
+        await logOutAfterDialogSuite();
     });
 
     afterEach(async () => {
         if (setupFailed) {
             return;
         }
-        await dismissErrorAlert();
-        try {
-            await IntegrationSelectorScreen.cancel();
-        } catch {}
-        try {
-            await IntegrationSelectorScreen.done();
-        } catch {}
-        try {
-            await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.HALF_SEC);
-            await InteractiveDialogScreen.cancel();
-        } catch {}
-
-        // Android Back from cancel() after the dialog is already closed leaves channel list;
-        // require composer, and re-enter the channel if cleanup drifted.
-        try {
-            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        } catch {
-            await ChannelListScreen.toBeVisible();
-            await ChannelScreen.open(channelsCategory, testChannel.name);
-            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        }
-        await wait(500);
+        await cleanUpAfterDialogTest(channelsCategory, testChannel);
     });
 
     it('MM-T4101 should open simple interactive dialog (Plugin)', async () => {
-        await ChannelScreen.postSlashCommand('/dialog basic');
+        await postSlashCommandDirect('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
     });
 
     it('MM-T4102 should submit simple interactive dialog (Plugin)', async () => {
-        await ChannelScreen.postSlashCommand('/dialog basic');
+        await postSlashCommandDirect('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -361,7 +85,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog basic');
+        await postSlashCommandDirect('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'Plugin Test Value');
         await InteractiveDialogScreen.submit();
@@ -372,7 +96,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog error');
+        await postSlashCommandDirect('/dialog error');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'This will trigger server error');
         await InteractiveDialogScreen.submit();
@@ -385,7 +109,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog boolean');
+        await postSlashCommandDirect('/dialog boolean');
         await ensureDialogOpen();
         await expect(element(by.id('AppFormElement.required_boolean.toggled..button'))).toExist();
         await expect(element(by.id('AppFormElement.optional_boolean.toggled..button'))).toExist();
@@ -401,7 +125,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4402 should handle boolean field validation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog boolean');
+        await postSlashCommandDirect('/dialog boolean');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -416,7 +140,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog selectfields');
+        await postSlashCommandDirect('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -448,7 +172,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4499 should handle required select field validation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog selectfields');
+        await postSlashCommandDirect('/dialog selectfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -476,7 +200,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4500 should handle different selector types (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog selectfields');
+        await postSlashCommandDirect('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -508,7 +232,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog textfields');
+        await postSlashCommandDirect('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Regular text input');
         await InteractiveDialogScreen.fillTextElement('required_text', 'Required field value');
@@ -524,7 +248,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4202 should validate required text field (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog textfields');
+        await postSlashCommandDirect('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Optional text');
         await InteractiveDialogScreen.fillTextElement('email_field', 'optional@example.com');
@@ -545,7 +269,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog textfields');
+        await postSlashCommandDirect('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('email_field', 'valid.email+test@example.com');
         await InteractiveDialogScreen.fillTextElement('number_field', '12345');
@@ -558,7 +282,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog multi-select');
+        await postSlashCommandDirect('/dialog multi-select');
         await ensureDialogOpen();
         const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
         await expect(multiselectUsersButton).toExist();
@@ -597,7 +321,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog dynamic-select');
+        await postSlashCommandDirect('/dialog dynamic-select');
         await ensureDialogOpen();
         const dynamicProductsButton = element(by.id('AppFormElement.dynamic_products.select.button'));
         await expect(dynamicProductsButton).toExist();
@@ -622,7 +346,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     (isAndroid() ? it.skip : it)('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog multistep');
+        await postSlashCommandDirect('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -661,7 +385,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog multistep');
+        await postSlashCommandDirect('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -683,7 +407,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     itNotIos('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog field-refresh');
+        await postSlashCommandDirect('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await expect(projectTypeButton).toExist();
@@ -711,7 +435,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog field-refresh');
+        await postSlashCommandDirect('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await projectTypeButton.tap();
@@ -730,9 +454,152 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
+    describe('Interactive Dialog - File Upload (Plugin)', () => {
+        beforeEach(async () => {
+
+            // No KV reset here by design. Mattermost exposes no plugin KV REST API
+            // (there is no /api/v4/plugins/:id/kv route), so the previous call 404'd on
+            // every run and was swallowed — isolation it appeared to provide never
+            // existed. The demo plugin's file-upload-clear command was also removed.
+            //
+            // It is not needed: `/dialog file-upload` always opens empty regardless of
+            // KV, and each hydration test seeds its own KV via
+            // apiSubmitDemoPluginFileUploadDialog before opening `file-upload-prefill`,
+            // which overwrites any prior value. Add a plugin-side clear route if a test
+            // ever needs to assert prefill with *no* stored files.
+        });
+
+        it('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
+            await ensureDialogClosed();
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+
+            await expect(element(by.text('File Upload Dialog Demo'))).toExist();
+
+            // 'Single File Upload' and choose buttons are inside AppsFormFileField, which is
+            // wrapped by withObservables (canUploadFiles). Wait for the HOC's first emission.
+            await waitFor(element(by.text('Single File Upload'))).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(element(by.text('Multiple File Upload'))).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(InteractiveDialogScreen.getFileFieldChooseButton('single_file')).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(InteractiveDialogScreen.getFileFieldChooseButton('multi_file')).toExist().withTimeout(timeouts.THREE_SEC);
+
+            await InteractiveDialogScreen.tapFileFieldChooseButton('single_file');
+            await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(3000);
+            await expect(AttachmentOptions.attachFile).toExist();
+            await dismissAttachmentOptions();
+
+            await InteractiveDialogScreen.submit();
+            await ensureDialogClosed();
+
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            let match = post.message.match(/(.+) submitted a file upload dialog/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain submission confirmation but got: ${post.message}`);
+            }
+            match = post.message.match(/\*\*Files:\*\* (.+)/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain Files field but got: ${post.message}`);
+            }
+
+            const filesSubmitted = match[1];
+            if (!/none/.test(filesSubmitted)) {
+                throw new Error(`Expected no files to be submitted but got: ${filesSubmitted}`);
+            }
+        });
+
+        it('MM-T6071_1 - should submit file upload dialog with pre-loaded file and verify success post (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let fileId: string;
+            try {
+                fileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id);
+            } catch (err: any) {
+                throw new Error(`File upload seed failed: ${err.message || err}`);
+            }
+
+            // file-upload always opens empty; file-upload-prefill hydrates from plugin KV.
+            await postSlashCommandDirect('/dialog file-upload-prefill');
+            await ensureDialogOpen();
+
+            // * Verify seeded file preview appears before submit
+            await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
+
+            // # Submit the dialog with the pre-loaded file
+            await InteractiveDialogScreen.submit();
+            await ensureDialogClosed();
+
+            // * Verify success post appears and contains the submitted file ID
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            const submissionMatch = post.message.match(/(.+) submitted a file upload dialog/);
+            if (!submissionMatch) {
+                throw new Error(`Expected submission confirmation post but got: ${post.message}`);
+            }
+            const filesMatch = post.message.match(/\*\*File IDs \(\d+\):\*\* (.+)/);
+            if (!filesMatch || !filesMatch[1]) {
+                throw new Error(`Expected post to contain File IDs field but got: ${post.message}`);
+            }
+            if (!filesMatch[1].includes(fileId)) {
+                throw new Error(`Expected post to contain fileId ${fileId} but got: ${filesMatch[1]}`);
+            }
+        });
+
+        it('MM-T6072_1 - allow_multiple field keeps choose button enabled when file is attached; single-file field disables it (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let multiFileId: string;
+            try {
+                multiFileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id, 'multi_file');
+            } catch (err: any) {
+                throw new Error(`Multi-file seed failed: ${err.message || err}`);
+            }
+
+            // file-upload always opens empty; file-upload-prefill hydrates from plugin KV.
+            await postSlashCommandDirect('/dialog file-upload-prefill');
+            await ensureDialogOpen();
+
+            // * multi_file field has a seeded file but its choose button stays enabled (allow_multiple=true)
+            await InteractiveDialogScreen.expectHydratedFilePreview('multi_file', multiFileId);
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('multi_file');
+
+            // * single_file field has no file and its choose button is enabled
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('single_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        });
+
+        it('MM-T6075_1 - should hydrate file field from plugin persisted file IDs and re-enable choose button after removal (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let fileId: string;
+            try {
+                fileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id);
+            } catch (err: any) {
+                throw new Error(`File upload hydration seed failed (check file ownership / plugin file-upload support): ${err.message || err}`);
+            }
+
+            // file-upload always opens empty; file-upload-prefill hydrates from plugin KV.
+            await postSlashCommandDirect('/dialog file-upload-prefill');
+            await ensureDialogOpen();
+            await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
+
+            // * Choose button should be disabled while a file is attached
+            await InteractiveDialogScreen.expectFileFieldChooseButtonDisabled('single_file');
+
+            // # Remove the file
+            await InteractiveDialogScreen.tapFileFieldRemoveButton('single_file', fileId);
+
+            // * Choose button should be enabled after removal
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('single_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        });
+    });
+
     it('MM-T2530A should open date/datetime dialog and display fields', async () => {
         // # Open datetime-basic dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // * Verify dialog title
@@ -752,7 +619,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530B should validate required date/datetime fields', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Try to submit without required fields
@@ -771,7 +638,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530C should select date and display formatted value', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Tap Event Date field to open date picker
@@ -794,7 +661,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530D should display relative date defaults', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // * Verify Relative Date Example (default="today") field is rendered
@@ -825,7 +692,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // production app. Previous attempts to fix it did not hold. Android is unaffected.
     itNotIos('MM-T2530F should verify UTC conversion for datetime values', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Fill required Event Date field
@@ -883,7 +750,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // production app. Previous attempts to fix it did not hold. Android is unaffected.
     itNotIos('MM-T2530G should display timezone indicator and convert to UTC correctly', async () => {
         // # Open datetime-timezone dialog (has Europe/London timezone fields)
-        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
+        await postSlashCommandDirect('/dialog datetime-timezone');
         await ensureDialogOpen();
 
         // # Scroll down past introduction text to reveal fields
@@ -961,7 +828,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // is not determinable from CI artifacts. Not reproducible locally and not observed in the
     // production app. Previous attempts to fix it did not hold. Android is unaffected.
     itNotIos('MM-T2530H should accept manual time entry on datetime field', async () => {
-        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
+        await postSlashCommandDirect('/dialog datetime-timezone');
         await ensureDialogOpen();
 
         // # Scroll past introduction text to reveal fields
@@ -1014,6 +881,140 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // :00. Milliseconds are whatever the picker held — commitManualTime zeroes only seconds.
         if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
+        }
+    });
+
+    // Regression tests for Android datetime fixes (MM-10092, MM-10094).
+    // Skipped on iOS: timezone manipulation uses adb; the same rendering path is already
+    // exercised by MM-T2530C/MM-T2530G on the iOS scroll-wheel picker.
+
+    // MM-T5900_2: skipped pending local investigation.
+    // Opening the Android DatePickerDialog via AppFormElement.event_date.select.button
+    // leaves Espresso's CalendarView IdlingResource in a permanently stuck-busy state,
+    // causing the afterEach hook to hang for 5 minutes regardless of how the date is
+    // set (adb taps, setDatePickerDate with next-month or same-month target). The
+    // underlying app fix (Hermes Intl.DateTimeFormat with explicit timezone) is covered
+    // by the unit tests in app/utils/datetime.test.ts.
+    it.skip('MM-T5900_2 should display the day the user picked, not the day before (Plugin)', async () => {
+        // This regression is only detectable when the device runs at a UTC+ offset.
+        // The CI Android emulator uses Asia/Kolkata (UTC+5:30); midnight local time is
+        // 18:30 UTC the previous day. Without the Hermes Intl.DateTimeFormat fix the form
+        // displays the UTC date (day before) instead of the local date.
+        const serial = device.id;
+        const origTz = execSync(`adb -s ${serial} shell getprop persist.sys.timezone`).toString().trim();
+        const testTz = 'Asia/Kolkata'; // UTC+5:30 — guaranteed positive offset
+        if (origTz !== testTz) {
+            execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${testTz}`, {stdio: 'ignore'});
+            execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            await wait(timeouts.ONE_SEC);
+        }
+
+        try {
+            // Pick the 10th of the CURRENT month (as seen by the device in Asia/Kolkata time).
+            // The DatePickerDialog opens on the current month. Navigating to a different month
+            // triggers a CalendarView RecyclerView scroll animation; Espresso's IdlingResource
+            // for that RecyclerView is never unregistered when the dialog closes, leaving the
+            // idle detector permanently stuck and causing afterEach to hang indefinitely.
+            // Picking a date in the ALREADY-DISPLAYED month requires no navigation and no animation.
+            //
+            // Compute the device-local date: CI runner is UTC, device is UTC+5:30 (330 min).
+            const kolkataOffsetMs = 330 * 60_000;
+            const deviceNow = new Date(Date.now() + kolkataOffsetMs);
+
+            // getUTC* on the offset date gives the device's local calendar values.
+            const deviceYear = deviceNow.getUTCFullYear();
+            const deviceMonth = deviceNow.getUTCMonth(); // 0-indexed
+
+            // Day 10 is always in the current month regardless of today's date.
+            // isoDateStr: midnight UTC on the 10th — Espresso interprets the UTC date
+            // as the local calendar date (year/month/day) when setting DatePickerActions.
+            const isoDateStr = `${deviceYear}-${String(deviceMonth + 1).padStart(2, '0')}-10T00:00:00.000Z`;
+
+            // Expected display strings use the device-local calendar date (day 10 of device month).
+            const displayedDate = new Date(deviceYear, deviceMonth, 10).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+            const dayBefore = new Date(deviceYear, deviceMonth, 9).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+
+            await ensureDialogClosed();
+            await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+            await ensureDialogOpen();
+
+            // # Open the event_date calendar picker
+            await element(by.id('AppFormElement.event_date.select.button')).tap();
+            await wait(timeouts.ONE_SEC);
+
+            // Use setDatePickerDate (Espresso DatePickerActions.setDate) rather than adb taps.
+            // adb interactions leave Espresso's idle detector in a permanently stuck state so
+            // every subsequent synchronised Detox call hangs indefinitely. setDatePickerDate
+            // goes through Espresso's own action pipeline and does not cause this issue.
+            // The DateTimePicker always exposes testID 'custom_status_clear_after.date_time_picker'
+            // regardless of which form field opened it — confirmed in date_time_selector.tsx.
+            await element(by.id('custom_status_clear_after.date_time_picker')).setDatePickerDate(isoDateStr, 'ISO8601');
+            await wait(500);
+
+            await element(by.text('OK')).tap();
+            await wait(timeouts.ONE_SEC);
+
+            // * The field renders the picked day, not the day before.
+            await waitFor(element(by.text(displayedDate))).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(element(by.text(dayBefore))).not.toExist();
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        } finally {
+            if (origTz !== testTz) {
+                execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${origTz}`, {stdio: 'ignore'});
+                execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            }
+        }
+    });
+
+    itNotIos('MM-T5900_3 should submit interval_time as a valid ISO timestamp on Android (Plugin)', async () => {
+        // Verifies that the Android time picker produces a valid ISO timestamp when submitting
+        // the datetime-basic dialog. The interval_time field uses a 30-minute effective interval
+        // (DEFAULT_TIME_INTERVAL_MINUTES=60 maps to 30 via toValidMinuteInterval). The unit-level
+        // regression test for toValidMinuteInterval lives in app/utils/datetime.test.ts.
+        await ensureDialogClosed();
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Fill required Event Date field
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Fill required Meeting Time field
+        await element(by.id('AppFormElement.meeting_time.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Open interval_time and accept the default value
+        await element(by.id('AppFormElement.interval_time.time.button')).tap();
+        await wait(timeouts.ONE_SEC);
+        await element(by.text('OK')).tap();
+        await wait(timeouts.ONE_SEC);
+
+        // # Submit the dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
+        await ensureDialogClosed();
+        await wait(1000);
+
+        // * interval_time is a valid ISO datetime with a minute that is a multiple of 30
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const fieldMatch = post.message.match(/interval_time:[ \t]*(\S+)/);
+        if (!fieldMatch) {
+            throw new Error(`interval_time field not found in submission message: ${post.message}`);
+        }
+        const isoMatch = fieldMatch[1].match(/T\d{2}:(\d{2}):/);
+        const minutes = isoMatch ? Number(isoMatch[1]) : -1;
+        if (minutes % 30 !== 0) {
+            throw new Error(`interval_time minute ${minutes} is not a multiple of 30 (the effective 30-min interval). Full: ${post.message}`);
         }
     });
 });

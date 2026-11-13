@@ -10,6 +10,7 @@ const {describe, it} = require('node:test');
 const {
     specKey,
     listRetrySpecs,
+    listUnrunSpecs,
     mergeJestResultsPreferLater,
 } = require('./failed-jest-specs');
 
@@ -61,6 +62,37 @@ describe('failed-jest-specs', () => {
         fs.rmSync(dir, {recursive: true, force: true});
     });
 
+    it('should list only the files a killed Jest never started, not the ones that failed', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'unrun-specs-'));
+        const results = path.join(dir, 'ios-data.json');
+
+        // jest-stare shape: suites carry testFilePath and per-test testResults
+        fs.writeFileSync(results, JSON.stringify({
+            testResults: [
+                {
+                    testFilePath: '/repo/detox/e2e/test/pass.e2e.ts',
+                    testResults: [{status: 'passed', title: 'ok'}],
+                },
+                {
+                    testFilePath: '/repo/detox/e2e/test/fail.e2e.ts',
+                    numFailingTests: 1,
+                    testResults: [{status: 'failed', title: 'nope'}],
+                },
+            ],
+        }));
+
+        assert.deepEqual(listUnrunSpecs(results, [
+            'detox/e2e/test/pass.e2e.ts',
+            'detox/e2e/test/fail.e2e.ts',
+            'detox/e2e/test/never-ran-1.e2e.ts',
+            'detox/e2e/test/never-ran-2.e2e.ts',
+        ]), [
+            'detox/e2e/test/never-ran-1.e2e.ts',
+            'detox/e2e/test/never-ran-2.e2e.ts',
+        ]);
+        fs.rmSync(dir, {recursive: true, force: true});
+    });
+
     it('should not retry a file that only has skipped tests', () => {
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'failed-specs-skip-'));
         const results = path.join(dir, 'jest-results.json');
@@ -100,6 +132,32 @@ describe('failed-jest-specs', () => {
         assert.equal(merged.numFailedTests, 0);
         const failSuite = merged.testResults.find((s) => specKey(s.name).endsWith('fail.e2e.ts'));
         assert.equal(failSuite.status, 'passed');
+        fs.rmSync(dir, {recursive: true, force: true});
+    });
+
+    it('should keep attempt-1 failures as retryReasons so a pass on retry reads as flaky', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'failed-specs-retry-'));
+        const a = path.join(dir, 'a.json');
+        const b = path.join(dir, 'b.json');
+        fs.writeFileSync(a, JSON.stringify({testResults: [{name: '/repo/detox/e2e/test/fail.e2e.ts',
+            status: 'failed',
+            assertionResults: [
+                {status: 'failed', fullName: 'S flaky', failureMessages: ['Error: first try']},
+                {status: 'passed', fullName: 'S steady', failureMessages: []},
+            ]}]}));
+        fs.writeFileSync(b, JSON.stringify({testResults: [{name: '/repo/detox/e2e/test/fail.e2e.ts',
+            status: 'passed',
+            assertionResults: [
+                {status: 'passed', fullName: 'S flaky', failureMessages: []},
+                {status: 'passed', fullName: 'S steady', failureMessages: []},
+            ]}]}));
+
+        const merged = mergeJestResultsPreferLater([a, b]);
+        const [flaky, steady] = merged.testResults[0].assertionResults;
+        assert.deepEqual(flaky.retryReasons, ['Error: first try']);
+        assert.equal(flaky.status, 'passed');
+        assert.equal('retryReasons' in steady, false);
+        assert.equal(merged.numFailedTests, 0, 'the final attempt decides pass or fail');
         fs.rmSync(dir, {recursive: true, force: true});
     });
 

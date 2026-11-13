@@ -8,7 +8,7 @@ import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
 import useFileUploadError from '@hooks/file_upload_error';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
-import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledWarning} from '@utils/file';
+import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledByPolicyWarning, uploadDisabledWarning} from '@utils/file';
 
 import SendHandler from '../send_handler';
 
@@ -25,6 +25,7 @@ type Props = {
     maxFileCount: number;
     maxFileSize: number;
     canUploadFiles: boolean;
+    canUploadFilesByPolicy: boolean;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
     updateValue: React.Dispatch<React.SetStateAction<string>>;
@@ -47,6 +48,7 @@ export default function DraftHandler(props: Props) {
         maxFileCount,
         maxFileSize,
         canUploadFiles,
+        canUploadFilesByPolicy,
         updateCursorPosition,
         updatePostInputTop,
         updateValue,
@@ -81,6 +83,11 @@ export default function DraftHandler(props: Props) {
             return;
         }
 
+        if (!canUploadFilesByPolicy) {
+            newUploadError(uploadDisabledByPolicyWarning(intl));
+            return;
+        }
+
         const currentFileCount = files?.length || 0;
         const availableCount = maxFileCount - currentFileCount;
         if (newFiles.length > availableCount) {
@@ -102,7 +109,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [canUploadFiles, files?.length, maxFileCount, serverUrl, channelId, rootId, newUploadError, intl, maxFileSize, handleUploadError]);
+    }, [canUploadFiles, canUploadFilesByPolicy, files?.length, maxFileCount, serverUrl, channelId, rootId, newUploadError, intl, maxFileSize, handleUploadError]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.

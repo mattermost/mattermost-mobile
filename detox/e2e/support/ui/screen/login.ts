@@ -3,7 +3,7 @@
 
 import {serverOneUrl} from '@support/test_config';
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, isIos, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, reloadApp, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class LoginScreen {
@@ -35,9 +35,7 @@ class LoginScreen {
     // `accessibilityLabel="Back"`, Android via the AppCompat Toolbar's
     // default navigation-icon contentDescription "Navigate up".
     get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
+        return isIos()? element(by.label('Back')).atIndex(0): element(by.label('Navigate up')).atIndex(0);
     }
 
     titleLoginToAccount = element(by.id(this.testID.titleLoginToAccount));
@@ -96,7 +94,7 @@ class LoginScreen {
         const deadline = started + timeout;
 
         // Lazy require: ChannelScreen → HomeScreen → LoginScreen.
-        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+
         const {ChannelScreen} = require('@support/ui/screen');
 
         /* eslint-disable no-await-in-loop -- poll list vs channel until one appears */
@@ -214,7 +212,7 @@ class LoginScreen {
                 // On Android, native alert buttons are rendered in uppercase
                 // ("DISMISS", "OK"). Try each variant to dismiss whichever appears.
                 try {
-                    // eslint-disable-next-line no-await-in-loop
+
                     const serverUpgradeTitle = element(by.text('Server upgrade required'));
                     // eslint-disable-next-line no-await-in-loop
                     await waitFor(serverUpgradeTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -246,7 +244,7 @@ class LoginScreen {
                     // eslint-disable-next-line no-await-in-loop
                     await wait(timeouts.ONE_SEC);
                     // eslint-disable-next-line no-await-in-loop
-                    await device.reloadReactNative();
+                    await reloadApp();
                 }
             }
         }

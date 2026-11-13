@@ -26,7 +26,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Result Interactions', () => {
@@ -225,7 +225,7 @@ describe('Search - Result Interactions', () => {
         }
         await SearchMessagesScreen.searchInput.tap();
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         let searchedPostId: string;
         try {
             await SearchMessagesScreen.searchInput.replaceText(searchTerm);
@@ -238,7 +238,7 @@ describe('Search - Result Interactions', () => {
 
             await SearchMessagesScreen.openPostOptionsFor(searchedPostId, message);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
         await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);

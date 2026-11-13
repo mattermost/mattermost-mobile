@@ -5,6 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {setPlaybooksTaskRequirementsEnabled} from '@playbooks/actions/local/settings';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -22,6 +23,11 @@ export const setPlaybooksVersion = async (serverUrl: string, version: string) =>
         });
 
         if (version === '') {
+            const {error: settingsError} = await setPlaybooksTaskRequirementsEnabled(serverUrl, false);
+            if (settingsError) {
+                return {error: settingsError};
+            }
+
             const {error} = await purgePlaybooks(serverUrl);
             if (error) {
                 return {error};

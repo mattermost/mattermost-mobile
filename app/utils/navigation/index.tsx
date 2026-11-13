@@ -3,6 +3,7 @@
 
 import {Alert, DeviceEventEmitter} from 'react-native';
 
+import ChannelAccessRevoked, {FIXED_CONTENT_HEIGHT} from '@components/channel_access_revoked';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Events, Screens, ServerErrors} from '@constants';
 import AttachmentOptions from '@screens/attachment_options';
@@ -15,7 +16,6 @@ import type {UserProfileProps} from '@screens/user_profile';
 import type {GalleryItemType} from '@typings/screens/gallery';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {IntlShape} from 'react-intl';
-import type {Asset} from 'react-native-image-picker';
 
 export const appearanceControlledScreens = new Set<AvailableScreens>([
     Screens.ONBOARDING,
@@ -77,6 +77,21 @@ export function alertChannelArchived(displayName: string, intl: IntlShape) {
     );
 }
 
+export function showChannelAccessRevoked(displayName: string, intl: IntlShape) {
+    const MIN_TEXT_CONTAINER_HEIGHT = 80;
+    const MAX_TEXT_CONTAINER_HEIGHT = 320;
+    const text = intl.formatMessage({
+        id: 'channel_access_revoked.description',
+        defaultMessage: 'You no longer have access to {displayName}. It will reappear here if access is restored.',
+    }, {displayName});
+    const renderContent = () => (<ChannelAccessRevoked text={text}/>);
+
+    // The sheet cannot grow to fit its content, so size it from the rendered text: the channel
+    // name and the translation both change how many lines the description wraps to.
+    const textHeight = Math.min(Math.max(bottomSheetSnapPoint(text.length / 100, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
+    bottomSheet(renderContent, [1, FIXED_CONTENT_HEIGHT + textHeight]);
+}
+
 export function alertTeamAddError(error: unknown, intl: IntlShape) {
     let errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'});
 
@@ -115,7 +130,7 @@ export function openUserProfile(props: UserProfileProps) {
 
 export function openAttachmentOptions(
     props: {
-        onUploadFiles: (files: Asset[]) => void;
+        onUploadFiles: (files: ExtractedFileInfo[]) => void;
         maxFilesReached: boolean;
         canUploadFiles: boolean;
         showAttachLogs?: boolean;

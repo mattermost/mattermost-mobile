@@ -98,6 +98,10 @@ build_maestro_env_args() {
     --env "EXPECTED_TIMEZONE_REGION=${EXPECTED_TIMEZONE_REGION}"
     --env "SYNC_TOKEN=${SYNC_TOKEN:-}"
   )
+  # reset_ios_app_for_batch gives each iOS batch a fresh install, so login.yml skips clearState.
+  # Without a device ID there is no reset, so clearState stays on.
+  [[ "$PLATFORM" == "ios" && -n "${DEVICE_ARGS[1]:-}" ]] && maestro_env_args+=(--env "MAESTRO_APP_RESET_BY_RUNNER=true")
+  return 0
 }
 
 build_maestro_env_args
@@ -217,6 +221,19 @@ ensure_android_app_launchable() {
   adb shell settings put secure autofill_service null 2>/dev/null || true
 }
 
+reset_ios_app_for_batch() {
+  [[ "$PLATFORM" != "ios" ]] && return 0
+  local udid="${DEVICE_ARGS[1]:-}"
+  [[ -n "$udid" ]] || return 0
+
+  echo "==> Reinstalling $MAESTRO_APP_ID for a clean state"
+  # Flows skip clearState on iOS, so a batch must not run on an install this could not reset.
+  bash "$SCRIPT_DIR/reset_ios_app.sh" "$udid" "$MAESTRO_APP_ID" || {
+    echo "::error::Could not reset $MAESTRO_APP_ID; failing this batch"
+    return 1
+  }
+}
+
 grant_ios_calls_permissions() {
   [[ "$PLATFORM" != "ios" ]] && return 0
   local udid="${DEVICE_ARGS[1]:-}"
@@ -248,13 +265,16 @@ apply_config_baseline() {
   }
 
   echo "==> Re-applying config baseline on ${SITE_1_URL}"
-  if ! curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
-    -H "Authorization: Bearer $ADMIN_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
-    "${SITE_1_URL}/api/v4/config/patch" >/dev/null; then
-    echo "Warning: could not PUT config baseline on ${SITE_1_URL}" >&2
+  # Waits out a slow save instead of resending it, and checks the value clients read.
+  local rc=0
+  bash "$SCRIPT_DIR/apply_client_config_value.sh" "$SITE_1_URL" "$ADMIN_TOKEN" \
+    '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+    EnableSignInWithEmail true || rc=$?
+  if ((rc == 3)); then
+    echo "Warning: this server does not allow the config baseline write; continuing with its own values" >&2
+    return 0
   fi
+  return "$rc"
 }
 
 ensure_calls_channel_enabled() {
@@ -303,7 +323,7 @@ run_maestro_batch() {
   # Keep Maestro's debug output (maestro.log, per-command timings, the failure screenshot
   # and hierarchy dump, and the XCUITest runner's console via `simctl launch --console`)
   # inside the uploaded build/ tree. With --flatten-debug-output and no --debug-output,
-  # Maestro 2.6.1 writes all of it to $HOME (TestDebugReporter.getDebugOutputPath), which
+  # Maestro writes all of it to $HOME (TestDebugReporter.getDebugOutputPath), which
   # CI never collects. That is why run 34185558418 reported attach_logs_toggle_visible as
   # "Unknown error": the runner process (the app's XPC peer) exited mid-flow and the only
   # record of why was in /Users/runner. One directory per batch, so the flattened files of
@@ -448,7 +468,10 @@ log_resource_snapshot() {
   fi
 }
 
-apply_config_baseline
+apply_config_baseline || {
+  echo "::error::Could not apply the config baseline on ${SITE_1_URL}; stopping before any batch runs"
+  exit 1
+}
 
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
@@ -461,6 +484,9 @@ for batch_paths in "${BATCHES[@]}"; do
   log_resource_snapshot "batch-${batch_idx}-pre"
   [[ "$batch_paths" == *"/timezone/"* ]] && ensure_android_timezone
   ensure_ios_simulator_healthy
+  # Before the Calls grants: a reinstall drops the app's privacy grants.
+  reset_rc=0
+  reset_ios_app_for_batch || reset_rc=$?
   if [[ "$batch_paths" == *"/calls/"* ]]; then
     ensure_calls_channel_enabled
     grant_ios_calls_permissions
@@ -471,8 +497,8 @@ for batch_paths in "${BATCHES[@]}"; do
 
   set +e
   batch_start_epoch=$(date +%s)
-  run_maestro_batch "$batch_xml" "${path_arr[@]}"
-  rc=$?
+  rc=$reset_rc
+  (( rc == 0 )) && { run_maestro_batch "$batch_xml" "${path_arr[@]}"; rc=$?; }
   batch_end_epoch=$(date +%s)
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
@@ -483,13 +509,15 @@ for batch_paths in "${BATCHES[@]}"; do
     echo "==> Batch ${batch_idx}: Maestro driver never drove the app. Recovering and retrying this batch once."
     if [[ "$PLATFORM" == "ios" ]]; then
       ensure_ios_simulator_healthy
+      reset_rc=0
+      reset_ios_app_for_batch || reset_rc=$?
     else
       ensure_android_driver_healthy
     fi
     rm -f "$batch_xml"
     batch_start_epoch=$(date +%s)
-    run_maestro_batch "$batch_xml" "${path_arr[@]}"
-    rc=$?
+    rc=$reset_rc
+    (( rc == 0 )) && { run_maestro_batch "$batch_xml" "${path_arr[@]}"; rc=$?; }
     batch_end_epoch=$(date +%s)
     echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
 

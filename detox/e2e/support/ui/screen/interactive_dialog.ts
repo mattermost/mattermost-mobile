@@ -12,6 +12,7 @@ class InteractiveDialogScreen {
         closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
         integrationSelector: 'integration_selector',
+        integrationSelectorCancel: 'integration_selector.cancel.button',
     };
 
     interactiveDialogScreen = element(by.id(this.testID.interactiveDialogScreen));
@@ -22,6 +23,18 @@ class InteractiveDialogScreen {
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
     appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
+    integrationSelectorCancel = element(by.id(this.testID.integrationSelectorCancel));
+
+    // One button per option of the dialog's submit_buttons select (apps_form_component.tsx).
+    getSubmitOptionButton = (optionValue: string) => element(by.id(`interactive_dialog.submit_button.${optionValue}`));
+
+    getTextInput = (elementName: string) => element(by.id(`AppFormElement.${elementName}.input`));
+
+    // testID = `AppFormElement.${name}` (apps_form_field.tsx), and @components/button
+    // suffixes the spinner with `-loader` and the text with `-label` (components/button/index.tsx).
+    getActionButton = (elementName: string) => element(by.id(`AppFormElement.${elementName}`));
+    getActionButtonLoader = (elementName: string) => element(by.id(`AppFormElement.${elementName}-loader`));
+    getActionButtonLabel = (elementName: string) => element(by.id(`AppFormElement.${elementName}-label`));
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
     setDialogInputText = async (input: Detox.NativeElement, value: string) => {
@@ -34,36 +47,53 @@ class InteractiveDialogScreen {
         await input.replaceText(value);
     };
 
+    // Dismiss an open keyboard by tapping the scroll view's top-left background
+    // (a label/help area, never an input). A keyboard left open by a previous
+    // field otherwise occludes lower fields and the submit button, and the
+    // keyboard-aware scroll view cannot scroll them above it.
+    dismissKeyboard = async () => {
+        try {
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
+            await wait(timeouts.HALF_SEC);
+        } catch {
+            // No scroll view present, or nothing to dismiss.
+        }
+    };
+
+    // Tapping a field's label is safe with stacked dialogs, where the scroll view matches more than once.
+    dismissKeyboardViaLabel = async (elementName: string) => {
+        await element(by.id(`AppFormElement.${elementName}.label`)).tap();
+        await wait(timeouts.HALF_SEC);
+    };
+
     fillTextElement = async (elementName: string, value: string) => {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
+        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
+
+        // The apps form renders inside a modal with a sticky header and a
+        // keyboard-aware scroll view. A fixed-distance scroll can push the target
+        // under the header or stop short on long forms, so scroll until the input
+        // is actually visible. The previous fill already dismissed its keyboard.
         try {
-            const dialogScrollView = element(by.id(this.testID.interactiveDialogScrollView));
-            if (isPasswordOrTextarea) {
-                try {
-                    await dialogScrollView.tap({x: 20, y: 20});
-                    await wait(500);
-                } catch {
-                    // No keyboard up, or the tap landed on a field — scrolling still helps.
-                }
-                await dialogScrollView.scrollTo('bottom');
-                await wait(500);
-            } else {
-                await dialogScrollView.scroll(100, 'down');
-            }
+            await waitFor(appsFormElement).
+                toBeVisible().
+                whileElement(by.id(this.testID.interactiveDialogScrollView)).
+                scroll(120, 'down');
         } catch (scrollError) {
-            // Could not scroll dialog, continuing without scroll
+            // Short dialog that doesn't scroll, or the field is already visible.
         }
 
-        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
         await waitFor(appsFormElement).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await expect(appsFormElement).toExist();
         await this.setDialogInputText(appsFormElement, value);
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
+        // Tap the field's label, not a fixed point: (20,20) can land on markdown
+        // (e.g. a table opens the Table viewer) or match several stacked dialogs.
         try {
-            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
+            await this.dismissKeyboardViaLabel(elementName);
         } catch {
             try {
                 await this.interactiveDialogScreen.tap();
@@ -101,10 +131,9 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
-        try {
-            await element(by.id(this.testID.interactiveDialogScrollView)).scroll(200, 'down');
-        } catch { /* short dialogs may not scroll */ }
-        await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        // The submit button lives in the modal header (always visible above the
+        // keyboard), so no scrolling or keyboard dismissal is needed to reach it.
+        await waitFor(this.submitButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };
@@ -166,6 +195,52 @@ class InteractiveDialogScreen {
         await wait(500);
     };
 
+    getFileFieldChooseButton = (fieldName: string) => element(by.id(`${fieldName}.choose.button`));
+
+    tapFileFieldChooseButton = async (fieldName: string) => {
+        const chooseButton = this.getFileFieldChooseButton(fieldName);
+        await waitFor(chooseButton).toExist().withTimeout(timeouts.TWO_SEC);
+        await chooseButton.tap();
+    };
+
+    expectFileFieldUploadDisabledWarning = async (fieldName: string, shouldExist = true) => {
+        const warning = element(by.id(`${fieldName}.upload.disabled.warning`));
+        if (shouldExist) {
+            await waitFor(warning).toExist().withTimeout(timeouts.FIVE_SEC);
+            await expect(warning).toExist();
+        } else {
+            await expect(warning).not.toExist();
+        }
+    };
+
+    expectHydratedFilePreview = async (fieldName: string, fileId: string) => {
+        const fileRow = element(by.id(`${fieldName}.file.row.${fileId}`));
+        await waitFor(fileRow).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileRow).toExist();
+    };
+
+    expectFileFieldChooseButtonDisabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
+    };
+
+    expectFileFieldChooseButtonEnabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.THREE_SEC);
+        await element(by.id('file_attachment.photo_library')).swipe('down', 'fast', 0.5);
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
+    };
+
+    tapFileFieldRemoveButton = async (fieldName: string, fileId: string) => {
+        const removeBtn = element(by.id(`${fieldName}.file.remove.${fileId}`));
+        await waitFor(removeBtn).toExist().withTimeout(timeouts.TWO_SEC);
+        await removeBtn.tap();
+    };
+
     fillTextElementWithAppForm = async (elementName: string, value: string) => {
         const textInput = element(by.id(`AppFormElement.${elementName}.text.input`));
         await expect(textInput).toExist();
@@ -180,6 +255,43 @@ class InteractiveDialogScreen {
             // Could not dismiss keyboard, continue
         }
         await wait(500);
+    };
+
+    getSectionToggle = (sectionName: string) => element(by.id(`AppFormSection.${sectionName}.toggle`));
+
+    getFieldInput = (fieldName: string) => element(by.id(`AppFormElement.${fieldName}.input`));
+
+    // Tap a collapsible section header to expand or collapse it. Expanding an outer
+    // section grows the form, so a deeper section's header can land below the fold;
+    // scroll it into view (like fillTextElement) before asserting visibility and tapping.
+    toggleSection = async (sectionName: string) => {
+        const toggle = this.getSectionToggle(sectionName);
+
+        await this.dismissKeyboard();
+        try {
+            await waitFor(toggle).
+                toBeVisible().
+                whileElement(by.id(this.testID.interactiveDialogScrollView)).
+                scroll(120, 'down');
+        } catch (scrollError) {
+            // Short dialog that doesn't scroll, or the header is already visible.
+        }
+
+        await waitFor(toggle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await toggle.tap();
+        await wait(timeouts.ONE_SEC);
+    };
+
+    // A field inside a collapsed section is unmounted, so existence doubles as a
+    // proxy for whether its enclosing section is expanded.
+    expectFieldVisible = async (fieldName: string, shouldExist = true) => {
+        const input = this.getFieldInput(fieldName);
+        if (shouldExist) {
+            await waitFor(input).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(input).toExist();
+        } else {
+            await expect(input).not.toExist();
+        }
     };
 
     toBeVisible = async (shouldBeVisible: boolean = true) => {

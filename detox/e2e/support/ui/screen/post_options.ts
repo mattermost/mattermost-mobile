@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, isIos, longPressWithRetry, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
@@ -159,7 +159,7 @@ class PostOptionsScreen {
 
         // Android gorhom sheets + edge-to-edge: testID visibility can fail while the
         // label text is hittable.
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             const candidates = [
                 optionLabel,
@@ -179,7 +179,7 @@ class PostOptionsScreen {
             /* eslint-enable no-await-in-loop */
             await optionLabel.tap();
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     };
 

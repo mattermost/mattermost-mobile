@@ -131,6 +131,7 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
         item.dueDate = raw.due_date ?? record?.dueDate ?? 0;
         item.completedAt = raw.completed_at ?? record?.completedAt ?? 0;
         item.taskActions = raw.task_actions ?? record?.taskActions ?? [];
+        item.requirements = raw.requirements ?? record?.requirements ?? [];
         item.conditionAction = raw.condition_action ?? record?.conditionAction ?? '';
         item.conditionReason = raw.condition_reason ?? record?.conditionReason ?? '';
         item.updateAt = raw.update_at ?? record?.updateAt ?? 0;

@@ -172,7 +172,7 @@ jest.mock('@mattermost/calls-native', () => ({
     },
 }));
 
-jest.mock('react-native-webrtc', () => {
+jest.mock('@livekit/react-native-webrtc', () => {
     const getTracks = jest.fn(() => []);
     const getUserMedia = jest.fn(() => Promise.resolve({getTracks}));
     return {
@@ -183,9 +183,58 @@ jest.mock('react-native-webrtc', () => {
         MediaStream: jest.fn(),
         MediaStreamTrack: jest.fn(),
         RTCSessionDescription: jest.fn(),
+        RTCView: jest.fn(),
         registerGlobals: jest.fn(),
     };
 });
+
+jest.mock('@livekit/react-native', () => ({
+    registerGlobals: jest.fn(),
+}));
+
+// Enum values mirror livekit-client's own enums; Room and LocalAudioTrack are left as
+// bare mocks so individual tests can drive them via mockImplementation.
+jest.mock('livekit-client', () => ({
+    Room: jest.fn(),
+    LocalAudioTrack: jest.fn(),
+    AudioPresets: {speech: {maxBitrate: 24000}},
+    ConnectionQuality: {
+        Excellent: 'excellent',
+        Good: 'good',
+        Poor: 'poor',
+        Lost: 'lost',
+        Unknown: 'unknown',
+    },
+    Track: {
+        Source: {
+            Microphone: 'microphone',
+            ScreenShare: 'screen_share',
+            ScreenShareAudio: 'screen_share_audio',
+        },
+    },
+    RoomEvent: {
+        Connected: 'connected',
+        Disconnected: 'disconnected',
+        TrackMuted: 'trackMuted',
+        TrackUnmuted: 'trackUnmuted',
+        LocalTrackPublished: 'localTrackPublished',
+        TrackSubscribed: 'trackSubscribed',
+        TrackUnsubscribed: 'trackUnsubscribed',
+        ActiveSpeakersChanged: 'activeSpeakersChanged',
+        ParticipantAttributesChanged: 'participantAttributesChanged',
+        DataReceived: 'dataReceived',
+        ConnectionQualityChanged: 'connectionQualityChanged',
+        ParticipantConnected: 'participantConnected',
+        ParticipantDisconnected: 'participantDisconnected',
+        RoomMetadataChanged: 'roomMetadataChanged',
+    },
+    DisconnectReason: {
+        CLIENT_INITIATED: 1,
+        SERVER_SHUTDOWN: 3,
+        PARTICIPANT_REMOVED: 4,
+        ROOM_DELETED: 5,
+    },
+}));
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
@@ -196,7 +245,10 @@ jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
 });
 
 /* eslint-disable no-console */
-jest.mock('@database/manager');
+// Loaded as a module, not as a __mocks__ manual mock: Jest registers a manual mock only once it has
+// loaded, so a module reached from the mock's own imports (operator handlers → queries) that imports
+// @database/manager would get a second, empty DatabaseManager.
+jest.mock('@database/manager', () => jest.requireActual('@database/manager/__mocks__'));
 
 jest.mock('@managers/intune_manager', () => ({
     __esModule: true,

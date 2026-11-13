@@ -71,3 +71,17 @@ export const hasCustomProfileAttributes =
  * global_setup.js. Presence is the signal; the suite still toggles the flag's value itself.
  */
 export const hasChannelAttributes = process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'true';
+
+/** Whether the server's license and remote-cluster service support Shared Channels, set by global_setup.js. */
+export const hasSharedChannels = process.env.MM_SERVER_HAS_SHARED_CHANNELS === 'true';
+export const maxFileSizePinned = process.env.MM_SERVER_MAX_FILE_SIZE_PINNED === 'true';
+
+/**
+ * Whether the server supports a permission policy action, e.g. 'create_burn_on_read_post', from
+ * MM_SERVER_POLICY_ACTIONS (set by global_setup.js). True when that couldn't be determined, so an
+ * unknown never skips a suite.
+ */
+export const serverSupportsPolicyAction = (action: string): boolean => {
+    const actions = process.env.MM_SERVER_POLICY_ACTIONS;
+    return actions === undefined || actions.split(',').includes(action);
+};

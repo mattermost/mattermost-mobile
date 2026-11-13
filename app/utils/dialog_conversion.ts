@@ -4,7 +4,7 @@
 // Dialog conversion utilities for Interactive Dialog to AppsForm migration
 // Based on webapp dialog_conversion.ts from PR #31821
 
-import {isAppSelectOption, mapDialogTypeToAppFieldType, DialogElementTypes, DialogTextSubtypes} from './dialog_utils';
+import {isAppSelectOption, mapDialogTypeToAppFieldType, DialogElementTypes, DialogTextSubtypes, flattenDialogElements} from './dialog_utils';
 
 export interface ConversionContext {
     elements: DialogElement[];
@@ -13,6 +13,45 @@ export interface ConversionContext {
 export interface ConversionResult {
     submission: {[key: string]: string | number | boolean};
     errors: string[];
+}
+
+/**
+ * Collects file IDs from FILE-type dialog elements in a converted submission.
+ * Shared by the single-step (adapter) and multi-step (dialog_router) submit paths
+ * so uploaded file IDs aren't dropped on either. FILE values are comma-joined IDs.
+ */
+export function collectFileIds(submission: {[key: string]: string}, elements: DialogElement[] = []): string[] {
+    const fileIds: string[] = [];
+    elements.forEach((element) => {
+        if (element.type === 'file' && submission[element.name]) {
+            fileIds.push(...String(submission[element.name]).split(',').map((id) => id.trim()).filter(Boolean));
+        }
+    });
+    return [...new Set(fileIds)];
+}
+
+/** Merge FILE field values from a step into accumulated per-field state (replace, not append). */
+export function mergeFileFieldValues(
+    accumulated: Record<string, string>,
+    submission: Record<string, string>,
+    elements: DialogElement[] = [],
+): Record<string, string> {
+    const merged = {...accumulated};
+    elements.forEach((element) => {
+        if (element.type === 'file' && Object.prototype.hasOwnProperty.call(submission, element.name)) {
+            merged[element.name] = submission[element.name];
+        }
+    });
+    return merged;
+}
+
+/** Flatten per-field comma-joined FILE values into a deduplicated file_ids array. */
+export function flattenFileFieldValues(byField: Record<string, string>): string[] {
+    const fileIds: string[] = [];
+    Object.values(byField).forEach((value) => {
+        fileIds.push(...String(value).split(',').map((id) => id.trim()).filter(Boolean));
+    });
+    return [...new Set(fileIds)];
 }
 
 /**
@@ -39,6 +78,11 @@ export function convertAppFormValuesToDialogSubmission(
 
         if (!element) {
             errors.push(`Field ${fieldName} not found in dialog elements`);
+            return;
+        }
+
+        // Action buttons have no value to submit - skip them entirely
+        if (element.type === DialogElementTypes.ACTION_BUTTON) {
             return;
         }
 
@@ -80,6 +124,11 @@ export function convertAppFormValuesToDialogSubmission(
                 submission[fieldName] = Boolean(value);
                 break;
 
+            case DialogElementTypes.FILE:
+                // File elements store uploaded file IDs as a comma-separated string
+                submission[fieldName] = String(value || '');
+                break;
+
             default:
                 submission[fieldName] = String(value || '');
         }
@@ -93,6 +142,19 @@ export function convertAppFormValuesToDialogSubmission(
  * Used when converting dialog config to AppForm
  */
 export function convertDialogElementToAppField(element: DialogElement): AppField {
+    if (element.type === DialogElementTypes.COLLAPSIBLE) {
+        return {
+            name: element.name,
+            type: 'collapsible',
+            label: element.display_name,
+            collapsible_config: {
+                fields: element.collapsible_config?.elements?.map((e) => convertDialogElementToAppField(e)) || [],
+                expanded: !element.collapsible_config?.collapsed,
+                bordered: !element.collapsible_config?.borderless,
+            },
+        };
+    }
+
     const appField: AppField = {
         name: element.name,
         type: mapDialogTypeToAppFieldType(element.type, element.data_source),
@@ -106,7 +168,9 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     if (element.type === DialogElementTypes.TEXT || element.type === DialogElementTypes.TEXTAREA) {
         appField.max_length = element.max_length;
         appField.min_length = element.min_length;
-        if (element.type !== DialogElementTypes.TEXTAREA && element.subtype) {
+        if (element.type === DialogElementTypes.TEXTAREA) {
+            appField.subtype = 'textarea';
+        } else if (element.subtype) {
             appField.subtype = element.subtype;
         }
     }
@@ -121,6 +185,10 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
         if (element.type === DialogElementTypes.SELECT && element.multiselect) {
             appField.multiselect = element.multiselect;
         }
+    }
+
+    if (element.type === DialogElementTypes.FILE && element.allow_multiple) {
+        appField.allow_multiple = true;
     }
 
     if (element.default) {
@@ -143,6 +211,18 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     // The server should specify which fields trigger form refresh
     appField.refresh = element.refresh;
 
+    // Preserve action button configuration. Action buttons carry no value, so they can
+    // never satisfy a required check.
+    if (element.type === DialogElementTypes.ACTION_BUTTON) {
+        appField.is_required = false;
+        if (element.action_button) {
+            appField.action_button_url = element.action_button.url;
+            if (element.action_button.context) {
+                appField.action_button_context = element.action_button.context;
+            }
+        }
+    }
+
     return appField;
 }
 
@@ -155,15 +235,16 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
         position: index,
     })) || [];
 
-    // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
-    const hasRefreshFields = convertedFields.some((field) => field.refresh === true);
+    // Flatten first so a refresh field nested in a section still sets form.source
+    // (matches webapp; otherwise refreshOnSelect errors with "`source` is not defined").
+    const hasRefreshFields = flattenDialogElements(config.dialog.elements || []).some((element) => element.refresh === true);
     const sourceUrl = config.dialog.source_url;
 
     const form: AppForm = {
         title: config.dialog.title,
         header: config.dialog.introduction_text || undefined,
         fields: convertedFields,
-        submit_buttons: undefined,
+        submit_buttons: config.dialog.submit_buttons || undefined,
 
         // Pass through submit label from dialog config
         submit_label: config.dialog.submit_label || undefined,

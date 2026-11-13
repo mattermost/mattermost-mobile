@@ -30,7 +30,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emojis and Reactions', () => {
@@ -78,14 +78,14 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // # Open emoji picker screen and add a new reaction
         await EmojiPickerScreen.open();
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await EmojiPickerScreen.searchInput.replaceText('clown_face');
             await EmojiPickerScreen.searchInput.tapReturnKey();
             await waitFor(element(by.text('🤡'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
             await element(by.text('🤡')).tap();
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // * Verify new reaction is added to the message
@@ -117,14 +117,14 @@ describe('Messaging - Emojis and Reactions', () => {
         const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await EmojiPickerScreen.searchInput.replaceText('fire');
             await EmojiPickerScreen.searchInput.tapReturnKey();
             await waitFor(element(by.text('🔥'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
             await element(by.text('🔥')).tap();
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // * Verify reaction is added to the message
@@ -173,7 +173,7 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // # Open emoji picker screen
         await EmojiPickerScreen.open();
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             // Wait for emoji search input to be fully rendered and hittable
             await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -183,7 +183,7 @@ describe('Messaging - Emojis and Reactions', () => {
             await expect(element(by.text('🦊')).atIndex(0)).toExist();
             await expect(element(by.text('🐶')).atIndex(0)).toExist();
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // # Go back to channel list screen
@@ -199,7 +199,7 @@ describe('Messaging - Emojis and Reactions', () => {
         const searchTerm = 'blahblahblahblah';
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             // Wait for emoji search input to be fully rendered and hittable
             await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -210,7 +210,7 @@ describe('Messaging - Emojis and Reactions', () => {
             await waitFor(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
             await waitFor(element(by.text('Check the spelling or try another search.'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // # Go back to channel list screen
@@ -250,7 +250,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await expect(reactionEmoji).toExist();
 
         // # Tap the other user's reaction to add the same reaction from the current user
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await reactionEmoji.tap();
 
@@ -264,7 +264,7 @@ describe('Messaging - Emojis and Reactions', () => {
             // * Verify the reaction still exists (other user's reaction remains) but current user's reaction is removed
             await waitFor(reactionEmoji).toExist().withTimeout(timeouts.TEN_SEC);
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
         await expect(reactionEmoji).toExist();
 

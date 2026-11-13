@@ -58,7 +58,7 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         // Delete any previous temp files created by the app
         val tempFolder = File(applicationContext.cacheDir, RealPathUtil.CACHE_DIR_NAME)
         RealPathUtil.deleteTempFiles(tempFolder)
-        TurboLog.configure(options = ConfigureOptions(logsDirectory = applicationContext.cacheDir.absolutePath + "/logs", logPrefix = applicationContext.packageName))
+        TurboLog.configure(options = ConfigureOptions(maximumNumberOfFiles = 5, logsDirectory = applicationContext.cacheDir.absolutePath + "/logs", logPrefix = applicationContext.packageName))
 
         TurboLog.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
 

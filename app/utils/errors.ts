@@ -1,7 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {IntlShape} from 'react-intl';
+import {defineMessage, type IntlShape} from 'react-intl';
+
+export const preauthSecretInvalidMessage = defineMessage({
+    id: 'mobile.server.preauth_secret.invalid',
+    defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
+});
 
 export function isServerError(obj: unknown): obj is {server_error_id?: string} {
     return (

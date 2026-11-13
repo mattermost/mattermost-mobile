@@ -21,6 +21,8 @@ import Content from './content';
 import Failed from './failed';
 import Message from './message';
 import Reactions from './reactions';
+import RedactedFilesPlaceholder from './redacted_files_placeholder';
+import UnverifiedFilesPlaceholder from './unverified_files_placeholder';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
@@ -31,11 +33,14 @@ type BodyProps = {
     mmBlocksEnabled: boolean;
     filesInfo: FileInfo[];
     hasReactions: boolean;
+    isRedactionVerified: boolean;
+    redactionRequiredEpoch: number;
     highlight: boolean;
     isJumboEmoji: boolean;
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
+    isChannelWriteDenied: boolean;
     isReplyPost: boolean;
     location: AvailableScreens;
     post: PostModel;
@@ -76,11 +81,14 @@ const Body = ({
     mmBlocksEnabled,
     filesInfo,
     hasReactions,
+    isRedactionVerified,
+    redactionRequiredEpoch,
     highlight,
     isJumboEmoji,
     isPendingOrFailed,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
+    isChannelWriteDenied,
     isReplyPost,
     location,
     post,
@@ -163,8 +171,20 @@ const Body = ({
         );
     }
 
-    const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
+    // The server refuses acknowledging under a write access policy, so the control is hidden as on the webapp.
+    const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack && !isChannelWriteDenied;
     const reactionsVisible = hasReactions && showAddReaction;
+    const redactedFileCount = post.metadata?.redacted_file_count ?? 0;
+
+    // Nothing renders while the decision is stale. Pending and failed local posts are exempt: they
+    // have never been through the server, so there is no decision to be behind.
+    const hasAttachmentEvidence = Boolean(filesInfo.length) || redactedFileCount > 0;
+    const isUnverified = hasAttachmentEvidence && !isRedactionVerified && !isPendingOrFailed;
+
+    // The server redacts all of a post's files or none, so a count alongside stored files means the
+    // store is inconsistent; the count wins.
+    const showFiles = Boolean(filesInfo.length) && redactedFileCount === 0 && !isUnverified;
+    const showRedactedPlaceholder = redactedFileCount > 0 && !isUnverified;
 
     if (!hasBeenDeleted) {
         body = (
@@ -180,7 +200,7 @@ const Body = ({
                     theme={theme}
                 />
                 }
-                {Boolean(filesInfo.length) &&
+                {showFiles &&
                 <Files
                     failed={isFailed}
                     filesInfo={filesInfo}
@@ -191,6 +211,16 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
+                {showRedactedPlaceholder && (
+                    <RedactedFilesPlaceholder/>
+                )}
+                {isUnverified && (
+                    <UnverifiedFilesPlaceholder
+                        postId={post.id}
+                        location={location}
+                        requiredEpoch={redactionRequiredEpoch}
+                    />
+                )}
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View style={style.ackAndReactionsContainer}>
                         {acknowledgementsVisible && (

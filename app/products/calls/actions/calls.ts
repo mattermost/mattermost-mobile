@@ -16,6 +16,7 @@ import {
     needsRecordingWillBePostedAlert,
     showErrorAlertOnClose,
 } from '@calls/alerts';
+import {createCallAndAddToIds} from '@calls/convert_call';
 import {
     endNativeCall,
     mirrorMuteToNativeCall,
@@ -24,11 +25,11 @@ import {
 } from '@calls/native_call';
 import {
     cancelOutgoingCall,
-    clearStartUnmuted,
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
     getCurrentCall,
+    isLiveKitCurrentCall,
     myselfLeftCall,
     newCurrentCall,
     setCurrentCallConnected,
@@ -41,8 +42,8 @@ import {
     setScreenShareURL,
     startOutgoingCall,
 } from '@calls/state';
-import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
-import {areGroupCallsAllowed} from '@calls/utils';
+import {type AudioDeviceType, type Call, type CallsConnection, EndCallReturn} from '@calls/types/calls';
+import {areGroupCallsAllowed, getCallsTransport} from '@calls/utils';
 import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -60,13 +61,23 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
-import {newConnection} from '../connection/connection';
+import {newCallConnection} from '../connection';
 
-import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
+import type {CallChannelState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
+
+// On LiveKit the room owns the roster, and HTTP call state carries stale mute/hand and unconfirmed sessions.
+const withRoomOwnedSessions = (serverUrl: string, channelId: string, call: Call): Call => {
+    const currentCall = getCurrentCall();
+    if (!currentCall || !isLiveKitCurrentCall(serverUrl, channelId)) {
+        return call;
+    }
+
+    return {...call, sessions: currentCall.sessions};
+};
 
 export const loadConfig = async (serverUrl: string, force = false, groupLabel?: RequestGroupLabel) => {
     const now = Date.now();
@@ -82,7 +93,8 @@ export const loadConfig = async (serverUrl: string, force = false, groupLabel?: 
     try {
         const client = NetworkManager.getClient(serverUrl);
         const configs = await Promise.all([client.getCallsConfig(groupLabel), client.getVersion(groupLabel)]);
-        const nextConfig = {...configs[0], version: configs[1], last_retrieved_at: now};
+        const version = configs[1].version ? configs[1] : config.version;
+        const nextConfig = {...configs[0], version, last_retrieved_at: now};
         setConfig(serverUrl, nextConfig);
         return {data: nextConfig};
     } catch (error) {
@@ -109,7 +121,7 @@ export const loadCalls = async (serverUrl: string, userId: string, groupLabel?: 
 
     for (const channel of resp) {
         if (channel.call) {
-            callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, channel.call, ids);
+            callsResults[channel.channel_id] = withRoomOwnedSessions(serverUrl, channel.channel_id, createCallAndAddToIds(channel.channel_id, channel.call, ids));
         }
 
         if (typeof channel.enabled !== 'undefined') {
@@ -149,39 +161,9 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
         fetchUsersByIds(serverUrl, Array.from(ids));
     }
 
-    setCallForChannel(serverUrl, channelId, call, resp.enabled);
+    setCallForChannel(serverUrl, channelId, call && withRoomOwnedSessions(serverUrl, channelId, call), resp.enabled);
 
     return {data: {call, enabled: resp.enabled}};
-};
-
-export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: Set<string>) => {
-    // Don't cast so that we get alerted to missing types
-    const convertedCall: Call = {
-        sessions: Object.values(call.sessions).reduce((accum, cur) => {
-            // Add the id to the set of UserModels we want to ensure are loaded.
-            ids?.add(cur.user_id);
-
-            // Create the CallParticipant
-            accum[cur.session_id] = {
-                userId: cur.user_id,
-                sessionId: cur.session_id,
-                raisedHand: cur.raised_hand || 0,
-                muted: !cur.unmuted,
-            };
-            return accum;
-        }, {} as Dictionary<CallSession>),
-        channelId,
-        id: call.id,
-        startTime: call.start_at,
-        screenOn: call.screen_sharing_session_id,
-        threadId: call.thread_id,
-        ownerId: call.owner_id,
-        hostId: call.host_id,
-        recState: call.recording,
-        dismissed: call.dismissed_notification || {},
-    };
-
-    return convertedCall;
 };
 
 export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: RequestGroupLabel) => {
@@ -244,11 +226,22 @@ export const joinCall = async (
         return {error: 'calls plugin not enabled'};
     }
 
+    const {error: configError} = await loadConfig(serverUrl, true);
+    if (configError) {
+        return {error: configError};
+    }
+
+    const config = getCallsConfig(serverUrl);
+    if (!config.version.version) {
+        return {error: 'unable to determine calls plugin version'};
+    }
+
     if (connection) {
         connection.disconnect();
         connection = null;
     }
-    newCurrentCall(serverUrl, channelId, userId, opts);
+    const transport = getCallsTransport(config);
+    newCurrentCall(serverUrl, channelId, userId, transport, opts);
 
     // Register with the system call UI so the user gets lock-screen /
     // control-center controls if they background or lock mid-call. Skip
@@ -262,7 +255,7 @@ export const joinCall = async (
     // the catch below must act on *this* connection, never on whatever is current by then.
     let conn: CallsConnection;
     try {
-        conn = await newConnection(serverUrl, channelId, (err?: Error) => {
+        conn = await newCallConnection(serverUrl, channelId, (err?: Error) => {
             // Tearing down the call state is only ours to do while we're still the current
             // connection: an abandoned join closing late would otherwise drop the user out of
             // the call they moved on to.
@@ -274,7 +267,7 @@ export const joinCall = async (
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, intl, title, rootId);
+        }, setScreenShareURL, hasMicPermission, intl, transport, title, rootId);
         connection = conn;
     } catch (error) {
         endNativeCall(serverUrl, channelId, 'failed');
@@ -387,14 +380,8 @@ export const unmuteMyself = () => {
         return;
     }
 
-    const unmuted = connection.unmute();
+    connection.unmute();
     mirrorMuteToNativeCall(false);
-
-    if (!unmuted) {
-        // Nothing left the device, so the server will never tell us we're live. Stop saying we are.
-        logDebug('calls: unmuteMyself had no voice track to unmute');
-        clearStartUnmuted();
-    }
 };
 
 export const initializeVoiceTrack = () => {

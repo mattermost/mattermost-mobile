@@ -103,10 +103,6 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.sharedSecretHelp',
         defaultMessage: 'The authentication secret shared by the administrator',
     },
-    preauthSecretInvalid: {
-        id: 'mobile.server.preauth_secret.invalid',
-        defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
-    },
 });
 
 const ADVANCED_OPTIONS_EXPANDED = 114;

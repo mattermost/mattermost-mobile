@@ -166,6 +166,7 @@ export function getModalHeaderOptions(theme: Theme, onClose: () => void, testID?
             ...typography('Heading', 300, 'SemiBold'),
             color: theme.sidebarHeaderTextColor,
         },
+        headerTintColor: theme.sidebarHeaderTextColor,
         headerLeft: () => (
             <View style={{marginRight: Platform.select({android: 20})}}>
                 <NavigationButton

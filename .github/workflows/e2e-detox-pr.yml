@@ -109,6 +109,8 @@ jobs:
   compute-build-fingerprints:
     name: Compute build fingerprints
     runs-on: ubuntu-24.04
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.trusted == 'true'
     outputs:
       ios: ${{ steps.ios.outputs.fingerprint }}
       android-detox: ${{ steps.android-detox.outputs.fingerprint }}
@@ -179,6 +181,7 @@ jobs:
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
       skip_reason: ${{ steps.policy.outputs.skip_reason }}
+      trusted: ${{ steps.policy.outputs.trusted }}
     steps:
       # Per-branch cancellation used to happen here via cancel-e2e-runs (removed —
       # see the workflow-level `concurrency:` group above, which supersedes it via
@@ -192,8 +195,14 @@ jobs:
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
         with:
           script: |
+            const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
+            // Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
+            const isBaseRun = runType === 'MAIN' || runType === 'MASTER' || runType === 'RELEASE';
+            const repoFullName = `${context.repo.owner}/${context.repo.repo}`;
+
             const prInput = parseInt(process.env.PR_NUMBER, 10);
             let prNumber = Number.isFinite(prInput) ? prInput : null;
 
@@ -218,6 +227,7 @@ jobs:
               core.info('No PR number available — assuming E2E/Override is not set.');
               core.setOutput('e2e_override', 'false');
               core.setOutput('skip_reason', '');
+              core.setOutput('trusted', isBaseRun ? 'true' : 'false');
               return;
             }
 
@@ -226,6 +236,12 @@ jobs:
               repo: context.repo.repo,
               pull_number: prNumber,
             });
+
+            const headRepo = pr.head && pr.head.repo && pr.head.repo.full_name;
+            const trusted = (isBaseRun || headRepo === repoFullName) ? 'true' : 'false';
+            core.info(`PR #${prNumber} head repo match=${headRepo === repoFullName} trusted=${trusted}`);
+            core.setOutput('trusted', trusted);
+
             if (pr.base.ref !== 'main') {
               core.info(`PR #${prNumber} targets ${pr.base.ref}, not main — skipping E2E.`);
               core.setOutput('e2e_override', 'true');
@@ -278,10 +294,11 @@ jobs:
       contents: read
       pull-requests: read
     needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true' && needs.resolve-e2e-policy.outputs.trusted == 'true'
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
+      job-keys-json: ${{ steps.id.outputs.job-keys-json }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -358,6 +375,7 @@ jobs:
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+          echo "job-keys-json=$(echo "$JOB_CONFIGS" | jq -c 'keys')" >> "$GITHUB_OUTPUT"
 
   update-initial-tsio-status:
     name: Set pending per-job TSIO commit statuses
@@ -367,6 +385,7 @@ jobs:
       - calculate-tsio-identity
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && needs.calculate-tsio-identity.result == 'success'
       && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     permissions:
@@ -431,10 +450,39 @@ jobs:
             echo "site-3-url=$SITE_3_URL"
           } >> "$GITHUB_OUTPUT"
 
+      # e2e-flake-verify.yml re-runs specs against this run's servers, which live as long as the PR,
+      # but the URLs exist only as this run's dispatch inputs. They are test-server addresses, not
+      # secrets, so they are kept as an artifact for that workflow to read.
+      - name: Write server topology
+        env:
+          ANDROID_SITE_1_URL: ${{ steps.topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ steps.topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ steps.topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ steps.topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ steps.topology.outputs.site-3-url }}
+        run: |
+          jq -n '{
+            "android-site-1-url": env.ANDROID_SITE_1_URL,
+            "android-site-2-url": env.ANDROID_SITE_2_URL,
+            "ios-site-1-url": env.IOS_SITE_1_URL,
+            "ios-site-2-url": env.IOS_SITE_2_URL,
+            "site-3-url": env.SITE_3_URL
+          }' > e2e-topology.json
+
+      - name: Upload server topology
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-topology-${{ github.run_id }}
+          path: e2e-topology.json
+          retention-days: 7
+          # A re-run of all jobs uploads it again under the same name.
+          overwrite: true
+
   build-ios-simulator:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     # Runner / Xcode image is not in the git tree. Changing this label (or the
     # Xcode on it) without bumping CACHE_VERSION in
@@ -519,6 +567,7 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     # Runner image is not in the git tree — bump CACHE_VERSION in
     # compute-e2e-build-fingerprint/action.yml when changing this label.
@@ -615,6 +664,7 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     # Runner image is not in the git tree — bump CACHE_VERSION in
     # compute-e2e-build-fingerprint/action.yml when changing this label.
@@ -700,6 +750,7 @@ jobs:
       - resolve-server-topology
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
@@ -717,9 +768,20 @@ jobs:
           IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
           SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
         run: |
+          # Site 2 is mutation server B; a repeated URL would run its server-wide changes on a pool or shared server.
+          DUPES=$(printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL" | sort | uniq -d)
+          if [ -n "$DUPES" ]; then
+            echo "::error::PR test server URLs must be distinct; a site 2 URL that repeats another server would mix mutation specs into a pool or shared server:"
+            printf '%s\n' "$DUPES"
+            exit 1
+          fi
           {
             echo "list<<EOF"
             printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"
+            echo "EOF"
+            # The dialog specs run on pool server A (site 1) and mutation server B (site 2); the shared SITE_3 does not get the demo plugin.
+            echo "demo<<EOF"
+            printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -730,6 +792,7 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
         with:
           server-urls: ${{ steps.urls.outputs.list }}
+          demo-plugin-server-urls: ${{ steps.urls.outputs.demo }}
 
   # iOS and Android Detox jobs are separate so each platform starts as soon as its
   # own build finishes — Android does not wait for build-ios-simulator.
@@ -752,6 +815,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
@@ -788,6 +852,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
@@ -810,6 +875,7 @@ jobs:
     needs: resolve-e2e-policy
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
@@ -847,6 +913,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -886,6 +953,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -923,6 +991,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
@@ -1051,14 +1120,123 @@ jobs:
 
   # One Mattermost channel rollup (best-effort). Per-job finalize leaves channel
   # notify off so N legs do not spam; this job posts a single summary.
+  # Main only: re-run, on fresh devices, the failed specs triage could not clear (new on main, a product bug, or
+  # not enough history), so the channel message can say for certain whether each is a product bug: one that
+  # fails again on the same commit and servers is real; one that passes is not. Up to 10 specs per lane; more
+  # than that failing at once is the run's setup, and is not re-run.
+  plan-rerun:
+    name: Plan re-run of failed specs
+    runs-on: ubuntu-24.04
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.tsio-triage.result != 'skipped'
+    needs:
+      - tsio-triage
+    permissions:
+      contents: read
+    outputs:
+      detox-specs: ${{ steps.plan.outputs.detox-specs }}
+      maestro-flows: ${{ steps.plan.outputs.maestro-flows }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/rerun-failed.js
+            detox/utils/tsio-channel-notify-rollup.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
+            detox/utils/build-tsio-job-config.js
+            detox/utils/cli-args.js
+      - name: Download triage findings
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
+          path: triage-findings
+      - name: Plan the re-run
+        id: plan
+        run: node detox/utils/rerun-failed.js --findings-dir triage-findings
+
+  rerun-detox:
+    name: Re-run failed Detox specs
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - resolve-server-topology
+      - plan-rerun
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun.result == 'success' &&
+      needs.plan-rerun.outputs.detox-specs != '' &&
+      needs.plan-rerun.outputs.detox-specs != '{}'
+    uses: ./.github/workflows/e2e-detox.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ${{ inputs.PLATFORM }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+      run_type: ${{ inputs.run_type }}
+      artifact_run_id: ${{ github.run_id }}
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      rerun-specs: ${{ needs.plan-rerun.outputs.detox-specs }}
+    secrets: inherit
+
+  rerun-maestro:
+    name: Re-run failed Maestro flows
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - resolve-server-topology
+      - plan-rerun
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled() &&
+      needs.plan-rerun.result == 'success' &&
+      needs.plan-rerun.outputs.maestro-flows != '' &&
+      needs.plan-rerun.outputs.maestro-flows != '{}'
+    uses: ./.github/workflows/e2e-maestro-pr.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ${{ inputs.PLATFORM }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+      run_type: ${{ inputs.run_type }}
+      artifact_run_id: ${{ github.run_id }}
+      record_tests_in_zephyr: false
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      rerun-flows: ${{ needs.plan-rerun.outputs.maestro-flows }}
+    secrets: inherit
+
   tsio-channel-notify:
     name: Post Mattermost E2E channel rollup
     runs-on: ubuntu-24.04
     if: >-
       always() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       needs.calculate-tsio-identity.result == 'success' &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
+    # After triage and the re-run of failed specs, so the message carries the verdict on each failed test.
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
@@ -1066,6 +1244,9 @@ jobs:
       - run-detox-android
       - run-maestro-ios
       - run-maestro-android
+      - tsio-triage
+      - rerun-detox
+      - rerun-maestro
     permissions:
       contents: read
       id-token: write
@@ -1080,9 +1261,28 @@ jobs:
             detox/utils/cmt-channel-notify.js
             detox/utils/build-tsio-job-config.js
             detox/utils/cli-args.js
+            detox/utils/rerun-failed.js
+      # This attempt's triage verdicts (none when no run failed, or triage did not finish); an earlier attempt's
+      # are not this run's.
+      - name: Download triage findings
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
+          path: triage-findings
+      # The re-run's result per test (main only; none when nothing was re-run).
+      - name: Download re-run results
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-rerun-results-*-a${{ github.run_attempt }}
+          path: rerun-results
       - name: Aggregate per-job TSIO groups and notify channel
         env:
           JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+          TRIAGE_FINDINGS_DIR: triage-findings
+          RERUN_RESULTS_DIR: rerun-results
+          GITHUB_TOKEN: ${{ github.token }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
@@ -1098,3 +1298,137 @@ jobs:
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM" \
             --poll-attempts=6 || true
+
+  # Judges each red lane: is the failure the PR's fault? The toolkit asks TSIO for the
+  # history of exactly the failed tests and settles what the rules can (broken or flaky
+  # on main, recurring on other PRs, owned by the PR's diff). Only the rest reaches a
+  # second judge that must cite evidence. Runs on main too, where only intermittency
+  # clears a failure. Enforce (the default) makes the verdict the lane's status, so a
+  # lane red only on failures that are not the PR's turns green. Setting the
+  # E2E_TRIAGE_MODE variable to report-only posts the PR comment and leaves the
+  # per-job statuses alone.
+  tsio-triage:
+    name: Triage E2E failures (${{ matrix.job-key }})
+    runs-on: ubuntu-24.04
+    # The channel message waits for this job: a hang must not hold it for hours (recent runs take under a minute).
+    timeout-minutes: 15
+    # Red runs only: a verdict can turn a red run green, never the reverse. The gate is
+    # per run, not per lane, so a passing lane may still run and post nothing. Not on a
+    # cancelled run: its unfinished specs count as failures. A lane counts as red on any
+    # result but success or skipped: in run 41818921294 five Android shards never got a
+    # runner and stayed queued, and the lane's needs result was "abandoned", not "failure"
+    # (as the channel rollup job logged it). Triage must still judge such a lane.
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (!contains(fromJSON('["success", "skipped"]'), needs.run-detox-ios.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-detox-android.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-ios.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-ios-simulator.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk-maestro.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result))
+    # A failed build or server leaves its lanes "skipped", which reads as not requested, and the lanes pending with no
+    # verdict (PR 10306, run 42193427343: npm ci refused a package.json the lock file did not match). Triage judges such
+    # a lane from the run's jobs: the change's (a build or install it broke) or the machine's, re-run.
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - build-ios-simulator
+      - build-android-apk
+      - build-android-apk-maestro
+      - provision-servers
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: read
+      # Triage reads the run's failed jobs before it asks for an automatic re-run.
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        job-key: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-keys-json) }}
+    steps:
+      # The triage composite is a local action, so it must be in the workspace first. It is
+      # checked out from the dispatch ref, never MOBILE_VERSION: this job holds the API key,
+      # and the branch under test must not run code with it. Sparse, so the workspace holds
+      # only the composite directory.
+      - name: Checkout triage action
+        continue-on-error: true
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/e2e-triage/
+          sparse-checkout-cone-mode: false
+      - name: e2e/triage
+        continue-on-error: true
+        uses: ./.github/actions/e2e-triage
+        with:
+          job-key: ${{ matrix.job-key }}
+          composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
+          status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # A triage failure must never change the outcome of the E2E run itself.
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'enforce' }}
+          # A lane red only on infrastructure (a dead job, missing reports) asks for one
+          # automatic re-run of the failed jobs; e2e-tests-rerun.yml carries it out.
+          rerun-attempts: '1'
+
+  # The PR-wide e2e-test/triage check, once every lane is final. A red lane announces triage there (pending)
+  # and an enforcing triage writes its verdict, but nothing else does: a triage that ran report-only (the
+  # E2E/Triage-report-only label added after the announcement), stopped early, or was skipped because a re-run
+  # turned every lane green would leave this run's check pending or red. See detox/utils/tsio-triage-settle.js.
+  settle-triage-check:
+    name: Settle the E2E triage check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce'
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+      - tsio-triage
+      - rerun-detox
+      - rerun-maestro
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      # From the dispatch ref, as the triage action is, never MOBILE_VERSION: the commit under test may predate the
+      # settle script, and this job holds a token that writes statuses. --sha below still names the tested commit.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-triage-settle.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cli-args.js
+          sparse-checkout-cone-mode: false
+      - name: Settle this run's e2e-test/triage check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+        run: |
+          SHA=$(jq -r '[.[].composite_identity.commit_sha] | first // empty' <<<"$JOB_CONFIGS")
+          LANES=$(jq -r '[.[].status_context] | join(",")' <<<"$JOB_CONFIGS")
+          node detox/utils/tsio-triage-settle.js \
+            --repository="$GITHUB_REPOSITORY" \
+            --sha="$SHA" \
+            --run-id="$GITHUB_RUN_ID" \
+            --lanes="$LANES"

@@ -3,7 +3,7 @@
 
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 
 class EmojiPickerScreen {
     testID = {
@@ -75,7 +75,7 @@ class EmojiPickerScreen {
     tapSearchResultEmoji = async (glyph: string, emojiShortName?: string) => {
         // The filtered picker debounces a network search on each keystroke, so the app never reports
         // idle and synchronized waitFor/tap times out. Android matches the row text, not the testID.
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             const candidates: Detox.NativeMatcher[] = [];
             if (emojiShortName && isIos()) {
@@ -113,7 +113,7 @@ class EmojiPickerScreen {
 
             throw new Error(`tapSearchResultEmoji: could not tap ${glyph}`);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
     };
 }
