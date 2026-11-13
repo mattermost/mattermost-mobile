@@ -8,6 +8,7 @@ import {useEffect} from 'react';
 import useDidMount from '@hooks/did_mount';
 import {usePropsFromParams} from '@hooks/props_from_params';
 import GalleryScreen, {type GalleryProps} from '@screens/gallery';
+import {lockPortraitOnPhones} from '@utils/helpers';
 
 export default function GalleryRoute() {
     const navigation = useNavigation();
@@ -17,7 +18,7 @@ export default function GalleryRoute() {
         RNUtils.unlockOrientation();
 
         return () => {
-            RNUtils.lockPortrait();
+            lockPortraitOnPhones();
         };
     });
 
