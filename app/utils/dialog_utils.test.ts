@@ -15,6 +15,8 @@ import {
     createAppField,
     supportsOptions,
     supportsDataSource,
+    parseMatrixValue,
+    encodeMatrixValue,
     keepUserValue,
     flattenAppFields,
     flattenDialogElements,
@@ -238,6 +240,11 @@ describe('dialog_utils', () => {
         it('should return true for dialog types that support options', () => {
             expect(supportsOptions(DialogElementTypes.SELECT)).toBe(true);
             expect(supportsOptions(DialogElementTypes.RADIO)).toBe(true);
+            expect(supportsOptions(DialogElementTypes.CHECKBOX_GROUP)).toBe(true);
+        });
+
+        it('should return false for checkbox_matrix, which uses matrix_config instead of options', () => {
+            expect(supportsOptions(DialogElementTypes.CHECKBOX_MATRIX)).toBe(false);
         });
 
         it('should return false for dialog types that do not support options', () => {
@@ -298,6 +305,66 @@ describe('dialog_utils', () => {
 
     });
 
+    describe('parseMatrixValue', () => {
+        it('should parse multiple entries into a row-to-columns map', () => {
+            const result = parseMatrixValue(['row1:col1,col2', 'row2:col3']);
+
+            expect(result.size).toBe(2);
+            expect(result.get('row1')).toEqual(new Set(['col1', 'col2']));
+            expect(result.get('row2')).toEqual(new Set(['col3']));
+        });
+
+        it('should trim whitespace around column values', () => {
+            const result = parseMatrixValue(['row1: col1 , col2 ']);
+
+            expect(result.get('row1')).toEqual(new Set(['col1', 'col2']));
+        });
+
+        it('should skip entries with no colon', () => {
+            const result = parseMatrixValue(['row1col1,col2']);
+
+            expect(result.size).toBe(0);
+        });
+
+        it('should skip entries with a leading colon (empty row value)', () => {
+            const result = parseMatrixValue([':col1,col2']);
+
+            expect(result.size).toBe(0);
+        });
+
+        it('should skip entries whose columns are all empty', () => {
+            const result = parseMatrixValue(['row1:', 'row2: , ']);
+
+            expect(result.size).toBe(0);
+        });
+    });
+
+    describe('encodeMatrixValue', () => {
+        it('should encode a row-to-columns map into entries', () => {
+            const selection = new Map<string, Set<string>>([
+                ['row1', new Set(['col1', 'col2'])],
+                ['row2', new Set(['col3'])],
+            ]);
+
+            expect(encodeMatrixValue(selection)).toEqual(['row1:col1,col2', 'row2:col3']);
+        });
+
+        it('should omit rows with no selected columns', () => {
+            const selection = new Map<string, Set<string>>([
+                ['row1', new Set()],
+                ['row2', new Set(['col1'])],
+            ]);
+
+            expect(encodeMatrixValue(selection)).toEqual(['row2:col1']);
+        });
+
+        it('should round-trip well-formed input through parseMatrixValue', () => {
+            const entries = ['row1:col1,col2', 'row2:col3'];
+
+            expect(encodeMatrixValue(parseMatrixValue(entries))).toEqual(entries);
+        });
+    });
+
     describe('keepUserValue', () => {
         const select = {name: 'pick', type: AppFieldTypes.STATIC_SELECT, options: [{label: 'A', value: 'a'}]} as AppField;
 
@@ -322,6 +389,39 @@ describe('dialog_utils', () => {
             const text = {name: 'notes', type: AppFieldTypes.TEXT} as AppField;
 
             expect(keepUserValue(text, text, 'my notes')).toBe('my notes');
+        });
+
+        it('should drop checkbox group values whose options were removed', () => {
+            const group = {name: 'tags', type: AppFieldTypes.CHECKBOX_GROUP, options: [{label: 'A', value: 'a'}]} as AppField;
+
+            expect(keepUserValue(group, group, ['a', 'b'])).toEqual(['a']);
+        });
+
+        it('should drop matrix rows and columns that were removed', () => {
+            const matrix = {
+                name: 'perms',
+                type: AppFieldTypes.CHECKBOX_MATRIX,
+                matrix_config: {
+                    rows: [{label: 'R1', value: 'r1'}],
+                    columns: [{label: 'C1', value: 'c1'}],
+                },
+            } as AppField;
+
+            expect(keepUserValue(matrix, matrix, ['r1:c1,c2', 'r2:c1'])).toEqual(['r1:c1']);
+        });
+
+        it('should drop a single-select matrix row left with several columns', () => {
+            const matrix = {
+                name: 'perms',
+                type: AppFieldTypes.CHECKBOX_MATRIX,
+                matrix_config: {
+                    rows: [{label: 'R1', value: 'r1'}, {label: 'R2', value: 'r2'}],
+                    columns: [{label: 'C1', value: 'c1'}, {label: 'C2', value: 'c2'}],
+                    row_selection: 'single',
+                },
+            } as AppField;
+
+            expect(keepUserValue(matrix, matrix, ['r1:c1,c2', 'r2:c2'])).toEqual(['r2:c2']);
         });
     });
 

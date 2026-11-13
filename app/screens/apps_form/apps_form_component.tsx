@@ -81,6 +81,22 @@ function fieldsAsElements(fields?: AppField[]): DialogElement[] {
                 value: option.value || '',
             })),
             multiselect: f.multiselect,
+
+            // checkbox_matrix validation in checkDialogElementForError is guarded on
+            // matrix_config, so omitting it here made that whole block unreachable:
+            // malformed row:col entries were submitted verbatim instead of showing
+            // "Invalid matrix selection format".
+            matrix_config: f.matrix_config && {
+                rows: f.matrix_config.rows.map((row) => ({
+                    text: row.label || '',
+                    value: row.value || '',
+                })),
+                columns: f.matrix_config.columns.map((column) => ({
+                    text: column.label || '',
+                    value: column.value || '',
+                })),
+                row_selection: f.matrix_config.row_selection,
+            },
         } as DialogElement;
     }) || [];
 }
@@ -213,6 +229,9 @@ export function initValues(fields?: AppField[]) {
             }
 
             values[field.name] = defaultMoment.toISOString();
+        } else if (field.type === AppFieldTypes.CHECKBOX_GROUP || field.type === AppFieldTypes.CHECKBOX_MATRIX) {
+            // Always an array: native Apps forms may omit the value or send ''.
+            values[field.name] = Array.isArray(field.value) ? field.value : [];
         } else if (field.value !== undefined && field.value !== null) {
             // Use provided value for non-boolean fields
             values[field.name] = field.value;
@@ -290,7 +309,17 @@ function AppsFormComponent({
         const previousFields = refreshPreviousFieldsRef.current;
         if (previousFields) {
             refreshPreviousFieldsRef.current = undefined;
-            dispatchValues({values: mergeUserValues(flattenAppFields(form.fields || []), initValues(form.fields), previousFields, userValuesRef.current)});
+            const refreshedFields = flattenAppFields(form.fields || []);
+
+            // Forget values for removed fields so a later refresh can't restore them.
+            const refreshedNames = new Set(refreshedFields.map((f) => f.name));
+            for (const name of Object.keys(userValuesRef.current)) {
+                if (!refreshedNames.has(name)) {
+                    delete userValuesRef.current[name];
+                }
+            }
+
+            dispatchValues({values: mergeUserValues(refreshedFields, initValues(form.fields), previousFields, userValuesRef.current)});
             return;
         }
 
@@ -653,13 +682,14 @@ function AppsFormComponent({
             return null;
         }
         const value = secureGetFromRecord(values, field.name);
+        const fieldValue = field.type === AppFieldTypes.BOOL ? (value ?? false) : (value || '');
         return (
             <AppsFormField
                 field={field}
                 key={field.name}
                 name={field.name}
                 errorText={secureGetFromRecord(errors, field.name)}
-                value={value || ''}
+                value={fieldValue}
                 performLookup={performLookup}
                 onChange={onChange}
                 setFieldUploading={setFieldUploading}

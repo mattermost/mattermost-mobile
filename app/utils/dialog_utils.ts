@@ -33,6 +33,8 @@ export const DialogElementTypes = {
     FILE: 'file' as const,
     DATE: 'date' as const,
     DATETIME: 'datetime' as const,
+    CHECKBOX_GROUP: 'checkbox_group' as const,
+    CHECKBOX_MATRIX: 'checkbox_matrix' as const,
     ACTION_BUTTON: 'action_button' as const,
     COLLAPSIBLE: 'collapsible' as const,
 } as const;
@@ -78,6 +80,10 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'date';
         case DialogElementTypes.DATETIME:
             return 'datetime';
+        case DialogElementTypes.CHECKBOX_GROUP:
+            return 'checkbox_group';
+        case DialogElementTypes.CHECKBOX_MATRIX:
+            return 'checkbox_matrix';
         case DialogElementTypes.ACTION_BUTTON:
             return 'action_button';
         default:
@@ -107,6 +113,10 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.DATE;
         case 'datetime':
             return DialogElementTypes.DATETIME;
+        case 'checkbox_group':
+            return DialogElementTypes.CHECKBOX_GROUP;
+        case 'checkbox_matrix':
+            return DialogElementTypes.CHECKBOX_MATRIX;
         case 'action_button':
             return DialogElementTypes.ACTION_BUTTON;
         default:
@@ -172,11 +182,13 @@ export function supportsOptions(fieldType: InteractiveDialogElementType | AppFie
     const supportedTypes = [
         DialogElementTypes.SELECT,
         DialogElementTypes.RADIO,
+        DialogElementTypes.CHECKBOX_GROUP,
         'static_select',
         'dynamic_select',
         'radio',
         'user',
         'channel',
+        'checkbox_group',
     ];
     return supportedTypes.includes(fieldType as any);
 }
@@ -190,26 +202,50 @@ export function supportsDataSource(fieldType: InteractiveDialogElementType): boo
 
 // Returns the value the user entered for a field, adapted to the refreshed version of
 // that field, or undefined when it no longer fits: the field changed type, or the
-// options the user picked were removed.
+// options the user picked were removed. Matrix selections are filtered against the
+// refreshed rows and columns instead of options.
 export function keepUserValue(field: AppField, previousField: AppField | undefined, value: AppFormValue): AppFormValue | undefined {
     if (previousField && previousField.type !== field.type) {
         return undefined;
     }
 
-    if (field.type !== AppFieldTypes.STATIC_SELECT && field.type !== AppFieldTypes.RADIO) {
-        return value;
-    }
-
     const optionValues = new Set((field.options || []).map((option) => option.value));
     const hasOption = (v: string | AppSelectOption) => optionValues.has(typeof v === 'string' ? v : v.value);
 
-    if (Array.isArray(value)) {
-        return value.filter(hasOption);
+    switch (field.type) {
+        case AppFieldTypes.STATIC_SELECT:
+        case AppFieldTypes.RADIO:
+        case AppFieldTypes.CHECKBOX_GROUP:
+            if (Array.isArray(value)) {
+                return (value as Array<string | AppSelectOption>).filter(hasOption) as AppFormValue;
+            }
+            if (typeof value === 'string' || (value && typeof value === 'object')) {
+                return hasOption(value) ? value : undefined;
+            }
+            return value;
+        case AppFieldTypes.CHECKBOX_MATRIX: {
+            const rowValues = new Set((field.matrix_config?.rows || []).map((row) => row.value));
+            const columnValues = new Set((field.matrix_config?.columns || []).map((column) => column.value));
+            const singlePerRow = field.matrix_config?.row_selection === 'single';
+            const kept = new Map<string, Set<string>>();
+            const entries = (value as unknown[]).filter((entry): entry is string => typeof entry === 'string');
+            parseMatrixValue(entries).forEach((columns, rowValue) => {
+                if (!rowValues.has(rowValue)) {
+                    return;
+                }
+                const keptColumns = Array.from(columns).filter((column) => columnValues.has(column));
+
+                // A single-select row can't hold several columns, and picking one would be a guess.
+                if (singlePerRow && keptColumns.length > 1) {
+                    return;
+                }
+                kept.set(rowValue, new Set(keptColumns));
+            });
+            return encodeMatrixValue(kept);
+        }
+        default:
+            return value;
     }
-    if (typeof value === 'string' || (value && typeof value === 'object')) {
-        return hasOption(value) ? value : undefined;
-    }
-    return value;
 }
 
 // Initial values of the refreshed fields, with what the user entered re-applied where it
@@ -226,6 +262,46 @@ export function mergeUserValues(fields: AppField[] | undefined, initialValues: A
         }
     });
     return values;
+}
+
+/**
+ * Parses matrix submission/default entries (`"rowValue:col1,col2"`) into a
+ * map of row value to the set of selected column values.
+ *
+ * Delimiters are unescaped. The server only warns about row/column values
+ * containing `:`, `,` or `;`, so checkDialogElementForError guards submissions.
+ */
+export function parseMatrixValue(entries: string[]): Map<string, Set<string>> {
+    const selection = new Map<string, Set<string>>();
+    for (const entry of entries) {
+        const colonIndex = entry.indexOf(':');
+        if (colonIndex <= 0) {
+            continue;
+        }
+        const rowValue = entry.slice(0, colonIndex);
+        const columns = entry.slice(colonIndex + 1).
+            split(',').
+            map((col) => col.trim()).
+            filter(Boolean);
+        if (columns.length > 0) {
+            selection.set(rowValue, new Set(columns));
+        }
+    }
+    return selection;
+}
+
+/**
+ * Encodes a row-value-to-selected-columns map back into matrix
+ * submission/default entries (`"rowValue:col1,col2"`).
+ */
+export function encodeMatrixValue(selection: Map<string, Set<string>>): string[] {
+    const entries: string[] = [];
+    selection.forEach((columns, rowValue) => {
+        if (columns.size > 0) {
+            entries.push(`${rowValue}:${Array.from(columns).join(',')}`);
+        }
+    });
+    return entries;
 }
 
 /**
