@@ -14,6 +14,7 @@ import EditedIndicator from '@components/edited_indicator';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
+import {isDataImageUri} from '@utils/images';
 import {logError} from '@utils/log';
 import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import PostListPerformance from '@utils/performance/post_list_performance';
@@ -444,7 +445,12 @@ const Markdown = ({
     }, [renderText, style.block]);
 
     const renderImage = useCallback(({linkDestination, context, src, size}: MarkdownImageRenderer) => {
-        if (!imagesMetadata || isUnsafeLinksPost) {
+        if (isUnsafeLinksPost) {
+            return null;
+        }
+
+        const isDataImage = isDataImageUri(src);
+        if (!imagesMetadata && !isDataImage) {
             return null;
         }
 
@@ -457,7 +463,7 @@ const Markdown = ({
             return (
                 <MarkdownTableImage
                     disabled={disableInteraction}
-                    imagesMetadata={imagesMetadata}
+                    imagesMetadata={imagesMetadata || {}}
                     location={location}
                     postId={postId!}
                     source={src}
@@ -473,7 +479,7 @@ const Markdown = ({
                 layoutHeight={layoutHeight}
                 layoutWidth={layoutWidth}
                 linkDestination={linkDestination}
-                imagesMetadata={imagesMetadata}
+                imagesMetadata={imagesMetadata || {}}
                 isReplyPost={isReplyPost}
                 location={location}
                 postId={postId!}

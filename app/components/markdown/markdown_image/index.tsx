@@ -3,6 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {type ImageLoadEventData} from 'expo-image';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
@@ -23,7 +24,7 @@ import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {calculateDimensions, getDataImageDisplaySize, getDataImageExtension, getDataImageFileId, getDataImageMimeType, getViewPortWidth, isDataImageUri, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize, removeImageProxyForKey} from '@utils/markdown';
 import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -88,21 +89,47 @@ const MarkdownImage = ({
     const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const sourceKey = removeImageProxyForKey(source);
+    const isDataImage = isDataImageUri(source);
+    const sourceKey = isDataImage ? '' : removeImageProxyForKey(source);
 
     // Pattern suggested in https://react.dev/reference/react/useRef#avoiding-recreating-the-ref-contents
     const genericFileRef = useRef<string | null>(null);
     if (genericFileRef.current === null) {
-        genericFileRef.current = `uid-${urlSafeBase64Encode(sourceKey)}`;
+        genericFileRef.current = isDataImage ? getDataImageFileId(source) : `uid-${urlSafeBase64Encode(sourceKey)}`;
     }
     const genericFileId = genericFileRef.current;
 
-    const metadata = secureGetFromRecord(imagesMetadata, sourceKey) || Object.values(imagesMetadata || {})[0];
+    const metadata = isDataImage ? undefined : (secureGetFromRecord(imagesMetadata, sourceKey) || Object.values(imagesMetadata || {})[0]);
     const [failed, setFailed] = useState(() => isGifTooLarge(metadata));
+    const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(undefined);
+    const handleLoad = useCallback((event: ImageLoadEventData) => {
+        const width = event?.source?.width;
+        const height = event?.source?.height;
+        if (width && height) {
+            setIntrinsicSize((prev) => (prev?.width === width && prev?.height === height ? prev : {width, height}));
+        }
+    }, []);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
 
     const fileInfo = useMemo(() => {
+        if (isDataImage) {
+            const extension = getDataImageExtension(source);
+            const mimeType = getDataImageMimeType(source);
+            const originalSize = intrinsicSize ?? getMarkdownImageSize(isReplyPost, isTablet, sourceSize, undefined, layoutWidth, layoutHeight);
+            return {
+                id: genericFileId,
+                name: `inline-image.${extension}`,
+                extension,
+                has_preview_image: true,
+                mime_type: mimeType,
+                post_id: postId,
+                uri: source,
+                width: originalSize.width,
+                height: originalSize.height,
+            } as FileInfo;
+        }
+
         const uri = source.startsWith('/') ? serverUrl + source : source;
         const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
 
@@ -126,7 +153,7 @@ const MarkdownImage = ({
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
-    }, [source, serverUrl, isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight, genericFileId, postId]);
+    }, [source, serverUrl, isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight, genericFileId, postId, isDataImage, intrinsicSize]);
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
@@ -143,7 +170,9 @@ const MarkdownImage = ({
         handlePreviewImage,
     );
 
-    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
+    const {height, width} = (isDataImage && intrinsicSize) ?
+        getDataImageDisplaySize(intrinsicSize.width, intrinsicSize.height, layoutWidth || getViewPortWidth(isReplyPost, isTablet)) :
+        calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
     const progressiveImageStyle = useMemo(() => ({width, height}), [width, height]);
 
@@ -243,6 +272,7 @@ const MarkdownImage = ({
                             id={fileInfo.id!}
                             imageUri={fileInfo.uri}
                             onError={handleOnError}
+                            onLoad={isDataImage ? handleLoad : undefined}
                             contentFit='contain'
                             style={progressiveImageStyle}
                             theme={theme}
@@ -264,6 +294,7 @@ const MarkdownImage = ({
                     id={fileInfo.id!}
                     imageUri={fileInfo.uri}
                     onError={handleOnError}
+                    onLoad={isDataImage ? handleLoad : undefined}
                     contentFit='contain'
                     style={progressiveImageStyle}
                     theme={theme}

@@ -7,7 +7,12 @@ import {IMAGE_MAX_HEIGHT, IMAGE_MIN_DIMENSION} from '@constants/image';
 
 import {
     calculateDimensions,
+    getDataImageDisplaySize,
+    getDataImageExtension,
+    getDataImageFileId,
+    getDataImageMimeType,
     getViewPortWidth,
+    isDataImageUri,
     isGifTooLarge,
 } from './index';
 
@@ -289,5 +294,78 @@ describe('isGifTooLarge', () => {
     it('should return false if gif does not specify frame count', () => {
         const result = isGifTooLarge({format: 'gif', height: 100, width: 100});
         expect(result).toBe(false);
+    });
+});
+
+describe('isDataImageUri', () => {
+    it('should return true for data image URIs', () => {
+        expect(isDataImageUri('data:image/png;base64,iVBORw0KGgo=')).toBe(true);
+        expect(isDataImageUri('data:image/jpeg;base64,/9j/4AAQ=')).toBe(true);
+        expect(isDataImageUri('data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=')).toBe(true);
+    });
+
+    it('should return false for non-data URIs', () => {
+        expect(isDataImageUri('https://example.com/image.png')).toBe(false);
+        expect(isDataImageUri('/api/v4/files/abc')).toBe(false);
+        expect(isDataImageUri('data:text/plain,hello')).toBe(false);
+        expect(isDataImageUri(undefined)).toBe(false);
+        expect(isDataImageUri('')).toBe(false);
+    });
+});
+
+describe('getDataImageMimeType', () => {
+    it('should parse mime types', () => {
+        expect(getDataImageMimeType('data:image/png;base64,abc')).toBe('image/png');
+        expect(getDataImageMimeType('data:image/svg+xml;base64,abc')).toBe('image/svg+xml');
+        expect(getDataImageMimeType('data:image/jpeg;base64,abc')).toBe('image/jpeg');
+    });
+
+    it('should default to image/png for invalid URIs', () => {
+        expect(getDataImageMimeType('https://example.com/x.png')).toBe('image/png');
+    });
+});
+
+describe('getDataImageExtension', () => {
+    it('should map mime subtypes to extensions', () => {
+        expect(getDataImageExtension('data:image/png;base64,abc')).toBe('png');
+        expect(getDataImageExtension('data:image/svg+xml;base64,abc')).toBe('svg');
+        expect(getDataImageExtension('data:image/jpeg;base64,abc')).toBe('jpg');
+        expect(getDataImageExtension('data:image/gif;base64,abc')).toBe('gif');
+        expect(getDataImageExtension('data:image/webp;base64,abc')).toBe('webp');
+    });
+});
+
+describe('getDataImageFileId', () => {
+    it('should return short stable ids without embedding the blob', () => {
+        const uri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+        const id1 = getDataImageFileId(uri);
+        const id2 = getDataImageFileId(uri);
+        expect(id1).toBe(id2);
+        expect(id1.length).toBeLessThan(40);
+        expect(id1.startsWith('uid-data-')).toBe(true);
+        expect(id1).not.toContain('iVBORw0KGgo');
+    });
+
+    it('should differ for different blobs', () => {
+        expect(getDataImageFileId('data:image/png;base64,AAA')).not.toBe(getDataImageFileId('data:image/png;base64,AAB'));
+    });
+});
+
+describe('getDataImageDisplaySize', () => {
+    it('should never upscale small images', () => {
+        expect(getDataImageDisplaySize(70, 20, 323)).toEqual({width: 70, height: 20});
+    });
+
+    it('should fit wide images to the viewport', () => {
+        expect(getDataImageDisplaySize(1000, 200, 350)).toEqual({width: 350, height: 70});
+    });
+
+    it('should cap height at maxHeight', () => {
+        expect(getDataImageDisplaySize(200, 1000, 350, 350)).toEqual({width: 70, height: 350});
+    });
+
+    it('should return zeros without dimensions', () => {
+        expect(getDataImageDisplaySize(undefined, 20, 350)).toEqual({width: 0, height: 0});
+        expect(getDataImageDisplaySize(70, 0, 350)).toEqual({width: 0, height: 0});
     });
 });
