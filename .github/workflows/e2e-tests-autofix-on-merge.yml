@@ -1,0 +1,112 @@
+---
+# E2E autofix on merge. After each main E2E run, the toolkit's e2e-test-watch action picks the Detox and
+# Maestro tests that keep failing on main. The agent's PRs carry AI/babysit (review feedback, CI) and
+# AI/ConflictsBabysit (merge conflicts), whose automations take them from there. This workflow adds the
+# tested main commit as `base` and sends each request to the "Mobile E2E Autofix" Cursor automation,
+# whose instructions live in that automation in the Cursor dashboard, not in this repository.
+#
+# Without the webhook secrets it only writes the job summary. Set the variable E2E_ENABLE_AUTOFIX to
+# "false" to turn it off.
+name: E2E Tests (autofix on merge)
+on:
+  workflow_run:
+    # e2e-detox-pr.yml, which Matterwick dispatches on main (and on PR branches, filtered out below).
+    workflows: ["E2E"]
+    types: [completed]
+
+permissions: {}
+
+# Runs are serialized (the ledger is read at the start and saved at the end) and queued, not replaced: with the
+# default queue a third run would cancel the pending second one before it planned its requests.
+concurrency:
+  group: e2e-tests-autofix-on-merge
+  cancel-in-progress: false
+  queue: max
+
+env:
+  TRUNK: main
+
+jobs:
+  autofix:
+    if: >-
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.conclusion != 'cancelled' && vars.E2E_ENABLE_AUTOFIX != 'false'
+    runs-on: ubuntu-24.04
+    # A workflow_run job gets read-only caches by default, so the record step could not save the ledger
+    # of sent requests and the next run would send them again. Safe only while this job checks out and
+    # runs no pull-request code.
+    cache-mode: write
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      # Suite names are the run's TSIO report groups (detox/utils/build-tsio-job-config.js:
+      # mobile-main-<job key>). test_root is "." because the reports name specs from the repository root
+      # (detox/e2e/test/..., detox/maestro/flows/...), as .github/actions/e2e-triage passes test-root: .
+      - name: ci/e2e-autofix-plan
+        id: plan
+        # Pinned: this job can write caches and holds github.token, so the toolkit's code changes only by a reviewed
+        # bump here. Both steps use the same commit (toolkit main, 2026-11-09). To bump: gh api
+        # repos/mattermost/mattermost-test-automation-toolkit/commits/main --jq .sha, then replace both SHAs.
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-watch@fbf7509b24eccd73f2e3f43af5b12f35e61c8519 # main 2026-11-09
+        with:
+          repository: ${{ github.repository }}
+          gh-run-id: ${{ github.event.workflow_run.id }}
+          gh-run-attempt: ${{ github.event.workflow_run.run_attempt }}
+          branch: ${{ env.TRUNK }}
+          suites: >-
+            [{"name": "mobile-main-detox-android", "test_root": "."},
+             {"name": "mobile-main-detox-ios", "test_root": "."},
+             {"name": "mobile-main-detox-ipad", "test_root": "."},
+             {"name": "mobile-main-maestro-android-e2e", "test_root": "."},
+             {"name": "mobile-main-maestro-ios-e2e", "test_root": "."}]
+          github-token: ${{ github.token }}
+          label: e2e-autofix
+          extra-labels: AI/babysit,AI/ConflictsBabysit
+          max-broken-per-run: 5
+          max-flaky-per-day: 3
+          cause-hold-hours: 4
+
+      # Every request gets `base`: the main commit the failing run tested, which the agent branches from
+      # and passes to e2e-flake-verify.yml as its baseline. Matterwick dispatches the run on ref main and
+      # names the commit to test in MOBILE_VERSION, which the run reports to TSIO and the request carries as
+      # `commit`; head_sha (main when it was dispatched) is only the fallback. Mobile has no server images
+      # to pick. Request data reaches the script only through files and stdin.
+      - name: ci/e2e-autofix-send
+        id: send
+        if: steps.plan.outputs.count != '0'
+        env:
+          REQUESTS_FILE: ${{ steps.plan.outputs.requests-file }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          WEBHOOK_URL: ${{ secrets.CURSOR_MOBILE_E2E_AUTOFIX_WEBHOOK_URL }}
+          WEBHOOK_KEY: ${{ secrets.CURSOR_MOBILE_E2E_AUTOFIX_WEBHOOK_KEY }}
+        run: |
+          results='[]'
+          # Reported even if the step fails part way, so what was sent is not sent again.
+          report() { echo "results=$results" >> "$GITHUB_OUTPUT"; }
+          trap report EXIT
+          if [ -z "$WEBHOOK_URL" ] || [ -z "$WEBHOOK_KEY" ]; then
+            echo "No webhook configured: the requests are only in the job summary."
+            exit 0
+          fi
+
+          while IFS= read -r request; do
+            id=$(jq -r '.id' <<<"$request")
+            payload=$(jq -c --arg fallback "$RUN_HEAD_SHA" '
+              .payload | . + {base: {commit: (if (.commit // "" | test("^[0-9a-f]{40}$")) then .commit else $fallback end)}}' <<<"$request")
+            status=$(printf '%s' "$payload" | curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+              -X POST "$WEBHOOK_URL" -H "Authorization: Bearer $WEBHOOK_KEY" -H 'Content-Type: application/json' \
+              --data-binary @-) || true
+            echo "$id: HTTP ${status:-000}"
+            results=$(jq -c --arg id "$id" --arg status "${status:-0}" '. + [{id: $id, status: ($status | tonumber)}]' <<<"$results")
+          done < <(jq -c '.[]' "$REQUESTS_FILE")
+
+      # Runs on every trunk run, even one that sent nothing, to keep the record of sent requests alive.
+      - name: ci/e2e-autofix-record
+        if: always() && steps.plan.outcome == 'success'
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-watch/record@fbf7509b24eccd73f2e3f43af5b12f35e61c8519 # main 2026-11-09, same as the plan step
+        with:
+          # Must match the plan step's branch: the ledger's cache key includes it, and the default is master.
+          branch: ${{ env.TRUNK }}
+          results: ${{ steps.send.outputs.results || '[]' }}

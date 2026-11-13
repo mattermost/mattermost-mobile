@@ -25,8 +25,8 @@ import {
     TableScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {isAndroid, reloadApp, timeouts, wait} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -53,7 +53,7 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         await LoginScreen.login(testUser);
 
         await ChannelListScreen.toBeVisible();
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     });
@@ -134,7 +134,7 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
             rootId: rootPost.id,
         });
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
         await ChannelScreen.open('channels', testChannel.name);
@@ -158,7 +158,7 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
             message: markdownTable,
         });
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
         await ChannelScreen.open('channels', testChannel.name);

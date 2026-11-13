@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {reloadApp, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Localization', () => {
@@ -91,7 +91,7 @@ describe('Localization', () => {
 
         // # Reload the app so it picks up the new locale from the server DB.
         // Language changes via API are not picked up in real-time without a reload.
-        await device.reloadReactNative();
+        await reloadApp();
 
         // # Wait for channel list to become visible without requiring bridge idle.
         // After reloadReactNative network sync keeps the bridge busy; poll without idle check.

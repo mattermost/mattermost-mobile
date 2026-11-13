@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToHaveText} from '@support/utils';
+import {reloadApp, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -112,7 +112,7 @@ describe('Channels - Find Channels', () => {
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, testOtherUser1.id]);
         const {channel: groupMessageChannel} = await Channel.apiCreateGroupChannel(siteOneUrl, [testUser.id, testOtherUser1.id, testOtherUser2.id]);
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         await FindChannelsScreen.open();

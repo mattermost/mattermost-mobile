@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {BrowseChannelsScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, timeouts, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelDropdownMenuScreen {
@@ -30,13 +30,13 @@ class ChannelDropdownMenuScreen {
 
         const disableSync = isAndroid();
         if (disableSync) {
-            await device.disableSynchronization();
+            await disableSynchronization();
         }
         try {
             await BrowseChannelsScreen.channelDropdown.tap();
         } finally {
             if (disableSync) {
-                await safeEnableSynchronization();
+                await enableSynchronization();
             }
         }
 

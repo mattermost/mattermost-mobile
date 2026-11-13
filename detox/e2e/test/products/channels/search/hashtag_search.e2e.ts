@@ -27,7 +27,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Hashtag Search', () => {
@@ -130,13 +130,13 @@ describe('Search - Hashtag Search', () => {
         // # Type the hashtag into the search input and tap search
         await SearchMessagesScreen.searchInput.clearText();
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await SearchMessagesScreen.searchInput.tapReturnKey();
             const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(rootPost.id, message);
             await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
 
         // * Verify the reply count indicator appears
