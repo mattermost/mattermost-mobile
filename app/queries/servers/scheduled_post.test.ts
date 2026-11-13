@@ -36,6 +36,15 @@ describe('Scheduled Post Queries', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
+    const saveScheduledPosts = async (scheduledPosts: ScheduledPost[]) => {
+        await operator.handleChannel({channels: [TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'})], prepareRecordsOnly: false});
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts,
+            prepareRecordsOnly: false,
+        });
+    };
+
     describe('queryScheduledPostsForTeam', () => {
         it('should return posts for specific team', async () => {
             const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', type: 'O'});
@@ -230,6 +239,23 @@ describe('Scheduled Post Queries', () => {
                 });
             });
         }, 1500);
+
+        it('should be 0 when every post is recurring', async () => {
+            await saveScheduledPosts([
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', error_code: '', message: 'Weekly', repeat_type: 'weekly', repeat_timezone: 'UTC'}),
+            ]);
+
+            expect(await firstValueFrom(observeScheduledPostCountForChannel(database, 'ch1', false))).toBe(0);
+        });
+
+        it('should count recurring posts once a one-time post is scheduled', async () => {
+            await saveScheduledPosts([
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', error_code: '', message: 'Weekly', repeat_type: 'weekly', repeat_timezone: 'UTC'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'ch1', error_code: '', message: 'Once'}),
+            ]);
+
+            expect(await firstValueFrom(observeScheduledPostCountForChannel(database, 'ch1', false))).toBe(2);
+        });
     });
 
     describe('observeScheduledPostCountForThread', () => {
@@ -257,6 +283,15 @@ describe('Scheduled Post Queries', () => {
                 });
             });
         }, 1500);
+
+        it('should exclude errored posts and be 0 when the rest are recurring', async () => {
+            await saveScheduledPosts([
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', root_id: 'thread1', error_code: '', message: 'Weekly', repeat_type: 'weekly', repeat_timezone: 'UTC'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'ch1', root_id: 'thread1', error_code: 'unknown', message: 'Failed'}),
+            ]);
+
+            expect(await firstValueFrom(observeScheduledPostCountForThread(database, 'thread1'))).toBe(0);
+        });
     });
 
     describe('observeFirstScheduledPost', () => {

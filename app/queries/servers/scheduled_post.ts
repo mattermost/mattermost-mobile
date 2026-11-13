@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Q, type Query} from '@nozbe/watermelondb';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
@@ -54,6 +54,15 @@ export const observeScheduledPostById = (database: Database, scheduledPostId: st
         );
 };
 
+// A weekly series always has a next occurrence, so recurring posts alone would pin the indicator
+// forever. Like the webapp, the indicator count is 0 unless at least one post is one-time.
+const observeIndicatorCount = (query: Query<ScheduledPostModel>) => {
+    return query.observeWithColumns(['repeat_type']).pipe(
+        switchMap((posts) => of$(posts.some((post) => post.repeatType !== 'weekly') ? posts.length : 0)),
+        distinctUntilChanged(),
+    );
+};
+
 export const observeScheduledPostCountForChannel = (
     database: Database,
     channelId: string,
@@ -70,13 +79,16 @@ export const observeScheduledPostCountForChannel = (
         query = query.extend(Q.where('root_id', ''));
     }
 
-    return query.observeCount();
+    return observeIndicatorCount(query);
 };
 
 export const observeScheduledPostCountForThread = (database: Database, rootId: string) => {
-    return database.get<ScheduledPostModel>(SCHEDULED_POST).query(
-        Q.where('root_id', rootId),
-    ).observeCount();
+    return observeIndicatorCount(database.get<ScheduledPostModel>(SCHEDULED_POST).query(
+        Q.and(
+            Q.where('root_id', rootId),
+            Q.where('error_code', ''),
+        ),
+    ));
 };
 
 export const observeScheduledPostEnabled = (database: Database) => {
