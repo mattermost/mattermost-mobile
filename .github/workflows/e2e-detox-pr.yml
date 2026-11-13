@@ -1275,8 +1275,10 @@ jobs:
   # history of exactly the failed tests and settles what the rules can (broken or flaky
   # on main, recurring on other PRs, owned by the PR's diff). Only the rest reaches a
   # second judge that must cite evidence. Runs on main too, where only intermittency
-  # clears a failure. report-only (the default) posts the PR comment and leaves the
-  # per-job statuses alone; E2E_TRIAGE_MODE=enforce makes the verdict the lane's status.
+  # clears a failure. Enforce (the default) makes the verdict the lane's status, so a
+  # lane red only on failures that are not the PR's turns green. Setting the
+  # E2E_TRIAGE_MODE variable to report-only posts the PR comment and leaves the
+  # per-job statuses alone.
   tsio-triage:
     name: Triage E2E failures (${{ matrix.job-key }})
     runs-on: ubuntu-24.04
@@ -1284,19 +1286,33 @@ jobs:
     timeout-minutes: 15
     # Red runs only: a verdict can turn a red run green, never the reverse. The gate is
     # per run, not per lane, so a passing lane may still run and post nothing. Not on a
-    # cancelled run: its unfinished specs count as failures.
+    # cancelled run: its unfinished specs count as failures. A lane counts as red on any
+    # result but success or skipped: in run 41818921294 five Android shards never got a
+    # runner and stayed queued, and the lane's needs result was "abandoned", not "failure"
+    # (as the channel rollup job logged it). Triage must still judge such a lane.
     if: >-
       !cancelled() &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       needs.calculate-tsio-identity.result == 'success' &&
-      (needs.run-detox-ios.result == 'failure' ||
-       needs.run-detox-android.result == 'failure' ||
-       needs.run-maestro-ios.result == 'failure' ||
-       needs.run-maestro-android.result == 'failure')
+      (!contains(fromJSON('["success", "skipped"]'), needs.run-detox-ios.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-detox-android.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-ios.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-ios-simulator.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk-maestro.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result))
+    # A failed build or server leaves its lanes "skipped", which reads as not requested, and the lanes pending with no
+    # verdict (PR 10306, run 42193427343: npm ci refused a package.json the lock file did not match). Triage judges such
+    # a lane from the run's jobs: the change's (a build or install it broke) or the machine's, re-run.
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
+      - build-ios-simulator
+      - build-android-apk
+      - build-android-apk-maestro
+      - provision-servers
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios
@@ -1333,7 +1349,58 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           # A triage failure must never change the outcome of the E2E run itself.
-          mode: ${{ vars.E2E_TRIAGE_MODE || 'report-only' }}
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'enforce' }}
           # A lane red only on infrastructure (a dead job, missing reports) asks for one
           # automatic re-run of the failed jobs; e2e-tests-rerun.yml carries it out.
           rerun-attempts: '1'
+
+  # The PR-wide e2e-test/triage check, once every lane is final. A red lane announces triage there (pending)
+  # and an enforcing triage writes its verdict, but nothing else does: a triage that ran report-only (the
+  # E2E/Triage-report-only label added after the announcement), stopped early, or was skipped because a re-run
+  # turned every lane green would leave this run's check pending or red. See detox/utils/tsio-triage-settle.js.
+  settle-triage-check:
+    name: Settle the E2E triage check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce'
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+      - tsio-triage
+      - rerun-detox
+      - rerun-maestro
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      # From the dispatch ref, as the triage action is, never MOBILE_VERSION: the commit under test may predate the
+      # settle script, and this job holds a token that writes statuses. --sha below still names the tested commit.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-triage-settle.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cli-args.js
+          sparse-checkout-cone-mode: false
+      - name: Settle this run's e2e-test/triage check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+        run: |
+          SHA=$(jq -r '[.[].composite_identity.commit_sha] | first // empty' <<<"$JOB_CONFIGS")
+          LANES=$(jq -r '[.[].status_context] | join(",")' <<<"$JOB_CONFIGS")
+          node detox/utils/tsio-triage-settle.js \
+            --repository="$GITHUB_REPOSITORY" \
+            --sha="$SHA" \
+            --run-id="$GITHUB_RUN_ID" \
+            --lanes="$LANES"

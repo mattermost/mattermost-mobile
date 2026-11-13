@@ -1224,7 +1224,7 @@ jobs:
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
           # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
           # says triage is coming instead of looking final.
-          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && vars.E2E_TRIAGE_MODE == 'enforce' }}
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce' && steps.e2e-override.outputs.triage_report_only == 'false' }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-ios.result }}
           JOB_STATUS: ${{ job.status }}

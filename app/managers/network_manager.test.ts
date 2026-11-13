@@ -21,4 +21,19 @@ describe('NetworkManager.createClient', () => {
         const config = jest.mocked(getOrCreateAPIClient).mock.lastCall?.[1];
         expect(config?.headers).not.toHaveProperty(ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET);
     });
+
+    it.each([
+        ['android', ['MMAUTHTOKEN']],
+        ['ios', undefined],
+    ] as const)('should set excludedCookies on %s to %p', async (os, expected) => {
+        jest.resetModules();
+        const {Platform} = require('react-native');
+        const {getOrCreateAPIClient: getClient} = require('@mattermost/react-native-network-client');
+        jest.mocked(Platform.select).mockImplementation((dict: Record<string, unknown>) => dict[os]);
+        const PlatformNetworkManager = require('./network_manager').default;
+
+        await PlatformNetworkManager.createClient('https://example.com', 'token');
+
+        expect(jest.mocked(getClient).mock.lastCall?.[1]?.excludedCookies).toEqual(expected);
+    });
 });

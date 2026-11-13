@@ -387,6 +387,31 @@ describe('OptionItem', () => {
         expect(props.action).not.toHaveBeenCalled();
     });
 
+    it('should not call action when a disabled option is pressed', () => {
+        const props = getBaseProps();
+        props.action = jest.fn();
+        props.disabled = true;
+
+        const {getByTestId} = renderWithIntlAndTheme(<OptionItem {...props}/>);
+
+        act(() => {
+            fireEvent.press(getByTestId('option-item'));
+        });
+        expect(props.action).not.toHaveBeenCalled();
+    });
+
+    it('should disable the switch of a disabled toggle', () => {
+        const props = getBaseProps();
+        props.type = 'toggle';
+        props.selected = true;
+        props.action = jest.fn();
+        props.disabled = true;
+
+        const {getByTestId} = renderWithIntlAndTheme(<OptionItem {...props}/>);
+
+        expect(getByTestId('option-item.toggled.true.button')).toHaveProp('disabled', true);
+    });
+
     it('should show destructive info styling when isInfoDestructive is true', () => {
         const props = getBaseProps();
         props.info = 'Test info';
