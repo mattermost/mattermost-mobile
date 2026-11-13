@@ -8,7 +8,9 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 export function shouldUpdateScheduledPostRecord(e: ScheduledPostModel, n: ScheduledPost) {
     return Boolean(
         n.update_at > e.updateAt ||
-        (n.repeat_type ?? '') !== e.repeatType ||
-        (n.repeat_timezone ?? '') !== e.repeatTimezone,
+        (n.update_at === e.updateAt && (
+            (n.repeat_type ?? '') !== e.repeatType ||
+            (n.repeat_timezone ?? '') !== e.repeatTimezone
+        )),
     );
 }
