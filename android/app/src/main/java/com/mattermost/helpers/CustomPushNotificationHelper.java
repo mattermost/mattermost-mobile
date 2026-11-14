@@ -22,11 +22,16 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
+import androidx.core.content.LocusIdCompat;
 import androidx.core.graphics.drawable.IconCompat;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.mattermost.rnbeta.*;
 import com.mattermost.rnutils.helpers.NotificationHelper;
@@ -60,6 +65,7 @@ public class CustomPushNotificationHelper {
     public static final String CHANNEL_HIGH_IMPORTANCE_ID = "channel_01";
     public static final String CHANNEL_MIN_IMPORTANCE_ID = "channel_02";
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
+    public static final String KEY_MARK_AS_READ = "MARK_AS_READ";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String NOTIFICATION = "notification";
     public static final String PUSH_TYPE_MESSAGE = "message";
@@ -75,37 +81,105 @@ public class CustomPushNotificationHelper {
     private static final BitmapCache bitmapCache = new BitmapCache();
 
     private static void addMessagingStyleMessages(Context context, NotificationCompat.MessagingStyle messagingStyle, String conversationTitle, Bundle bundle) {
+        String type = bundle.getString("type");
+        if (type != null && type.equals(PUSH_TYPE_SESSION)) {
+            NotificationConversationStore.ConversationMessage current =
+                    buildConversationMessage(conversationTitle, bundle);
+            addStoredMessageToStyle(messagingStyle, current, null);
+            return;
+        }
+
+        if (PUSH_TYPE_MESSAGE.equals(type)) {
+            NotificationConversationStore.ConversationMessage current =
+                    buildConversationMessage(conversationTitle, bundle);
+            NotificationConversationStore.INSTANCE.appendMessage(context, bundle, current);
+        }
+
+        List<NotificationConversationStore.ConversationMessage> history =
+                NotificationConversationStore.INSTANCE.getMessages(context, bundle);
+        if (history.isEmpty() && PUSH_TYPE_MESSAGE.equals(type)) {
+            // Fallback if persistence failed for any reason.
+            NotificationConversationStore.ConversationMessage current =
+                    buildConversationMessage(conversationTitle, bundle);
+            Bitmap avatar = resolveLatestMessageAvatar(context, bundle, current);
+            addStoredMessageToStyle(messagingStyle, current, avatar);
+            return;
+        }
+
+        Bitmap latestAvatar = null;
+        if (!history.isEmpty()) {
+            latestAvatar = resolveLatestMessageAvatar(context, bundle, history.get(history.size() - 1));
+        }
+
+        for (int i = 0; i < history.size(); i++) {
+            boolean isLatest = i == history.size() - 1;
+            addStoredMessageToStyle(messagingStyle, history.get(i), isLatest ? latestAvatar : null);
+        }
+    }
+
+    private static NotificationConversationStore.ConversationMessage buildConversationMessage(
+            String conversationTitle,
+            Bundle bundle
+    ) {
         String message = bundle.getString("message", bundle.getString("body"));
         String senderId = bundle.getString("sender_id");
-        String serverUrl = bundle.getString("server_url");
-        String type = bundle.getString("type");
-        String urlOverride = bundle.getString("override_icon_url");
         if (senderId == null) {
             senderId = "sender_id";
         }
         String senderName = getSenderName(bundle);
 
+        if (message == null) {
+            message = "";
+        }
+
         if (conversationTitle == null || !android.text.TextUtils.isEmpty(senderName.trim())) {
             message = removeSenderNameFromMessage(message, senderName);
         }
 
-        long timestamp = new Date().getTime();
-        Person.Builder sender = new Person.Builder()
-                .setKey(senderId)
-                .setName(senderName);
+        return new NotificationConversationStore.ConversationMessage(
+                bundle.getString("post_id"),
+                senderId,
+                senderName,
+                message,
+                new Date().getTime()
+        );
+    }
 
-        if (serverUrl != null && type != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
-            try {
-                Bitmap avatar = userAvatar(context, serverUrl, senderId, urlOverride);
-                if (avatar != null) {
-                    sender.setIcon(IconCompat.createWithBitmap(avatar));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    @Nullable
+    private static Bitmap resolveLatestMessageAvatar(
+            Context context,
+            Bundle bundle,
+            NotificationConversationStore.ConversationMessage latest
+    ) {
+        String serverUrl = bundle.getString("server_url");
+        String type = bundle.getString("type");
+        String urlOverride = bundle.getString("override_icon_url");
+        if (serverUrl == null || type == null || type.equals(PUSH_TYPE_SESSION) || "me".equals(latest.getSenderId())) {
+            return null;
         }
 
-        messagingStyle.addMessage(message, timestamp, sender.build());
+        try {
+            return userAvatar(context, serverUrl, latest.getSenderId(), urlOverride);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static void addStoredMessageToStyle(
+            NotificationCompat.MessagingStyle messagingStyle,
+            NotificationConversationStore.ConversationMessage stored,
+            @Nullable Bitmap avatar
+    ) {
+        Person.Builder sender = new Person.Builder()
+                .setKey(stored.getSenderId())
+                .setName(stored.getSenderName());
+
+        if (avatar != null) {
+            sender.setIcon(IconCompat.createWithBitmap(avatar));
+        }
+
+        messagingStyle.addMessage(stored.getText(), stored.getTimestamp(), sender.build());
     }
 
     private static void addNotificationExtras(NotificationCompat.Builder notification, Bundle bundle) {
@@ -181,11 +255,92 @@ public class CustomPushNotificationHelper {
         NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(icon, title, replyPendingIntent)
                 .addRemoteInput(remoteInput)
                 .setAllowGeneratedReplies(true)
+                .setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_REPLY)
+                .setShowsUserInterface(false)
                 .build();
 
         notification
                 .setShowWhen(true)
                 .addAction(replyAction);
+    }
+
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private static void addNotificationMarkAsReadAction(Context context, NotificationCompat.Builder notification, Bundle bundle, int notificationId) {
+        String channelId = bundle.getString("channel_id");
+        String serverUrl = bundle.getString("server_url");
+        String type = bundle.getString("type");
+
+        if (android.text.TextUtils.isEmpty(channelId) || serverUrl == null || !PUSH_TYPE_MESSAGE.equals(type)) {
+            return;
+        }
+
+        Intent markAsReadIntent = new Intent(context, NotificationMarkAsReadReceiver.class);
+        markAsReadIntent.setAction(KEY_MARK_AS_READ);
+        markAsReadIntent.putExtra(NOTIFICATION_ID, notificationId);
+        markAsReadIntent.putExtra(NOTIFICATION, bundle);
+
+        int requestCode = notificationId + 2;
+        PendingIntent markAsReadPendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            markAsReadPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    markAsReadIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            markAsReadPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    markAsReadIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
+        NotificationCompat.Action markAsReadAction = new NotificationCompat.Action.Builder(
+                R.drawable.ic_notif_action_reply,
+                "Mark as Read",
+                markAsReadPendingIntent)
+                .setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_MARK_AS_READ)
+                .setShowsUserInterface(false)
+                .build();
+
+        // Invisible on the phone shade; required for Android Auto messaging.
+        notification.addInvisibleAction(markAsReadAction);
+    }
+
+    private static void setConversationShortcut(Context context, NotificationCompat.Builder notification, Bundle bundle) {
+        String type = bundle.getString("type");
+        if (!PUSH_TYPE_MESSAGE.equals(type)) {
+            return;
+        }
+
+        String conversationTitle = getConversationTitle(bundle);
+        String senderName = getSenderName(bundle);
+        String senderId = bundle.getString("sender_id", "sender_id");
+        List<Person> persons = new ArrayList<>();
+        persons.add(new Person.Builder().setKey(senderId).setName(senderName).build());
+
+        Bitmap icon = null;
+        String serverUrl = bundle.getString("server_url");
+        String urlOverride = bundle.getString("override_icon_url");
+        if (serverUrl != null && conversationTitle != null && conversationTitle.equals(senderName)) {
+            try {
+                icon = userAvatar(context, serverUrl, senderId, urlOverride);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String shortcutId = ConversationShortcutHelper.INSTANCE.publishShortcut(
+                context,
+                bundle,
+                conversationTitle != null ? conversationTitle : "Mattermost",
+                persons,
+                icon
+        );
+        if (shortcutId != null) {
+            notification.setShortcutId(shortcutId);
+            notification.setLocusId(new LocusIdCompat(shortcutId));
+        }
     }
 
     public static NotificationCompat.Builder createNotificationBuilder(Context context, PendingIntent intent, Bundle bundle, boolean createSummary) {
@@ -204,10 +359,12 @@ public class CustomPushNotificationHelper {
         setNotificationMessagingStyle(context, notification, bundle);
         setNotificationGroup(notification, groupId, createSummary);
         setNotificationBadgeType(notification);
+        setConversationShortcut(context, notification, bundle);
 
         setNotificationChannel(context, notification);
         setNotificationDeleteIntent(context, notification, bundle, notificationId);
         addNotificationReplyAction(context, notification, bundle, notificationId);
+        addNotificationMarkAsReadAction(context, notification, bundle, notificationId);
 
         notification
                 .setContentIntent(intent)
