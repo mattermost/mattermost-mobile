@@ -44,6 +44,7 @@ import {
     cancelOutgoingCall,
     clearStartUnmuted,
     myselfLeftCall,
+    phoneCallAnswered,
     setCalls,
     setCallScreenOff,
     setCallScreenOn,
@@ -2086,6 +2087,42 @@ describe('useCallsState', () => {
 
             await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
+        });
+
+        it('answering a phone call stops the ringback and keeps the first answer time', async () => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': {...callIOwn, phone: '+15551234567'}}});
+            newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd);
+            const {result} = renderHook(() => useCurrentCall());
+            await connect();
+
+            jest.setSystemTime(1000);
+            act(() => phoneCallAnswered('channel-ringback'));
+            const answeredAt = result.current?.dmCalleeAnsweredAt;
+            jest.setSystemTime(5000);
+            act(() => phoneCallAnswered('channel-ringback'));
+
+            expect(answeredAt).toBe(1000);
+            expect(result.current?.dmCalleeAnsweredAt).toBe(1000);
+            expect(CallsNative.stopRingtone).toHaveBeenCalled();
+        });
+
+        it('keeps a phone call\'s ringback playing until the no-answer timeout even with ringing disabled', async () => {
+            setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: false});
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': {...callIOwn, phone: '+15551234567'}}});
+            newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd);
+
+            await connect();
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
+
+            await act(async () => {
+                await advanceTimers(Calls.RINGBACK_TONE_TIMEOUT);
+            });
+            expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
+
+            await act(async () => {
+                await advanceTimers(Calls.PHONE_RINGBACK_TONE_TIMEOUT - Calls.RINGBACK_TONE_TIMEOUT);
+            });
+            expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
         });
 
         it('stops automatically when the call reaches the ringback timeout', async () => {

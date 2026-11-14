@@ -5,7 +5,8 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
-import {createCallAndAddToIds} from '@calls/convert_call';
+import {showPhoneCallOutcome} from '@calls/alerts';
+import {createCallAndAddToIds, toCallPhone} from '@calls/convert_call';
 import {hostRemovedErr} from '@calls/errors';
 import {endNativeCall, getNativeCallMapping, getNativeCallUUIDForCall, setNativeCallMapping} from '@calls/native_call';
 import {
@@ -37,7 +38,7 @@ import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {logDebug} from '@utils/log';
 
-import type {HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
+import type {HostControlsLowerHandMsgData, HostControlsMsgData, PhoneCallFields} from '@calls/types/calls';
 import type {
     CallHostChangedData,
     CallJobStateData,
@@ -56,7 +57,11 @@ import type {
     UserVoiceOnOffData,
 } from '@mattermost/calls/lib/types';
 
-export const handleCallUserJoined = (serverUrl: string, msg: WebSocketMessage<UserJoinedData>) => {
+export const handleCallUserJoined = (serverUrl: string, msg: WebSocketMessage<UserJoinedData & {is_sip_participant?: boolean}>) => {
+    if (msg.data.is_sip_participant) {
+        return;
+    }
+
     const channelId = msg.broadcast.channel_id;
     const userId = msg.data.user_id;
     const sessionId = msg.data.session_id;
@@ -123,6 +128,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallS
         ownerId: msg.data.owner_id,
         hostId: msg.data.host_id,
         dismissed: {},
+        phone: toCallPhone(msg.data as CallStartData & PhoneCallFields),
     });
 
     // Backfill the callId into the native mapping created by the VoIP push.
@@ -137,7 +143,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallS
     }
 };
 
-export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<EmptyData>) => {
+export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<{call_id?: string; reason?: string}>) => {
     const channelId = msg.broadcast.channel_id;
     DeviceEventEmitter.emit(WebsocketEvents.CALLS_CALL_END, {channelId});
 
@@ -149,6 +155,9 @@ export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<EmptyDa
     callEnded(serverUrl, channelId);
 
     endNativeCall(serverUrl, channelId, 'remoteEnded', callId);
+
+    // The payload's ID, not the state read: our own user_left can empty the roster and drop the call first.
+    showPhoneCallOutcome(serverUrl, msg.data.call_id, msg.data.reason);
 };
 
 export const handleCallChannelEnabled = (serverUrl: string, msg: WebSocketMessage<EmptyData>) => {

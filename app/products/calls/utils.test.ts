@@ -33,8 +33,12 @@ import {
     isCallsStartedMessage,
     hasCaptions,
     getTranscriptionUri,
+    getPhoneCallPropsFromPost,
+    getPhoneCallCardState,
+    getDialablePhones,
 } from './utils';
 
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IntlShape} from 'react-intl';
 
@@ -752,5 +756,61 @@ describe('getNumUsersInCall', () => {
 
     it('should be zero when there is no call', () => {
         expect(getNumUsersInCall(undefined)).toBe(0);
+    });
+});
+
+describe('getPhoneCallPropsFromPost', () => {
+    const phoneProps = {call_type: 'phone', phone_number: '+15551234567', display_label: 'Mobile', target_user_id: 'user-2'};
+
+    it('should read a phone call post\'s number, label and target, falling back to the dialed number for display', () => {
+        const withDisplay = TestHelper.fakePost({props: {...phoneProps, display_number: '(555) 123-4567'}});
+        expect(getPhoneCallPropsFromPost(withDisplay)).toEqual({
+            number: '+15551234567',
+            displayNumber: '(555) 123-4567',
+            label: 'Mobile',
+            targetUserId: 'user-2',
+        });
+
+        expect(getPhoneCallPropsFromPost(TestHelper.fakePost({props: phoneProps}))?.displayNumber).toBe('+15551234567');
+        expect(getPhoneCallPropsFromPost(TestHelper.fakePost({props: {phone_number: '+15551234567'}}))).toBeUndefined();
+    });
+});
+
+describe('getPhoneCallCardState', () => {
+    const makePhoneProps = (overrides: Partial<CallsPostProps>): CallsPostProps => ({
+        title: '',
+        start_at: 1000,
+        end_at: 0,
+        call_status: CallPostStatus.Calling,
+        recordings: {},
+        transcriptions: {},
+        participants: [],
+        ...overrides,
+    });
+
+    it('should show a live phone call as calling until the phone answers', () => {
+        expect(getPhoneCallCardState(makePhoneProps({}), false)).toBe(CallCardState.Calling);
+        expect(getPhoneCallCardState(makePhoneProps({}), true)).toBe(CallCardState.Active);
+    });
+
+    it.each([
+        [CallPostStatus.Failed, CallCardState.Failed],
+        [CallPostStatus.Declined, CallCardState.Declined],
+        [CallPostStatus.CanceledByCaller, CallCardState.Canceled],
+        [CallPostStatus.Ended, CallCardState.Ended],
+    ])('should map how the server ended a phone call (%s) to its card state', (status, expected) => {
+        expect(getPhoneCallCardState(makePhoneProps({end_at: 5000, call_status: status}), true)).toBe(expected);
+    });
+});
+
+describe('getDialablePhones', () => {
+    it('should offer only the phone attributes that have a number, trimmed', () => {
+        const attributes: CustomAttribute[] = [
+            {id: 'a', name: 'Mobile', value: '  +15551234567 ', type: 'phone'},
+            {id: 'b', name: 'Office', value: '   ', type: 'phone'},
+            {id: 'c', name: 'Pronouns', value: 'they/them', type: 'text'},
+        ];
+
+        expect(getDialablePhones(attributes)).toEqual([{label: 'Mobile', number: '+15551234567'}]);
     });
 });

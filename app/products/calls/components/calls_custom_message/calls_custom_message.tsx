@@ -43,7 +43,7 @@ type Props = {
     callExists?: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         title: {
             ...typography('Heading', 500),

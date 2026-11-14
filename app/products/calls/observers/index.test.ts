@@ -372,6 +372,14 @@ describe('Calls Observers', () => {
             expect(state.dmCalleeAnsweredAt).toBe(1000);
         });
 
+        it('does not look up the Calls bot as the callee of a phone call', async () => {
+            const state = await getState({...dmCall, phone: '+15551234567'});
+
+            expect(state.dmCallee).toBeUndefined();
+            expect(state.isDMCalling).toBe(true);
+            expect(observeUser).not.toHaveBeenCalled();
+        });
+
         it('should stop calling and time from the answer once the other party joins', async () => {
             const state = await getState({
                 ...dmCall,

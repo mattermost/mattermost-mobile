@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessage, defineMessages, type IntlShape, type MessageDescriptor} from 'react-intl';
 import {Alert, type AlertButton, Platform} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
@@ -15,19 +16,20 @@ import {
     removeIncomingCall,
     setMicPermissionsGranted,
 } from '@calls/state';
-import {EndCallReturn} from '@calls/types/calls';
+import {CallPostStatus, EndCallReturn, type PhoneTarget} from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
+import ClientError from '@client/rest/error';
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {isDMChannel, isTypeDMorGM} from '@utils/channel';
-import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {getFullErrorMessage, isServerError} from '@utils/errors';
+import {logDebug, logError} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
 import type {LimitRestrictedInfo} from '@calls/observers';
-import type {IntlShape} from 'react-intl';
 
 // Only unlock when:
 // - Joining a new call.
@@ -40,6 +42,112 @@ let recordingWillBePostedLock = true;
 
 // Only unlock when starting/stopping a recording.
 let recordingErrorLock = true;
+
+const phoneCallErrorTitle = defineMessage({
+    id: 'mobile.calls_phone_error.title',
+    defaultMessage: 'Unable to place phone call',
+});
+
+const phoneCallErrors = defineMessages({
+    invalidNumber: {
+        id: 'mobile.calls_phone_error.invalid_number',
+        defaultMessage: 'That doesn\'t look like a valid phone number.',
+    },
+    ambiguousNumber: {
+        id: 'mobile.calls_phone_error.ambiguous_number',
+        defaultMessage: 'Start international numbers with + and the country code.',
+    },
+    outboundUnavailable: {
+        id: 'mobile.calls_phone_error.outbound_unavailable',
+        defaultMessage: 'Phone calls aren\'t available. Contact your system admin.',
+    },
+    numberNotAllowed: {
+        id: 'mobile.calls_phone_error.number_not_allowed',
+        defaultMessage: 'Calling this number isn\'t permitted.',
+    },
+    teamNotAllowed: {
+        id: 'mobile.calls_phone_error.team_not_allowed',
+        defaultMessage: 'You don\'t have permission to place phone calls.',
+    },
+    invalidTarget: {
+        id: 'mobile.calls_phone_error.invalid_target',
+        defaultMessage: 'The person you\'re trying to call couldn\'t be found.',
+    },
+    callInProgress: {
+        id: 'mobile.calls_phone_error.call_in_progress',
+        defaultMessage: 'You\'re already on a phone call.',
+    },
+    noResponse: {
+        id: 'mobile.calls_phone_error.no_response',
+        defaultMessage: 'Couldn\'t reach the server. Check your connection and try again.',
+    },
+    fallback: {
+        id: 'mobile.calls_phone_error.fallback',
+        defaultMessage: 'The call couldn\'t be placed. Please try again.',
+    },
+});
+
+const phoneCallErrorByServerID: Record<string, MessageDescriptor> = {
+    invalid_number: phoneCallErrors.invalidNumber,
+    ambiguous_number: phoneCallErrors.ambiguousNumber,
+    outbound_disabled: phoneCallErrors.outboundUnavailable,
+    outbound_not_configured: phoneCallErrors.outboundUnavailable,
+    sip_number_not_allowed: phoneCallErrors.numberNotAllowed,
+    sip_team_not_allowed: phoneCallErrors.teamNotAllowed,
+    invalid_target: phoneCallErrors.invalidTarget,
+    call_in_progress: phoneCallErrors.callInProgress,
+};
+
+const phoneCallOutcomes = defineMessages({
+    noAnswerTitle: {
+        id: 'mobile.calls_phone_outcome.no_answer_title',
+        defaultMessage: 'No answer',
+    },
+    noAnswer: {
+        id: 'mobile.calls_phone_outcome.no_answer',
+        defaultMessage: 'Nobody answered the call.',
+    },
+    declinedTitle: {
+        id: 'mobile.calls_phone_outcome.declined_title',
+        defaultMessage: 'Call declined',
+    },
+    declined: {
+        id: 'mobile.calls_phone_outcome.declined',
+        defaultMessage: 'The number you called is busy or declined the call.',
+    },
+});
+
+// Keyed on call ID, not channel: every phone call reuses the same bot DM.
+let placedPhoneCall: {serverUrl: string; callId: string; intl: IntlShape} | undefined;
+
+export const expectPhoneCallOutcome = (serverUrl: string, callId: string | undefined, intl: IntlShape) => {
+    if (callId) {
+        placedPhoneCall = {serverUrl, callId, intl};
+    }
+};
+
+export const showPhoneCallOutcome = (serverUrl: string, callId: string | undefined, reason?: string) => {
+    if (!placedPhoneCall || placedPhoneCall.serverUrl !== serverUrl || placedPhoneCall.callId !== callId) {
+        return;
+    }
+
+    const {intl} = placedPhoneCall;
+    placedPhoneCall = undefined;
+
+    switch (reason) {
+        case CallPostStatus.NoAnswer:
+            Alert.alert(intl.formatMessage(phoneCallOutcomes.noAnswerTitle), intl.formatMessage(phoneCallOutcomes.noAnswer));
+            break;
+        case CallPostStatus.Declined:
+            Alert.alert(intl.formatMessage(phoneCallOutcomes.declinedTitle), intl.formatMessage(phoneCallOutcomes.declined));
+            break;
+        case CallPostStatus.Failed:
+            showPhoneCallError(intl, phoneCallErrors.fallback);
+            break;
+        default:
+            logDebug('showPhoneCallOutcome: no alert for the call ending reason');
+    }
+};
 
 export const showLimitRestrictedAlert = (info: LimitRestrictedInfo, intl: IntlShape) => {
     const title = intl.formatMessage({
@@ -224,7 +332,7 @@ const doJoinCall = async (
     // newCall means there was no call in the channel to join, so this one is ours: the call view
     // needs to know that before the server's call_start event arrives with the owner. A 1:1 DM call
     // we place is also live from the moment we're in it, per the unmute below.
-    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, intl, title, rootId, {
+    const res = await joinCall(serverUrl, {type: 'channel', channelID: channelId}, user.id, hasPermission, intl, title, rootId, {
         startedByMe: newCall,
         startUnmuted: newCall && isDMChannel(channelType) && hasPermission,
     });
@@ -239,6 +347,59 @@ const doJoinCall = async (
     }
 
     return true;
+};
+
+const showPhoneCallError = (intl: IntlShape, message: MessageDescriptor) => {
+    Alert.alert(intl.formatMessage(phoneCallErrorTitle), intl.formatMessage(message));
+};
+
+let phoneCallInProgress = false;
+
+export const startPhoneCall = async (intl: IntlShape, serverUrl: string, phone: PhoneTarget) => {
+    if (phoneCallInProgress) {
+        return;
+    }
+    phoneCallInProgress = true;
+
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const user = await getCurrentUser(database);
+        if (!user) {
+            logDebug('startPhoneCall: no current user');
+            return;
+        }
+
+        if (!getCallsConfig(serverUrl).DefaultEnabled && !isSystemAdmin(user.roles)) {
+            contactAdminAlert(intl);
+            return;
+        }
+
+        recordingAlertLock = false;
+        recordingWillBePostedLock = true;
+
+        await hasBluetoothPermission();
+        const hasPermission = await hasMicrophonePermission();
+        setMicPermissionsGranted(hasPermission);
+
+        const res = await joinCall(serverUrl, {type: 'phone', phone}, user.id, hasPermission, intl, undefined, undefined, {
+            startedByMe: true,
+            startUnmuted: hasPermission,
+        });
+        if (res.error) {
+            const serverErrorId = isServerError(res.error) ? res.error.server_error_id : undefined;
+            const noResponse = res.error instanceof ClientError && res.error.status_code === undefined;
+            showPhoneCallError(intl, (serverErrorId && phoneCallErrorByServerID[serverErrorId]) || (noResponse ? phoneCallErrors.noResponse : phoneCallErrors.fallback));
+            return;
+        }
+
+        unmuteMyself();
+        navigateToScreen(Screens.CALL);
+    } catch (error) {
+        logError('error on startPhoneCall', getFullErrorMessage(error));
+        showPhoneCallError(intl, phoneCallErrors.fallback);
+    } finally {
+        phoneCallInProgress = false;
+    }
 };
 
 const contactAdminAlert = ({formatMessage}: IntlShape) => {

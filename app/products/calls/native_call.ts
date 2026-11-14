@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import {
@@ -79,7 +80,7 @@ const buildDisplayName = async (database: Database, channelId: string): Promise<
 // (non-iOS, mapping already exists, or the native call failed). The
 // caller drives reportConnected once RTC handshakes — only the path that
 // registered should call it.
-export const registerOutgoingNativeCall = async (serverUrl: string, channelId: string, threadId = ''): Promise<string | undefined> => {
+export const registerOutgoingNativeCall = async (serverUrl: string, channelId: string, threadId = '', calleeNameOverride?: string): Promise<string | undefined> => {
     if (Platform.OS !== 'ios') {
         return undefined;
     }
@@ -90,18 +91,20 @@ export const registerOutgoingNativeCall = async (serverUrl: string, channelId: s
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        let calleeName = '';
-        try {
-            calleeName = await buildDisplayName(database, channelId);
-        } catch (err) {
-            logDebug('registerOutgoingNativeCall: buildDisplayName failed', err);
+        let calleeName = calleeNameOverride ?? '';
+        if (!calleeNameOverride) {
+            try {
+                calleeName = await buildDisplayName(database, channelId);
+            } catch (err) {
+                logDebug('registerOutgoingNativeCall: buildDisplayName failed', getFullErrorMessage(err));
+            }
         }
         try {
             const {uuid} = await CallsNative.reportOutgoingCall({channelId, calleeName});
             setNativeCallMapping(uuid, {serverUrl, channelId, postId: '', threadId});
             return uuid;
         } catch (err) {
-            logDebug('CallsNative.reportOutgoingCall failed', err);
+            logDebug('CallsNative.reportOutgoingCall failed', getFullErrorMessage(err));
             return undefined;
         }
     } catch {

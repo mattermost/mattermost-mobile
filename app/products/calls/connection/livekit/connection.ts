@@ -8,6 +8,7 @@ import {
     ConnectionQuality,
     DisconnectReason,
     LocalAudioTrack,
+    ParticipantKind,
     Room,
     RoomEvent,
     Track,
@@ -28,6 +29,7 @@ import {hostRemovedErr} from '@calls/errors';
 import {
     clearStartUnmuted,
     getCurrentCall,
+    phoneCallAnswered,
     setCallForChannel,
     setCallQualityAlert,
     setCaptioningState,
@@ -40,14 +42,14 @@ import {
     userLeftCall,
     userReacted,
 } from '@calls/state';
-import {type CallsConnection} from '@calls/types/calls';
+import {type CallsConnection, type CallTarget} from '@calls/types/calls';
 import Calls from '@constants/calls';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
 
-import {CALL_ATTRIBUTES, CALL_MESSAGE_TOPICS} from './constants';
+import {CALL_ATTRIBUTES, CALL_MESSAGE_TOPICS, SIP_CALL_STATUS_ACTIVE} from './constants';
 import {parseIdentity} from './identity';
 
 import type {CallJobState, EmojiData} from '@mattermost/calls/lib/types';
@@ -78,6 +80,8 @@ type RoomMetadata = {
     live_captions?: CallJobState;
 }
 
+const isSIP = (participant: Participant) => participant.kind === ParticipantKind.SIP;
+
 const isMicMuted = (participant: Participant) =>
     participant.getTrackPublication(Track.Source.Microphone)?.isMuted ?? true;
 
@@ -86,8 +90,9 @@ const raisedHandAt = (participant: Participant) =>
 
 export async function newLiveKitConnection(
     serverUrl: string,
-    channelID: string,
+    target: CallTarget,
     closeCb: (err?: Error) => void,
+    onChannelResolved: (channelId: string) => Promise<void>,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
     intl: IntlShape,
@@ -102,6 +107,13 @@ export async function newLiveKitConnection(
     let micTrackPromise: Promise<void> | null = null;
     let onPeerConnected: ((sessionId: string) => void) | null = null;
     let activeSessions = new Set<string>();
+    let channelID = '';
+
+    if (target.type === 'channel') {
+        channelID = target.channelID;
+        await onChannelResolved(channelID);
+    }
+
     const lastReactionAt = new Map<string, number>();
 
     // LiveKit's audio session management is left off: @mattermost/calls-native owns
@@ -132,7 +144,12 @@ export async function newLiveKitConnection(
 
     let session;
     try {
-        session = await client.createLiveKitSession(channelID, title, rootId);
+        if (target.type === 'phone') {
+            session = await client.phoneCall(target.phone);
+            channelID = session.channel_id;
+        } else {
+            session = await client.createLiveKitSession(channelID, title, rootId);
+        }
     } catch (err) {
         await stopAudioSession();
 
@@ -145,6 +162,9 @@ export async function newLiveKitConnection(
     // Attributes are self-set, so the bot is matched by its server-minted identity instead.
     const isBot = (participant: Participant) => parseIdentity(participant.identity).userID === botUserID;
 
+    // The recording bot and SIP participants aren't part of the roster.
+    const isHidden = (participant: Participant) => isBot(participant) || isSIP(participant);
+
     // Ours joins with the room, once mySessionId is set; until then the call view shows a placeholder for us.
     const otherSessions = callState.sessions.filter(({session_id: sessionID}) => sessionID !== mySessionID);
 
@@ -156,6 +176,16 @@ export async function newLiveKitConnection(
     }
     if (callState.live_captions) {
         setCaptioningState(serverUrl, channelID, callState.live_captions);
+    }
+
+    // After the seed, so the current call it creates already carries the call ID and the phone number.
+    if (target.type === 'phone') {
+        try {
+            await onChannelResolved(channelID);
+        } catch (err) {
+            await stopAudioSession();
+            throw err;
+        }
     }
 
     const micPublication = () => room.localParticipant.getTrackPublication(Track.Source.Microphone);
@@ -309,8 +339,14 @@ export async function newLiveKitConnection(
         }
     };
 
+    const reportPhoneAnswered = (participant: Participant) => {
+        if (isSIP(participant) && participant.attributes?.[CALL_ATTRIBUTES.SIP_CALL_STATUS] === SIP_CALL_STATUS_ACTIVE) {
+            phoneCallAnswered(channelID);
+        }
+    };
+
     const setMutedFromPublication = (publication: TrackPublication, participant: Participant, muted: boolean) => {
-        if (publication.source !== Track.Source.Microphone || isBot(participant)) {
+        if (publication.source !== Track.Source.Microphone || isHidden(participant)) {
             return;
         }
 
@@ -321,7 +357,10 @@ export async function newLiveKitConnection(
     room.on(RoomEvent.Connected, () => {
         isRoomConnected = true;
 
-        const participants = [room.localParticipant, ...room.remoteParticipants.values()].filter((p) => !isBot(p));
+        // A call answered before the room connected has no status change left to report.
+        room.remoteParticipants.forEach(reportPhoneAnswered);
+
+        const participants = [room.localParticipant, ...room.remoteParticipants.values()].filter((p) => !isHidden(p));
 
         // Keep only sessions the room confirmed, before we join, so an unconnected DM callee doesn't count as answered.
         const roomSessionIDs = new Set(participants.map((participant) => parseIdentity(participant.identity).sessionID));
@@ -364,7 +403,8 @@ export async function newLiveKitConnection(
     });
 
     room.on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
-        if (isBot(participant)) {
+        reportPhoneAnswered(participant);
+        if (isHidden(participant)) {
             return;
         }
 
@@ -372,7 +412,7 @@ export async function newLiveKitConnection(
     });
 
     room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
-        if (isBot(participant)) {
+        if (isHidden(participant)) {
             return;
         }
 
@@ -395,7 +435,11 @@ export async function newLiveKitConnection(
     });
 
     room.on(RoomEvent.ParticipantAttributesChanged, (changed: Record<string, string>, participant: Participant) => {
-        if (!(CALL_ATTRIBUTES.RAISED_HAND in changed) || isBot(participant)) {
+        if (CALL_ATTRIBUTES.SIP_CALL_STATUS in changed) {
+            reportPhoneAnswered(participant);
+        }
+
+        if (!(CALL_ATTRIBUTES.RAISED_HAND in changed) || isHidden(participant)) {
             return;
         }
 
@@ -407,7 +451,7 @@ export async function newLiveKitConnection(
     // so transitions have to be derived from the previous set.
     room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
         const nextSessions = new Set(
-            speakers.filter((s) => !isBot(s)).map((s) => parseIdentity(s.identity).sessionID),
+            speakers.filter((s) => !isHidden(s)).map((s) => parseIdentity(s.identity).sessionID),
         );
 
         for (const sessionID of nextSessions) {

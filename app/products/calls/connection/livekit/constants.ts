@@ -8,7 +8,10 @@ export const USER_ID_SESSION_ID_SEPARATOR = '___';
 
 export const CALL_ATTRIBUTES = {
     RAISED_HAND: 'raised_hand',
+    SIP_CALL_STATUS: 'sip.callStatus',
 } as const;
+
+export const SIP_CALL_STATUS_ACTIVE = 'active';
 
 export const CALL_MESSAGE_TOPICS = {
     REACTION: 'reaction',

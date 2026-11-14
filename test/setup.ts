@@ -228,6 +228,7 @@ jest.mock('livekit-client', () => ({
         ParticipantDisconnected: 'participantDisconnected',
         RoomMetadataChanged: 'roomMetadataChanged',
     },
+    ParticipantKind: {STANDARD: 0, SIP: 3},
     DisconnectReason: {
         CLIENT_INITIATED: 1,
         SERVER_SHUTDOWN: 3,
