@@ -140,6 +140,13 @@ const MarkdownImage = ({
             setIntrinsicSize((prev) => (prev?.width === width && prev?.height === height ? prev : {width, height}));
         }
     }, []);
+    const handleNativeLoad = useCallback((event: {nativeEvent: {source?: {width: number; height: number}}}) => {
+        const width = event.nativeEvent.source?.width;
+        const height = event.nativeEvent.source?.height;
+        if (width && height) {
+            setIntrinsicSize((prev) => (prev?.width === width && prev?.height === height ? prev : {width, height}));
+        }
+    }, []);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
 
@@ -335,6 +342,7 @@ const MarkdownImage = ({
                                 style={progressiveImageStyle}
                                 resizeMode='contain'
                                 onError={handleOnError}
+                                onLoad={handleNativeLoad}
                             />
                         ) : (
                             <ProgressiveImage
@@ -367,6 +375,7 @@ const MarkdownImage = ({
                         style={progressiveImageStyle}
                         resizeMode='contain'
                         onError={handleOnError}
+                        onLoad={handleNativeLoad}
                     />
                 ) : (
                     <ProgressiveImage
