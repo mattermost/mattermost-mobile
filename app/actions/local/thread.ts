@@ -11,7 +11,7 @@ import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type Prep
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {navigateToScreen, dismissToStackRoot, navigateToRoot} from '@screens/navigation';
+import {navigateToScreen, dismissAllRoutesAndPopToScreen, navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -82,7 +82,9 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
         EphemeralStore.setCurrentThreadId(rootId);
         if (isFromNotification) {
             if (currentThreadId && currentThreadId === rootId && NavigationStore.getScreensInStack().includes(Screens.THREAD)) {
-                await dismissToStackRoot();
+                // The thread is already open: only dismiss what is on top of it.
+                // dismissToStackRoot would pop the thread as well and land on Home.
+                await dismissAllRoutesAndPopToScreen(Screens.THREAD, {rootId, channelName: channel.displayName});
                 return {};
             }
 
