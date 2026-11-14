@@ -579,16 +579,45 @@ const Markdown = ({
             blockStyle.push(blockStyles?.adjacentParagraph);
         }
 
-        let textChildren = children;
-        let blockImages: ReactElement[] = [];
+        const isBlockImage = (child: ReactElement) => {
+            return isValidElement<MarkdownImageRenderer>(child) && child.type === renderImage && isDataImageUri(child.props.src);
+        };
 
-        if (Platform.OS === 'android') {
-            blockImages = children.filter((child) => {
-                return isValidElement<MarkdownImageRenderer>(child) && child.type === renderImage && isDataImageUri(child.props.src);
+        if (Platform.OS === 'android' && children.some(isBlockImage)) {
+            const runs: ReactElement[] = [];
+            let textRun: ReactElement[] = [];
+            const flushText = () => {
+                if (textRun.length) {
+                    runs.push(
+                        <Text
+                            key={`text-${runs.length}`}
+                            style={baseParagraphStyle}
+                        >
+                            {textRun}
+                        </Text>,
+                    );
+                    textRun = [];
+                }
+            };
+
+            children.forEach((child) => {
+                if (isBlockImage(child)) {
+                    flushText();
+                    runs.push(cloneElement(child as ReactElement<MarkdownImageRendererProps>, {isInline: false}));
+                } else {
+                    textRun.push(child);
+                }
             });
-            if (blockImages.length) {
-                textChildren = children.filter((child) => !blockImages.includes(child));
-            }
+            flushText();
+
+            return (
+                <View
+                    style={blockStyle}
+                    testID='markdown_paragraph'
+                >
+                    {runs}
+                </View>
+            );
         }
 
         return (
@@ -596,14 +625,9 @@ const Markdown = ({
                 style={blockStyle}
                 testID='markdown_paragraph'
             >
-                {textChildren.length > 0 &&
-                    <Text style={baseParagraphStyle}>
-                        {textChildren}
-                    </Text>
-                }
-                {blockImages.map((child) => (
-                    isValidElement(child) ? cloneElement(child as ReactElement<MarkdownImageRendererProps>, {isInline: false}) : child
-                ))}
+                <Text style={baseParagraphStyle}>
+                    {children}
+                </Text>
             </View>
         );
     }, [baseParagraphStyle, blockStyles?.adjacentParagraph, renderImage, style.block]);

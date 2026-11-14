@@ -116,7 +116,23 @@ const MarkdownImage = ({
     }, [sourceSize?.width, sourceSize?.height]);
     const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(declaredSize);
     const [sizeLookupFailed, setSizeLookupFailed] = useState(false);
-    const dataImageSize = intrinsicSize ?? declaredSize;
+    const dataImageSize = useMemo(() => {
+        const width = sourceSize?.width;
+        const height = sourceSize?.height;
+        if (width && height) {
+            return {width, height};
+        }
+        if (!intrinsicSize) {
+            return undefined;
+        }
+        if (width) {
+            return {width, height: (width * intrinsicSize.height) / intrinsicSize.width};
+        }
+        if (height) {
+            return {width: (height * intrinsicSize.width) / intrinsicSize.height, height};
+        }
+        return intrinsicSize;
+    }, [intrinsicSize, sourceSize?.width, sourceSize?.height]);
     const handleLoad = useCallback((event: ImageLoadEventData) => {
         const width = event?.source?.width;
         const height = event?.source?.height;
@@ -313,7 +329,8 @@ const MarkdownImage = ({
                         style={[styles, {width, height}, containerStyle]}
                     >
                         {useNativeImage ? (
-                            <RNImage
+                            <Animated.Image
+                                ref={ref}
                                 source={{uri: fileInfo.uri}}
                                 style={progressiveImageStyle}
                                 resizeMode='contain'
