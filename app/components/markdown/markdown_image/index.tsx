@@ -23,7 +23,6 @@ import {useGalleryItem} from '@hooks/gallery';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
-import {emptyFunction} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {calculateDimensions, getDataImageDisplaySize, getDataImageExtension, getDataImageFileId, getDataImageMimeType, getViewPortWidth, isDataImageUri, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize, removeImageProxyForKey} from '@utils/markdown';
@@ -116,6 +115,7 @@ const MarkdownImage = ({
         return undefined;
     }, [sourceSize?.width, sourceSize?.height]);
     const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(declaredSize);
+    const [sizeLookupFailed, setSizeLookupFailed] = useState(false);
     const dataImageSize = intrinsicSize ?? declaredSize;
     const handleLoad = useCallback((event: ImageLoadEventData) => {
         const width = event?.source?.width;
@@ -205,7 +205,11 @@ const MarkdownImage = ({
                 setIntrinsicSize({width: w, height: h});
             }
         };
-        RNImage.getSize(source, handleSize, emptyFunction);
+        RNImage.getSize(source, handleSize, () => {
+            if (!cancelled) {
+                setSizeLookupFailed(true);
+            }
+        });
         return () => {
             cancelled = true;
         };
@@ -271,7 +275,7 @@ const MarkdownImage = ({
 
     let image;
 
-    const waitingForDataImageSize = Platform.OS === 'android' && isDataImage && fileInfo.extension !== 'svg' && !dataImageSize;
+    const waitingForDataImageSize = isDataImage && fileInfo.extension !== 'svg' && !dataImageSize && !sizeLookupFailed;
     if (height && width && !waitingForDataImageSize) {
         if (Platform.OS === 'android' && (height > ANDROID_MAX_HEIGHT || width > ANDROID_MAX_WIDTH)) {
             // Android has a cap on the max image size that can be displayed
