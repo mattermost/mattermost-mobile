@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet} from 'react-native';
-import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import {fetchPostsForChannel} from '@actions/remote/post';
@@ -66,7 +66,6 @@ const Channel = ({
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
-    const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
     const switchingTeam = useTeamSwitch();
     const switchingChannels = useChannelSwitch();
@@ -101,7 +100,6 @@ const Channel = ({
         return () => listener.remove();
     }, [serverUrl, channelId]);
 
-    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank
@@ -148,7 +146,7 @@ const Channel = ({
             {shouldRender && (
                 <ChannelContent
                     channelId={channelId}
-                    marginTop={marginTop}
+                    marginTop={defaultHeight}
                     scheduledPostCount={scheduledPostCount}
                     containerHeight={containerHeight}
                     enabled={isVisible}
