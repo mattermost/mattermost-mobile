@@ -8,6 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
+import {deleteDownloadedFiles} from '@utils/file';
 
 import {
     switchToGlobalThreads,
@@ -21,6 +22,11 @@ import {
 } from './thread';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
+}));
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -347,6 +353,44 @@ describe('processReceivedThreads', () => {
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(2); // thread, thread in team (no post, no participants)
+    });
+
+    describe('revoked files', () => {
+        const cachedFile = TestHelper.fakeFileInfo({id: 'revokedfileid', post_id: rootPost.id, name: 'secret.pdf', extension: 'pdf', mime_type: 'application/pdf'});
+        const redactedThread = [{
+            id: rootPost.id,
+            reply_count: 0,
+            last_reply_at: 123,
+            last_viewed_at: 123,
+            is_following: true,
+            unread_replies: 0,
+            unread_mentions: 0,
+            post: {...rootPost, metadata: {redacted_file_count: 1}},
+        }] as unknown as Thread[];
+
+        beforeEach(async () => {
+            jest.mocked(deleteDownloadedFiles).mockClear();
+            await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            await operator.handleFiles({files: [cachedFile], prepareRecordsOnly: false});
+        });
+
+        it('should delete the downloaded files of a redacted root post after saving', async () => {
+            const {error, revokedFiles} = await processReceivedThreads(serverUrl, redactedThread, team.id);
+
+            expect(error).toBeUndefined();
+            expect(revokedFiles).toHaveLength(1);
+            expect(revokedFiles?.[0].id).toBe(cachedFile.id);
+            expect(deleteDownloadedFiles).toHaveBeenCalledWith(serverUrl, revokedFiles);
+        });
+
+        it('should return the revoked files without deleting them when only preparing records', async () => {
+            const {error, revokedFiles} = await processReceivedThreads(serverUrl, redactedThread, team.id, true);
+
+            expect(error).toBeUndefined();
+            expect(revokedFiles).toHaveLength(1);
+            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+        });
     });
 });
 

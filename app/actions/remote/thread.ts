@@ -14,6 +14,7 @@ import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/se
 import {getIsCRTEnabled, getThreadById, getTeamThreadsSyncData} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
+import {deleteDownloadedFiles} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
 import {showThreadFollowingSnackbar} from '@utils/snack_bar';
 import {getThreadsListEdges} from '@utils/thread';
@@ -451,7 +452,7 @@ export const syncTeamThreads = async (
         const models: Model[] = [];
 
         if (threads.length) {
-            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
+            const {error, models: threadModels = [], revokedFiles = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
             if (error) {
                 return {error};
             }
@@ -469,7 +470,8 @@ export const syncTeamThreads = async (
 
             if (!fetchOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models, 'syncTeamThreads');
+                    await operator.batchRecords(models, 'syncTeamThreads', true);
+                    deleteDownloadedFiles(serverUrl, revokedFiles);
                 } catch (err) {
                     if (__DEV__) {
                         throw err;
@@ -509,7 +511,7 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
         const threads = fetchedThreads.threads || [];
 
         if (threads?.length) {
-            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
+            const {error, models: threadModels = [], revokedFiles = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
             if (error) {
                 return {error};
             }
@@ -530,7 +532,8 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
 
             if (!prepareRecordsOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models, 'loadEarlierThreads');
+                    await operator.batchRecords(models, 'loadEarlierThreads', true);
+                    deleteDownloadedFiles(serverUrl, revokedFiles);
                 } catch (err) {
                     if (__DEV__) {
                         throw err;

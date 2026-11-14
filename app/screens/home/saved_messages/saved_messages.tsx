@@ -24,6 +24,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
+import {useClearViewableItemsOnUnmount} from '@hooks/in_viewport';
 import {observeSavedPostsByIds, queryPostsById} from '@queries/servers/post';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {useCurrentScreen} from '@store/navigation_store';
@@ -78,6 +79,7 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
+    useClearViewableItemsOnUnmount(Screens.SAVED_MESSAGES);
     const serverUrl = useServerUrl();
     const currentTimezone = useMemo(() => getTimezone(currentUser.timezone), [currentUser.timezone]);
     const route = useRoute();

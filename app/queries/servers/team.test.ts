@@ -1308,7 +1308,7 @@ describe('Team Queries', () => {
             }];
 
             const dmModels = await operator.handleThreads({threads: dmThreads, prepareRecordsOnly: false});
-            let postModels = await operator.handlePosts({
+            let {models: postModels} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [],
                 posts: [dmPost],
@@ -1348,12 +1348,12 @@ describe('Team Queries', () => {
             }];
 
             const gmModels = await operator.handleThreads({threads: gmThreads, prepareRecordsOnly: false});
-            postModels = await operator.handlePosts({
+            ({models: postModels} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [],
                 posts: [gmPost],
                 prepareRecordsOnly: true,
-            });
+            }));
             await operator.batchRecords([...channelModels, ...gmModels, ...postModels], 'test');
 
             await TestHelper.wait(waitTime);

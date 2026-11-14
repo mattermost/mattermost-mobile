@@ -33,7 +33,7 @@ const createPostWithPermalinkEmbed = async (
         },
     });
 
-    const models = await operator.handlePosts({
+    const {models} = await operator.handlePosts({
         actionType: 'POSTS.RECEIVED_NEW' as 'POSTS.RECEIVED_NEW',
         order: [postWithPermalink.id],
         posts: [postWithPermalink],
@@ -115,7 +115,7 @@ describe('PermalinkPreview Enhanced Component', () => {
             },
         });
 
-        const models = await operator.handlePosts({
+        const {models} = await operator.handlePosts({
             actionType: 'POSTS.RECEIVED_NEW' as 'POSTS.RECEIVED_NEW',
             order: [postWithPermalink.id],
             posts: [postWithPermalink],
@@ -390,7 +390,7 @@ describe('PermalinkPreview Enhanced Component', () => {
         });
 
         const storeLinkedPost = async (metadata: PostMetadata) => {
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: 'POSTS.RECEIVED_NEW' as 'POSTS.RECEIVED_NEW',
                 order: ['linked-post'],
                 posts: [TestHelper.fakePost({id: 'linked-post', user_id: 'user-123', message: 'msg', metadata})],
