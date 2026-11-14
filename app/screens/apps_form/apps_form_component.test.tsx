@@ -248,6 +248,77 @@ describe('AppsFormComponent collapsible field data flow', () => {
     });
 });
 
+describe('AppsFormComponent grid layout', () => {
+    let database: Database;
+
+    // A grid container whose two child collapsibles are rows, each with an
+    // order and a weight cell.
+    const gridForm: Partial<AppForm> = {
+        fields: [{
+            name: 'orders',
+            type: 'collapsible',
+            label: 'Orders',
+            collapsible_config: {
+                layout: 'grid',
+                expanded: true,
+                bordered: true,
+                fields: [
+                    {name: 'row1', type: 'collapsible', label: 'Row 1', collapsible_config: {fields: [
+                        {name: 'cell_order', type: 'text', label: 'Order'},
+                        {name: 'cell_weight', type: 'text', label: 'Weight'},
+                    ]}} as AppField,
+                    {name: 'row2', type: 'collapsible', label: 'Row 2', collapsible_config: {fields: [
+                        {name: 'cell_order2', type: 'text', label: 'Order'},
+                        {name: 'cell_weight2', type: 'text', label: 'Weight'},
+                    ]}} as AppField,
+                ],
+            },
+        } as AppField],
+    };
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        mockSetOptions.mockClear();
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        jest.restoreAllMocks();
+    });
+
+    it('renders a grid-layout collapsible as a table with column headers, not a stacked section', () => {
+        const {getByTestId, queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
+
+        expect(getByTestId('apps_form_grid.orders')).toBeTruthy();
+        expect(getByTestId('apps_form_grid.header.cell_order')).toBeTruthy();
+        expect(getByTestId('apps_form_grid.header.cell_weight')).toBeTruthy();
+
+        // A grid is not drawn as a normal stacked collapsible.
+        expect(queryByTestId('AppFormSection.orders')).toBeNull();
+    });
+
+    it('opens a row on its own screen on a narrow viewport, swapping the header to Done', () => {
+        jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({width: 400, height: 800, scale: 1, fontScale: 1});
+
+        const {getByTestId, queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
+
+        expect(queryByTestId('apps_form_row_detail.row1')).toBeNull();
+
+        act(() => {
+            fireEvent.press(getByTestId('apps_form_grid.row.row1.sticky'));
+        });
+
+        expect(getByTestId('apps_form_row_detail.row1')).toBeTruthy();
+
+        // The header leaves the row rather than submitting the whole dialog.
+        const headerRight = getHeaderSubmit();
+        const {getByTestId: getHeaderTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        expect(getHeaderTestId('interactive_dialog.row_done.button')).toBeTruthy();
+    });
+});
+
 describe('AppsFormComponent refresh on return', () => {
     let database: Database;
 

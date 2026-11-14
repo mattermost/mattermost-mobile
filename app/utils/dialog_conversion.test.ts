@@ -1407,7 +1407,30 @@ describe('dialog_conversion', () => {
                 fields: [],
                 expanded: true,
                 bordered: true,
+                layout: 'stacked',
             });
+        });
+
+        it('derives a grid layout from a collapsible subtype of "grid"', () => {
+            const field = convertDialogElementToAppField({
+                name: 'orders',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Orders',
+                subtype: 'grid',
+            } as DialogElement);
+
+            expect(field.collapsible_config?.layout).toBe('grid');
+        });
+
+        it('falls back to a stacked layout for any other collapsible subtype', () => {
+            const field = convertDialogElementToAppField({
+                name: 'orders',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Orders',
+                subtype: 'something-else',
+            } as unknown as DialogElement);
+
+            expect(field.collapsible_config?.layout).toBe('stacked');
         });
 
         it('uses the element name as the label fallback surface (label mirrors display_name, even when empty)', () => {

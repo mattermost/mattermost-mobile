@@ -151,6 +151,11 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
                 fields: element.collapsible_config?.elements?.map((e) => convertDialogElementToAppField(e)) || [],
                 expanded: !element.collapsible_config?.collapsed,
                 bordered: !element.collapsible_config?.borderless,
+
+                // A grid container asks for its child sections to be laid out as
+                // rows of a table. Derived from subtype to match the webapp's own
+                // conversion; see apps_form_grid.tsx.
+                layout: element.subtype === 'grid' ? 'grid' : 'stacked',
             },
         };
     }

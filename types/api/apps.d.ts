@@ -212,6 +212,13 @@ type AppCollapsibleConfig = {
     fields?: AppField[];
     expanded?: boolean;
     bordered?: boolean;
+
+    // How the child fields are laid out. 'stacked' (the default) renders them
+    // vertically behind an expandable title. 'grid' renders child collapsibles
+    // as rows of a table, with one column per leaf field. On a viewport too
+    // narrow for a row of inputs, the table shows values and a row is filled
+    // in on its own screen; see apps_form_grid.tsx.
+    layout?: 'stacked' | 'grid';
 };
 
 type DateTimeConfig = {

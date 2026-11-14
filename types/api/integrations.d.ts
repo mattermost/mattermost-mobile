@@ -76,7 +76,7 @@ type DialogElement = {
     display_name: string;
     name: string;
     type: InteractiveDialogElementType;
-    subtype?: InteractiveDialogTextSubtype;
+    subtype?: InteractiveDialogTextSubtype | InteractiveDialogCollapsibleSubtype;
     default: string | boolean;
     placeholder: string;
     help_text: string;
@@ -172,3 +172,7 @@ type PostActionResponse = {
 
 type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button' | 'collapsible'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'
+
+// subtype on a collapsible is a layout mode rather than an input type: 'grid'
+// asks for its child sections to be laid out as rows of a table.
+type InteractiveDialogCollapsibleSubtype = 'grid'
