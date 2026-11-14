@@ -187,7 +187,10 @@ const File = ({
                 onPress={onGestureEvent}
                 disabled={isPressDisabled}
             >
-                <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+                <Animated.View
+                    style={[styles, asCard ? style.imageVideo : null]}
+                    testID={`${file.id}-file.gallery_item`}
+                >
                     <ImageFile
                         file={file}
                         forwardRef={ref}
