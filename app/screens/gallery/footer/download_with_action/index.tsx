@@ -24,7 +24,7 @@ import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
-import {deleteFile, fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
+import {deleteFile, fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isImage, isPdf, isVideo, pathWithPrefix} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
 import {previewPdf} from '@utils/navigation';
@@ -82,6 +82,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
     const [showToast, setShowToast] = useState<boolean|undefined>();
     const [error, setError] = useState('');
     const [saved, setSaved] = useState(false);
+    const [savedType, setSavedType] = useState<string>();
     const [progress, setProgress] = useState(0);
     const mounted = useRef(false);
     const downloadPromise = useRef<ProgressPromise<ClientResponse> | undefined>(undefined);
@@ -111,7 +112,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
         iconName = 'check';
         toastStyle = styles.fileSaved;
 
-        switch (item.type) {
+        switch (savedType || item.type) {
             case 'image':
             case 'avatar':
                 message = intl.formatMessage({id: 'gallery.image_saved', defaultMessage: 'Image saved'});
@@ -206,15 +207,17 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
         }
     };
 
-    const saveImageOrVideo = async (path: string) => {
+    const saveImageOrVideo = async (path: string, actualType?: string) => {
         if (mounted.current) {
             try {
-                const cameraType = item.type === 'avatar' ? 'image' : item.type;
+                const resolvedType = actualType || item.type;
+                const cameraType = resolvedType === 'avatar' ? 'image' : resolvedType;
                 await CameraRoll.saveAsset(path, {
                     type: cameraType === 'image' ? 'photo' : 'video',
                     album: applicationName || '',
                 });
                 setSaved(true);
+                setSavedType(resolvedType);
                 if (item.type !== 'avatar') {
                     updateLocalFilePath(serverUrl, item.id, path);
                 }
@@ -231,12 +234,23 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
             const hasPermission = await hasWriteStoragePermission(intl);
 
             if (hasPermission) {
-                switch (item.type) {
+                // Re-check actual file type from mime_type/extension, since
+                // servers may send generic mime types like application/octet-stream
+                // for videos, causing them to be misclassified as 'file'.
+                const fileInfo = galleryItemToFileInfo(item);
+                let actualType = item.type;
+                if (isVideo(fileInfo)) {
+                    actualType = 'video';
+                } else if (isImage(fileInfo)) {
+                    actualType = 'image';
+                }
+
+                switch (actualType) {
                     case 'file':
                         saveFile(path);
                         break;
                     default:
-                        saveImageOrVideo(path);
+                        saveImageOrVideo(path, actualType);
                         break;
                 }
             }
