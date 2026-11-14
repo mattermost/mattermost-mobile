@@ -354,7 +354,7 @@ const MarkdownImage = ({
         }
     }
 
-    if (image && linkDestination && !disabled) {
+    if (image && linkDestination && (!disabled || !isInline)) {
         image = (
             <TouchableWithFeedback
                 onPress={handleLinkPress}

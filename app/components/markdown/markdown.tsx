@@ -579,11 +579,26 @@ const Markdown = ({
             blockStyle.push(blockStyles?.adjacentParagraph);
         }
 
-        const isBlockImage = (child: ReactElement) => {
-            return isValidElement<MarkdownImageRenderer>(child) && child.type === renderImage && isDataImageUri(child.props.src);
+        const isBlockImage = (node: React.ReactNode) => {
+            return isValidElement<MarkdownImageRenderer>(node) && node.type === renderImage && isDataImageUri(node.props.src);
         };
 
-        if (Platform.OS === 'android' && children.some(isBlockImage)) {
+        const getBlockImage = (child: ReactElement) => {
+            if (isBlockImage(child)) {
+                return child;
+            }
+
+            if (isValidElement<{children?: React.ReactNode}>(child) && child.type === renderLink) {
+                const linkChildren = React.Children.toArray(child.props.children);
+                if (linkChildren.length === 1 && isBlockImage(linkChildren[0])) {
+                    return linkChildren[0] as ReactElement<MarkdownImageRendererProps>;
+                }
+            }
+
+            return undefined;
+        };
+
+        if (Platform.OS === 'android' && children.some((child) => Boolean(getBlockImage(child)))) {
             const runs: ReactElement[] = [];
             let textRun: ReactElement[] = [];
             const flushText = () => {
@@ -601,9 +616,10 @@ const Markdown = ({
             };
 
             children.forEach((child) => {
-                if (isBlockImage(child)) {
+                const blockImage = getBlockImage(child);
+                if (blockImage) {
                     flushText();
-                    runs.push(cloneElement(child as ReactElement<MarkdownImageRendererProps>, {isInline: false}));
+                    runs.push(cloneElement(blockImage as ReactElement<MarkdownImageRendererProps>, {isInline: false}));
                 } else {
                     textRun.push(child);
                 }
@@ -630,7 +646,7 @@ const Markdown = ({
                 </Text>
             </View>
         );
-    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, renderImage, style.block]);
+    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, renderImage, renderLink, style.block]);
 
     const renderTable = useCallback(({children, numColumns}: {children: ReactElement; numColumns: number}) => {
         if (disableTables) {
