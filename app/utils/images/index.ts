@@ -114,3 +114,48 @@ export function isGifTooLarge(imageMetadata?: PostImage) {
     // Try to estimate the in-memory size of the gif to prevent the device out of memory
     return width * height * (frameCount || 1) > MAX_GIF_SIZE;
 }
+
+export const isDataImageUri = (uri?: string): boolean => {
+    return typeof uri === 'string' && uri.startsWith('data:image/');
+};
+
+const DATA_IMAGE_MIME_REGEXP = /^data:(image\/[a-zA-Z0-9.+-]+)(;base64)?,/;
+
+export const getDataImageMimeType = (uri: string): string => {
+    const match = DATA_IMAGE_MIME_REGEXP.exec(uri);
+    return match?.[1]?.toLowerCase() || 'image/png';
+};
+
+export const getDataImageExtension = (uri: string): string => {
+    const mimeType = getDataImageMimeType(uri);
+    const subtype = mimeType.split('/')[1] || 'png';
+    const base = subtype.split('+')[0];
+    if (base === 'jpeg') {
+        return 'jpg';
+    }
+    return base || 'png';
+};
+
+export const getDataImageFileId = (uri: string): string => {
+    let hash = 5381;
+    for (let i = 0; i < uri.length; i++) {
+        hash = (((hash << 5) + hash + uri.charCodeAt(i)) | 0);
+    }
+    return `uid-data-${(hash >>> 0).toString(36)}-${uri.length}`;
+};
+
+export const getDataImageDisplaySize = (width?: number, height?: number, viewPortWidth = 0, maxHeight = IMAGE_MAX_HEIGHT) => {
+    if (!width || !height) {
+        return {width: 0, height: 0};
+    }
+
+    const ratios = [1];
+    if (viewPortWidth > 0) {
+        ratios.push(viewPortWidth / width);
+    }
+    if (maxHeight > 0) {
+        ratios.push(maxHeight / height);
+    }
+    const scale = Math.min(...ratios);
+    return {width: width * scale, height: height * scale};
+};

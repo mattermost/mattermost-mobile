@@ -3,9 +3,10 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import {type ImageLoadEventData} from 'expo-image';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
+import {Platform, type StyleProp, Image as RNImage, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
@@ -23,7 +24,7 @@ import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {calculateDimensions, getDataImageDisplaySize, getDataImageExtension, getDataImageFileId, getDataImageMimeType, getViewPortWidth, isDataImageUri, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize, removeImageProxyForKey} from '@utils/markdown';
 import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -35,6 +36,7 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 
 type MarkdownImageProps = {
     disabled?: boolean;
+    isInline?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
     imagesMetadata: Record<string, PostImage | undefined>;
     isReplyPost?: boolean;
@@ -59,6 +61,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 24,
         height: 24,
     },
+    blockContainer: {
+        marginVertical: 0,
+        top: 0,
+    },
     container: {
         marginVertical: 5,
         top: 5,
@@ -74,6 +80,7 @@ const MarkdownImage = ({
     disabled,
     errorTextStyle,
     imagesMetadata,
+    isInline = true,
     isReplyPost = false,
     layoutWidth,
     layoutHeight,
@@ -88,21 +95,79 @@ const MarkdownImage = ({
     const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const sourceKey = removeImageProxyForKey(source);
+    const isDataImage = isDataImageUri(source);
+    const sourceKey = isDataImage ? '' : removeImageProxyForKey(source);
 
     // Pattern suggested in https://react.dev/reference/react/useRef#avoiding-recreating-the-ref-contents
     const genericFileRef = useRef<string | null>(null);
     if (genericFileRef.current === null) {
-        genericFileRef.current = `uid-${urlSafeBase64Encode(sourceKey)}`;
+        genericFileRef.current = isDataImage ? getDataImageFileId(source) : `uid-${urlSafeBase64Encode(sourceKey)}`;
     }
     const genericFileId = genericFileRef.current;
 
-    const metadata = secureGetFromRecord(imagesMetadata, sourceKey) || Object.values(imagesMetadata || {})[0];
+    const metadata = isDataImage ? undefined : (secureGetFromRecord(imagesMetadata, sourceKey) || Object.values(imagesMetadata || {})[0]);
     const [failed, setFailed] = useState(() => isGifTooLarge(metadata));
+
+    const declaredSize = useMemo(() => {
+        if (sourceSize?.width && sourceSize?.height) {
+            return {width: sourceSize.width, height: sourceSize.height};
+        }
+        return undefined;
+    }, [sourceSize?.width, sourceSize?.height]);
+    const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(declaredSize);
+    const [sizeLookupFailed, setSizeLookupFailed] = useState(false);
+    const dataImageSize = useMemo(() => {
+        const width = sourceSize?.width;
+        const height = sourceSize?.height;
+        if (width && height) {
+            return {width, height};
+        }
+        if (!intrinsicSize) {
+            return undefined;
+        }
+        if (width) {
+            return {width, height: (width * intrinsicSize.height) / intrinsicSize.width};
+        }
+        if (height) {
+            return {width: (height * intrinsicSize.width) / intrinsicSize.height, height};
+        }
+        return intrinsicSize;
+    }, [intrinsicSize, sourceSize?.width, sourceSize?.height]);
+    const handleLoad = useCallback((event: ImageLoadEventData) => {
+        const width = event?.source?.width;
+        const height = event?.source?.height;
+        if (width && height) {
+            setIntrinsicSize((prev) => (prev?.width === width && prev?.height === height ? prev : {width, height}));
+        }
+    }, []);
+    const handleNativeLoad = useCallback((event: {nativeEvent: {source?: {width: number; height: number}}}) => {
+        const width = event.nativeEvent.source?.width;
+        const height = event.nativeEvent.source?.height;
+        if (width && height) {
+            setIntrinsicSize((prev) => (prev?.width === width && prev?.height === height ? prev : {width, height}));
+        }
+    }, []);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
 
     const fileInfo = useMemo(() => {
+        if (isDataImage) {
+            const extension = getDataImageExtension(source);
+            const mimeType = getDataImageMimeType(source);
+            const originalSize = dataImageSize ?? getMarkdownImageSize(isReplyPost, isTablet, sourceSize, undefined, layoutWidth, layoutHeight);
+            return {
+                id: genericFileId,
+                name: `inline-image.${extension}`,
+                extension,
+                has_preview_image: true,
+                mime_type: mimeType,
+                post_id: postId,
+                uri: source,
+                width: originalSize.width,
+                height: originalSize.height,
+            } as FileInfo;
+        }
+
         const uri = source.startsWith('/') ? serverUrl + source : source;
         const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
 
@@ -126,7 +191,9 @@ const MarkdownImage = ({
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
-    }, [source, serverUrl, isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight, genericFileId, postId]);
+    }, [source, serverUrl, isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight, genericFileId, postId, isDataImage, dataImageSize]);
+
+    const useNativeImage = isDataImage && Platform.OS === 'android' && fileInfo.extension !== 'svg';
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
@@ -143,7 +210,33 @@ const MarkdownImage = ({
         handlePreviewImage,
     );
 
-    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
+    const containerStyle = useMemo(() => {
+        return isInline ? style.container : [style.container, style.blockContainer];
+    }, [isInline, style.blockContainer, style.container]);
+
+    const {height, width} = (isDataImage && dataImageSize) ?
+        getDataImageDisplaySize(dataImageSize.width, dataImageSize.height, layoutWidth || getViewPortWidth(isReplyPost, isTablet)) :
+        calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
+
+    useEffect(() => {
+        if (!isDataImage || fileInfo.extension === 'svg') {
+            return undefined;
+        }
+        let cancelled = false;
+        const handleSize = (w: number, h: number) => {
+            if (!cancelled && w > 0 && h > 0) {
+                setIntrinsicSize({width: w, height: h});
+            }
+        };
+        RNImage.getSize(source, handleSize, () => {
+            if (!cancelled) {
+                setSizeLookupFailed(true);
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [isDataImage, fileInfo.extension, source]);
 
     const progressiveImageStyle = useMemo(() => ({width, height}), [width, height]);
 
@@ -204,7 +297,9 @@ const MarkdownImage = ({
     }
 
     let image;
-    if (height && width) {
+
+    const waitingForDataImageSize = isDataImage && fileInfo.extension !== 'svg' && !dataImageSize && !sizeLookupFailed;
+    if (height && width && !waitingForDataImageSize) {
         if (Platform.OS === 'android' && (height > ANDROID_MAX_HEIGHT || width > ANDROID_MAX_WIDTH)) {
             // Android has a cap on the max image size that can be displayed
             return (
@@ -237,37 +332,62 @@ const MarkdownImage = ({
                     onLongPress={handleLinkLongPress}
                     onPress={onGestureEvent}
                 >
-                    <Animated.View style={[styles, {width, height}, style.container]}>
-                        <ProgressiveImage
-                            forwardRef={ref}
-                            id={fileInfo.id!}
-                            imageUri={fileInfo.uri}
-                            onError={handleOnError}
-                            contentFit='contain'
-                            style={progressiveImageStyle}
-                            theme={theme}
-                        />
+                    <Animated.View
+                        style={[styles, {width, height}, containerStyle]}
+                    >
+                        {useNativeImage ? (
+                            <Animated.Image
+                                ref={ref}
+                                source={{uri: fileInfo.uri}}
+                                style={progressiveImageStyle}
+                                resizeMode='contain'
+                                onError={handleOnError}
+                                onLoad={handleNativeLoad}
+                            />
+                        ) : (
+                            <ProgressiveImage
+                                forwardRef={ref}
+                                id={fileInfo.id!}
+                                imageUri={fileInfo.uri}
+                                onError={handleOnError}
+                                onLoad={isDataImage ? handleLoad : undefined}
+                                contentFit='contain'
+                                style={progressiveImageStyle}
+                                theme={theme}
+                            />
+                        )}
                     </Animated.View>
                 </TouchableWithoutFeedback>
             );
         }
     }
 
-    if (image && linkDestination && !disabled) {
+    if (image && linkDestination && (!disabled || !isInline)) {
         image = (
             <TouchableWithFeedback
                 onPress={handleLinkPress}
                 onLongPress={handleLinkLongPress}
-                style={[{width, height}, style.container]}
+                style={[{width, height}, containerStyle]}
             >
-                <ProgressiveImage
-                    id={fileInfo.id!}
-                    imageUri={fileInfo.uri}
-                    onError={handleOnError}
-                    contentFit='contain'
-                    style={progressiveImageStyle}
-                    theme={theme}
-                />
+                {useNativeImage ? (
+                    <RNImage
+                        source={{uri: fileInfo.uri}}
+                        style={progressiveImageStyle}
+                        resizeMode='contain'
+                        onError={handleOnError}
+                        onLoad={handleNativeLoad}
+                    />
+                ) : (
+                    <ProgressiveImage
+                        id={fileInfo.id!}
+                        imageUri={fileInfo.uri}
+                        onError={handleOnError}
+                        onLoad={isDataImage ? handleLoad : undefined}
+                        contentFit='contain'
+                        style={progressiveImageStyle}
+                        theme={theme}
+                    />
+                )}
             </TouchableWithFeedback>
         );
     }

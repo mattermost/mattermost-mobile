@@ -5,8 +5,8 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {type ReactElement, useCallback, useMemo, useRef} from 'react';
-import {Dimensions, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
+import React, {cloneElement, isValidElement, type ReactElement, useCallback, useMemo, useRef} from 'react';
+import {Dimensions, Platform, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 import performance from 'react-native-performance';
 
 import CompassIcon from '@components/compass_icon';
@@ -14,6 +14,7 @@ import EditedIndicator from '@components/edited_indicator';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
+import {isDataImageUri} from '@utils/images';
 import {logError} from '@utils/log';
 import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import PostListPerformance from '@utils/performance/post_list_performance';
@@ -46,6 +47,8 @@ import type {
     MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey, HighlightWithoutNotificationKey,
 } from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
+
+type MarkdownImageRendererProps = MarkdownImageRenderer & {isInline?: boolean};
 
 export type MarkdownProps = {
     allowInlineActions?: boolean;
@@ -443,8 +446,13 @@ const Markdown = ({
         return rendered;
     }, [renderText, style.block]);
 
-    const renderImage = useCallback(({linkDestination, context, src, size}: MarkdownImageRenderer) => {
-        if (!imagesMetadata || isUnsafeLinksPost) {
+    const renderImage = useCallback(({linkDestination, context, src, size, isInline}: MarkdownImageRendererProps) => {
+        if (isUnsafeLinksPost) {
+            return null;
+        }
+
+        const isDataImage = isDataImageUri(src);
+        if (!imagesMetadata && !isDataImage) {
             return null;
         }
 
@@ -457,7 +465,7 @@ const Markdown = ({
             return (
                 <MarkdownTableImage
                     disabled={disableInteraction}
-                    imagesMetadata={imagesMetadata}
+                    imagesMetadata={imagesMetadata || {}}
                     location={location}
                     postId={postId!}
                     source={src}
@@ -473,7 +481,8 @@ const Markdown = ({
                 layoutHeight={layoutHeight}
                 layoutWidth={layoutWidth}
                 linkDestination={linkDestination}
-                imagesMetadata={imagesMetadata}
+                imagesMetadata={imagesMetadata || {}}
+                isInline={isInline}
                 isReplyPost={isReplyPost}
                 location={location}
                 postId={postId!}
@@ -570,6 +579,68 @@ const Markdown = ({
             blockStyle.push(blockStyles?.adjacentParagraph);
         }
 
+        const isBlockImage = (node: React.ReactNode) => {
+            return isValidElement<MarkdownImageRenderer>(node) && node.type === renderImage && isDataImageUri(node.props.src);
+        };
+
+        const getBlockImage = (child: ReactElement) => {
+            if (isBlockImage(child)) {
+                return child;
+            }
+
+            if (isValidElement<{children?: React.ReactNode; href?: string}>(child) && child.type === renderLink) {
+                const href = child.props.href;
+                if (!href || disableLinks || isUnsafeLinksPost || getScheme(href) === 'mmaction') {
+                    return undefined;
+                }
+
+                const linkChildren = React.Children.toArray(child.props.children);
+                if (linkChildren.length === 1 && isBlockImage(linkChildren[0])) {
+                    return linkChildren[0] as ReactElement<MarkdownImageRendererProps>;
+                }
+            }
+
+            return undefined;
+        };
+
+        if (Platform.OS === 'android' && children.some((child) => Boolean(getBlockImage(child)))) {
+            const runs: ReactElement[] = [];
+            let textRun: ReactElement[] = [];
+            const flushText = () => {
+                if (textRun.length) {
+                    runs.push(
+                        <Text
+                            key={`text-${runs.length}`}
+                            style={baseParagraphStyle}
+                        >
+                            {textRun}
+                        </Text>,
+                    );
+                    textRun = [];
+                }
+            };
+
+            children.forEach((child) => {
+                const blockImage = getBlockImage(child);
+                if (blockImage) {
+                    flushText();
+                    runs.push(cloneElement(blockImage as ReactElement<MarkdownImageRendererProps>, {isInline: false}));
+                } else {
+                    textRun.push(child);
+                }
+            });
+            flushText();
+
+            return (
+                <View
+                    style={blockStyle}
+                    testID='markdown_paragraph'
+                >
+                    {runs}
+                </View>
+            );
+        }
+
         return (
             <View
                 style={blockStyle}
@@ -580,7 +651,7 @@ const Markdown = ({
                 </Text>
             </View>
         );
-    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, style.block]);
+    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, disableLinks, isUnsafeLinksPost, renderImage, renderLink, style.block]);
 
     const renderTable = useCallback(({children, numColumns}: {children: ReactElement; numColumns: number}) => {
         if (disableTables) {

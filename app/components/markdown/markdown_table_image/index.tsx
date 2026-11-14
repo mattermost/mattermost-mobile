@@ -12,7 +12,7 @@ import {useServerUrl} from '@context/server';
 import {useGalleryItem} from '@hooks/gallery';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
-import {calculateDimensions, isGifTooLarge} from '@utils/images';
+import {calculateDimensions, getDataImageExtension, getDataImageFileId, getDataImageMimeType, isDataImageUri, isGifTooLarge} from '@utils/images';
 import {removeImageProxyForKey} from '@utils/markdown';
 import {urlSafeBase64Encode} from '@utils/security';
 import {secureGetFromRecord} from '@utils/types';
@@ -46,11 +46,12 @@ const MarkTableImage = ({
     source,
     theme,
 }: MarkdownTableImageProps) => {
-    const sourceKey = removeImageProxyForKey(source);
-    const metadata = secureGetFromRecord(imagesMetadata, sourceKey);
+    const isDataImage = isDataImageUri(source);
+    const sourceKey = isDataImage ? '' : removeImageProxyForKey(source);
+    const metadata = isDataImage ? undefined : secureGetFromRecord(imagesMetadata, sourceKey);
     const fileId = useRef<string | null>(null);
     if (fileId.current === null) {
-        fileId.current = `uid-${urlSafeBase64Encode(sourceKey)}`;
+        fileId.current = isDataImage ? getDataImageFileId(source) : `uid-${urlSafeBase64Encode(sourceKey)}`;
     }
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const currentServerUrl = useServerUrl();
@@ -72,6 +73,22 @@ const MarkTableImage = ({
     }, [source, serverURL, currentServerUrl]);
 
     const getFileInfo = useCallback((): FileInfo => {
+        if (isDataImage) {
+            const extension = getDataImageExtension(source);
+            return {
+                id: fileId.current || '',
+                name: `inline-image.${extension}`,
+                extension,
+                has_preview_image: true,
+                post_id: postId,
+                uri: source,
+                width: 100,
+                height: 100,
+                mime_type: getDataImageMimeType(source),
+                size: 0,
+                user_id: '',
+            };
+        }
         const height = metadata?.height || 0;
         const width = metadata?.width || 0;
         const uri = getImageSource();
@@ -98,7 +115,7 @@ const MarkTableImage = ({
             size: 0,
             user_id: '',
         };
-    }, [getImageSource, metadata?.height, metadata?.width, postId]);
+    }, [getImageSource, metadata?.height, metadata?.width, postId, isDataImage, source]);
 
     const handlePreviewImage = useCallback(() => {
         const file = getFileInfo();
@@ -131,7 +148,11 @@ const MarkTableImage = ({
             />
         );
     } else {
-        const {height, width} = calculateDimensions(metadata?.height, metadata?.width, 100, 100);
+        const {height, width} = calculateDimensions(
+            isDataImage ? 100 : metadata?.height,
+            isDataImage ? 100 : metadata?.width,
+            100, 100,
+        );
         image = (
             <TouchableWithoutFeedback
                 disabled={disabled}
