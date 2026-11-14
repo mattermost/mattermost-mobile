@@ -5,8 +5,8 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {type ReactElement, useCallback, useMemo, useRef} from 'react';
-import {Dimensions, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
+import React, {cloneElement, isValidElement, type ReactElement, useCallback, useMemo, useRef} from 'react';
+import {Dimensions, Platform, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 import performance from 'react-native-performance';
 
 import CompassIcon from '@components/compass_icon';
@@ -47,6 +47,8 @@ import type {
     MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey, HighlightWithoutNotificationKey,
 } from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
+
+type MarkdownImageRendererProps = MarkdownImageRenderer & {isInline?: boolean};
 
 export type MarkdownProps = {
     allowInlineActions?: boolean;
@@ -444,7 +446,7 @@ const Markdown = ({
         return rendered;
     }, [renderText, style.block]);
 
-    const renderImage = useCallback(({linkDestination, context, src, size}: MarkdownImageRenderer) => {
+    const renderImage = useCallback(({linkDestination, context, src, size, isInline}: MarkdownImageRendererProps) => {
         if (isUnsafeLinksPost) {
             return null;
         }
@@ -480,6 +482,7 @@ const Markdown = ({
                 layoutWidth={layoutWidth}
                 linkDestination={linkDestination}
                 imagesMetadata={imagesMetadata || {}}
+                isInline={isInline}
                 isReplyPost={isReplyPost}
                 location={location}
                 postId={postId!}
@@ -576,17 +579,34 @@ const Markdown = ({
             blockStyle.push(blockStyles?.adjacentParagraph);
         }
 
+        let textChildren = children;
+        let blockImages: ReactElement[] = [];
+
+        if (Platform.OS === 'android') {
+            blockImages = children.filter((child) => {
+                return isValidElement<MarkdownImageRenderer>(child) && child.type === renderImage && isDataImageUri(child.props.src);
+            });
+            if (blockImages.length) {
+                textChildren = children.filter((child) => !blockImages.includes(child));
+            }
+        }
+
         return (
             <View
                 style={blockStyle}
                 testID='markdown_paragraph'
             >
-                <Text style={baseParagraphStyle}>
-                    {children}
-                </Text>
+                {textChildren.length > 0 &&
+                    <Text style={baseParagraphStyle}>
+                        {textChildren}
+                    </Text>
+                }
+                {blockImages.map((child) => (
+                    isValidElement(child) ? cloneElement(child as ReactElement<MarkdownImageRendererProps>, {isInline: false}) : child
+                ))}
             </View>
         );
-    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, style.block]);
+    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, renderImage, style.block]);
 
     const renderTable = useCallback(({children, numColumns}: {children: ReactElement; numColumns: number}) => {
         if (disableTables) {

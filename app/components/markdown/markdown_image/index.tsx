@@ -4,9 +4,9 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {type ImageLoadEventData} from 'expo-image';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
+import {Platform, type StyleProp, Image as RNImage, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
@@ -23,6 +23,7 @@ import {useGalleryItem} from '@hooks/gallery';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
+import {emptyFunction} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {calculateDimensions, getDataImageDisplaySize, getDataImageExtension, getDataImageFileId, getDataImageMimeType, getViewPortWidth, isDataImageUri, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize, removeImageProxyForKey} from '@utils/markdown';
@@ -36,6 +37,7 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 
 type MarkdownImageProps = {
     disabled?: boolean;
+    isInline?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
     imagesMetadata: Record<string, PostImage | undefined>;
     isReplyPost?: boolean;
@@ -60,6 +62,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 24,
         height: 24,
     },
+    blockContainer: {
+        marginVertical: 0,
+        top: 0,
+    },
     container: {
         marginVertical: 5,
         top: 5,
@@ -75,6 +81,7 @@ const MarkdownImage = ({
     disabled,
     errorTextStyle,
     imagesMetadata,
+    isInline = true,
     isReplyPost = false,
     layoutWidth,
     layoutHeight,
@@ -101,7 +108,15 @@ const MarkdownImage = ({
 
     const metadata = isDataImage ? undefined : (secureGetFromRecord(imagesMetadata, sourceKey) || Object.values(imagesMetadata || {})[0]);
     const [failed, setFailed] = useState(() => isGifTooLarge(metadata));
-    const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(undefined);
+
+    const declaredSize = useMemo(() => {
+        if (sourceSize?.width && sourceSize?.height) {
+            return {width: sourceSize.width, height: sourceSize.height};
+        }
+        return undefined;
+    }, [sourceSize?.width, sourceSize?.height]);
+    const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(declaredSize);
+    const dataImageSize = intrinsicSize ?? declaredSize;
     const handleLoad = useCallback((event: ImageLoadEventData) => {
         const width = event?.source?.width;
         const height = event?.source?.height;
@@ -116,7 +131,7 @@ const MarkdownImage = ({
         if (isDataImage) {
             const extension = getDataImageExtension(source);
             const mimeType = getDataImageMimeType(source);
-            const originalSize = intrinsicSize ?? getMarkdownImageSize(isReplyPost, isTablet, sourceSize, undefined, layoutWidth, layoutHeight);
+            const originalSize = dataImageSize ?? getMarkdownImageSize(isReplyPost, isTablet, sourceSize, undefined, layoutWidth, layoutHeight);
             return {
                 id: genericFileId,
                 name: `inline-image.${extension}`,
@@ -153,7 +168,9 @@ const MarkdownImage = ({
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
-    }, [source, serverUrl, isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight, genericFileId, postId, isDataImage, intrinsicSize]);
+    }, [source, serverUrl, isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight, genericFileId, postId, isDataImage, dataImageSize]);
+
+    const useNativeImage = isDataImage && Platform.OS === 'android' && fileInfo.extension !== 'svg';
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
@@ -170,9 +187,29 @@ const MarkdownImage = ({
         handlePreviewImage,
     );
 
-    const {height, width} = (isDataImage && intrinsicSize) ?
-        getDataImageDisplaySize(intrinsicSize.width, intrinsicSize.height, layoutWidth || getViewPortWidth(isReplyPost, isTablet)) :
+    const containerStyle = useMemo(() => {
+        return isInline ? style.container : [style.container, style.blockContainer];
+    }, [isInline, style.blockContainer, style.container]);
+
+    const {height, width} = (isDataImage && dataImageSize) ?
+        getDataImageDisplaySize(dataImageSize.width, dataImageSize.height, layoutWidth || getViewPortWidth(isReplyPost, isTablet)) :
         calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
+
+    useEffect(() => {
+        if (!isDataImage || fileInfo.extension === 'svg') {
+            return undefined;
+        }
+        let cancelled = false;
+        const handleSize = (w: number, h: number) => {
+            if (!cancelled && w > 0 && h > 0) {
+                setIntrinsicSize({width: w, height: h});
+            }
+        };
+        RNImage.getSize(source, handleSize, emptyFunction);
+        return () => {
+            cancelled = true;
+        };
+    }, [isDataImage, fileInfo.extension, source]);
 
     const progressiveImageStyle = useMemo(() => ({width, height}), [width, height]);
 
@@ -233,7 +270,9 @@ const MarkdownImage = ({
     }
 
     let image;
-    if (height && width) {
+
+    const waitingForDataImageSize = Platform.OS === 'android' && isDataImage && fileInfo.extension !== 'svg' && !dataImageSize;
+    if (height && width && !waitingForDataImageSize) {
         if (Platform.OS === 'android' && (height > ANDROID_MAX_HEIGHT || width > ANDROID_MAX_WIDTH)) {
             // Android has a cap on the max image size that can be displayed
             return (
@@ -266,17 +305,28 @@ const MarkdownImage = ({
                     onLongPress={handleLinkLongPress}
                     onPress={onGestureEvent}
                 >
-                    <Animated.View style={[styles, {width, height}, style.container]}>
-                        <ProgressiveImage
-                            forwardRef={ref}
-                            id={fileInfo.id!}
-                            imageUri={fileInfo.uri}
-                            onError={handleOnError}
-                            onLoad={isDataImage ? handleLoad : undefined}
-                            contentFit='contain'
-                            style={progressiveImageStyle}
-                            theme={theme}
-                        />
+                    <Animated.View
+                        style={[styles, {width, height}, containerStyle]}
+                    >
+                        {useNativeImage ? (
+                            <RNImage
+                                source={{uri: fileInfo.uri}}
+                                style={progressiveImageStyle}
+                                resizeMode='contain'
+                                onError={handleOnError}
+                            />
+                        ) : (
+                            <ProgressiveImage
+                                forwardRef={ref}
+                                id={fileInfo.id!}
+                                imageUri={fileInfo.uri}
+                                onError={handleOnError}
+                                onLoad={isDataImage ? handleLoad : undefined}
+                                contentFit='contain'
+                                style={progressiveImageStyle}
+                                theme={theme}
+                            />
+                        )}
                     </Animated.View>
                 </TouchableWithoutFeedback>
             );
@@ -288,17 +338,26 @@ const MarkdownImage = ({
             <TouchableWithFeedback
                 onPress={handleLinkPress}
                 onLongPress={handleLinkLongPress}
-                style={[{width, height}, style.container]}
+                style={[{width, height}, containerStyle]}
             >
-                <ProgressiveImage
-                    id={fileInfo.id!}
-                    imageUri={fileInfo.uri}
-                    onError={handleOnError}
-                    onLoad={isDataImage ? handleLoad : undefined}
-                    contentFit='contain'
-                    style={progressiveImageStyle}
-                    theme={theme}
-                />
+                {useNativeImage ? (
+                    <RNImage
+                        source={{uri: fileInfo.uri}}
+                        style={progressiveImageStyle}
+                        resizeMode='contain'
+                        onError={handleOnError}
+                    />
+                ) : (
+                    <ProgressiveImage
+                        id={fileInfo.id!}
+                        imageUri={fileInfo.uri}
+                        onError={handleOnError}
+                        onLoad={isDataImage ? handleLoad : undefined}
+                        contentFit='contain'
+                        style={progressiveImageStyle}
+                        theme={theme}
+                    />
+                )}
             </TouchableWithFeedback>
         );
     }
