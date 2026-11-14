@@ -588,7 +588,12 @@ const Markdown = ({
                 return child;
             }
 
-            if (isValidElement<{children?: React.ReactNode}>(child) && child.type === renderLink) {
+            if (isValidElement<{children?: React.ReactNode; href?: string}>(child) && child.type === renderLink) {
+                const href = child.props.href;
+                if (!href || disableLinks || isUnsafeLinksPost || getScheme(href) === 'mmaction') {
+                    return undefined;
+                }
+
                 const linkChildren = React.Children.toArray(child.props.children);
                 if (linkChildren.length === 1 && isBlockImage(linkChildren[0])) {
                     return linkChildren[0] as ReactElement<MarkdownImageRendererProps>;
@@ -646,7 +651,7 @@ const Markdown = ({
                 </Text>
             </View>
         );
-    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, renderImage, renderLink, style.block]);
+    }, [baseParagraphStyle, blockStyles?.adjacentParagraph, disableLinks, isUnsafeLinksPost, renderImage, renderLink, style.block]);
 
     const renderTable = useCallback(({children, numColumns}: {children: ReactElement; numColumns: number}) => {
         if (disableTables) {
