@@ -91,7 +91,7 @@ const renderMessage = ({location, post, styles, intl, localeHolder, theme, value
 const headerMessages = defineMessages({
     updatedFrom: {
         id: 'mobile.system_message.update_channel_header_message_and_forget.updated_from',
-        defaultMessage: '{username} updated the channel header from: {oldHeader} to: {newHeader}',
+        defaultMessage: '{username} updated the channel header\n**From:** {oldHeader}\n**To:** {newHeader}',
     },
     updatedTo: {
         id: 'mobile.system_message.update_channel_header_message_and_forget.updated_to',
