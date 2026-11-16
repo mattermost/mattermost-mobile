@@ -13,6 +13,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
+import {gridRowKey} from './use_grid_row';
+
 type Props = {
 
     // The container field, whose collapsible_config.fields are the rows.
@@ -48,7 +50,7 @@ type Props = {
     // True where there is room to type in the cells themselves. False on a
     // phone, where the cells show values and onOpenRow is called instead.
     editable: boolean;
-    onOpenRow?: (rowName: string) => void;
+    onOpenRow?: (rowKey: string) => void;
 };
 
 // A column is wide enough for a short value — an order number, a weight, a
@@ -293,9 +295,17 @@ const AppsFormGrid = ({field, renderCell, renderField, values, errors, excludeNa
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const children = (field.collapsible_config?.fields || []).filter((f) => f.name && f.name !== excludeName);
+    // A row keeps its place even without a name: its cells are addressed by
+    // their own names, and a nameless row still needs to render so a required
+    // cell inside it is reachable. A stray leaf, by contrast, has nothing but
+    // its name to address it, so an unnamed one is dropped.
+    const children = (field.collapsible_config?.fields || []).filter((f) => !excludeName || f.name !== excludeName);
     const rows = children.filter(isRow);
-    const strays = children.filter((child) => !isRow(child));
+    const strays = children.filter((child) => !isRow(child) && child.name);
+
+    // Each row's stable identity for keys, test ids and navigation. See
+    // gridRowKey: a named row uses its name, a nameless one a positional path.
+    const rowKeys = rows.map((row, index) => gridRowKey(field.name, row, index));
 
     const rowCells = rows.map((row) => cellFields(row, excludeName));
 
@@ -332,7 +342,7 @@ const AppsFormGrid = ({field, renderCell, renderField, values, errors, excludeNa
 
     const renderCellAt = (rowIndex: number, columnIndex: number, width: number) => {
         const cell = rowCells[rowIndex][columnIndex];
-        const key = `${rows[rowIndex].name}-${columns[columnIndex].key}`;
+        const key = `${rowKeys[rowIndex]}-${columns[columnIndex].key}`;
         const error = cell?.name ? secureGetFromRecord(errors, cell.name) : undefined;
         const isSticky = columnIndex === 0;
         const testID = cell?.name ? `apps_form_grid.cell.${cell.name}` : undefined;
@@ -415,11 +425,12 @@ const AppsFormGrid = ({field, renderCell, renderField, values, errors, excludeNa
     // open the same row. They are named apart because they are two nodes.
     const renderRow = (rowIndex: number, pane: 'sticky' | 'columns', content: React.ReactNode) => {
         const row = rows[rowIndex];
+        const rowKey = rowKeys[rowIndex];
 
         if (editable) {
             return (
                 <View
-                    key={row.name}
+                    key={rowKey}
                     style={style.row}
                 >
                     {content}
@@ -429,12 +440,12 @@ const AppsFormGrid = ({field, renderCell, renderField, values, errors, excludeNa
 
         return (
             <Pressable
-                key={row.name}
-                onPress={() => onOpenRow?.(row.name || '')}
+                key={rowKey}
+                onPress={() => onOpenRow?.(rowKey)}
                 accessibilityRole='button'
                 accessibilityLabel={row.label || row.name}
                 style={({pressed}: PressableStateCallbackType) => [style.row, pressed && style.rowPressed]}
-                testID={`apps_form_grid.row.${row.name}.${pane}`}
+                testID={`apps_form_grid.row.${rowKey}.${pane}`}
             >
                 {content}
             </Pressable>

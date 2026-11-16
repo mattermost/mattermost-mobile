@@ -33,6 +33,43 @@ export function findCollapsible(fields: AppField[] | undefined, name: string): A
     return undefined;
 }
 
+// Separates the grid name from the row index in a synthesized row key.
+const SYNTHETIC_ROW_SEPARATOR = '::row::';
+
+/**
+ * A row's stable identity. Normally its own name — the way the server keys a
+ * row across refreshes. DialogElement.name is optional, though, so a malformed
+ * grid can hand us a nameless row; rather than drop it (its required cells would
+ * then fail submission with nothing on screen to fix), fall back to a path built
+ * from the grid container's name and the row's position.
+ */
+export function gridRowKey(gridName: string | undefined, row: AppField, index: number): string {
+    return row.name || `${gridName || ''}${SYNTHETIC_ROW_SEPARATOR}${index}`;
+}
+
+/**
+ * Resolves an open row from the key gridRowKey produced. A named row is found by
+ * name anywhere in the tree; a synthesized key is resolved against its grid's
+ * collapsible children by position. An unnamed row inside an unnamed grid cannot
+ * be told apart from another and so is not independently navigable.
+ */
+export function findGridRow(fields: AppField[] | undefined, key: string): AppField | undefined {
+    const named = findCollapsible(fields, key);
+    if (named) {
+        return named;
+    }
+
+    const separator = key.lastIndexOf(SYNTHETIC_ROW_SEPARATOR);
+    if (separator <= 0) {
+        return undefined;
+    }
+    const gridName = key.slice(0, separator);
+    const index = Number(key.slice(separator + SYNTHETIC_ROW_SEPARATOR.length));
+    const grid = findCollapsible(fields, gridName);
+    const rows = (grid?.collapsible_config?.fields || []).filter((f) => f.type === AppFieldTypes.COLLAPSIBLE);
+    return rows[index];
+}
+
 /**
  * Owns which grid row is open on its own screen, and whether there is room to
  * skip that step and edit the table in place.
@@ -48,7 +85,7 @@ export default function useGridRow(fields: AppField[] | undefined, submitButtons
     const [openRowName, setOpenRowName] = useState<string | undefined>(undefined);
 
     const openRow = useMemo(
-        () => (openRowName ? findCollapsible(fields, openRowName) : undefined),
+        () => (openRowName ? findGridRow(fields, openRowName) : undefined),
         [fields, openRowName],
     );
 

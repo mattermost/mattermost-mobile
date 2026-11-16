@@ -28,6 +28,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type Props = {
     label: string;
+
+    // Names the group for assistive tech when the visible label is suppressed
+    // (e.g. a grid cell, where the column header carries the name instead).
+    accessibilityLabel?: string;
     options?: DialogOption[];
     onChange: (value: string) => void;
     helpText?: string;
@@ -38,6 +42,7 @@ type Props = {
 }
 function RadioSetting({
     label,
+    accessibilityLabel,
     options,
     onChange,
     helpText = '',
@@ -71,7 +76,7 @@ function RadioSetting({
     }, [value, onChange, options, testID]);
 
     return (
-        <View>
+        <View accessibilityLabel={accessibilityLabel}>
             <Label
                 label={label}
                 optional={false}

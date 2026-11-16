@@ -14,6 +14,10 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     label?: string;
+
+    // Names the switch for assistive tech when the visible label is suppressed
+    // (e.g. a grid cell, where the column header carries the name instead).
+    accessibilityLabel?: string;
     value?: boolean;
     placeholder?: string;
     helpText?: string;
@@ -59,6 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function BoolSetting({
     label,
+    accessibilityLabel,
     value,
     placeholder,
     helpText,
@@ -92,6 +97,7 @@ function BoolSetting({
                     {placeholder}
                 </Text>
                 <Switch
+                    accessibilityLabel={accessibilityLabel}
                     onValueChange={onChange}
                     value={value}
                     style={style.inputSwitch}

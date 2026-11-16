@@ -49,6 +49,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     label: string;
+
+    // Names the input for assistive tech when the visible label is suppressed
+    // (e.g. a grid cell, where the column header carries the name instead).
+    accessibilityLabel?: string;
     placeholder?: string;
     helpText?: string;
     errorText?: string;
@@ -67,6 +71,7 @@ type Props = {
 }
 function TextSetting({
     label,
+    accessibilityLabel,
     placeholder,
     helpText,
     errorText,
@@ -104,6 +109,7 @@ function TextSetting({
                 <View>
                     <TextInput
                         allowFontScaling={true}
+                        accessibilityLabel={accessibilityLabel}
                         value={value}
                         placeholder={placeholder}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}

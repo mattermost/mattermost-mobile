@@ -655,11 +655,16 @@ function AppsFormComponent({
         }
         const cellField: AppField = {...field, label: '', modal_label: '', description: ''};
         const value = secureGetFromRecord(values, field.name);
+
+        // The visible label is stripped (the column header carries it), so name
+        // the input itself for screen readers.
+        const cellAccessibilityLabel = field.modal_label || field.label || field.name;
         return (
             <AppsFormField
                 field={cellField}
                 key={field.name}
                 name={field.name}
+                accessibilityLabel={cellAccessibilityLabel}
                 errorText={undefined}
                 value={value || ''}
                 performLookup={performLookup}
