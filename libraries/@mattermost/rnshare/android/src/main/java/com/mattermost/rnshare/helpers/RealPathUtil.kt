@@ -17,10 +17,6 @@ private val UNSAFE_FILENAME_CHARS = Regex("""[%\\\p{Cntrl}]""")
 object RealPathUtil {
     const val CACHE_DIR_NAME: String = "mmShare"
 
-    init {
-        deleteTempFiles(File(CACHE_DIR_NAME))
-    }
-
     fun getRealPathFromURI(context: Context, uri: Uri?): String? {
         if (uri == null) {
             return null
@@ -156,26 +152,6 @@ object RealPathUtil {
     }
 
     fun deleteTempFiles(dir: File) {
-        try
-        {
-            if (dir.isDirectory) {
-                deleteRecursive(dir)
-            }
-        }
-        catch (e:Exception) {
-            // do nothing
-        }
-    }
-
-    private fun deleteRecursive(fileOrDirectory:File) {
-        if (fileOrDirectory.isDirectory) {
-            val files = fileOrDirectory.listFiles()
-            if (files?.size!! > 0) {
-                for (child in files) {
-                    deleteRecursive(child)
-                }
-            }
-            fileOrDirectory.delete()
-        }
+        dir.deleteRecursively()
     }
 }

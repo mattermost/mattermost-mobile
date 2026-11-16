@@ -18,6 +18,7 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assume.assumeTrue
@@ -189,6 +190,18 @@ class RealPathUtilTest {
 
         assertNull(RealPathUtil.getRealPathFromURI(context, uri))
         assertEquals(0, File(context.cacheDir, RealPathUtil.CACHE_DIR_NAME).listFiles()?.size ?: 0)
+    }
+
+    @Test
+    fun `should delete copied content when cleaning up the share cache`() {
+        registerContentProvider(GENUINE_AUTHORITY, displayName = "report.pdf")
+        val uri = Uri.parse("content://$GENUINE_AUTHORITY/files/1")
+        assertCopiedToShareCache(RealPathUtil.getRealPathFromURI(context, uri), "report.pdf")
+        val shareCache = File(context.cacheDir, RealPathUtil.CACHE_DIR_NAME)
+
+        RealPathUtil.deleteTempFiles(shareCache)
+
+        assertFalse(shareCache.exists())
     }
 
     private fun assertCopiedToShareCache(path: String?, expectedName: String) {
