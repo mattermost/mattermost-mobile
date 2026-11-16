@@ -65,6 +65,7 @@ class RealPathUtilTest {
 
     @Test
     fun `should not resolve a file uri pointing into private storage`() {
+        addStorageVolume(requireNotNull(context.dataDir.parentFile))
         val uri = Uri.fromFile(privateFile)
 
         assertNull(RealPathUtil.getRealPathFromURI(context, uri))
@@ -214,12 +215,16 @@ class RealPathUtilTest {
     private fun addSharedStorageVolume(): File {
         // Robolectric keeps external dirs side by side; their parent holds the app-specific dirs, as a device volume does.
         val root = requireNotNull(Environment.getExternalStorageDirectory().parentFile)
+        addStorageVolume(root)
+        return root
+    }
+
+    private fun addStorageVolume(root: File) {
         val volume = StorageVolumeBuilder("primary", root, "Internal storage", Process.myUserHandle(), Environment.MEDIA_MOUNTED)
             .setIsPrimary(true)
             .setIsEmulated(true)
             .build()
         shadowOf(context.getSystemService(StorageManager::class.java)).addStorageVolume(volume)
-        return root
     }
 
     // Robolectric provides no media or obb dirs, so lay them out as a device volume does.
