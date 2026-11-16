@@ -1,3 +1,16 @@
+diff --git a/android/app/build.gradle b/android/app/build.gradle
+index a29eb6a..2a457fa 100644
+--- a/android/app/build.gradle
++++ b/android/app/build.gradle
+@@ -113,7 +113,7 @@ android {
+         applicationId "com.mattermost.rnbeta"
+         minSdkVersion rootProject.ext.minSdkVersion
+         targetSdkVersion rootProject.ext.targetSdkVersion
+-        versionCode 837
++        versionCode 838
+         versionName "2.46.0"
+         testBuildType System.getProperty('testBuildType', 'debug')
+         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 diff --git a/android/app/src/main/java/com/mattermost/rnbeta/CustomPushNotification.kt b/android/app/src/main/java/com/mattermost/rnbeta/CustomPushNotification.kt
 index 1b468e7..11821fa 100644
 --- a/android/app/src/main/java/com/mattermost/rnbeta/CustomPushNotification.kt
@@ -44,7 +57,7 @@ index 1b468e7..11821fa 100644
                  }
              }
 diff --git a/app/actions/local/session/index.test.ts b/app/actions/local/session/index.test.ts
-index d6d0310..fb7b3d3 100644
+index d6d0310..1efef10 100644
 --- a/app/actions/local/session/index.test.ts
 +++ b/app/actions/local/session/index.test.ts
 @@ -1,6 +1,7 @@
@@ -60,7 +73,7 @@ index d6d0310..fb7b3d3 100644
  
              expect(DatabaseManager.deleteServerDatabase).toHaveBeenCalledWith(mockServerUrl);
 +            expect(RNUtils.setOutOfOfficeSettings).toHaveBeenCalledWith(mockServerUrl, JSON.stringify({
-+                enabled: false, startAt: 0, endAt: 0, allowCalls: false, allowMentions: false,
++                schedule: 'weekly', enabled: false, quietHoursEnabled: true, startMinute: 1080, endMinute: 540, daysOff: [], allowCalls: false, allowMentions: false,
 +            }));
              expect(DatabaseManager.destroyServerDatabase).not.toHaveBeenCalled();
              expect(removePushDisabledInServerAcknowledged).not.toHaveBeenCalled();
@@ -70,13 +83,13 @@ index d6d0310..fb7b3d3 100644
              // Verify database is deleted (not destroyed)
              expect(DatabaseManager.deleteServerDatabase).toHaveBeenCalledWith(mockServerUrl);
 +            expect(RNUtils.setOutOfOfficeSettings).toHaveBeenCalledWith(mockServerUrl, JSON.stringify({
-+                enabled: false, startAt: 0, endAt: 0, allowCalls: false, allowMentions: false,
++                schedule: 'weekly', enabled: false, quietHoursEnabled: true, startMinute: 1080, endMinute: 540, daysOff: [], allowCalls: false, allowMentions: false,
 +            }));
              expect(DatabaseManager.destroyServerDatabase).not.toHaveBeenCalled();
  
              // Note: removeServerCredentials now only removes the token, not the pre-auth secret
 diff --git a/app/actions/local/session/index.ts b/app/actions/local/session/index.ts
-index d348eaa..166ea5b 100644
+index d348eaa..c934461 100644
 --- a/app/actions/local/session/index.ts
 +++ b/app/actions/local/session/index.ts
 @@ -25,6 +25,7 @@ import EphemeralStore from '@store/ephemeral_store';
@@ -93,7 +106,7 @@ index d348eaa..166ea5b 100644
  
 +    // A later login on this server must not inherit another user's quiet period.
 +    await safeExecute('clearOutOfOfficeSettings', () => saveOutOfOfficeSettings(serverUrl, {
-+        enabled: false, startAt: 0, endAt: 0, allowCalls: false, allowMentions: false,
++        schedule: 'weekly', enabled: false, quietHoursEnabled: true, startMinute: 1080, endMinute: 540, daysOff: [], allowCalls: false, allowMentions: false,
 +    }), false);
 +
      // Remove push notifications (synchronous, no error handling needed)
@@ -423,7 +436,7 @@ index 9f24723..c928b4a 100644
              channel_name: payload.channel_name,
              identifier: payload.identifier || notification.identifier,
 diff --git a/assets/base/i18n/en.json b/assets/base/i18n/en.json
-index 54f7696..f034007 100644
+index 54f7696..530ba22 100644
 --- a/assets/base/i18n/en.json
 +++ b/assets/base/i18n/en.json
 @@ -1179,6 +1179,7 @@
@@ -434,28 +447,49 @@ index 54f7696..f034007 100644
    "notification_settings.push_notification": "Push Notifications",
    "notification_settings.push_threads.following": "Notify me about replies to threads I'm following in this channel",
    "notification_settings.push_threads.replies": "Thread replies",
-@@ -1204,6 +1205,16 @@
+@@ -1204,6 +1205,21 @@
    "onboarding.realtime_collaboration_description": "Coordinate across teams with persistent mission channels, secure file sharing, and automated workflows.",
    "onboarding.welcome": "Welcome",
    "onboaring.welcome_description": "Mattermost is a sovereign collaboration platform built for operational environments and uncompromising security.",
 +  "out_of_office.allow_calls": "Allow calls during out of office",
 +  "out_of_office.allow_mentions": "Allow mentions during out of office",
-+  "out_of_office.description": "Pause notifications on this device for this server during the scheduled period. Notifications resume automatically when it ends. Exceptions only allow notifications already enabled in your notification settings. On iOS, silent notifications may still appear and a call may briefly appear on screen. Mention exceptions require server support.",
-+  "out_of_office.enable": "Schedule out of office",
++  "out_of_office.days_off": "Days off",
++  "out_of_office.days_off_description": "Pause notifications all day on the selected days.",
++  "out_of_office.description": "Pause notifications on this device for this server during quiet hours and days off every week. This schedule repeats until you turn it off. Exceptions only allow notifications already enabled in your notification settings. On iOS, silent notifications may still appear and a call may briefly appear on screen. Mention exceptions require server support.",
++  "out_of_office.empty_schedule": "Enable daily quiet hours or select at least one day off.",
++  "out_of_office.enable": "Enable out of office",
 +  "out_of_office.end": "Ends",
-+  "out_of_office.invalid_period": "Choose an end time after the start time and later than now.",
++  "out_of_office.invalid_hours": "Choose different start and end times for quiet hours.",
 +  "out_of_office.load_error": "Unable to load your out of office settings. Go back and try again.",
++  "out_of_office.quiet_hours": "Daily quiet hours",
++  "out_of_office.replace_date_schedule": "You have a previous date-based out of office schedule. Saving here replaces it with this recurring weekly schedule. Your previous schedule stays in effect until you save.",
 +  "out_of_office.save_error": "Unable to save your out of office settings. Please try again.",
 +  "out_of_office.start": "Starts",
-+  "out_of_office.timezone": "Times use your device timezone: {timezone}.",
++  "out_of_office.timezone": "Times follow your device’s local timezone, including when you travel. Quiet hours can continue overnight.",
    "password_send.description": "To reset your password, enter the email address you used to sign up",
    "password_send.error": "Please enter a valid email address.",
    "password_send.generic_error": "We were unable to send you a reset password link. Please contact your System Admin for assistance.",
+@@ -1627,6 +1643,7 @@
+   "session_attributes.location_permission.continue": "Continue",
+   "session_attributes.location_permission.message": "Your location can be used to report the Wi-Fi network name to your administrator when required by your organization's security policy.",
+   "session_attributes.location_permission.title": "Allow location access?",
++  "settings.save": "Save",
+   "settings_display.clock.mz": "24-hour clock",
+   "settings_display.clock.mz.desc": "Example: 16:00",
+   "settings_display.clock.normal.desc": "Example: 4:00 PM",
+@@ -1668,7 +1685,6 @@
+   "settings.notice_platform_link": "server",
+   "settings.notice_text": "Mattermost is made possible by the open source software used in our {platform} and {mobile}.",
+   "settings.notifications": "Notifications",
+-  "settings.save": "Save",
+   "share_extension.channel_error": "You are not a member of a team on the selected server. Select another server or open Mattermost to join a team.",
+   "share_extension.channel_label": "Channel",
+   "share_extension.channels_screen.title": "Select channel",
 diff --git a/ios/Gekidou/Sources/Gekidou/Preferences.swift b/ios/Gekidou/Sources/Gekidou/Preferences.swift
-index cda7803..d2bf6b2 100644
+index cda7803..4c49274 100644
 --- a/ios/Gekidou/Sources/Gekidou/Preferences.swift
 +++ b/ios/Gekidou/Sources/Gekidou/Preferences.swift
-@@ -28,3 +28,25 @@ public class Preferences: NSObject {
+@@ -28,3 +28,63 @@ public class Preferences: NSObject {
          userDefauls?.set(value, forKey: key)
      }
  }
@@ -468,11 +502,24 @@ index cda7803..d2bf6b2 100644
 +              let raw = Preferences.default.object(forKey: "outOfOfficeSettings." + serverUrl) as? String,
 +              let data = raw.data(using: .utf8),
 +              let settings = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-+              settings["enabled"] as? Bool == true,
-+              let start = settings["startAt"] as? Double,
-+              let end = settings["endAt"] as? Double,
-+              start.isFinite, end.isFinite, now >= start, now < end
++              now.isFinite
 +        else { return false }
++
++        let active: Bool
++        if settings.keys.contains("schedule") {
++            guard settings["schedule"] as? String == "weekly",
++                  let weekly = try? JSONDecoder().decode(WeeklySettings.self, from: data)
++            else { return false }
++            active = weekly.isActive(now: now)
++        } else {
++            guard settings["enabled"] as? Bool == true,
++                  let start = settings["startAt"] as? Double,
++                  let end = settings["endAt"] as? Double,
++                  start.isFinite, end.isFinite
++            else { return false }
++            active = now >= start && now < end
++        }
++        guard active else { return false }
 +
 +        let call = isCall || payload["type"] as? String == "call" || payload["sub_type"] as? String == "calls"
 +        if call { return settings["allowCalls"] as? Bool != true }
@@ -480,6 +527,31 @@ index cda7803..d2bf6b2 100644
 +        let mention = payload["is_mention"] as? Bool == true || payload["is_mention"] as? String == "true"
 +        return !(mention && settings["allowMentions"] as? Bool == true)
 +    }
++
++    private struct WeeklySettings: Decodable {
++        let enabled: Bool
++        let quietHoursEnabled: Bool
++        let startMinute: Int
++        let endMinute: Int
++        let daysOff: [Int]
++        let allowCalls: Bool
++        let allowMentions: Bool
++
++        func isActive(now: Double) -> Bool {
++            guard enabled, (0...1439).contains(startMinute), (0...1439).contains(endMinute),
++                  (!quietHoursEnabled || startMinute != endMinute), daysOff.allSatisfy({ (0...6).contains($0) })
++            else { return false }
++            // Calendar.current resolves the device's local time, including DST changes.
++            let local = Calendar.current.dateComponents([.weekday, .hour, .minute], from: Date(timeIntervalSince1970: now / 1000))
++            guard let weekday = local.weekday, let hour = local.hour, let minute = local.minute else { return false }
++            if daysOff.contains(weekday - 1) { return true }
++            guard quietHoursEnabled else { return false }
++            let minuteOfDay = hour * 60 + minute
++            if startMinute < endMinute { return minuteOfDay >= startMinute && minuteOfDay < endMinute }
++            return minuteOfDay >= startMinute || minuteOfDay < endMinute
++        }
++    }
++
 +}
 diff --git a/ios/NotificationService/NotificationService.swift b/ios/NotificationService/NotificationService.swift
 index b4f28bc..ecf0d85 100644
@@ -750,12 +822,137 @@ index c60aab4..0d94caa 100644
      ack_id?: string;
      body?: string;
      channel_id: string;
+diff --git a/app/hooks/out_of_office.test.ts b/app/hooks/out_of_office.test.ts
+new file mode 100644
+index 0000000..3e4244f
+--- /dev/null
++++ b/app/hooks/out_of_office.test.ts
+@@ -0,0 +1,119 @@
++// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
++// See LICENSE.txt for license information.
++
++import RNUtils from '@mattermost/rnutils/src';
++import {act, renderHook} from '@testing-library/react-native';
++import {AppState} from 'react-native';
++
++import {advanceTimers} from '@test/timer_helpers';
++import {saveOutOfOfficeSettings, type WeeklyOutOfOfficeSettings} from '@utils/out_of_office';
++
++import useOutOfOfficeCallsSuppressed from './out_of_office';
++
++const serverUrl = 'https://community.mattermost.com';
++const settings: WeeklyOutOfOfficeSettings = {
++    schedule: 'weekly',
++    enabled: true,
++    quietHoursEnabled: true,
++    startMinute: 22 * 60,
++    endMinute: 7 * 60,
++    daysOff: [],
++    allowCalls: false,
++    allowMentions: false,
++};
++
++describe('useOutOfOfficeCallsSuppressed', () => {
++    beforeEach(() => {
++        jest.useFakeTimers({doNotFake: ['nextTick']});
++        jest.setSystemTime(new Date(2026, 10, 16, 21, 59, 30));
++        jest.mocked(RNUtils.getOutOfOfficeSettings).mockResolvedValue(JSON.stringify(settings));
++    });
++
++    afterEach(() => {
++        jest.useRealTimers();
++        jest.mocked(RNUtils.getOutOfOfficeSettings).mockResolvedValue(null);
++    });
++
++    it('should suppress a mounted incoming call at the next recurring start minute', async () => {
++        const {result, unmount} = renderHook(() => useOutOfOfficeCallsSuppressed(serverUrl));
++        await act(async () => advanceTimers(0));
++        expect(result.current).toBe(false);
++
++        await act(async () => advanceTimers(30000));
++        expect(result.current).toBe(true);
++        unmount();
++    });
++
++    it('should resume notifications at the recurring end minute', async () => {
++        jest.setSystemTime(new Date(2026, 10, 17, 6, 59, 30));
++        const {result, unmount} = renderHook(() => useOutOfOfficeCallsSuppressed(serverUrl));
++        await act(async () => advanceTimers(0));
++        expect(result.current).toBe(true);
++
++        await act(async () => advanceTimers(30000));
++        expect(result.current).toBe(false);
++        unmount();
++    });
++
++    it('should refresh a mounted banner after saving this server but ignore other servers', async () => {
++        jest.setSystemTime(new Date(2026, 10, 16, 23));
++        const {result, unmount} = renderHook(() => useOutOfOfficeCallsSuppressed(serverUrl));
++        await act(async () => advanceTimers(0));
++        expect(result.current).toBe(true);
++
++        const readsBeforeOtherServer = jest.mocked(RNUtils.getOutOfOfficeSettings).mock.calls.length;
++        await act(async () => saveOutOfOfficeSettings('https://other.example.com', {...settings, allowCalls: true}));
++        expect(RNUtils.getOutOfOfficeSettings).toHaveBeenCalledTimes(readsBeforeOtherServer);
++        expect(result.current).toBe(true);
++
++        jest.mocked(RNUtils.getOutOfOfficeSettings).mockResolvedValue(JSON.stringify({...settings, allowCalls: true}));
++        await act(async () => saveOutOfOfficeSettings(serverUrl, {...settings, allowCalls: true}));
++        expect(result.current).toBe(false);
++        unmount();
++    });
++
++    it('should re-evaluate the local clock when returning from the background', async () => {
++        const {result, unmount} = renderHook(() => useOutOfOfficeCallsSuppressed(serverUrl));
++        await act(async () => advanceTimers(0));
++        expect(result.current).toBe(false);
++
++        await act(async () => {
++            jest.mocked(AppState.addEventListener).mock.calls[0][1]('background');
++        });
++        jest.setSystemTime(new Date(2026, 10, 16, 23));
++        await act(async () => {
++            jest.mocked(AppState.addEventListener).mock.calls[1][1]('active');
++        });
++        expect(result.current).toBe(true);
++        unmount();
++    });
++
++    it('should ignore an older settings read that resolves after a saved exception', async () => {
++        jest.setSystemTime(new Date(2026, 10, 16, 23));
++        const staleReads: Array<(value: string | null) => void> = [];
++        jest.mocked(RNUtils.getOutOfOfficeSettings).mockImplementationOnce(() => new Promise((resolve) => staleReads.push(resolve)));
++        const {result, unmount} = renderHook(() => useOutOfOfficeCallsSuppressed(serverUrl));
++
++        const allowCalls = {...settings, allowCalls: true};
++        jest.mocked(RNUtils.getOutOfOfficeSettings).mockResolvedValue(JSON.stringify(allowCalls));
++        await act(async () => saveOutOfOfficeSettings(serverUrl, allowCalls));
++        expect(result.current).toBe(false);
++
++        await act(async () => {
++            staleReads[0](JSON.stringify(settings));
++            await advanceTimers(0);
++        });
++        expect(result.current).toBe(false);
++        unmount();
++    });
++
++    it('should stop checking settings after unmount', async () => {
++        const {unmount} = renderHook(() => useOutOfOfficeCallsSuppressed(serverUrl));
++        await act(async () => advanceTimers(0));
++        unmount();
++        const readsBeforeUnmount = jest.mocked(RNUtils.getOutOfOfficeSettings).mock.calls.length;
++        await act(async () => advanceTimers(60000));
++        await act(async () => saveOutOfOfficeSettings(serverUrl, {...settings, enabled: false}));
++        expect(RNUtils.getOutOfOfficeSettings).toHaveBeenCalledTimes(readsBeforeUnmount);
++    });
++});
 diff --git a/app/hooks/out_of_office.ts b/app/hooks/out_of_office.ts
 new file mode 100644
-index 0000000..0664b32
+index 0000000..2ac6d91
 --- /dev/null
 +++ b/app/hooks/out_of_office.ts
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,57 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
@@ -764,7 +961,7 @@ index 0000000..0664b32
 +
 +import {useAppState} from '@hooks/device';
 +import {logWarning} from '@utils/log';
-+import {getOutOfOfficeSettings, OUT_OF_OFFICE_CHANGED, shouldSuppressOutOfOfficeNotification} from '@utils/out_of_office';
++import {getNextOutOfOfficeCheck, getOutOfOfficeSettings, OUT_OF_OFFICE_CHANGED, shouldSuppressOutOfOfficeNotification} from '@utils/out_of_office';
 +
 +// Existing incoming-call banners must also disappear when a scheduled period begins.
 +export default function useOutOfOfficeCallsSuppressed(serverUrl: string) {
@@ -774,23 +971,25 @@ index 0000000..0664b32
 +    useEffect(() => {
 +        let active = true;
 +        let timer: ReturnType<typeof setTimeout> | undefined;
++        let refreshSequence = 0;
 +        const refresh = async () => {
++            const sequence = ++refreshSequence;
 +            clearTimeout(timer);
 +            try {
 +                const settings = await getOutOfOfficeSettings(serverUrl);
-+                if (!active) {
++                if (!active || sequence !== refreshSequence) {
 +                    return;
 +                }
 +                const now = Date.now();
 +                setSuppressed(shouldSuppressOutOfOfficeNotification(settings, 'call', false, now));
 +                if (settings?.enabled) {
-+                    const nextBoundary = [settings.startAt, settings.endAt].find((time) => time > now);
++                    const nextBoundary = getNextOutOfOfficeCheck(settings, now);
 +                    if (nextBoundary) {
 +                        timer = setTimeout(refresh, Math.min(nextBoundary - now, 2147483647));
 +                    }
 +                }
 +            } catch {
-+                if (active) {
++                if (active && sequence === refreshSequence) {
 +                    setSuppressed(false);
 +                }
 +                logWarning('useOutOfOfficeCallsSuppressed: unable to read settings');
@@ -842,20 +1041,19 @@ index 0000000..dde8891
 +}
 diff --git a/app/screens/settings/out_of_office/index.tsx b/app/screens/settings/out_of_office/index.tsx
 new file mode 100644
-index 0000000..5788df8
+index 0000000..8dcd428
 --- /dev/null
 +++ b/app/screens/settings/out_of_office/index.tsx
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,274 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
-+import moment, {type Moment} from 'moment-timezone';
++import DateTimePicker, {type DateTimePickerChangeEvent} from '@react-native-community/datetimepicker';
 +import React, {useCallback, useEffect, useState} from 'react';
 +import {defineMessages, useIntl} from 'react-intl';
-+import {Text, View} from 'react-native';
++import {Platform, Text, View} from 'react-native';
 +
 +import Button from '@components/button';
-+import DateTimeSelector from '@components/date_time_selector/date_time_selector';
 +import FormattedText from '@components/formatted_text';
 +import SettingContainer from '@components/settings/container';
 +import SettingOption from '@components/settings/option';
@@ -865,28 +1063,36 @@ index 0000000..5788df8
 +import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 +import {usePreventDoubleTap} from '@hooks/utils';
 +import {navigateBack} from '@screens/navigation';
-+import {getOutOfOfficeSettings, saveOutOfOfficeSettings, type OutOfOfficeSettings} from '@utils/out_of_office';
++import {getOutOfOfficeSettings, saveOutOfOfficeSettings, type WeeklyOutOfOfficeSettings} from '@utils/out_of_office';
 +import {makeStyleSheetFromTheme} from '@utils/theme';
 +import {typography} from '@utils/typography';
 +
 +const messages = defineMessages({
-+    enable: {id: 'out_of_office.enable', defaultMessage: 'Schedule out of office'},
-+    description: {id: 'out_of_office.description', defaultMessage: 'Pause notifications on this device for this server during the scheduled period. Notifications resume automatically when it ends. Exceptions only allow notifications already enabled in your notification settings. On iOS, silent notifications may still appear and a call may briefly appear on screen. Mention exceptions require server support.'},
++    enable: {id: 'out_of_office.enable', defaultMessage: 'Enable out of office'},
++    description: {id: 'out_of_office.description', defaultMessage: 'Pause notifications on this device for this server during quiet hours and days off every week. This schedule repeats until you turn it off. Exceptions only allow notifications already enabled in your notification settings. On iOS, silent notifications may still appear and a call may briefly appear on screen. Mention exceptions require server support.'},
++    quietHours: {id: 'out_of_office.quiet_hours', defaultMessage: 'Daily quiet hours'},
 +    start: {id: 'out_of_office.start', defaultMessage: 'Starts'},
 +    end: {id: 'out_of_office.end', defaultMessage: 'Ends'},
-+    timezone: {id: 'out_of_office.timezone', defaultMessage: 'Times use your device timezone: {timezone}.'},
++    daysOff: {id: 'out_of_office.days_off', defaultMessage: 'Days off'},
++    daysOffDescription: {id: 'out_of_office.days_off_description', defaultMessage: 'Pause notifications all day on the selected days.'},
++    timezone: {id: 'out_of_office.timezone', defaultMessage: 'Times follow your device’s local timezone, including when you travel. Quiet hours can continue overnight.'},
++    legacy: {id: 'out_of_office.replace_date_schedule', defaultMessage: 'You have a previous date-based out of office schedule. Saving here replaces it with this recurring weekly schedule. Your previous schedule stays in effect until you save.'},
 +    calls: {id: 'out_of_office.allow_calls', defaultMessage: 'Allow calls during out of office'},
 +    mentions: {id: 'out_of_office.allow_mentions', defaultMessage: 'Allow mentions during out of office'},
-+    invalid: {id: 'out_of_office.invalid_period', defaultMessage: 'Choose an end time after the start time and later than now.'},
++    invalid: {id: 'out_of_office.invalid_hours', defaultMessage: 'Choose different start and end times for quiet hours.'},
++    empty: {id: 'out_of_office.empty_schedule', defaultMessage: 'Enable daily quiet hours or select at least one day off.'},
 +    loadError: {id: 'out_of_office.load_error', defaultMessage: 'Unable to load your out of office settings. Go back and try again.'},
 +    saveError: {id: 'out_of_office.save_error', defaultMessage: 'Unable to save your out of office settings. Please try again.'},
 +});
 +
-+const ONE_DAY = 24 * 60 * 60 * 1000;
++const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 +
-+function getDefaultSettings(): OutOfOfficeSettings {
-+    const startAt = Date.now();
-+    return {enabled: false, startAt, endAt: startAt + ONE_DAY, allowCalls: false, allowMentions: false};
++function getDefaultSettings(): WeeklyOutOfOfficeSettings {
++    return {schedule: 'weekly', enabled: false, quietHoursEnabled: true, startMinute: 18 * 60, endMinute: 9 * 60, daysOff: [], allowCalls: false, allowMentions: false};
++}
++
++function timeFromMinutes(minutes: number) {
++    return new Date(2024, 0, 15, Math.floor(minutes / 60), minutes % 60, 0, 0);
 +}
 +
 +const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -901,22 +1107,30 @@ index 0000000..5788df8
 +    const serverUrl = useServerUrl();
 +    const theme = useTheme();
 +    const styles = getStyleSheet(theme);
-+    const [timezone] = useState(() => moment.tz.guess());
-+    const [settings, setSettings] = useState<OutOfOfficeSettings>(getDefaultSettings);
++    const [settings, setSettings] = useState<WeeklyOutOfOfficeSettings>(getDefaultSettings);
 +    const [loading, setLoading] = useState(true);
 +    const [saving, setSaving] = useState(false);
 +    const [error, setError] = useState('');
 +    const [loadFailed, setLoadFailed] = useState(false);
++    const [legacy, setLegacy] = useState(false);
++    const [editingTime, setEditingTime] = useState<'startMinute' | 'endMinute'>();
 +
 +    useEffect(() => {
 +        let active = true;
 +        setLoading(true);
 +        setSettings(getDefaultSettings());
 +        setLoadFailed(false);
++        setLegacy(false);
++        setEditingTime(undefined);
 +        setError('');
 +        getOutOfOfficeSettings(serverUrl).then((saved) => {
 +            if (active && saved) {
-+                setSettings(saved);
++                if (saved.schedule === 'weekly') {
++                    setSettings(saved);
++                } else {
++                    setLegacy(true);
++                    setSettings({...getDefaultSettings(), allowCalls: saved.allowCalls, allowMentions: saved.allowMentions});
++                }
 +            }
 +        }).catch(() => {
 +            if (active) {
@@ -936,17 +1150,34 @@ index 0000000..5788df8
 +    useAndroidHardwareBackHandler(Screens.SETTINGS_OUT_OF_OFFICE, navigateBack);
 +
 +    const setEnabled = useCallback((enabled: boolean) => setSettings((previous) => ({...previous, enabled})), []);
++    const setQuietHours = useCallback((quietHoursEnabled: boolean) => setSettings((previous) => ({...previous, quietHoursEnabled})), []);
 +    const setAllowCalls = useCallback((allowCalls: boolean) => setSettings((previous) => ({...previous, allowCalls})), []);
 +    const setAllowMentions = useCallback((allowMentions: boolean) => setSettings((previous) => ({...previous, allowMentions})), []);
-+    const setStart = useCallback((date: Moment) => setSettings((previous) => ({...previous, startAt: date.valueOf()})), []);
-+    const setEnd = useCallback((date: Moment) => setSettings((previous) => ({...previous, endAt: date.valueOf()})), []);
++    const setTime = useCallback((_event: DateTimePickerChangeEvent, date: Date) => {
++        if (Platform.OS === 'android') {
++            setEditingTime(undefined);
++        }
++        if (editingTime) {
++            const minute = (date.getHours() * 60) + date.getMinutes();
++            setSettings((previous) => ({...previous, [editingTime]: minute}));
++        }
++    }, [editingTime]);
++
++    const setDayOff = (day: number, selected: string | boolean) => {
++        const otherDays = settings.daysOff.filter((value) => value !== day);
++        setSettings({...settings, daysOff: selected ? [...otherDays, day].sort() : otherDays});
++    };
 +
 +    const save = useCallback(async () => {
 +        if (loading || saving || loadFailed) {
 +            return;
 +        }
-+        if (settings.enabled && (settings.endAt <= settings.startAt || settings.endAt <= Date.now())) {
++        if (settings.enabled && settings.quietHoursEnabled && settings.startMinute === settings.endMinute) {
 +            setError(intl.formatMessage(messages.invalid));
++            return;
++        }
++        if (settings.enabled && !settings.quietHoursEnabled && settings.daysOff.length === 0) {
++            setError(intl.formatMessage(messages.empty));
 +            return;
 +        }
 +        setSaving(true);
@@ -971,6 +1202,14 @@ index 0000000..5788df8
 +                    defaultMessage={messages.description.defaultMessage}
 +                    style={styles.text}
 +                />
++                {legacy && (
++                    <FormattedText
++                        id={messages.legacy.id}
++                        defaultMessage={messages.legacy.defaultMessage}
++                        style={styles.text}
++                        testID='out_of_office_settings.legacy'
++                    />
++                )}
 +                {!loading && !loadFailed && !saving && (
 +                    <>
 +                        <SettingOption
@@ -982,33 +1221,65 @@ index 0000000..5788df8
 +                        />
 +                        {settings.enabled && (
 +                            <>
-+                                <Text style={styles.text}>{intl.formatMessage(messages.timezone, {timezone})}</Text>
-+                                <Text style={styles.label}>
-+                                    {intl.formatMessage(messages.start)}{': '}{intl.formatDate(settings.startAt, {dateStyle: 'medium', timeStyle: 'short', timeZone: timezone})}
-+                                </Text>
-+                                <DateTimeSelector
-+                                    initialDate={moment(settings.startAt)}
-+                                    handleChange={setStart}
-+                                    timezone={timezone}
-+                                    isMilitaryTime={false}
-+                                    theme={theme}
-+                                    minuteInterval={1}
-+                                    allowPastDates={true}
-+                                    testID='out_of_office_settings.start'
++                                <FormattedText
++                                    id={messages.timezone.id}
++                                    defaultMessage={messages.timezone.defaultMessage}
++                                    style={styles.text}
 +                                />
-+                                <Text style={styles.label}>
-+                                    {intl.formatMessage(messages.end)}{': '}{intl.formatDate(settings.endAt, {dateStyle: 'medium', timeStyle: 'short', timeZone: timezone})}
-+                                </Text>
-+                                <DateTimeSelector
-+                                    initialDate={moment(settings.endAt)}
-+                                    handleChange={setEnd}
-+                                    timezone={timezone}
-+                                    isMilitaryTime={false}
-+                                    theme={theme}
-+                                    minuteInterval={1}
-+                                    allowPastDates={true}
-+                                    testID='out_of_office_settings.end'
++                                <SettingOption
++                                    type='toggle'
++                                    label={intl.formatMessage(messages.quietHours)}
++                                    selected={settings.quietHoursEnabled}
++                                    action={setQuietHours}
++                                    testID='out_of_office_settings.quiet_hours'
 +                                />
++                                {settings.quietHoursEnabled && (
++                                    <>
++                                        <Button
++                                            theme={theme}
++                                            text={`${intl.formatMessage(messages.start)}: ${intl.formatTime(timeFromMinutes(settings.startMinute))}`}
++                                            onPress={() => setEditingTime('startMinute')}
++                                            testID='out_of_office_settings.start'
++                                        />
++                                        <Button
++                                            theme={theme}
++                                            text={`${intl.formatMessage(messages.end)}: ${intl.formatTime(timeFromMinutes(settings.endMinute))}`}
++                                            onPress={() => setEditingTime('endMinute')}
++                                            testID='out_of_office_settings.end'
++                                        />
++                                        {editingTime && (
++                                            <DateTimePicker
++                                                mode='time'
++                                                value={timeFromMinutes(settings[editingTime])}
++                                                onValueChange={setTime}
++                                                onDismiss={() => setEditingTime(undefined)}
++                                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
++                                                textColor={theme.centerChannelColor}
++                                                testID='out_of_office_settings.time_picker'
++                                            />
++                                        )}
++                                    </>
++                                )}
++                                <FormattedText
++                                    id={messages.daysOff.id}
++                                    defaultMessage={messages.daysOff.defaultMessage}
++                                    style={styles.label}
++                                />
++                                <FormattedText
++                                    id={messages.daysOffDescription.id}
++                                    defaultMessage={messages.daysOffDescription.defaultMessage}
++                                    style={styles.text}
++                                />
++                                {WEEKDAYS.map((day) => (
++                                    <SettingOption
++                                        key={day}
++                                        type='toggle'
++                                        label={intl.formatDate(new Date(2024, 0, 7 + day), {weekday: 'long'})}
++                                        selected={settings.daysOff.includes(day)}
++                                        action={(selected: boolean) => setDayOff(day, selected)}
++                                        testID={`out_of_office_settings.day.${day}`}
++                                    />
++                                ))}
 +                                <SettingOption
 +                                    type='toggle'
 +                                    label={intl.formatMessage(messages.calls)}
@@ -1050,13 +1321,14 @@ index 0000000..5788df8
 +}
 diff --git a/app/screens/settings/out_of_office/out_of_office.test.tsx b/app/screens/settings/out_of_office/out_of_office.test.tsx
 new file mode 100644
-index 0000000..d793873
+index 0000000..36a177a
 --- /dev/null
 +++ b/app/screens/settings/out_of_office/out_of_office.test.tsx
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,118 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
++import DateTimePicker from '@react-native-community/datetimepicker';
 +import React from 'react';
 +
 +import {fireEvent, renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
@@ -1064,12 +1336,15 @@ index 0000000..d793873
 +
 +import OutOfOffice from './index';
 +
-+import type {OutOfOfficeSettings as Settings} from '@utils/out_of_office';
++import type {WeeklyOutOfOfficeSettings as Settings} from '@utils/out_of_office';
 +
 +const savedSettings: Settings = {
 +    enabled: true,
-+    startAt: Date.now() - 60000,
-+    endAt: Date.now() + 3600000,
++    schedule: 'weekly',
++    quietHoursEnabled: true,
++    startMinute: 18 * 60,
++    endMinute: 9 * 60,
++    daysOff: [],
 +    allowCalls: false,
 +    allowMentions: false,
 +};
@@ -1087,23 +1362,67 @@ index 0000000..d793873
 +        jest.restoreAllMocks();
 +    });
 +
-+    it('should save independent call and mention exceptions only on explicit save', async () => {
++    it('should save recurring overnight hours and two days off with independent exceptions only on explicit save', async () => {
 +        const screen = renderWithIntlAndTheme(<OutOfOffice/>);
 +        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.enable.toggled.true.button')).toBeTruthy());
 +        fireEvent(screen.getByTestId('out_of_office_settings.allow_calls.toggled.false.button'), 'valueChange', true);
 +        expect(screen.getByTestId('out_of_office_settings.allow_mentions.toggled.false.button')).toBeTruthy();
++        fireEvent(screen.getByTestId('out_of_office_settings.day.4.toggled.false.button'), 'valueChange', true);
++        fireEvent(screen.getByTestId('out_of_office_settings.day.5.toggled.false.button'), 'valueChange', true);
 +        expect(save).not.toHaveBeenCalled();
 +        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
-+        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), {...savedSettings, allowCalls: true}));
++        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), {...savedSettings, daysOff: [4, 5], allowCalls: true}));
 +    });
 +
-+    it('should reject expired schedules without persisting them', async () => {
-+        load.mockResolvedValue({...savedSettings, startAt: 1, endAt: 2});
++    it('should edit wall clock hours using a time-only picker', async () => {
++        const screen = renderWithIntlAndTheme(<OutOfOffice/>);
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.enable.toggled.true.button')).toBeTruthy());
++        fireEvent.press(screen.getByTestId('out_of_office_settings.end'));
++        const {UNSAFE_getByType: getByType} = screen;
++        const picker = getByType(DateTimePicker);
++        expect(picker.props.mode).toBe('time');
++        fireEvent(picker, 'valueChange', {type: 'set'}, new Date(2024, 0, 15, 7, 30));
++        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
++        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), {...savedSettings, endMinute: 450}));
++    });
++
++    it('should reject equal quiet hours without persisting them', async () => {
++        load.mockResolvedValue({...savedSettings, endMinute: savedSettings.startMinute});
 +        const screen = renderWithIntlAndTheme(<OutOfOffice/>);
 +        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.enable.toggled.true.button')).toBeTruthy());
 +        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
-+        expect(screen.getByTestId('out_of_office_settings.error')).toHaveTextContent('Choose an end time after the start time and later than now.');
++        expect(screen.getByTestId('out_of_office_settings.error')).toHaveTextContent('Choose different start and end times for quiet hours.');
 +        expect(save).not.toHaveBeenCalled();
++    });
++
++    it('should save all-day days off without quiet hours', async () => {
++        load.mockResolvedValue({...savedSettings, quietHoursEnabled: false, startMinute: 0, endMinute: 0, daysOff: [0]});
++        const screen = renderWithIntlAndTheme(<OutOfOffice/>);
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.enable.toggled.true.button')).toBeTruthy());
++        expect(screen.queryByTestId('out_of_office_settings.start')).toBeNull();
++        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
++        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), {...savedSettings, quietHoursEnabled: false, startMinute: 0, endMinute: 0, daysOff: [0]}));
++    });
++
++    it('should reject an enabled schedule with no hours or days off', async () => {
++        load.mockResolvedValue({...savedSettings, quietHoursEnabled: false});
++        const screen = renderWithIntlAndTheme(<OutOfOffice/>);
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.enable.toggled.true.button')).toBeTruthy());
++        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
++        expect(screen.getByTestId('out_of_office_settings.error')).toHaveTextContent('Enable daily quiet hours or select at least one day off.');
++        expect(save).not.toHaveBeenCalled();
++    });
++
++    it('should preserve a legacy schedule until explicit replacement', async () => {
++        load.mockResolvedValue({enabled: true, startAt: 1, endAt: Date.now() + 3600000, allowCalls: true, allowMentions: false});
++        const screen = renderWithIntlAndTheme(<OutOfOffice/>);
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.legacy')).toBeTruthy());
++        expect(screen.getByTestId('out_of_office_settings.enable.toggled.false.button')).toBeTruthy();
++        expect(save).not.toHaveBeenCalled();
++        fireEvent(screen.getByTestId('out_of_office_settings.enable.toggled.false.button'), 'valueChange', true);
++        expect(screen.getByTestId('out_of_office_settings.allow_calls.toggled.true.button')).toBeTruthy();
++        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
++        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), {...savedSettings, allowCalls: true}));
 +    });
 +
 +    it('should show save errors and preserve the schedule for retry', async () => {
@@ -1126,10 +1445,10 @@ index 0000000..d793873
 +});
 diff --git a/app/utils/out_of_office.test.ts b/app/utils/out_of_office.test.ts
 new file mode 100644
-index 0000000..0ba0aa6
+index 0000000..656ab49
 --- /dev/null
 +++ b/app/utils/out_of_office.test.ts
-@@ -0,0 +1,120 @@
+@@ -0,0 +1,220 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
@@ -1138,12 +1457,14 @@ index 0000000..0ba0aa6
 +
 +import {
 +    getOutOfOfficeSettings,
++    getNextOutOfOfficeCheck,
 +    isOutOfOfficeActive,
 +    OUT_OF_OFFICE_CHANGED,
 +    saveOutOfOfficeSettings,
 +    shouldSuppressOutOfOfficeNotification,
 +    suppressNotificationDuringOutOfOffice,
 +    type OutOfOfficeSettings,
++    type WeeklyOutOfOfficeSettings,
 +} from './out_of_office';
 +
 +const settings: OutOfOfficeSettings = {
@@ -1154,6 +1475,104 @@ index 0000000..0ba0aa6
 +    allowMentions: false,
 +};
 +const serverUrl = 'https://community.mattermost.com';
++
++const weeklySettings: WeeklyOutOfOfficeSettings = {
++    schedule: 'weekly',
++    enabled: true,
++    quietHoursEnabled: true,
++    startMinute: 22 * 60,
++    endMinute: 7 * 60,
++    daysOff: [],
++    allowCalls: false,
++    allowMentions: false,
++};
++
++// Construct local dates rather than ISO UTC dates: schedules follow the device clock.
++const localTime = (hour: number, minute = 0, day = 16) => new Date(2026, 10, day, hour, minute).getTime();
++
++describe('recurring quiet periods', () => {
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
++    it('should observe both boundaries of daytime quiet hours', () => {
++        const daytime = {...weeklySettings, startMinute: 9 * 60, endMinute: 17 * 60};
++        expect(isOutOfOfficeActive(daytime, localTime(8, 59))).toBe(false);
++        expect(isOutOfOfficeActive(daytime, localTime(9))).toBe(true);
++        expect(isOutOfOfficeActive(daytime, localTime(16, 59))).toBe(true);
++        expect(isOutOfOfficeActive(daytime, localTime(17))).toBe(false);
++    });
++
++    it('should repeat overnight hours on both sides of midnight', () => {
++        expect(isOutOfOfficeActive(weeklySettings, localTime(21, 59))).toBe(false);
++        expect(isOutOfOfficeActive(weeklySettings, localTime(22))).toBe(true);
++        expect(isOutOfOfficeActive(weeklySettings, localTime(0, 0, 17))).toBe(true);
++        expect(isOutOfOfficeActive(weeklySettings, localTime(6, 59, 17))).toBe(true);
++        expect(isOutOfOfficeActive(weeklySettings, localTime(7, 0, 17))).toBe(false);
++    });
++
++    it('should apply a selected weekday for its full local day without quiet hours', () => {
++        const tuesdayOff = {...weeklySettings, quietHoursEnabled: false, daysOff: [2]};
++        expect(isOutOfOfficeActive(tuesdayOff, localTime(23, 59))).toBe(false);
++        expect(isOutOfOfficeActive(tuesdayOff, localTime(0, 0, 17))).toBe(true);
++        expect(isOutOfOfficeActive(tuesdayOff, localTime(23, 59, 17))).toBe(true);
++        expect(isOutOfOfficeActive(tuesdayOff, localTime(0, 0, 18))).toBe(false);
++    });
++
++    it('should combine full days off with daily quiet hours and repeat indefinitely', () => {
++        const combined = {...weeklySettings, daysOff: [2]};
++        expect(isOutOfOfficeActive(combined, localTime(12, 0, 17))).toBe(true);
++        expect(isOutOfOfficeActive(combined, localTime(12, 0, 18))).toBe(false);
++        expect(isOutOfOfficeActive(combined, new Date(2028, 5, 14, 23).getTime())).toBe(true);
++    });
++
++    it('should apply independent notification exceptions throughout recurring quiet time', () => {
++        const allowMentions = {...weeklySettings, allowMentions: true};
++        expect(shouldSuppressOutOfOfficeNotification(allowMentions, 'message', true, localTime(23))).toBe(false);
++        expect(shouldSuppressOutOfOfficeNotification(allowMentions, 'message', false, localTime(23))).toBe(true);
++        expect(shouldSuppressOutOfOfficeNotification(allowMentions, 'call', true, localTime(23))).toBe(true);
++        expect(shouldSuppressOutOfOfficeNotification({...weeklySettings, allowCalls: true}, 'call', false, localTime(23))).toBe(false);
++    });
++
++    it('should not suppress notifications for an invalid equal-time schedule even on a day off', async () => {
++        const invalid = {...weeklySettings, startMinute: 60, endMinute: 60, daysOff: [2]};
++        expect(isOutOfOfficeActive(invalid, localTime(12, 0, 17))).toBe(false);
++        await expect(saveOutOfOfficeSettings(serverUrl, invalid)).rejects.toThrow();
++        expect(RNUtils.setOutOfOfficeSettings).not.toHaveBeenCalled();
++    });
++
++    it('should reject an enabled recurring schedule with no quiet period', async () => {
++        await expect(saveOutOfOfficeSettings(serverUrl, {...weeklySettings, quietHoursEnabled: false})).rejects.toThrow();
++        expect(RNUtils.setOutOfOfficeSettings).not.toHaveBeenCalled();
++    });
++
++    it('should persist recurring settings and restore full-day-only schedules', async () => {
++        const fullDays = {...weeklySettings, quietHoursEnabled: false, startMinute: 0, endMinute: 0, daysOff: [5, 6]};
++        await saveOutOfOfficeSettings(serverUrl, fullDays);
++        const saved = jest.mocked(RNUtils.setOutOfOfficeSettings).mock.calls[0][1];
++        jest.mocked(RNUtils.getOutOfOfficeSettings).mockResolvedValueOnce(saved);
++        await expect(getOutOfOfficeSettings(serverUrl)).resolves.toEqual(fullDays);
++    });
++
++    it.each([
++        {startMinute: -1}, {endMinute: 1440}, {startMinute: 1.5},
++        {daysOff: [7]}, {daysOff: [-1]}, {daysOff: [2.5]},
++        {daysOff: ['2']}, {daysOff: null}, {quietHoursEnabled: 'true'}, {schedule: 'unsupported'},
++    ])('should reject malformed recurring settings %p', async (invalid) => {
++        jest.mocked(RNUtils.getOutOfOfficeSettings).mockResolvedValueOnce(JSON.stringify({...weeklySettings, ...invalid}));
++        await expect(getOutOfOfficeSettings(serverUrl)).rejects.toThrow('Invalid out-of-office settings');
++    });
++
++    it('should recheck recurring schedules at the next minute and preserve legacy boundaries', () => {
++        const now = localTime(21, 59) + 45000;
++        expect(getNextOutOfOfficeCheck(weeklySettings, now)).toBe(localTime(22));
++        expect(getNextOutOfOfficeCheck(weeklySettings, localTime(22))).toBe(localTime(22, 1));
++        expect(getNextOutOfOfficeCheck({...weeklySettings, enabled: false}, now)).toBeUndefined();
++        expect(getNextOutOfOfficeCheck(settings, 500)).toBe(1000);
++        expect(getNextOutOfOfficeCheck(settings, 1500)).toBe(2000);
++        expect(getNextOutOfOfficeCheck(settings, 2000)).toBeUndefined();
++    });
++});
 +
 +describe('out-of-office notification policy', () => {
 +    it('should start at the scheduled instant and resume notifications at the end', () => {
@@ -1252,10 +1671,10 @@ index 0000000..0ba0aa6
 +});
 diff --git a/app/utils/out_of_office.ts b/app/utils/out_of_office.ts
 new file mode 100644
-index 0000000..6f2a2bb
+index 0000000..d4f4fa4
 --- /dev/null
 +++ b/app/utils/out_of_office.ts
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,132 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
@@ -1265,39 +1684,110 @@ index 0000000..6f2a2bb
 +import {safeParseJSON} from '@utils/helpers';
 +import {logWarning} from '@utils/log';
 +
-+export type OutOfOfficeSettings = {
++type NotificationExceptions = {
 +    enabled: boolean;
-+    startAt: number;
-+    endAt: number;
 +    allowCalls: boolean;
 +    allowMentions: boolean;
 +};
 +
++export type WeeklyOutOfOfficeSettings = NotificationExceptions & {
++    schedule: 'weekly';
++    quietHoursEnabled: boolean;
++    startMinute: number;
++    endMinute: number;
++
++    // Device-local weekdays, Sunday = 0 through Saturday = 6.
++    daysOff: number[];
++};
++
++type DateOutOfOfficeSettings = NotificationExceptions & {
++    schedule?: undefined;
++    startAt: number;
++    endAt: number;
++};
++
++export type OutOfOfficeSettings = WeeklyOutOfOfficeSettings | DateOutOfOfficeSettings;
++
 +export const OUT_OF_OFFICE_CHANGED = 'outOfOfficeChanged';
 +
++function parseSettings(value: unknown): OutOfOfficeSettings {
++    const invalid = new Error('Invalid out-of-office settings');
++    if (typeof value !== 'object' || !value || Array.isArray(value)) {
++        throw invalid;
++    }
++    const settings = value as Record<string, unknown>;
++    if (typeof settings.enabled !== 'boolean' || typeof settings.allowCalls !== 'boolean' || typeof settings.allowMentions !== 'boolean') {
++        throw invalid;
++    }
++    const common = {enabled: settings.enabled, allowCalls: settings.allowCalls, allowMentions: settings.allowMentions};
++    if (settings.schedule === 'weekly') {
++        if (typeof settings.quietHoursEnabled !== 'boolean' ||
++            typeof settings.startMinute !== 'number' || !Number.isInteger(settings.startMinute) || settings.startMinute < 0 || settings.startMinute > 1439 ||
++            typeof settings.endMinute !== 'number' || !Number.isInteger(settings.endMinute) || settings.endMinute < 0 || settings.endMinute > 1439 ||
++            !Array.isArray(settings.daysOff) || !settings.daysOff.every((day) => Number.isInteger(day) && day >= 0 && day <= 6)) {
++            throw invalid;
++        }
++        return {schedule: 'weekly', enabled: common.enabled, quietHoursEnabled: settings.quietHoursEnabled, startMinute: settings.startMinute, endMinute: settings.endMinute, daysOff: [...new Set<number>(settings.daysOff)], allowCalls: common.allowCalls, allowMentions: common.allowMentions};
++    }
++    if (settings.schedule !== undefined || typeof settings.startAt !== 'number' || !Number.isFinite(settings.startAt) ||
++        typeof settings.endAt !== 'number' || !Number.isFinite(settings.endAt)) {
++        throw invalid;
++    }
++    return {enabled: common.enabled, startAt: settings.startAt, endAt: settings.endAt, allowCalls: common.allowCalls, allowMentions: common.allowMentions};
++}
++
 +export function isOutOfOfficeActive(settings?: OutOfOfficeSettings, now = Date.now()) {
-+    return Boolean(settings?.enabled && Number.isFinite(settings.startAt) && Number.isFinite(settings.endAt) && settings.startAt <= now && now < settings.endAt);
++    if (!settings?.enabled || !Number.isFinite(now)) {
++        return false;
++    }
++    if (settings.schedule === 'weekly') {
++        if (settings.quietHoursEnabled && settings.startMinute === settings.endMinute) {
++            return false;
++        }
++        const local = new Date(now);
++        if (settings.daysOff.includes(local.getDay())) {
++            return true;
++        }
++        if (!settings.quietHoursEnabled || settings.startMinute === settings.endMinute) {
++            return false;
++        }
++        const minute = (local.getHours() * 60) + local.getMinutes();
++        return settings.startMinute < settings.endMinute ?
++            minute >= settings.startMinute && minute < settings.endMinute :
++            minute >= settings.startMinute || minute < settings.endMinute;
++    }
++    return Number.isFinite(settings.startAt) && Number.isFinite(settings.endAt) && settings.startAt <= now && now < settings.endAt;
++}
++
++// Recheck on local minute boundaries so clock/time-zone changes and repeated DST
++// hours are reflected even while an incoming call banner is already mounted.
++export function getNextOutOfOfficeCheck(settings?: OutOfOfficeSettings, now = Date.now()): number | undefined {
++    if (!settings?.enabled) {
++        return undefined;
++    }
++    if (settings.schedule === 'weekly') {
++        return now + (60000 - (now % 60000));
++    }
++    return [settings.startAt, settings.endAt].find((time) => time > now);
 +}
 +
 +export async function getOutOfOfficeSettings(serverUrl: string): Promise<OutOfOfficeSettings | undefined> {
 +    const stored = await RNUtils.getOutOfOfficeSettings(serverUrl);
-+    if (!stored) {
-+        return undefined;
-+    }
-+    const settings = safeParseJSON(stored);
-+    if (typeof settings !== 'object' || !settings || Array.isArray(settings) || typeof settings.enabled !== 'boolean' ||
-+        typeof settings.startAt !== 'number' || typeof settings.endAt !== 'number' ||
-+        typeof settings.allowCalls !== 'boolean' || typeof settings.allowMentions !== 'boolean') {
-+        throw new Error('Invalid out-of-office settings');
-+    }
-+    return {enabled: settings.enabled, startAt: settings.startAt, endAt: settings.endAt, allowCalls: settings.allowCalls, allowMentions: settings.allowMentions};
++    return stored ? parseSettings(safeParseJSON(stored)) : undefined;
 +}
 +
 +export async function saveOutOfOfficeSettings(serverUrl: string, settings: OutOfOfficeSettings): Promise<void> {
-+    if (settings.enabled && (!Number.isFinite(settings.startAt) || !Number.isFinite(settings.endAt) || settings.endAt <= settings.startAt || settings.endAt <= Date.now())) {
-+        throw new Error('Out-of-office end must follow the start and be in the future');
++    const validated = parseSettings(settings);
++    if (validated.enabled) {
++        if (validated.schedule === 'weekly') {
++            if ((validated.quietHoursEnabled && validated.startMinute === validated.endMinute) || (!validated.quietHoursEnabled && !validated.daysOff.length)) {
++                throw new Error('Choose different quiet hours or at least one full day off');
++            }
++        } else if (validated.endAt <= validated.startAt || validated.endAt <= Date.now()) {
++            throw new Error('Out-of-office end must follow the start and be in the future');
++        }
 +    }
-+    await RNUtils.setOutOfOfficeSettings(serverUrl, JSON.stringify(settings));
++    await RNUtils.setOutOfOfficeSettings(serverUrl, JSON.stringify(validated));
 +    DeviceEventEmitter.emit(OUT_OF_OFFICE_CHANGED, serverUrl);
 +}
 +
@@ -1319,10 +1809,10 @@ index 0000000..6f2a2bb
 +}
 diff --git a/ios/Gekidou/Tests/GekidouTests/OutOfOfficeTests.swift b/ios/Gekidou/Tests/GekidouTests/OutOfOfficeTests.swift
 new file mode 100644
-index 0000000..0bd6e22
+index 0000000..a85b6b6
 --- /dev/null
 +++ b/ios/Gekidou/Tests/GekidouTests/OutOfOfficeTests.swift
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,121 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
@@ -1374,13 +1864,82 @@ index 0000000..0bd6e22
 +        Preferences.default.set("invalid", forKey: "outOfOfficeSettings." + serverUrl)
 +        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: 1500))
 +    }
++
++    private func saveWeekly(_ overrides: [String: Any] = [:]) throws {
++        var settings: [String: Any] = ["schedule": "weekly", "enabled": true, "quietHoursEnabled": true,
++                                       "startMinute": 540, "endMinute": 1020, "daysOff": [],
++                                       "allowCalls": false, "allowMentions": false]
++        settings.merge(overrides) { _, new in new }
++        let data = try JSONSerialization.data(withJSONObject: settings)
++        Preferences.default.set(String(data: data, encoding: .utf8), forKey: "outOfOfficeSettings." + serverUrl)
++    }
++
++    private func localTime(day: Int = 16, hour: Int, minute: Int = 0) -> Double {
++        let components = DateComponents(year: 2026, month: 11, day: day, hour: hour, minute: minute)
++        var calendar = Calendar(identifier: .gregorian)
++        calendar.timeZone = .current
++        return calendar.date(from: components)!.timeIntervalSince1970 * 1000
++    }
++
++    func testWeeklyHoursRepeatDailyAndRespectMinuteBoundaries() throws {
++        try saveWeekly()
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(hour: 8, minute: 59)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(hour: 9)))
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(hour: 17)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 18, hour: 12)))
++    }
++
++    func testWeeklyOvernightHoursSpanMidnight() throws {
++        try saveWeekly(["startMinute": 1320, "endMinute": 420])
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(hour: 21, minute: 59)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(hour: 22)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 17, hour: 0)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 17, hour: 6, minute: 59)))
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 17, hour: 7)))
++    }
++
++    func testTwoDaysOffCoverTheirEntireLocalCalendarDays() throws {
++        // Wednesday and Sunday; hours disabled and equal endpoints are valid for days off alone.
++        try saveWeekly(["quietHoursEnabled": false, "startMinute": 0, "endMinute": 0, "daysOff": [3, 0]])
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 17, hour: 23, minute: 59)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 18, hour: 0)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 18, hour: 23, minute: 59)))
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 19, hour: 0)))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(day: 22, hour: 12)))
++    }
++
++    func testWeeklyExceptionsAlsoApplyDuringFullDaysOff() throws {
++        try saveWeekly(["daysOff": [1], "allowCalls": true, "allowMentions": true])
++        let now = localTime(hour: 0)
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, isCall: true, now: now))
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: ["is_mention": "true"], now: now))
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: ["type": "clear"], now: now))
++        XCTAssertTrue(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: now))
++    }
++
++    func testMalformedWeeklyConfigurationFailsOpen() throws {
++        let invalid: [[String: Any]] = [
++            ["startMinute": 540.5], ["startMinute": true], ["endMinute": 1440],
++            ["daysOff": [7]], ["daysOff": ["1"]], ["daysOff": "1"],
++            ["enabled": 1], ["quietHoursEnabled": "true"], ["allowCalls": 0],
++            ["allowMentions": NSNull()], ["startMinute": 540, "endMinute": 540],
++            ["schedule": "unknown"], ["schedule": NSNull()],
++        ]
++        for overrides in invalid {
++            try saveWeekly(overrides)
++            XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(hour: 12)))
++        }
++        try saveWeekly(["quietHoursEnabled": false])
++        XCTAssertFalse(OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: message, now: localTime(hour: 12)))
++    }
++
 +}
 diff --git a/libraries/@mattermost/rnutils/android/src/main/java/com/mattermost/rnutils/helpers/OutOfOffice.kt b/libraries/@mattermost/rnutils/android/src/main/java/com/mattermost/rnutils/helpers/OutOfOffice.kt
 new file mode 100644
-index 0000000..c921df6
+index 0000000..122aa3f
 --- /dev/null
 +++ b/libraries/@mattermost/rnutils/android/src/main/java/com/mattermost/rnutils/helpers/OutOfOffice.kt
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,67 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
@@ -1389,6 +1948,7 @@ index 0000000..c921df6
 +import android.content.Context
 +import android.os.Bundle
 +import org.json.JSONObject
++import java.util.Calendar
 +
 +object OutOfOffice {
 +    fun shouldSuppress(context: Context, serverUrl: String?, payload: Bundle, now: Long = System.currentTimeMillis()): Boolean {
@@ -1397,9 +1957,14 @@ index 0000000..c921df6
 +            .getString("outOfOfficeSettings.$serverUrl", null) ?: return false
 +        return try {
 +            val settings = JSONObject(raw)
-+            val start = settings.optDouble("startAt", Double.NaN)
-+            val end = settings.optDouble("endAt", Double.NaN)
-+            if (!settings.optBoolean("enabled") || !start.isFinite() || !end.isFinite() || now < start || now >= end) {
++            val active = if (settings.has("schedule")) {
++                settings.opt("schedule") == "weekly" && isWeeklyActive(settings, now)
++            } else {
++                val start = settings.optDouble("startAt", Double.NaN)
++                val end = settings.optDouble("endAt", Double.NaN)
++                settings.optBoolean("enabled") && start.isFinite() && end.isFinite() && now >= start && now < end
++            }
++            if (!active) {
 +                false
 +            } else {
 +                val isCall = payload.getString("type") == "call" || payload.getString("sub_type") == "calls"
@@ -1412,4 +1977,33 @@ index 0000000..c921df6
 +            false
 +        }
 +    }
++
++    private fun integerInRange(value: Any?, range: IntRange): Int? {
++        val number = (value as? Number)?.toDouble() ?: return null
++        if (!number.isFinite() || number != number.toInt().toDouble() || number.toInt() !in range) return null
++        return number.toInt()
++    }
++
++    private fun isWeeklyActive(settings: JSONObject, now: Long): Boolean {
++        val enabled = settings.opt("enabled") as? Boolean ?: return false
++        val quietHoursEnabled = settings.opt("quietHoursEnabled") as? Boolean ?: return false
++        if (settings.opt("allowCalls") !is Boolean || settings.opt("allowMentions") !is Boolean) return false
++        val start = integerInRange(settings.opt("startMinute"), 0..1439) ?: return false
++        val end = integerInRange(settings.opt("endMinute"), 0..1439) ?: return false
++        if (quietHoursEnabled && start == end) return false
++        val days = settings.optJSONArray("daysOff") ?: return false
++        val daysOff = mutableSetOf<Int>()
++        for (index in 0 until days.length()) {
++            daysOff.add(integerInRange(days.opt(index), 0..6) ?: return false)
++        }
++        if (!enabled) return false
++        // Calendar follows the device's current timezone, including DST and timezone changes.
++        val local = Calendar.getInstance().apply { timeInMillis = now }
++        val weekday = local.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY
++        if (weekday in daysOff) return true
++        if (!quietHoursEnabled) return false
++        val minute = local.get(Calendar.HOUR_OF_DAY) * 60 + local.get(Calendar.MINUTE)
++        return if (start < end) minute >= start && minute < end else minute >= start || minute < end
++    }
++
 +}
