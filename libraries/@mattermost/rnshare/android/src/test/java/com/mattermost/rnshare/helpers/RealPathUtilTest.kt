@@ -127,6 +127,15 @@ class RealPathUtilTest {
     }
 
     @Test
+    fun `should not resolve a file uri in this app's external media storage spelled with different case on any filesystem`() {
+        val root = addSharedStorageVolume()
+        val deviceContext = withMediaAndObbDirs(root)
+        val caseVariant = File(root, "ANDROID/MEDIA/${context.packageName.uppercase()}/photo.jpg")
+
+        assertNull(RealPathUtil.getRealPathFromURI(deviceContext, Uri.fromFile(caseVariant)))
+    }
+
+    @Test
     fun `should not resolve a file uri in shared storage that links into private storage`() {
         val link = File(addSharedStorageVolume().canonicalFile, "Download/link").apply { parentFile?.mkdirs() }
         Files.createSymbolicLink(link.toPath(), privateFile.toPath())

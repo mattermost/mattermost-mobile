@@ -10,6 +10,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.file.Files
+import java.util.Locale
 import java.util.UUID
 
 private val UNSAFE_FILENAME_CHARS = Regex("""[%\\\p{Cntrl}]""")
@@ -62,10 +63,11 @@ object RealPathUtil {
             return null
         }
 
-        // Compared by file identity rather than path, since shared storage is case-insensitive.
-        val privateDirs = getPrivateDirs(context)
-        val isPrivate = generateSequence(file) { it.parentFile }.any { ancestor ->
-            privateDirs.any { it.isSameFileAs(ancestor) }
+        // Shared storage is case-insensitive, so compare both by path ignoring case and by file identity.
+        val privateDirs = getPrivateDirs(context).mapNotNull { it.canonicalOrNull() }
+        val ancestors = generateSequence(file) { it.parentFile }.toList()
+        val isPrivate = privateDirs.any { privateDir ->
+            file.isWithinIgnoringCase(privateDir) || ancestors.any { privateDir.isSameFileAs(it) }
         }
         return if (isPrivate) null else file.absolutePath
     }
@@ -83,6 +85,12 @@ object RealPathUtil {
         } catch (e: IOException) {
             null
         }
+    }
+
+    private fun File.isWithinIgnoringCase(dir: File): Boolean {
+        val filePath = path.lowercase(Locale.ROOT)
+        val dirPath = dir.path.lowercase(Locale.ROOT)
+        return filePath == dirPath || filePath.startsWith("$dirPath${File.separator}")
     }
 
     private fun File.isSameFileAs(other: File): Boolean {
