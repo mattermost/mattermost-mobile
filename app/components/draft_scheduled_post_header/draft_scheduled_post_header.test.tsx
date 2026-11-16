@@ -100,6 +100,7 @@ describe('DraftAndScheduledPostHeader', () => {
 
         expect(screen.getByTestId('scheduled_post_header.scheduled_at')).toBeTruthy();
         expect(screen.getByText('Send on May 5, 2025, 10:00 AM')).toBeTruthy();
+        expect(screen.queryByTestId('scheduled_post_header.repeats_weekly')).toBeNull();
     });
 
     it('renders scheduled post with error correctly', () => {
@@ -112,6 +113,35 @@ describe('DraftAndScheduledPostHeader', () => {
 
         renderWithIntlAndTheme(<DraftAndScheduledPostHeader {...errorProps}/>);
 
+        expect(screen.getByText('Error message')).toBeTruthy();
+    });
+
+    it('should render the repeats weekly tag for a recurring scheduled post', () => {
+        const recurringProps = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            postScheduledAt: 1620100000000,
+            isRecurring: true,
+        };
+
+        renderWithIntlAndTheme(<DraftAndScheduledPostHeader {...recurringProps}/>);
+
+        expect(screen.getByTestId('scheduled_post_header.repeats_weekly')).toBeTruthy();
+        expect(screen.getByText('Repeats weekly')).toBeTruthy();
+    });
+
+    it('should not render the repeats weekly tag for a recurring scheduled post in error', () => {
+        const recurringErrorProps = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            postScheduledAt: 1620100000000,
+            scheduledPostErrorCode: 'channel_not_found',
+            isRecurring: true,
+        };
+
+        renderWithIntlAndTheme(<DraftAndScheduledPostHeader {...recurringErrorProps}/>);
+
+        expect(screen.queryByTestId('scheduled_post_header.repeats_weekly')).toBeNull();
         expect(screen.getByText('Error message')).toBeTruthy();
     });
 

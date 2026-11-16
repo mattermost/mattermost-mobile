@@ -10,8 +10,8 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {isAndroid, isIos, longPressWithRetry, reloadApp, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class RecentMentionsScreen {
     testID = {
@@ -173,7 +173,7 @@ class RecentMentionsScreen {
             try {
                 await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
             } catch {
-                await device.reloadReactNative();
+                await reloadApp();
                 await this.open();
                 await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
             }

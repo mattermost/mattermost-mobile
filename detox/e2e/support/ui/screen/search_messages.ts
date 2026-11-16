@@ -11,8 +11,8 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect, waitFor, device} from 'detox';
+import {disableSynchronization, enableSynchronization, isAndroid, isIos, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class SearchMessagesScreen {
     testID = {
@@ -117,12 +117,12 @@ class SearchMessagesScreen {
     };
 
     submitSearch = async () => {
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await this.searchInput.tapReturnKey();
             await wait(timeouts.TWO_SEC);
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     };
 
@@ -148,9 +148,7 @@ class SearchMessagesScreen {
             // Android: post row may exist before passing visibility threshold
         }
 
-        const longPressTarget = isAndroid()
-            ? element(by.id(`${this.testID.searchResultsScreenPrefix}post_list.post.${postId}`))
-            : postListPostItem;
+        const longPressTarget = isAndroid()? element(by.id(`${this.testID.searchResultsScreenPrefix}post_list.post.${postId}`)): postListPostItem;
 
         await longPressWithRetry(
             longPressTarget,

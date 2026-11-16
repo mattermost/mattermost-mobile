@@ -22,13 +22,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {
-    getRandomId,
-    longPressWithScrollRetry,
-    scrollElementIntoView,
-    timeouts,
-    wait,
-} from '@support/utils';
+import {getRandomId, longPressWithScrollRetry, reloadApp, scrollElementIntoView, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 export class MmBlocksTestHelper {
@@ -108,7 +102,7 @@ export class MmBlocksTestHelper {
 
         // Reload after login so the client picks up FeatureFlagMmBlocksEnabled;
         // reload always lands on the channel list, then re-open.
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         this.lastChannelName = channel.name;
         await ChannelScreen.open(this.CHANNELS_CATEGORY, channel.name);

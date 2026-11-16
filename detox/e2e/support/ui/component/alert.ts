@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, safeEnableSynchronization, tapUntilGone, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, tapUntilGone, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class Alert {
@@ -147,7 +147,7 @@ class Alert {
             return;
         }
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             let dismissed = false;
 
@@ -191,7 +191,7 @@ class Alert {
                 await this.okButton.tap();
             }
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);

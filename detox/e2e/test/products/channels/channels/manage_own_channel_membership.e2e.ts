@@ -25,7 +25,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {expectVisible} from '@support/utils';
+import {expectVisible, reloadApp} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Manage Own Channel Membership', () => {
@@ -58,7 +58,7 @@ describe('Channels - Manage Own Channel Membership', () => {
         // # Create a channel and add the test user to it
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // # Open the channel screen

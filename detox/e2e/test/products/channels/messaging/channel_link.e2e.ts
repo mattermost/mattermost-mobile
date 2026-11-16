@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Channel Link', () => {
@@ -120,12 +120,12 @@ describe('Messaging - Channel Link', () => {
         if (isAndroid()) {
             // Dismiss the soft keyboard so the reply text is not occluded. Assert we are still in the
             // thread first — pressBack pops the thread when the keyboard is already closed.
-            await device.disableSynchronization();
+            await disableSynchronization();
             try {
                 await device.pressBack();
                 await wait(timeouts.THREE_SEC);
             } finally {
-                await device.enableSynchronization();
+                await enableSynchronization();
             }
             await ThreadScreen.toBeVisible();
         }

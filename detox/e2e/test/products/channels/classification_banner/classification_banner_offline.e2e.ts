@@ -13,7 +13,7 @@ import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {reloadApp, timeouts, wait} from '@support/utils';
 import {by, device, element, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
@@ -98,7 +98,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await device.setURLBlacklist(getBlockedServerPatterns());
 
         // # Reload the app (it should hydrate from DB cache, not from the API)
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // * Banner should still be visible from cached data
@@ -109,14 +109,14 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
     it('MM-T6208_1 - should not display the banner when there is no cached data and the API is blocked', async () => {
         // # Reload while online so the app fetches the (now-empty) classification
         // data and persists it, clearing any stale cache from prior tests.
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // # Block API calls before reloading again
         await device.setURLBlacklist(getBlockedServerPatterns());
 
         // # Reload the app with no cached data and no API access
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // * Banner must not appear and the app must not crash

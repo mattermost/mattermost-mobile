@@ -60,6 +60,12 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
     /** type : The type of the post being scheduled */
     @field('type') type!: PostTypesUserCreatable | null;
 
+    /** repeat_type : '' for a one-time post, 'weekly' for a post the server re-schedules every week */
+    @field('repeat_type') repeatType!: ScheduledPostRepeatType;
+
+    /** repeat_timezone : The IANA zone name the weekly recurrence advances in */
+    @field('repeat_timezone') repeatTimezone!: string;
+
     toApi = (user_id: string) => {
         const scheduledPost: ScheduledPost = {
             id: this.id,
@@ -73,6 +79,9 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
             processed_at: this.processedAt,
             error_code: this.errorCode,
             create_at: this.createAt,
+            type: this.type ?? undefined,
+            repeat_type: this.repeatType,
+            repeat_timezone: this.repeatTimezone,
             user_id,
         };
         if (this.metadata?.priority) {

@@ -22,8 +22,8 @@ import {
     ServerScreen,
     HomeScreen,
 } from '@support/ui/screen';
-import {tapNativeBackButton, timeouts, wait} from '@support/utils';
-import {expect, device, element, by, waitFor} from 'detox';
+import {reloadApp, tapNativeBackButton, timeouts, wait} from '@support/utils';
+import {expect, element, by, waitFor} from 'detox';
 
 // beforeAll: apiInit + config + login under CI load — 6min hook timeout.
 jest.setTimeout(360000);
@@ -194,7 +194,7 @@ jest.setTimeout(360000);
     it('TC-MOB-01: Section visible when all conditions are met', async () => {
         await setSharedChannelsFeature(true);
         await grantUserSystemAdminRole(testUser.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await wait(timeouts.THREE_SEC);
 
         await navigateToConfiguration();
@@ -212,7 +212,7 @@ jest.setTimeout(360000);
     it('TC-MOB-02: Section hidden when feature disabled', async () => {
         await setSharedChannelsFeature(false);
         await grantUserSystemAdminRole(testUser.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await wait(timeouts.THREE_SEC);
 
         await navigateToConfiguration();
@@ -227,7 +227,7 @@ jest.setTimeout(360000);
         await setSharedChannelsFeature(true);
         await System.apiDeleteAllRemoteClusters(siteOneUrl);
         await grantUserSystemAdminRole(testUser.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await wait(timeouts.THREE_SEC);
 
         await navigateToConfiguration();
@@ -245,7 +245,7 @@ jest.setTimeout(360000);
     it('TC-MOB-04: Section hidden for users without Shared channel manager role', async () => {
         await setSharedChannelsFeature(true);
         await removeUserSystemAdminRole(testUser.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await wait(timeouts.THREE_SEC);
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -285,7 +285,7 @@ jest.setTimeout(360000);
         };
         await System.apiEnsureSingleRemoteCluster(siteOneUrl, testTeam.id, mobE2eRemote);
         await grantUserSystemAdminRole(testUser.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await wait(timeouts.THREE_SEC);
 
         await navigateToConfiguration(shareTestChannel.name);
@@ -355,7 +355,7 @@ jest.setTimeout(360000);
         }
 
         await grantUserSystemAdminRole(testUser.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await wait(timeouts.THREE_SEC);
 
         await navigateToConfiguration(shareTestChannel.name);
