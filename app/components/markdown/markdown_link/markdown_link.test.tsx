@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Clipboard from '@react-native-clipboard/clipboard';
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {Text} from 'react-native';
 
@@ -67,7 +67,7 @@ describe('MarkdownLink', () => {
         );
     });
 
-    it('should let the user choose to dial a tel: link through Mattermost when phone dialing is available', () => {
+    it('should let the user choose to dial a tel: link through Mattermost when phone dialing is available', async () => {
         jest.mocked(isPhoneDialingAvailable).mockReturnValueOnce(true);
         const {getByTestId} = renderWithIntl(
             <MarkdownLink
@@ -87,7 +87,7 @@ describe('MarkdownLink', () => {
 
         fireEvent.press(getSheetText('Call with Mattermost'));
 
-        expect(startPhoneCall).toHaveBeenCalledWith(expect.any(Object), 'https://server.example.com', {number: '+15551234567'});
+        await waitFor(() => expect(startPhoneCall).toHaveBeenCalledWith(expect.any(Object), 'https://server.example.com', {number: '+15551234567'}));
     });
 
     it('should offer copy phone number on long press of a tel: link', () => {

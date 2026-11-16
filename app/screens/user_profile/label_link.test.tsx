@@ -346,11 +346,11 @@ describe('UserProfileLink', () => {
             const sheet = renderWithIntlAndTheme(renderContent());
             fireEvent.press(sheet.getByText('Call with Mattermost'));
 
-            expect(startPhoneCall).toHaveBeenCalledWith(expect.any(Object), 'https://server.example.com', {
+            await waitFor(() => expect(startPhoneCall).toHaveBeenCalledWith(expect.any(Object), 'https://server.example.com', {
                 number: '+15551234567',
                 targetUserId: 'user-2',
                 displayLabel: 'Mobile',
-            });
+            }));
         });
     });
 });
