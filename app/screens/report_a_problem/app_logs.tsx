@@ -14,6 +14,7 @@ import {useTheme} from '@context/theme';
 import SecurityManager from '@managers/security_manager';
 import {deleteFile, pathWithPrefix} from '@utils/file';
 import {logDebug} from '@utils/log';
+import {EXCLUDE_THIS_APP_FROM_FILE_SHARE} from '@utils/share_targets';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import LogFileItem from './log_file_item';
@@ -64,6 +65,7 @@ const AppLogs = () => {
 
                     // If Allowing to save to Files app, save it there, otherwise show share dialog
                     saveToFiles: SecurityManager.canSaveToLocation(serverUrl, 'FilesApp'),
+                    excludedActivityTypes: EXCLUDE_THIS_APP_FROM_FILE_SHARE,
                 });
             }
         } catch (error) {
