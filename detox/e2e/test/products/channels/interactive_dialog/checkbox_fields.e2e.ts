@@ -43,7 +43,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {disableSynchronization, enableSynchronization, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 const DIALOG_SCREEN_ID = 'interactive_dialog.screen';
@@ -103,11 +103,11 @@ async function waitForVisibleText(text: string, timeout: number = timeouts.HALF_
 // appear more than once — e.g. a dialog whose introduction_text repeats it —
 // and an un-indexed matcher then fails with "multiple elements matched".
 async function waitForDialog(expectedTitle: string) {
-    await device.disableSynchronization();
+    await disableSynchronization();
     try {
         await waitForVisibleText(expectedTitle);
     } finally {
-        await safeEnableSynchronization();
+        await enableSynchronization();
     }
 }
 
