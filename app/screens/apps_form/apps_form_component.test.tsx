@@ -263,14 +263,20 @@ describe('AppsFormComponent grid layout', () => {
                 expanded: true,
                 bordered: true,
                 fields: [
-                    {name: 'row1', type: 'collapsible', label: 'Row 1', collapsible_config: {fields: [
-                        {name: 'cell_order', type: 'text', label: 'Order'},
-                        {name: 'cell_weight', type: 'text', label: 'Weight'},
-                    ]}} as AppField,
-                    {name: 'row2', type: 'collapsible', label: 'Row 2', collapsible_config: {fields: [
-                        {name: 'cell_order2', type: 'text', label: 'Order'},
-                        {name: 'cell_weight2', type: 'text', label: 'Weight'},
-                    ]}} as AppField,
+                    {name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_weight', type: 'text', label: 'Weight'},
+                        ]}} as AppField,
+                    {name: 'row2',
+                        type: 'collapsible',
+                        label: 'Row 2',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order2', type: 'text', label: 'Order'},
+                            {name: 'cell_weight2', type: 'text', label: 'Weight'},
+                        ]}} as AppField,
                 ],
             },
         } as AppField],
@@ -299,10 +305,12 @@ describe('AppsFormComponent grid layout', () => {
         expect(queryByTestId('AppFormSection.orders')).toBeNull();
     });
 
-    it('opens a row on its own screen on a narrow viewport, swapping the header to Done', () => {
+    it('opens a row on its own screen on a narrow viewport, and Done returns to the table without submitting', () => {
         jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({width: 400, height: 800, scale: 1, fontScale: 1});
 
-        const {getByTestId, queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
+        const submitMock = jest.fn().mockResolvedValue({data: {type: 'ok'}});
+        const props = {...getProps(gridForm), submit: submitMock};
+        const {getByTestId, queryByTestId} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 
         expect(queryByTestId('apps_form_row_detail.row1')).toBeNull();
 
@@ -310,12 +318,35 @@ describe('AppsFormComponent grid layout', () => {
             fireEvent.press(getByTestId('apps_form_grid.row.row1.sticky'));
         });
 
+        // The row opens on its own screen and the header becomes Done.
         expect(getByTestId('apps_form_row_detail.row1')).toBeTruthy();
+        const doneButton = getHeaderSubmit();
+        const {getByTestId: getHeaderTestId} = renderWithEverything(<>{doneButton!()}</>, {database, serverUrl});
+        const done = getHeaderTestId('interactive_dialog.row_done.button');
 
-        // The header leaves the row rather than submitting the whole dialog.
-        const headerRight = getHeaderSubmit();
-        const {getByTestId: getHeaderTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
-        expect(getHeaderTestId('interactive_dialog.row_done.button')).toBeTruthy();
+        // Done closes the row and returns to the table; it does not submit the
+        // whole dialog while the user is looking at a single record.
+        act(() => {
+            pressSubmit(done);
+        });
+
+        expect(queryByTestId('apps_form_row_detail.row1')).toBeNull();
+        expect(getByTestId('apps_form_grid.orders')).toBeTruthy();
+        expect(submitMock).not.toHaveBeenCalled();
+    });
+
+    it('edits grid cells in place on a wide viewport instead of opening a row', () => {
+        jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({width: 900, height: 800, scale: 1, fontScale: 1});
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        const {queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
+
+        // The cells are live inputs, so each leaf field renders an AppsFormField.
+        expect(mockFieldProps.cell_order).toBeTruthy();
+        expect(mockFieldProps.cell_weight).toBeTruthy();
+
+        // Rows are not press targets when the table edits in place.
+        expect(queryByTestId('apps_form_grid.row.row1.sticky')).toBeNull();
     });
 });
 

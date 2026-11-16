@@ -63,6 +63,13 @@ export default function useGridRow(fields: AppField[] | undefined, submitButtons
      */
     const rowTitle = useCallback((row: AppField): string => {
         const firstCell = (row.collapsible_config?.fields || []).find((f) => f.name && f.name !== submitButtons);
+
+        // Never surface a password as the row's title: it would show as plain
+        // text above the secure input on the row's own screen. Fall back to the
+        // row label or name instead.
+        if (firstCell?.subtype === 'password') {
+            return row.label || row.name || '';
+        }
         const value = firstCell?.name ? secureGetFromRecord(values, firstCell.name) : undefined;
         const text = isAppSelectOption(value) ? value.label : value;
         const typed = typeof text === 'string' ? text.trim() : '';

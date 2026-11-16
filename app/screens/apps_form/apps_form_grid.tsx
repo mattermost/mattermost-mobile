@@ -29,6 +29,14 @@ type Props = {
     // instead and edits a row on its own screen.
     renderCell: (field: AppField) => React.ReactNode;
 
+    // Renders a leaf field in full — label, help text and its own error — the
+    // way the form renders any other field. Used for fields that fall outside
+    // the table: a stray leaf among the rows, or a misconfigured container with
+    // no rows at all. These have no column header to carry their label and no
+    // reserved strip for their error, so the stripped cell renderer would hide
+    // both; a failed required stray would then block submission invisibly.
+    renderField: (field: AppField) => React.ReactNode;
+
     // Read here rather than inside a cell because a display cell shows the
     // value itself, and because the editing table sizes a row around its error.
     values: AppFormValues;
@@ -60,6 +68,9 @@ const CELL_HEIGHT = 46;
 
 // A display cell holds one line of text, so it needs less.
 const DISPLAY_CELL_HEIGHT = 44;
+
+// Shown in place of a password value in the read-only overview.
+const MASKED_VALUE = '••••••';
 
 // Reserved only on a row that actually has an error, and only where the cells
 // are edited in place. Both panes derive it from the same errors object, which
@@ -222,6 +233,12 @@ export function displayCellValue(field: AppField | undefined, value: AppFormValu
     if (value === undefined || value === null || value === false || value === '') {
         return '';
     }
+
+    // A password cell must never show its value in the read-only overview.
+    // The row's own screen still edits it in a real secure input.
+    if (field?.subtype === 'password') {
+        return MASKED_VALUE;
+    }
     if (field?.type === AppFieldTypes.DATE || field?.type === AppFieldTypes.DATETIME) {
         const moment = getDateValue(value, field.datetime_config?.location_timezone, field.type === AppFieldTypes.DATETIME);
         return moment ? moment.format(field.type === AppFieldTypes.DATETIME ? 'lll' : 'll') : String(value);
@@ -231,6 +248,15 @@ export function displayCellValue(field: AppField | undefined, value: AppFormValu
     }
     if (isAppSelectOption(value)) {
         return value.label || '';
+    }
+
+    // A select may carry a primitive value (e.g. a server default) rather than
+    // a resolved option; show the matching option's label where there is one.
+    if (field?.options?.length) {
+        const option = field.options.find((o) => o.value === value);
+        if (option) {
+            return option.label || String(value);
+        }
     }
     return String(value);
 }
@@ -263,7 +289,7 @@ export function displayCellValue(field: AppField | undefined, value: AppFormValu
  * naturally swipes it. Taking the inputs out of the table removes all of that:
  * nothing in it is focusable, so the swipe is unambiguous.
  */
-const AppsFormGrid = ({field, renderCell, values, errors, excludeName, editable, onOpenRow}: Props) => {
+const AppsFormGrid = ({field, renderCell, renderField, values, errors, excludeName, editable, onOpenRow}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
@@ -271,14 +297,18 @@ const AppsFormGrid = ({field, renderCell, values, errors, excludeName, editable,
     const rows = children.filter(isRow);
     const strays = children.filter((child) => !isRow(child));
 
-    if (rows.length === 0) {
-        // Nothing to lay out as a table; fall back to rendering whatever is
-        // there so a misconfigured form still shows its fields.
-        return <>{children.map((child) => renderCell(child))}</>;
-    }
-
     const rowCells = rows.map((row) => cellFields(row, excludeName));
-    const columnCount = Math.max(...rowCells.map((cells) => cells.length));
+
+    // Math.max of an empty list is -Infinity; guard it. A grid with no rows, or
+    // whose only rows have no cells, has no columns to lay out — rendering the
+    // header would read columns[0] off an empty array and crash the form. Fall
+    // back to the full field renderer so a misconfigured form still shows its
+    // fields (and their errors) rather than blowing up.
+    const columnCount = rowCells.length ? Math.max(...rowCells.map((cells) => cells.length)) : 0;
+
+    if (columnCount === 0) {
+        return <>{children.map((child) => renderField(child))}</>;
+    }
 
     // A heading comes from the first row that actually has a cell in that
     // position, which is the first row unless that row is short. Keying on the
@@ -463,7 +493,7 @@ const AppsFormGrid = ({field, renderCell, values, errors, excludeName, editable,
                     </View>
                 </ScrollView>
             </View>
-            {strays.map((child) => renderCell(child))}
+            {strays.map((child) => renderField(child))}
         </View>
     );
 };

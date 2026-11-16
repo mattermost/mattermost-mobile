@@ -687,6 +687,7 @@ function AppsFormComponent({
                         errors={errors}
                         excludeName={form.submit_buttons}
                         renderCell={renderGridCell}
+                        renderField={(f) => renderField(f, f.name || '')}
                         editable={inlineEditGrid}
                         onOpenRow={setOpenRowName}
                     />
