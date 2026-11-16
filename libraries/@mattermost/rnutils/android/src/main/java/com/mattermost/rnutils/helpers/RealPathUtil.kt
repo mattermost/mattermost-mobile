@@ -13,6 +13,8 @@ import java.util.UUID
 
 const val CACHE_DIR_NAME: String = "mmShare"
 
+private const val IMAGE_PICKER_FILE_PREFIX = "rn_image_picker_lib_temp_"
+
 private val UNSAFE_FILENAME_CHARS = Regex("""[%\\\p{Cntrl}]""")
 
 object RealPathUtil {
@@ -34,9 +36,9 @@ object RealPathUtil {
                 getPathFromSavingTempFile(context, uri)
             }
             ContentResolver.SCHEME_FILE -> {
-                val path = uri.path?.let { getCachePath(context, it) }
+                val path = uri.path?.let { getImagePickerResultPath(context, it) }
                 if (path == null) {
-                    Log.w("ReactNative", "RealPathUtil rejected file uri outside the cache directory")
+                    Log.w("ReactNative", "RealPathUtil rejected file uri that is not an image picker result")
                 }
                 path
             }
@@ -50,10 +52,11 @@ object RealPathUtil {
         return provider?.packageName == context.packageName
     }
 
-    private fun getCachePath(context: Context, path: String): String? {
+    private fun getImagePickerResultPath(context: Context, path: String): String? {
         return try {
             val file = File(path).canonicalFile
-            if (file.toPath().startsWith(context.cacheDir.canonicalFile.toPath())) file.absolutePath else null
+            val isPickerResult = file.parentFile == context.cacheDir.canonicalFile && file.name.startsWith(IMAGE_PICKER_FILE_PREFIX)
+            if (isPickerResult) file.absolutePath else null
         } catch (e: IOException) {
             null
         }

@@ -62,11 +62,26 @@ class RealPathUtilTest {
     }
 
     @Test
-    fun `should resolve a file uri for a picker result in the cache directory`() {
+    fun `should resolve a file uri for an image picker result in the cache directory`() {
         val pickerResult = File(context.cacheDir, "rn_image_picker_lib_temp_1.jpg").apply { writeText(SHARED_CONTENT) }
         val uri = Uri.fromFile(pickerResult)
 
         assertEquals(pickerResult.canonicalPath, RealPathUtil.getRealPathFromURI(context, uri))
+    }
+
+    @Test
+    fun `should not resolve a file uri for other files in the cache directory`() {
+        val cachedFiles = listOf(
+            File(context.cacheDir, "logs/app.log"),
+            File(context.cacheDir, "image_cache/photo.jpg"),
+            File(context.cacheDir, "logs/rn_image_picker_lib_temp_1.jpg"),
+        )
+
+        for (cachedFile in cachedFiles) {
+            cachedFile.parentFile?.mkdirs()
+            cachedFile.writeText(SECRET)
+            assertNull(RealPathUtil.getRealPathFromURI(context, Uri.fromFile(cachedFile)))
+        }
     }
 
     @Test
