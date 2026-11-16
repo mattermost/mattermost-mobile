@@ -1,0 +1,93 @@
+name: Out of office Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/out-of-office-apk.yml'
+      - 'out-of-office.patch'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: out-of-office-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      SENTRY_ENABLED: 'false'
+      CI: 'true'
+    defaults:
+      run:
+        working-directory: source
+        shell: bash
+    steps:
+      - name: Check out build inputs
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: inputs
+          persist-credentials: false
+      - name: Check out pinned Mattermost source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: mattermost/mattermost-mobile
+          ref: ffbc7675056bf35db4537c0c8eefedcf29fbf849
+          path: source
+          persist-credentials: false
+      - name: Apply out of office feature
+        run: |
+          git apply --check "$GITHUB_WORKSPACE/inputs/out-of-office.patch"
+          git apply "$GITHUB_WORKSPACE/inputs/out-of-office.patch"
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24.15.0'
+          cache: npm
+          cache-dependency-path: source/package-lock.json
+      - name: Set up Java
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Android SDK
+        run: |
+          set +o pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          set -o pipefail
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.1.12297006' 'cmake;3.22.1'
+      - name: Install locked dependencies and prepare assets
+        env:
+          NODE_ENV: development
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx --no-install patch-package
+          node scripts/generate-assets.js
+          node scripts/generate-compass-glyph-map.mjs
+          mkdir -p assets/fonts android/app/src/main/assets/fonts android/app/src/main/res/raw
+          cp node_modules/@mattermost/compass-icons/font/compass-icons.ttf assets/fonts/
+          cp node_modules/@mattermost/compass-icons/font/compass-icons.ttf android/app/src/main/assets/fonts/
+          cp assets/sounds/* android/app/src/main/res/raw/
+          npx --no-install jetify
+      - name: Build standalone ARM64 test APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --max-workers=2 --stacktrace
+      - name: Verify APK and prepare download
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/apk/mattermost-out-of-office-arm64.apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$GITHUB_WORKSPACE/apk/mattermost-out-of-office-arm64.apk"
+          sha256sum "$GITHUB_WORKSPACE/apk/mattermost-out-of-office-arm64.apk" > "$GITHUB_WORKSPACE/apk/SHA256SUMS.txt"
+          printf 'Android 11+ ARM64 test APK. Signed with the repository debug key. Includes the JS bundle. Mention exceptions require server support.\n' > "$GITHUB_WORKSPACE/apk/README.txt"
+      - name: Upload installable test APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mattermost-out-of-office-android-arm64
+          path: apk/
+          if-no-files-found: error
+          retention-days: 14
