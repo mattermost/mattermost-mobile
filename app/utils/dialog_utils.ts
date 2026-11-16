@@ -224,11 +224,15 @@ export function keepUserValue(field: AppField, previousField: AppField | undefin
             }
             return value;
         case AppFieldTypes.CHECKBOX_MATRIX: {
+            // onChange isn't typed per field, so don't assume a matrix control produced this.
+            if (!Array.isArray(value)) {
+                return undefined;
+            }
             const rowValues = new Set((field.matrix_config?.rows || []).map((row) => row.value));
             const columnValues = new Set((field.matrix_config?.columns || []).map((column) => column.value));
             const singlePerRow = field.matrix_config?.row_selection === 'single';
             const kept = new Map<string, Set<string>>();
-            const entries = (value as unknown[]).filter((entry): entry is string => typeof entry === 'string');
+            const entries = value.filter((entry): entry is string => typeof entry === 'string');
             parseMatrixValue(entries).forEach((columns, rowValue) => {
                 if (!rowValues.has(rowValue)) {
                     return;

@@ -88,6 +88,8 @@ function RadioEntry({
             onPress={onPress}
             testID={testID}
             style={({pressed}) => [pressed && style.pressed]}
+            accessibilityRole='radio'
+            accessibilityState={{checked: isSelected}}
         >
             <View style={style.container}>
                 {labelPosition === 'after' ? (

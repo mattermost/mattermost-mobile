@@ -410,6 +410,12 @@ describe('dialog_utils', () => {
             expect(keepUserValue(matrix, matrix, ['r1:c1,c2', 'r2:c1'])).toEqual(['r1:c1']);
         });
 
+        it('should drop a matrix value that is not an array', () => {
+            const matrix = {name: 'perms', type: AppFieldTypes.CHECKBOX_MATRIX, matrix_config: {rows: [], columns: []}} as AppField;
+
+            expect(keepUserValue(matrix, matrix, 'r1:c1')).toBeUndefined();
+        });
+
         it('should drop a single-select matrix row left with several columns', () => {
             const matrix = {
                 name: 'perms',
