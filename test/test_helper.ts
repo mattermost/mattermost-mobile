@@ -933,6 +933,8 @@ class TestHelperSingleton {
             processedAt: 0,
             errorCode: '',
             type: '',
+            repeatType: '',
+            repeatTimezone: '',
             toApi: jest.fn(),
             ...overwrite,
         };
@@ -951,6 +953,8 @@ class TestHelperSingleton {
             scheduled_at: Date.now(),
             processed_at: 0,
             error_code: '',
+            repeat_type: '',
+            repeat_timezone: '',
             user_id: this.generateId(),
             ...overwrite,
         };

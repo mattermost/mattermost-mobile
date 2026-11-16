@@ -450,6 +450,34 @@ jobs:
             echo "site-3-url=$SITE_3_URL"
           } >> "$GITHUB_OUTPUT"
 
+      # e2e-flake-verify.yml re-runs specs against this run's servers, which live as long as the PR,
+      # but the URLs exist only as this run's dispatch inputs. They are test-server addresses, not
+      # secrets, so they are kept as an artifact for that workflow to read.
+      - name: Write server topology
+        env:
+          ANDROID_SITE_1_URL: ${{ steps.topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ steps.topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ steps.topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ steps.topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ steps.topology.outputs.site-3-url }}
+        run: |
+          jq -n '{
+            "android-site-1-url": env.ANDROID_SITE_1_URL,
+            "android-site-2-url": env.ANDROID_SITE_2_URL,
+            "ios-site-1-url": env.IOS_SITE_1_URL,
+            "ios-site-2-url": env.IOS_SITE_2_URL,
+            "site-3-url": env.SITE_3_URL
+          }' > e2e-topology.json
+
+      - name: Upload server topology
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-topology-${{ github.run_id }}
+          path: e2e-topology.json
+          retention-days: 7
+          # A re-run of all jobs uploads it again under the same name.
+          overwrite: true
+
   build-ios-simulator:
     if: >-
       !cancelled()
@@ -1298,10 +1326,21 @@ jobs:
       (!contains(fromJSON('["success", "skipped"]'), needs.run-detox-ios.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.run-detox-android.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-ios.result) ||
-       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result))
+       !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-ios-simulator.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk-maestro.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result))
+    # A failed build or server leaves its lanes "skipped", which reads as not requested, and the lanes pending with no
+    # verdict (PR 10306, run 42193427343: npm ci refused a package.json the lock file did not match). Triage judges such
+    # a lane from the run's jobs: the change's (a build or install it broke) or the machine's, re-run.
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
+      - build-ios-simulator
+      - build-android-apk
+      - build-android-apk-maestro
+      - provision-servers
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios

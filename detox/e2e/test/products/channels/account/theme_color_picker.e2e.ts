@@ -28,7 +28,7 @@ import {
     SettingsScreen,
     ThemeDisplaySettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {reloadApp, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 // A minimal custom theme JSON — type must be 'custom' for the CustomTheme component to render
@@ -150,7 +150,7 @@ describe('Account - Theme Color Settings', () => {
             name: testTeam.id,
             value: CUSTOM_THEME_JSON,
         }]);
-        await device.reloadReactNative();
+        await reloadApp();
 
         // # Wait for channel list to become visible without requiring bridge idle.
         // After reloadReactNative the app syncs with the server (network activity keeps bridge busy).

@@ -22,7 +22,7 @@ import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, isRedactionEnforced, setLastFullSync} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -143,6 +143,7 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(getCurrentChannelId).mockResolvedValue(currentChannelId);
             jest.mocked(getCurrentTeamId).mockResolvedValue(currentTeamId);
             jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+            jest.mocked(isRedactionEnforced).mockResolvedValue(false);
             jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('');
             jest.mocked(EphemeralStore.wasNotificationTapped).mockReturnValue(false);
         });

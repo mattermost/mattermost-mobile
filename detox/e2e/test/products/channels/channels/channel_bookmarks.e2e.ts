@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {enableSynchronization, isAndroid, isIos, reloadApp, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {withTransportRetry} from '@support/utils/transport_retry';
 import {expect, waitFor} from 'detox';
 
@@ -205,7 +205,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // Reload after the WebSocket-backed setup has settled.
         await wait(timeouts.TWO_SEC);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
     });
 
@@ -243,7 +243,7 @@ describe('Channels - Channel Bookmarks', () => {
             try {
                 await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TWO_SEC);
             } catch {
-                await device.reloadReactNative();
+                await reloadApp();
                 await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TEN_SEC);
             }
         }
@@ -532,7 +532,7 @@ describe('Channels - Channel Bookmarks', () => {
         await element(by.text(':smile:')).tap();
         await wait(timeouts.TWO_SEC);
         if (isAndroid()) {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
 
         // # Save the edited bookmark
@@ -834,7 +834,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelT69455.id);
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         const getHeaderBookmark = (bookmarkId: string) => element(

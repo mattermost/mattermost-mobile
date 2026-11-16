@@ -4,14 +4,14 @@
 import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, shareReplay, switchMap} from 'rxjs/operators';
 
-import {isRedactionEnforced, observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
 import {License} from '@constants';
 import {RENDER_PERMISSIONS_VERSION} from '@constants/versions';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
 
-import {getConfigValue, getLicense, observeConfigBooleanValue, observeConfigValue, observeLicense} from './system';
+import {getConfigValue, getLicense, isRedactionEnforced, observeConfigBooleanValue, observeConfigValue, observeLicense} from './system';
 
 import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';

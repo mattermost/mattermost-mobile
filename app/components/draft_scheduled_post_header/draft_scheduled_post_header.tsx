@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfileAvatar from '@components/draft_scheduled_post_header/profile_avatar';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
+import Tag from '@components/tag';
 import {General} from '@constants';
 import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useTheme} from '@context/theme';
@@ -35,7 +36,13 @@ type Props = {
     draftType: DraftType;
     postScheduledAt?: number;
     scheduledPostErrorCode?: string;
+    isRecurring?: boolean;
 }
+
+const repeatsWeeklyLabel = defineMessage({
+    id: 'scheduled_post.header.repeats_weekly',
+    defaultMessage: 'Repeats weekly',
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -102,6 +109,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.buttonColor,
             ...typography('Heading', 25),
         },
+        repeatsWeeklyTag: {
+            marginLeft: 8,
+        },
     };
 });
 
@@ -116,6 +126,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
     draftType,
     postScheduledAt,
     scheduledPostErrorCode,
+    isRecurring,
 }) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -157,6 +168,18 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
                         <Text style={style.errorText}>
                             {getErrorStringFromCode(intl, scheduledPostErrorCode as ScheduledPostErrorCode)}
                         </Text>
+                    </View>
+                )}
+
+                {isRecurring && !scheduledPostErrorCode && (
+                    <View style={style.repeatsWeeklyTag}>
+                        <Tag
+                            message={repeatsWeeklyLabel}
+                            icon='sync'
+                            type='infoDim'
+                            size='xs'
+                            testID='scheduled_post_header.repeats_weekly'
+                        />
                     </View>
                 )}
             </View>

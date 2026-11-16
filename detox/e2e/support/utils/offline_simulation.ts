@@ -11,6 +11,8 @@ import {device} from 'detox';
 
 import {logDebug} from '../../../provision/log';
 
+import {disableSynchronization, enableSynchronization} from './index';
+
 const POLL_INTERVAL_MS = 1000;
 const OFFLINE_VERIFY_TIMEOUT_MS = 10_000;
 const ONLINE_VERIFY_TIMEOUT_MS = 30_000;
@@ -284,7 +286,7 @@ export const goOffline = async (serverUrl: string): Promise<void> => {
         throw new Error(`could not resolve any IP for ${hostname} — cannot build the offline block`);
     }
 
-    await device.disableSynchronization();
+    await disableSynchronization();
     detoxSyncDisabled = true;
 
     if (device.getPlatform() === 'android') {
@@ -309,7 +311,7 @@ export const goOnline = async (serverUrl: string): Promise<void> => {
         }
     } finally {
         if (detoxSyncDisabled) {
-            await device.enableSynchronization();
+            await enableSynchronization();
             detoxSyncDisabled = false;
         }
     }

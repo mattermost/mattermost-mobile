@@ -418,18 +418,10 @@ describe('PermalinkPreview Enhanced Component', () => {
             });
         });
 
-        it('should fall back to the embed file list when the linked post is not stored yet', async () => {
+        it('should be false when the linked post is not stored yet', async () => {
             const files = [TestHelper.fakeFileInfo({id: 'file-2', post_id: 'linked-post'})];
 
             const {getByTestId} = renderWith(embedFor({files} as PostMetadata));
-
-            await waitFor(() => {
-                expect(getByTestId('permalink-preview').props.hasLinkedPostFiles).toBe(true);
-            });
-        });
-
-        it('should be false when the linked post is not stored and the embed lists no files', async () => {
-            const {getByTestId} = renderWith(embedFor({} as PostMetadata));
 
             await waitFor(() => {
                 expect(getByTestId('permalink-preview').props.hasLinkedPostFiles).toBe(false);

@@ -12,7 +12,7 @@ import {drainPoolGuardViolations} from '@support/server_api/pool_guard';
 import {applyServerBaseline} from '@support/server_baseline';
 import {serverRole} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
-import {safeEnableSynchronization} from '@support/utils';
+import {disableSynchronization, enableSynchronization} from '@support/utils';
 
 import {logError, logWarn} from '../../provision/log';
 
@@ -322,7 +322,7 @@ beforeAll(async () => {
             launchArgs,
         });
 
-        await device.disableSynchronization();
+        await disableSynchronization();
 
         const serverScreenEl = element(by.id('server.screen'));
 
@@ -372,7 +372,7 @@ beforeAll(async () => {
         } finally {
             // Always re-enable synchronization so subsequent test operations
             // (tap, typeText, expect) re-enter the normal synchronized path.
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     }
 

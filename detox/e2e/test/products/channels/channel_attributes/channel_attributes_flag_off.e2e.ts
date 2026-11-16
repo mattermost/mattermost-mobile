@@ -20,8 +20,8 @@ import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {device, waitFor} from 'detox';
+import {reloadApp, timeouts} from '@support/utils';
+import {waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -122,7 +122,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
                     required: true,
                 },
             );
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -175,7 +175,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             // # Navigate to the channel.
             await ChannelListScreen.toBeVisible();
@@ -203,7 +203,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -237,7 +237,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -263,7 +263,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);

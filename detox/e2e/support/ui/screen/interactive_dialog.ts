@@ -12,6 +12,7 @@ class InteractiveDialogScreen {
         closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
         integrationSelector: 'integration_selector',
+        integrationSelectorCancel: 'integration_selector.cancel.button',
     };
 
     interactiveDialogScreen = element(by.id(this.testID.interactiveDialogScreen));
@@ -22,6 +23,18 @@ class InteractiveDialogScreen {
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
     appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
+    integrationSelectorCancel = element(by.id(this.testID.integrationSelectorCancel));
+
+    // One button per option of the dialog's submit_buttons select (apps_form_component.tsx).
+    getSubmitOptionButton = (optionValue: string) => element(by.id(`interactive_dialog.submit_button.${optionValue}`));
+
+    getTextInput = (elementName: string) => element(by.id(`AppFormElement.${elementName}.input`));
+
+    // testID = `AppFormElement.${name}` (apps_form_field.tsx), and @components/button
+    // suffixes the spinner with `-loader` and the text with `-label` (components/button/index.tsx).
+    getActionButton = (elementName: string) => element(by.id(`AppFormElement.${elementName}`));
+    getActionButtonLoader = (elementName: string) => element(by.id(`AppFormElement.${elementName}-loader`));
+    getActionButtonLabel = (elementName: string) => element(by.id(`AppFormElement.${elementName}-label`));
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
     setDialogInputText = async (input: Detox.NativeElement, value: string) => {
@@ -47,6 +60,12 @@ class InteractiveDialogScreen {
         }
     };
 
+    // Tapping a field's label is safe with stacked dialogs, where the scroll view matches more than once.
+    dismissKeyboardViaLabel = async (elementName: string) => {
+        await element(by.id(`AppFormElement.${elementName}.label`)).tap();
+        await wait(timeouts.HALF_SEC);
+    };
+
     fillTextElement = async (elementName: string, value: string) => {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
@@ -54,9 +73,8 @@ class InteractiveDialogScreen {
 
         // The apps form renders inside a modal with a sticky header and a
         // keyboard-aware scroll view. A fixed-distance scroll can push the target
-        // under the header or stop short on long forms, so dismiss any open
-        // keyboard first, then scroll until the input is actually visible.
-        await this.dismissKeyboard();
+        // under the header or stop short on long forms, so scroll until the input
+        // is actually visible. The previous fill already dismissed its keyboard.
         try {
             await waitFor(appsFormElement).
                 toBeVisible().
@@ -72,8 +90,10 @@ class InteractiveDialogScreen {
         await this.setDialogInputText(appsFormElement, value);
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
+        // Tap the field's label, not a fixed point: (20,20) can land on markdown
+        // (e.g. a table opens the Table viewer) or match several stacked dialogs.
         try {
-            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
+            await this.dismissKeyboardViaLabel(elementName);
         } catch {
             try {
                 await this.interactiveDialogScreen.tap();

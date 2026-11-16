@@ -7,7 +7,7 @@
 import {deletePostsForChannel, markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {captureRedactionEpoch, getRequiredRedactionEpoch, isRedactionEnforced} from '@actions/local/redaction';
+import {captureRedactionEpoch, getRequiredRedactionEpoch} from '@actions/local/redaction';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
@@ -19,7 +19,7 @@ import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getFilesByIds, queryFilesForPost, queryFilesForPosts} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
-import {getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUserId, isRedactionEnforced} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';

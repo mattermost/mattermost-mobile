@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {navigateToScreen} from '@screens/navigation';
 import {isBoRPost} from '@utils/bor';
+import {isRecurringScheduledPost} from '@utils/scheduled_post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DraftAndScheduledPostContainer from './draft_scheduled_post_container';
@@ -147,6 +148,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                         draftType={draftType}
                         postScheduledAt={'scheduledAt' in post ? post.scheduledAt : undefined}
                         scheduledPostErrorCode={'errorCode' in post ? post.errorCode : undefined}
+                        isRecurring={isRecurringScheduledPost(post)}
                     />
                     <View style={style.indicatorContainer}>
                         {showPostPriority && post.metadata?.priority &&
