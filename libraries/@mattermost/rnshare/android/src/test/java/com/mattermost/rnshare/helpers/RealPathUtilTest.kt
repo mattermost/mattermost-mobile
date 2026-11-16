@@ -144,6 +144,14 @@ class RealPathUtilTest {
     }
 
     @Test
+    fun `should not resolve a file uri whose decoded path still contains escapes`() {
+        val root = addSharedStorageVolume()
+        val uri = Uri.parse("file://${root.path}/Download/%252e%252e/%252e%252e/report.pdf")
+
+        assertNull(RealPathUtil.getRealPathFromURI(context, uri))
+    }
+
+    @Test
     fun `should not resolve a spoofed downloads raw document id to a private file`() {
         registerDocumentsProvider(DOWNLOADS_AUTHORITY)
         val uri = DocumentsContract.buildDocumentUri(DOWNLOADS_AUTHORITY, "raw:${privateFile.absolutePath}")

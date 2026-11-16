@@ -53,6 +53,10 @@ object RealPathUtil {
     }
 
     private fun getSharedStoragePath(context: Context, path: String): String? {
+        // A decoded path should not contain escapes; consumers that decode it again could be led elsewhere.
+        if (path.contains('%')) {
+            return null
+        }
         val file = File(path).canonicalOrNull() ?: return null
 
         val sharedStorageRoots = context.getSystemService(StorageManager::class.java)
