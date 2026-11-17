@@ -1,5 +1,5 @@
 diff --git a/android/app/build.gradle b/android/app/build.gradle
-index a29eb6a..2a457fa 100644
+index a29eb6a..87266b8 100644
 --- a/android/app/build.gradle
 +++ b/android/app/build.gradle
 @@ -113,7 +113,7 @@ android {
@@ -7,7 +7,7 @@ index a29eb6a..2a457fa 100644
          minSdkVersion rootProject.ext.minSdkVersion
          targetSdkVersion rootProject.ext.targetSdkVersion
 -        versionCode 837
-+        versionCode 838
++        versionCode 839
          versionName "2.46.0"
          testBuildType System.getProperty('testBuildType', 'debug')
          testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -798,7 +798,7 @@ index f18bbd3..173bf17 100644
      removeChannelNotifications(serverUrl: string, channelId: string): void;
      removeThreadNotifications(serverUrl: string, threadId: string): void;
 diff --git a/test/setup.ts b/test/setup.ts
-index 72993eb..3828c75 100644
+index 72993eb..d2e9f50 100644
 --- a/test/setup.ts
 +++ b/test/setup.ts
 @@ -360,6 +360,8 @@ jest.doMock('react-native', () => {
@@ -810,6 +810,34 @@ index 72993eb..3828c75 100644
              getDeliveredNotifications: jest.fn().mockResolvedValue([]),
              removeChannelNotifications: jest.fn().mockImplementation(),
              removeThreadNotifications: jest.fn().mockImplementation(),
+@@ -579,6 +581,27 @@ jest.mock('react-native-keyboard-controller', () => {
+     };
+ });
+ 
++// Exercise the Android picker JavaScript bridge while mocking only the native dialogs.
++jest.mock('@react-native-community/datetimepicker/src/DateTimePickerAndroid', () =>
++    jest.requireActual('@react-native-community/datetimepicker/src/DateTimePickerAndroid.android'));
++jest.mock('@react-native-community/datetimepicker/src/picker', () => {
++    const React = require('react');
++    const NativePicker = jest.requireActual('@react-native-community/datetimepicker/src/picker.ios').default;
++    const Picker = (props: Record<string, unknown>) => React.createElement(NativePicker, props);
++    return Object.assign(Picker, {
++        time: jest.requireActual('@react-native-community/datetimepicker/src/timepicker.android').default,
++        date: jest.requireActual('@react-native-community/datetimepicker/src/datepicker.android').default,
++    });
++});
++jest.mock('@react-native-community/datetimepicker/src/specs/NativeModuleTimePicker', () => ({
++    open: jest.fn(),
++    dismiss: jest.fn(),
++}));
++jest.mock('@react-native-community/datetimepicker/src/specs/NativeModuleDatePicker', () => ({
++    open: jest.fn(),
++    dismiss: jest.fn(),
++}));
++
+ jest.mock('react-native-localize', () => ({
+     getTimeZone: () => 'World/Somewhere',
+     getLocales: () => ([
 diff --git a/types/global/push_notifications.d.ts b/types/global/push_notifications.d.ts
 index c60aab4..0d94caa 100644
 --- a/types/global/push_notifications.d.ts
@@ -1041,14 +1069,14 @@ index 0000000..dde8891
 +}
 diff --git a/app/screens/settings/out_of_office/index.tsx b/app/screens/settings/out_of_office/index.tsx
 new file mode 100644
-index 0000000..8dcd428
+index 0000000..b5962cf
 --- /dev/null
 +++ b/app/screens/settings/out_of_office/index.tsx
-@@ -0,0 +1,274 @@
+@@ -0,0 +1,293 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
-+import DateTimePicker, {type DateTimePickerChangeEvent} from '@react-native-community/datetimepicker';
++import DateTimePicker, {DateTimePickerAndroid, type DateTimePickerChangeEvent} from '@react-native-community/datetimepicker';
 +import React, {useCallback, useEffect, useState} from 'react';
 +import {defineMessages, useIntl} from 'react-intl';
 +import {Platform, Text, View} from 'react-native';
@@ -1065,6 +1093,7 @@ index 0000000..8dcd428
 +import {navigateBack} from '@screens/navigation';
 +import {getOutOfOfficeSettings, saveOutOfOfficeSettings, type WeeklyOutOfOfficeSettings} from '@utils/out_of_office';
 +import {makeStyleSheetFromTheme} from '@utils/theme';
++import {getDeviceTimezone} from '@utils/timezone';
 +import {typography} from '@utils/typography';
 +
 +const messages = defineMessages({
@@ -1110,7 +1139,7 @@ index 0000000..8dcd428
 +    const [settings, setSettings] = useState<WeeklyOutOfOfficeSettings>(getDefaultSettings);
 +    const [loading, setLoading] = useState(true);
 +    const [saving, setSaving] = useState(false);
-+    const [error, setError] = useState('');
++    const [error, setError] = useState<'loadError' | 'saveError' | 'invalid' | 'empty'>();
 +    const [loadFailed, setLoadFailed] = useState(false);
 +    const [legacy, setLegacy] = useState(false);
 +    const [editingTime, setEditingTime] = useState<'startMinute' | 'endMinute'>();
@@ -1122,7 +1151,7 @@ index 0000000..8dcd428
 +        setLoadFailed(false);
 +        setLegacy(false);
 +        setEditingTime(undefined);
-+        setError('');
++        setError(undefined);
 +        getOutOfOfficeSettings(serverUrl).then((saved) => {
 +            if (active && saved) {
 +                if (saved.schedule === 'weekly') {
@@ -1135,7 +1164,7 @@ index 0000000..8dcd428
 +        }).catch(() => {
 +            if (active) {
 +                setLoadFailed(true);
-+                setError(intl.formatMessage(messages.loadError));
++                setError('loadError');
 +            }
 +        }).finally(() => {
 +            if (active) {
@@ -1145,7 +1174,7 @@ index 0000000..8dcd428
 +        return () => {
 +            active = false;
 +        };
-+    }, [serverUrl, intl]);
++    }, [serverUrl]);
 +
 +    useAndroidHardwareBackHandler(Screens.SETTINGS_OUT_OF_OFFICE, navigateBack);
 +
@@ -1153,15 +1182,32 @@ index 0000000..8dcd428
 +    const setQuietHours = useCallback((quietHoursEnabled: boolean) => setSettings((previous) => ({...previous, quietHoursEnabled})), []);
 +    const setAllowCalls = useCallback((allowCalls: boolean) => setSettings((previous) => ({...previous, allowCalls})), []);
 +    const setAllowMentions = useCallback((allowMentions: boolean) => setSettings((previous) => ({...previous, allowMentions})), []);
-+    const setTime = useCallback((_event: DateTimePickerChangeEvent, date: Date) => {
++    const updateTime = useCallback((field: 'startMinute' | 'endMinute', date: Date) => {
++        const minute = (date.getHours() * 60) + date.getMinutes();
++        setSettings((previous) => ({...previous, [field]: minute}));
++    }, []);
++
++    const openTime = useCallback((field: 'startMinute' | 'endMinute') => {
 +        if (Platform.OS === 'android') {
-+            setEditingTime(undefined);
++            DateTimePickerAndroid.open({
++                mode: 'time',
++                value: timeFromMinutes(field === 'startMinute' ? settings.startMinute : settings.endMinute),
++                timeZoneName: getDeviceTimezone(),
++                onValueChange: (_event, date) => updateTime(field, date),
++            });
++        } else {
++            setEditingTime(field);
 +        }
++    }, [settings.startMinute, settings.endMinute, updateTime]);
++
++    const openStart = useCallback(() => openTime('startMinute'), [openTime]);
++    const openEnd = useCallback(() => openTime('endMinute'), [openTime]);
++    const dismissTime = useCallback(() => setEditingTime(undefined), []);
++    const setTime = useCallback((_event: DateTimePickerChangeEvent, date: Date) => {
 +        if (editingTime) {
-+            const minute = (date.getHours() * 60) + date.getMinutes();
-+            setSettings((previous) => ({...previous, [editingTime]: minute}));
++            updateTime(editingTime, date);
 +        }
-+    }, [editingTime]);
++    }, [editingTime, updateTime]);
 +
 +    const setDayOff = (day: number, selected: string | boolean) => {
 +        const otherDays = settings.daysOff.filter((value) => value !== day);
@@ -1173,24 +1219,24 @@ index 0000000..8dcd428
 +            return;
 +        }
 +        if (settings.enabled && settings.quietHoursEnabled && settings.startMinute === settings.endMinute) {
-+            setError(intl.formatMessage(messages.invalid));
++            setError('invalid');
 +            return;
 +        }
 +        if (settings.enabled && !settings.quietHoursEnabled && settings.daysOff.length === 0) {
-+            setError(intl.formatMessage(messages.empty));
++            setError('empty');
 +            return;
 +        }
 +        setSaving(true);
-+        setError('');
++        setError(undefined);
 +        try {
 +            await saveOutOfOfficeSettings(serverUrl, settings);
 +            navigateBack();
 +        } catch {
-+            setError(intl.formatMessage(messages.saveError));
++            setError('saveError');
 +        } finally {
 +            setSaving(false);
 +        }
-+    }, [loading, saving, loadFailed, settings, intl, serverUrl]);
++    }, [loading, saving, loadFailed, settings, serverUrl]);
 +
 +    const onSave = usePreventDoubleTap(save);
 +
@@ -1237,23 +1283,24 @@ index 0000000..8dcd428
 +                                    <>
 +                                        <Button
 +                                            theme={theme}
-+                                            text={`${intl.formatMessage(messages.start)}: ${intl.formatTime(timeFromMinutes(settings.startMinute))}`}
-+                                            onPress={() => setEditingTime('startMinute')}
++                                            text={`${intl.formatMessage(messages.start)}: ${intl.formatTime(new Date(Date.UTC(2024, 0, 15, 0, settings.startMinute)), {timeZone: 'UTC'})}`}
++                                            onPress={openStart}
 +                                            testID='out_of_office_settings.start'
 +                                        />
 +                                        <Button
 +                                            theme={theme}
-+                                            text={`${intl.formatMessage(messages.end)}: ${intl.formatTime(timeFromMinutes(settings.endMinute))}`}
-+                                            onPress={() => setEditingTime('endMinute')}
++                                            text={`${intl.formatMessage(messages.end)}: ${intl.formatTime(new Date(Date.UTC(2024, 0, 15, 0, settings.endMinute)), {timeZone: 'UTC'})}`}
++                                            onPress={openEnd}
 +                                            testID='out_of_office_settings.end'
 +                                        />
-+                                        {editingTime && (
++                                        {Platform.OS === 'ios' && editingTime && (
 +                                            <DateTimePicker
 +                                                mode='time'
 +                                                value={timeFromMinutes(settings[editingTime])}
 +                                                onValueChange={setTime}
-+                                                onDismiss={() => setEditingTime(undefined)}
-+                                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
++                                                onDismiss={dismissTime}
++                                                display='spinner'
++                                                timeZoneName={getDeviceTimezone()}
 +                                                textColor={theme.centerChannelColor}
 +                                                testID='out_of_office_settings.time_picker'
 +                                            />
@@ -1274,7 +1321,7 @@ index 0000000..8dcd428
 +                                    <SettingOption
 +                                        key={day}
 +                                        type='toggle'
-+                                        label={intl.formatDate(new Date(2024, 0, 7 + day), {weekday: 'long'})}
++                                        label={intl.formatDate(new Date(Date.UTC(2024, 0, 7 + day)), {weekday: 'long', timeZone: 'UTC'})}
 +                                        selected={settings.daysOff.includes(day)}
 +                                        action={(selected: boolean) => setDayOff(day, selected)}
 +                                        testID={`out_of_office_settings.day.${day}`}
@@ -1298,13 +1345,13 @@ index 0000000..8dcd428
 +                        )}
 +                    </>
 +                )}
-+                {Boolean(error) && (
++                {error && (
 +                    <Text
 +                        accessibilityRole='alert'
 +                        style={styles.error}
 +                        testID='out_of_office_settings.error'
 +                    >
-+                        {error}
++                        {intl.formatMessage(messages[error])}
 +                    </Text>
 +                )}
 +                <Button
@@ -1321,18 +1368,22 @@ index 0000000..8dcd428
 +}
 diff --git a/app/screens/settings/out_of_office/out_of_office.test.tsx b/app/screens/settings/out_of_office/out_of_office.test.tsx
 new file mode 100644
-index 0000000..36a177a
+index 0000000..edf36ac
 --- /dev/null
 +++ b/app/screens/settings/out_of_office/out_of_office.test.tsx
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,203 @@
 +// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 +// See LICENSE.txt for license information.
 +
 +import DateTimePicker from '@react-native-community/datetimepicker';
 +import React from 'react';
++import {IntlProvider} from 'react-intl';
++import {Platform} from 'react-native';
 +
++import English from '@assets/i18n/en.json';
 +import {fireEvent, renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
 +import * as OutOfOfficeSettings from '@utils/out_of_office';
++import * as Timezone from '@utils/timezone';
 +
 +import OutOfOffice from './index';
 +
@@ -1354,6 +1405,7 @@ index 0000000..36a177a
 +    let save: jest.SpyInstance;
 +
 +    beforeEach(() => {
++        jest.spyOn(Timezone, 'getDeviceTimezone').mockReturnValue('Asia/Tehran');
 +        load = jest.spyOn(OutOfOfficeSettings, 'getOutOfOfficeSettings').mockResolvedValue(savedSettings);
 +        save = jest.spyOn(OutOfOfficeSettings, 'saveOutOfOfficeSettings').mockResolvedValue();
 +    });
@@ -1441,6 +1493,86 @@ index 0000000..36a177a
 +        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.error')).toHaveTextContent('Unable to load your out of office settings. Go back and try again.'));
 +        expect(screen.getByTestId('out_of_office_settings.save')).toBeDisabled();
 +        expect(save).not.toHaveBeenCalled();
++    });
++});
++
++// The real DateTimePickerAndroid bridge converts these native dialog results into callbacks.
++const nativeTimePicker = require('@react-native-community/datetimepicker/src/specs/NativeModuleTimePicker') as {
++    open: jest.Mock<Promise<{action: string; timestamp?: number; utcOffset?: number}>, [{value: number; timeZoneName?: string}]>;
++};
++
++describe('Android out of office wall clock editing', () => {
++    let load: jest.SpyInstance;
++    let save: jest.SpyInstance;
++
++    const form = (locale = 'en') => (
++        <IntlProvider
++            locale={locale}
++            timeZone='UTC'
++            messages={English}
++        >
++            <OutOfOffice/>
++        </IntlProvider>
++    );
++
++    beforeEach(() => {
++        jest.spyOn(Timezone, 'getDeviceTimezone').mockReturnValue('Asia/Tehran');
++        jest.replaceProperty(Platform, 'OS', 'android');
++        load = jest.spyOn(OutOfOfficeSettings, 'getOutOfOfficeSettings').mockResolvedValue(savedSettings);
++        save = jest.spyOn(OutOfOfficeSettings, 'saveOutOfOfficeSettings').mockResolvedValue();
++        nativeTimePicker.open.mockReset();
++    });
++
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
++    it('should display local hours and persist independent Android selections across reopening', async () => {
++        const screen = renderWithIntlAndTheme(form());
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.start')).toHaveTextContent(/Starts: 6:00\s*PM/));
++        expect(screen.getByTestId('out_of_office_settings.end')).toHaveTextContent(/Ends: 9:00\s*AM/);
++        expect(screen.getByText('Sunday')).toBeTruthy();
++        nativeTimePicker.open.mockResolvedValueOnce({action: 'timeSetAction', timestamp: new Date(2024, 0, 15, 19, 45).getTime(), utcOffset: 210});
++        fireEvent.press(screen.getByTestId('out_of_office_settings.start'));
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.start')).toHaveTextContent(/Starts: 7:45\s*PM/));
++        expect(nativeTimePicker.open).toHaveBeenLastCalledWith(expect.objectContaining({timeZoneName: 'Asia/Tehran'}));
++        expect(screen.getByTestId('out_of_office_settings.end')).toHaveTextContent(/Ends: 9:00\s*AM/);
++        nativeTimePicker.open.mockResolvedValueOnce({action: 'timeSetAction', timestamp: new Date(2024, 0, 15, 8, 15).getTime(), utcOffset: 210});
++        fireEvent.press(screen.getByTestId('out_of_office_settings.end'));
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.end')).toHaveTextContent(/Ends: 8:15\s*AM/));
++        expect(screen.getByTestId('out_of_office_settings.start')).toHaveTextContent(/Starts: 7:45\s*PM/);
++        expect(nativeTimePicker.open).toHaveBeenCalledTimes(2);
++        const updated = {...savedSettings, startMinute: 1185, endMinute: 495};
++        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
++        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), updated));
++        screen.unmount();
++        load.mockResolvedValue(updated);
++        const reopened = renderWithIntlAndTheme(form());
++        await waitFor(() => expect(reopened.getByTestId('out_of_office_settings.start')).toHaveTextContent(/Starts: 7:45\s*PM/));
++        expect(reopened.getByTestId('out_of_office_settings.end')).toHaveTextContent(/Ends: 8:15\s*AM/);
++    });
++
++    it('should keep values when the Android dialog is cancelled', async () => {
++        const screen = renderWithIntlAndTheme(form());
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.start')).toHaveTextContent(/Starts: 6:00\s*PM/));
++        nativeTimePicker.open.mockResolvedValueOnce({action: 'dismissedAction'});
++        fireEvent.press(screen.getByTestId('out_of_office_settings.start'));
++        await waitFor(() => expect(nativeTimePicker.open).toHaveBeenCalledTimes(1));
++        expect(screen.getByTestId('out_of_office_settings.start')).toHaveTextContent(/Starts: 6:00\s*PM/);
++        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
++        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), savedSettings));
++    });
++
++    it('should keep unsaved times when the locale changes', async () => {
++        const screen = renderWithIntlAndTheme(form());
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.start')).toBeTruthy());
++        nativeTimePicker.open.mockResolvedValueOnce({action: 'timeSetAction', timestamp: new Date(2024, 0, 15, 19, 45).getTime(), utcOffset: 210});
++        fireEvent.press(screen.getByTestId('out_of_office_settings.start'));
++        await waitFor(() => expect(screen.getByTestId('out_of_office_settings.start')).toHaveTextContent(/Starts: 7:45\s*PM/));
++        screen.rerender(form('en-GB'));
++        expect(load).toHaveBeenCalledTimes(1);
++        fireEvent.press(screen.getByTestId('out_of_office_settings.save'));
++        await waitFor(() => expect(save).toHaveBeenCalledWith(expect.any(String), {...savedSettings, startMinute: 1185}));
 +    });
 +});
 diff --git a/app/utils/out_of_office.test.ts b/app/utils/out_of_office.test.ts
