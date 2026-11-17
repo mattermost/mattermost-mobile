@@ -29,6 +29,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
         ...notification,
         payload: {
             ack_id: payload.ack_id,
+            is_mention: payload.is_mention,
             channel_id: payload.channel_id,
             channel_name: payload.channel_name,
             identifier: payload.identifier || notification.identifier,

@@ -119,6 +119,10 @@ const Notifications = ({
         navigateToSettingsScreen(Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER);
     }, []);
 
+    const goToOutOfOffice = useCallback(() => {
+        navigateToSettingsScreen(Screens.SETTINGS_OUT_OF_OFFICE);
+    }, []);
+
     const goToEmailSettings = useCallback(() => {
         navigateToSettingsScreen(Screens.SETTINGS_NOTIFICATION_EMAIL);
     }, []);
@@ -164,6 +168,11 @@ const Notifications = ({
                     testID='notification_settings.automatic_replies.option'
                 />
             )}
+            <SettingItem
+                optionName='out_of_office'
+                onPress={goToOutOfOffice}
+                testID='notification_settings.out_of_office.option'
+            />
             <SendTestNotificationNotice
                 serverVersion={serverVersion}
                 userId={currentUser?.id || ''}

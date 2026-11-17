@@ -360,6 +360,8 @@ jest.doMock('react-native', () => {
             getHasRegisteredLoad: jest.fn().mockReturnValue({hasRegisteredLoad: false}),
             setHasRegisteredLoad: jest.fn(),
 
+            getOutOfOfficeSettings: jest.fn().mockResolvedValue(null),
+            setOutOfOfficeSettings: jest.fn().mockResolvedValue(undefined),
             getDeliveredNotifications: jest.fn().mockResolvedValue([]),
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
@@ -578,6 +580,27 @@ jest.mock('react-native-keyboard-controller', () => {
         },
     };
 });
+
+// Exercise the Android picker JavaScript bridge while mocking only the native dialogs.
+jest.mock('@react-native-community/datetimepicker/src/DateTimePickerAndroid', () =>
+    jest.requireActual('@react-native-community/datetimepicker/src/DateTimePickerAndroid.android'));
+jest.mock('@react-native-community/datetimepicker/src/picker', () => {
+    const React = require('react');
+    const NativePicker = jest.requireActual('@react-native-community/datetimepicker/src/picker.ios').default;
+    const Picker = (props: Record<string, unknown>) => React.createElement(NativePicker, props);
+    return Object.assign(Picker, {
+        time: jest.requireActual('@react-native-community/datetimepicker/src/timepicker.android').default,
+        date: jest.requireActual('@react-native-community/datetimepicker/src/datepicker.android').default,
+    });
+});
+jest.mock('@react-native-community/datetimepicker/src/specs/NativeModuleTimePicker', () => ({
+    open: jest.fn(),
+    dismiss: jest.fn(),
+}));
+jest.mock('@react-native-community/datetimepicker/src/specs/NativeModuleDatePicker', () => ({
+    open: jest.fn(),
+    dismiss: jest.fn(),
+}));
 
 jest.mock('react-native-localize', () => ({
     getTimeZone: () => 'World/Somewhere',

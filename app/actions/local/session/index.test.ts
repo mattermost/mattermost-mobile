@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils/src';
 import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
@@ -295,6 +296,9 @@ describe('session actions', () => {
             await terminateSession(mockServerUrl, false);
 
             expect(DatabaseManager.deleteServerDatabase).toHaveBeenCalledWith(mockServerUrl);
+            expect(RNUtils.setOutOfOfficeSettings).toHaveBeenCalledWith(mockServerUrl, JSON.stringify({
+                schedule: 'weekly', enabled: false, quietHoursEnabled: true, startMinute: 1080, endMinute: 540, daysOff: [], allowCalls: false, allowMentions: false,
+            }));
             expect(DatabaseManager.destroyServerDatabase).not.toHaveBeenCalled();
             expect(removePushDisabledInServerAcknowledged).not.toHaveBeenCalled();
             expect(removePushSigningKey).not.toHaveBeenCalled();
@@ -367,6 +371,9 @@ describe('session actions', () => {
 
             // Verify database is deleted (not destroyed)
             expect(DatabaseManager.deleteServerDatabase).toHaveBeenCalledWith(mockServerUrl);
+            expect(RNUtils.setOutOfOfficeSettings).toHaveBeenCalledWith(mockServerUrl, JSON.stringify({
+                schedule: 'weekly', enabled: false, quietHoursEnabled: true, startMinute: 1080, endMinute: 540, daysOff: [], allowCalls: false, allowMentions: false,
+            }));
             expect(DatabaseManager.destroyServerDatabase).not.toHaveBeenCalled();
 
             // Note: removeServerCredentials now only removes the token, not the pre-auth secret

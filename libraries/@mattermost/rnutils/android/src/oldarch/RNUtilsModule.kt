@@ -82,6 +82,16 @@ class RNUtilsModule(context: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun getOutOfOfficeSettings(serverUrl: String, promise: Promise?) {
+        implementation.getOutOfOfficeSettings(serverUrl, promise)
+    }
+
+    @ReactMethod
+    fun setOutOfOfficeSettings(serverUrl: String, settings: String, promise: Promise?) {
+        implementation.setOutOfOfficeSettings(serverUrl, settings, promise)
+    }
+
+    @ReactMethod
     fun getDeliveredNotifications(promise: Promise?) {
         implementation.getDeliveredNotifications(promise)
     }

@@ -49,6 +49,7 @@ import {getFullErrorMessage} from '@utils/errors';
 import {generateId} from '@utils/general';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
+import {suppressNotificationDuringOutOfOffice} from '@utils/out_of_office';
 
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
@@ -117,7 +118,7 @@ export const setCalls = async (serverUrl: string, myUserId: string, calls: Dicti
 };
 
 export const processIncomingCalls = async (serverUrl: string, calls: Call[], keepExisting = true) => {
-    if (!getCallsConfig(serverUrl).EnableRinging) {
+    if (!getCallsConfig(serverUrl).EnableRinging || await suppressNotificationDuringOutOfOffice(serverUrl, 'call')) {
         return;
     }
 
@@ -303,7 +304,7 @@ const shouldRing = (callId: string, userStatus: string) => {
 };
 
 export const playIncomingCallsRinging = async (serverUrl: string, callId: string, userStatus: string) => {
-    if (!shouldRing(callId, userStatus)) {
+    if (!shouldRing(callId, userStatus) || await suppressNotificationDuringOutOfOffice(serverUrl, 'call')) {
         return;
     }
 
@@ -335,7 +336,7 @@ export const playIncomingCallsRinging = async (serverUrl: string, callId: string
     }, Calls.RING_LENGTH);
 };
 
-const stopIncomingCallsRinging = () => {
+export const stopIncomingCallsRinging = () => {
     const incomingCalls = getIncomingCalls();
     if (!incomingCalls.currentRingingCallId) {
         return;

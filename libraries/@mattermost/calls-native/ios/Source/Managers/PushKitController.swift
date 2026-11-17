@@ -67,6 +67,23 @@ final class PushKitController: NSObject, PKPushRegistryDelegate {
 
         let channelID = (dict["channel_id"] as? String) ?? ""
         let serverID = (dict["server_id"] as? String) ?? ""
+        let serverUrl = try? Gekidou.Database.default.getServerUrlForServer(serverID)
+        if Gekidou.OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: dict, isCall: true) {
+            // Muting presentation must still acknowledge this authenticated push to the server.
+            Gekidou.PushNotification.default.postNotificationReceipt(dict)
+            // PushKit requires a synchronous CallKit report even for locally muted calls.
+            // The synthetic request reports and immediately ends without ringing in JS.
+            bridge.callKitProvider.reportIncomingCall(
+                IncomingCallRequest(channelID: "", serverID: "",
+                                    postID: "", threadID: "",
+                                    callerID: "", callerName: "",
+                                    channelName: "", rawUserInfo: [:],
+                                    ringtoneName: nil),
+                pushCompletion: completion
+            )
+            return
+        }
+
         let postID = (dict["post_id"] as? String) ?? ""
         let threadID = (dict["thread_id"] as? String) ?? ""
         let senderID = (dict["sender_id"] as? String) ?? ""

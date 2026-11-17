@@ -140,6 +140,25 @@ class NotificationService: UNNotificationServiceExtension {
     }
   }
 
+  private func deliverNotification(_ content: UNNotificationContent) {
+    var serverUrl = content.userInfo["server_url"] as? String
+    if serverUrl == nil, let serverId = content.userInfo["server_id"] as? String {
+      serverUrl = try? Gekidou.Database.default.getServerUrlForServer(serverId)
+    }
+    if Gekidou.OutOfOffice.shouldSuppress(serverUrl: serverUrl, payload: content.userInfo),
+       let quietContent = content.mutableCopy() as? UNMutableNotificationContent {
+      // APNs service extensions cannot cancel delivery. Passive delivery removes sound,
+      // badge changes and interruption; full banner suppression requires server support.
+      quietContent.sound = nil
+      quietContent.badge = nil
+      quietContent.interruptionLevel = .passive
+      quietContent.relevanceScore = 0
+      contentHandlerWrapper?.callOnce(with: quietContent)
+      return
+    }
+    contentHandlerWrapper?.callOnce(with: content)
+  }
+
   override func serviceExtensionTimeWillExpire() {
     // Called just before the extension will be terminated by the system.
     // Use this as an opportunity to deliver your "best attempt" at modified content, otherwise the original push payload will be used.
@@ -151,7 +170,7 @@ class NotificationService: UNNotificationServiceExtension {
     // Deliver the best content we have, even if incomplete
     if let bestAttemptContent = bestAttemptContent {
       Gekidou.GekidouLogger.shared.log(.info, "NotificationService serviceExtensionTimeWillExpire: delivering best attempt content before expiration")
-      contentHandlerWrapper?.callOnce(with: bestAttemptContent)
+      deliverNotification(bestAttemptContent)
     }
   }
   
@@ -163,7 +182,7 @@ class NotificationService: UNNotificationServiceExtension {
     guard let serverUrl = notification.userInfo["server_url"] as? String
     else {
       Gekidou.GekidouLogger.shared.log(.info, "NotificationService sendMessageIntent: No intent created. will call contentHandler to present notification")
-      contentHandlerWrapper?.callOnce(with: notification)
+      deliverNotification(notification)
       return
     }
 
@@ -187,17 +206,17 @@ class NotificationService: UNNotificationServiceExtension {
 
       if let error = error {
         Gekidou.GekidouLogger.shared.log(.error, "NotificationService donateIntent: intent donation error: \(String(describing: error))")
-        self.contentHandlerWrapper?.callOnce(with: notification)
+        self.deliverNotification(notification)
         return
       }
 
       do {
         let updatedContent = try notification.updating(from: intent)
         Gekidou.GekidouLogger.shared.log(.info, "NotificationService donateIntent: present updated notification")
-        self.contentHandlerWrapper?.callOnce(with: updatedContent)
+        self.deliverNotification(updatedContent)
       } catch {
         Gekidou.GekidouLogger.shared.log(.error, "NotificationService donateIntent: failed updating notification from intent: \(String(describing: error))")
-        self.contentHandlerWrapper?.callOnce(with: notification)
+        self.deliverNotification(notification)
       }
     }
   }
@@ -262,7 +281,7 @@ class NotificationService: UNNotificationServiceExtension {
         }
 
         guard let updatedNotification = self.bestAttemptContent else {
-          self.contentHandlerWrapper?.callOnce(with: notification)
+          self.deliverNotification(notification)
           return
         }
 
@@ -289,7 +308,7 @@ class NotificationService: UNNotificationServiceExtension {
         self.donateIntent(intent, with: updatedNotification)
       }
     } else {
-      contentHandlerWrapper?.callOnce(with: notification)
+      deliverNotification(notification)
     }
   }
 }

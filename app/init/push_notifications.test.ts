@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils/src';
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
 import {storeDeviceToken} from '@actions/app/global';
@@ -18,10 +19,12 @@ import EphemeralStore from '@store/ephemeral_store';
 import InAppNotificationStore from '@store/in_app_notification_store';
 import {NavigationStore} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
+import {saveOutOfOfficeSettings, type WeeklyOutOfOfficeSettings} from '@utils/out_of_office';
 
 import PushNotifications from './push_notifications';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type {Notification as NativeNotification} from 'react-native-notifications';
 
 const subscription = {remove: jest.fn()};
 const events = {
@@ -447,7 +450,7 @@ describe('PushNotifications', () => {
             AppState.currentState = 'active';
         });
 
-        it('should not process unverified notification', () => {
+        it('should not process unverified notification', async () => {
             const notification = {
                 payload: {
                     verified: 'false',
@@ -457,12 +460,12 @@ describe('PushNotifications', () => {
             const completion = jest.fn();
             const processSpy = jest.spyOn(pushNotifications, 'processNotification');
 
-            pushNotifications.onNotificationReceivedForeground(notification as any, completion);
+            await pushNotifications.onNotificationReceivedForeground(notification as any, completion);
 
             expect(processSpy).not.toHaveBeenCalled();
         });
 
-        it('should process verified notification with sound', () => {
+        it('should process verified notification with sound', async () => {
             const notification = {
                 payload: {
                     verified: 'true',
@@ -472,7 +475,7 @@ describe('PushNotifications', () => {
             const completion = jest.fn();
             const processSpy = jest.spyOn(pushNotifications, 'processNotification');
 
-            pushNotifications.onNotificationReceivedForeground(notification as any, completion);
+            await pushNotifications.onNotificationReceivedForeground(notification as any, completion);
 
             expect(processSpy).toHaveBeenCalled();
             expect(completion).toHaveBeenCalledWith({
@@ -480,6 +483,94 @@ describe('PushNotifications', () => {
                 sound: true,
                 badge: true,
             });
+        });
+    });
+
+    describe('out-of-office foreground delivery', () => {
+        it('should preserve session-security alerts during quiet time', async () => {
+            const read = jest.spyOn(RNUtils, 'getOutOfOfficeSettings').mockResolvedValue(JSON.stringify({
+                schedule: 'weekly',
+                enabled: true,
+                quietHoursEnabled: false,
+                startMinute: 0,
+                endMinute: 0,
+                daysOff: [0, 1, 2, 3, 4, 5, 6],
+                allowCalls: false,
+                allowMentions: false,
+            }));
+            const process = jest.spyOn(pushNotifications, 'processNotification').mockResolvedValue(undefined);
+            const completion = jest.fn();
+            try {
+                await pushNotifications.onNotificationReceivedForeground({payload: {
+                    type: 'session', server_url: 'http://test.com', message: 'Session security alert',
+                }} as NativeNotification, completion);
+                expect(read).not.toHaveBeenCalled();
+                expect(completion).toHaveBeenCalledWith({alert: false, sound: true, badge: true});
+                expect(process).toHaveBeenCalledTimes(1);
+            } finally {
+                read.mockRestore();
+                process.mockRestore();
+            }
+        });
+
+        it('should restore message sound after saving out of office disabled', async () => {
+            const storage = new Map<string, string>();
+            const read = jest.spyOn(RNUtils, 'getOutOfOfficeSettings').mockImplementation(async (url) => storage.get(url) ?? null);
+            const write = jest.spyOn(RNUtils, 'setOutOfOfficeSettings').mockImplementation(async (url, value) => {
+                storage.set(url, value);
+            });
+            const process = jest.spyOn(pushNotifications, 'processNotification').mockResolvedValue(undefined);
+            const schedule: WeeklyOutOfOfficeSettings = {
+                schedule: 'weekly',
+                enabled: true,
+                quietHoursEnabled: false,
+                startMinute: 0,
+                endMinute: 0,
+                daysOff: [0, 1, 2, 3, 4, 5, 6],
+                allowCalls: false,
+                allowMentions: false,
+            };
+            const notification = {payload: {type: 'message', server_url: 'http://test.com', channel_id: 'channel1'}} as NativeNotification;
+            AppState.currentState = 'active';
+            const completion = jest.fn();
+            try {
+                await saveOutOfOfficeSettings('http://test.com', schedule);
+                await pushNotifications.onNotificationReceivedForeground(notification, completion);
+                expect(completion).toHaveBeenLastCalledWith({alert: false, sound: false, badge: false});
+
+                await saveOutOfOfficeSettings('http://test.com', {...schedule, enabled: false});
+                await pushNotifications.onNotificationReceivedForeground(notification, completion);
+                expect(completion).toHaveBeenLastCalledWith({alert: false, sound: true, badge: true});
+                expect(process).toHaveBeenCalledTimes(2);
+            } finally {
+                read.mockRestore();
+                write.mockRestore();
+                process.mockRestore();
+            }
+        });
+
+        it('should silence scheduled messages while keeping background processing available', async () => {
+            AppState.currentState = 'active';
+            const now = Date.now();
+            jest.mocked(RNUtils.getOutOfOfficeSettings).mockResolvedValueOnce(JSON.stringify({
+                enabled: true, startAt: now - 1000, endAt: now + 60000, allowCalls: false, allowMentions: false,
+            }));
+            const completion = jest.fn();
+            const process = jest.spyOn(pushNotifications, 'processNotification').mockResolvedValueOnce(undefined);
+            await pushNotifications.onNotificationReceivedForeground({payload: {
+                type: 'message', server_url: 'http://test.com', channel_id: 'channel1',
+            }} as NativeNotification, completion);
+            expect(process).toHaveBeenCalledTimes(1);
+            expect(completion).toHaveBeenCalledWith({alert: false, sound: false, badge: false});
+        });
+
+        it('should finish delivery when resolving a server fails', async () => {
+            const completion = jest.fn();
+            jest.spyOn(pushNotifications, 'processNotification').mockResolvedValueOnce(undefined);
+            jest.spyOn(pushNotifications, 'getServerUrlFromNotification').mockRejectedValueOnce(new Error('Database unavailable'));
+            await pushNotifications.onNotificationReceivedForeground({payload: {type: 'message'}} as NativeNotification, completion);
+            expect(completion).toHaveBeenCalledTimes(1);
+            expect(completion).toHaveBeenCalledWith({alert: false, sound: true, badge: true});
         });
     });
 

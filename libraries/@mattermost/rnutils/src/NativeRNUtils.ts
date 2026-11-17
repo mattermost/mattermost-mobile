@@ -66,6 +66,9 @@ export interface Spec extends TurboModule {
     renameDatabase: (databaseName: string, newDatabaseName: string) => DatabaseOperationResult;
     deleteEntitiesFile: () => boolean;
 
+    getOutOfOfficeSettings(serverUrl: string): Promise<string | null>;
+    setOutOfOfficeSettings(serverUrl: string, settings: string): Promise<void>;
+
     getDeliveredNotifications(): Promise<Notification[]>;
     removeChannelNotifications(serverUrl: string, channelId: string): void;
     removeThreadNotifications(serverUrl: string, threadId: string): void;

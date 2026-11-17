@@ -8,7 +8,7 @@ import {Pressable, Text, View} from 'react-native';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchProfilesInChannel} from '@actions/remote/user';
 import {dismissIncomingCall, joinCallAndOpenCallScreen} from '@calls/actions/calls';
-import {playIncomingCallsRinging, removeIncomingCall} from '@calls/state';
+import {getIncomingCalls, playIncomingCallsRinging, removeIncomingCall, stopIncomingCallsRinging} from '@calls/state';
 import {ChannelType, type IncomingCallNotification} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {useAppState} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
+import useOutOfOfficeCallsSuppressed from '@hooks/out_of_office';
 import {usePreventDoubleTap} from '@hooks/utils';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServerDisplayName} from '@queries/app/servers';
@@ -136,6 +137,7 @@ export const CallNotification = ({
     const style = getStyleSheet(theme);
     const [serverName, setServerName] = useState('');
     const moreThanOneServer = servers.length > 1;
+    const suppressed = useOutOfOfficeCallsSuppressed(incomingCall.serverUrl);
 
     useDidMount(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
@@ -151,6 +153,12 @@ export const CallNotification = ({
     // it is up to date when the effect runs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [incomingCall.serverUrl, incomingCall.callID, appState]);
+
+    useEffect(() => {
+        if (suppressed && getIncomingCalls().currentRingingCallId === incomingCall.callID) {
+            stopIncomingCallsRinging();
+        }
+    }, [incomingCall.callID, suppressed]);
 
     // We only need to getServerDisplayName once
     useEffect(() => {
@@ -179,6 +187,10 @@ export const CallNotification = ({
         removeIncomingCall(serverUrl, incomingCall.callID, incomingCall.channelID);
         dismissIncomingCall(incomingCall.serverUrl, incomingCall.channelID);
     }, [incomingCall, serverUrl]);
+
+    if (suppressed) {
+        return null;
+    }
 
     let message: React.ReactElement;
     if (incomingCall.type === ChannelType.DM) {

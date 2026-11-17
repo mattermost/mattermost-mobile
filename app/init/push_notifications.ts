@@ -39,6 +39,7 @@ import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
+import {suppressNotificationDuringOutOfOffice} from '@utils/out_of_office';
 
 const messages = defineMessages({
     replyTitle: {
@@ -139,6 +140,10 @@ class PushNotificationsSingleton {
 
     handleInAppNotification = async (serverUrl: string, notification: NotificationWithData) => {
         const {payload} = notification;
+
+        if (await suppressNotificationDuringOutOfOffice(serverUrl, 'message', payload?.is_mention === true || payload?.is_mention === 'true')) {
+            return;
+        }
 
         // Do not show overlay if this is a call-started message (the call_notification will alert the user)
         if (isCallsStartedMessage(payload)) {
@@ -304,9 +309,10 @@ class PushNotificationsSingleton {
 
     // This triggers when the app was in the foreground (Android and iOS)
     // Also triggers when the app was in the background (Android)
-    onNotificationReceivedForeground = (incoming: Notification, completion: (response: NotificationCompletion) => void) => {
+    onNotificationReceivedForeground = async (incoming: Notification, completion: (response: NotificationCompletion) => void) => {
         if (incoming.payload.verified === 'false') {
             logDebug('not handling foreground notification because it was not verified, ackId=', incoming.payload.ackId);
+            completion({alert: false, sound: false, badge: false});
             return;
         }
         const notification = convertToNotificationData(incoming, false);
@@ -316,9 +322,22 @@ class PushNotificationsSingleton {
             this.processNotification(notification);
         }
 
-        // Always play a sound, except when this is a foreground notification about a call
-        const sound = !(notification.foreground && isCallsStartedMessage(notification.payload));
-        completion({alert: false, sound, badge: true});
+        let suppressed = false;
+        const isCall = isCallsStartedMessage(notification.payload);
+        try {
+            const exempt = notification.payload?.type === PushNotification.NOTIFICATION_TYPE.SESSION || notification.payload?.type === PushNotification.NOTIFICATION_TYPE.CLEAR;
+            if (!exempt) {
+                const serverUrl = await this.getServerUrlFromNotification(notification);
+                suppressed = serverUrl ? await suppressNotificationDuringOutOfOffice(
+                    serverUrl, isCall ? 'call' : 'message', notification.payload?.is_mention === true || notification.payload?.is_mention === 'true',
+                ) : false;
+            }
+        } catch {
+            logWarning('PushNotifications.onNotificationReceivedForeground: unable to resolve notification policy');
+        } finally {
+            const sound = !suppressed && !(notification.foreground && isCall);
+            completion({alert: false, sound, badge: !suppressed});
+        }
     };
 
     onRemoteNotificationsRegistered = async (event: Registered) => {
