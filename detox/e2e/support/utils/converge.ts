@@ -36,6 +36,10 @@ const defaultSleep = (ms: number) => new Promise<void>((resolve) => {
  * Polls `check` until it reports the expected state or the budget runs out. While it keeps reporting the old
  * state, `reassert` is run once per `reassertIntervalMs`, so a state the server cached from stale data can be
  * dropped by repeating the write that should have changed it.
+ *
+ * The first check always runs, even with a zero budget. Every later check runs only while the deadline has not
+ * passed, and each sleep is capped at the time left, so a state that appears after the deadline is never reported,
+ * even when a timer or a reassert overshoots.
  * @param check - resolves true once the expected state is observed
  * @param options - budget, poll cadence and optional reassert step
  * @returns whether the state converged, with the number of checks and reasserts it took
@@ -44,25 +48,29 @@ export async function pollUntilConverged(check: () => Promise<boolean>, options:
     const now = options.now ?? Date.now;
     const sleep = options.sleep ?? defaultSleep;
     const start = now();
+    const elapsed = () => now() - start;
     let lastReassert = start;
     let checks = 0;
     let reasserts = 0;
 
     /* eslint-disable no-await-in-loop -- each check depends on the previous one */
     for (;;) {
+        if (checks > 0 && elapsed() > options.timeoutMs) {
+            return {converged: false, checks, reasserts, elapsedMs: elapsed()};
+        }
         checks += 1;
         if (await check()) {
             return {converged: true, checks, reasserts, elapsedMs: now() - start};
         }
-        if (now() - start >= options.timeoutMs) {
-            return {converged: false, checks, reasserts, elapsedMs: now() - start};
+        if (elapsed() >= options.timeoutMs) {
+            return {converged: false, checks, reasserts, elapsedMs: elapsed()};
         }
         if (options.reassert && options.reassertIntervalMs !== undefined && now() - lastReassert >= options.reassertIntervalMs) {
             await options.reassert();
             reasserts += 1;
             lastReassert = now();
         }
-        await sleep(Math.min(options.pollIntervalMs, Math.max(0, options.timeoutMs - (now() - start))));
+        await sleep(Math.min(options.pollIntervalMs, Math.max(0, options.timeoutMs - elapsed())));
     }
     /* eslint-enable no-await-in-loop */
 }

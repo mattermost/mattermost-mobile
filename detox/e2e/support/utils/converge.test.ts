@@ -103,7 +103,60 @@ describe('pollUntilConverged', () => {
     });
 });
 
+// A clock whose timers wake late by `overshootMs`, like a busy runner.
+const lateClock = (overshootMs: number) => {
+    let time = 0;
+    return {
+        now: () => time,
+        sleep: async (ms: number) => {
+            time += ms + overshootMs;
+        },
+    };
+};
+
+describe('pollUntilConverged deadline', () => {
+    it('should not check again once a late timer has woken past the deadline', async () => {
+        const clock = lateClock(500);
+        let checks = 0;
+        const result = await pollUntilConverged(async () => {
+            checks += 1;
+            return clock.now() >= 1_200;
+        }, {timeoutMs: 1_000, pollIntervalMs: 2_000, ...clock});
+
+        assert.equal(result.converged, false);
+        assert.equal(checks, 1);
+        assert.equal(result.elapsedMs, 1_500);
+    });
+
+    it('should not check again when a reassert runs past the deadline', async () => {
+        const clock = fakeClock();
+        let checks = 0;
+        const result = await pollUntilConverged(async () => {
+            checks += 1;
+            return checks > 1;
+        }, {
+            timeoutMs: 1_000,
+            pollIntervalMs: 500,
+            reassertIntervalMs: 0,
+            reassert: async () => {
+                await clock.sleep(5_000);
+            },
+            ...clock,
+        });
+
+        assert.equal(result.converged, false);
+        assert.equal(checks, 1);
+    });
+});
+
 describe('findFirst', () => {
+    it('should not return a candidate that appears after the deadline when the timer wakes late', async () => {
+        const clock = lateClock(500);
+        const found = await findFirst([['late', convergesAt(clock, 1_200)]], {timeoutMs: 1_000, pollIntervalMs: 2_000, ...clock});
+
+        assert.equal(found, undefined);
+    });
+
     it('should not find a candidate that only appears after the budget', async () => {
         const clock = fakeClock();
         const found = await findFirst([['late', convergesAt(clock, 2_000)]], {timeoutMs: 1_000, pollIntervalMs: 2_000, ...clock});

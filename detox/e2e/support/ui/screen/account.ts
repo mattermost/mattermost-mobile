@@ -7,7 +7,7 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelScreen, HomeScreen, LoginScreen, ServerListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, isOptionalElementPresent, timeouts, wait, waitForElementToNotExist, waitForFirstPresent} from '@support/utils';
+import {isAndroid, isIos, isOptionalElementPresent, timeouts, wait, waitForElementToNotExist, waitForFirstPresent, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 import {logInfo} from '../../../../provision/log';
@@ -104,6 +104,35 @@ class AccountScreen {
     };
 
     /**
+     * Dismisses the "Scheduled Posts" tutorial tooltip (regular and admin variants) if it is up. On iPad the channel
+     * is always co-visible with the sidebar, so it appears after every fresh login and sits directly over the account
+     * tab (bottom-right corner); TWO_SEC allows for it to animate in. On iOS the whole dismissal (probe, visibility
+     * wait, tap and disappearance wait, for both variants) is one synchronization-disabled action, so a busy app cannot
+     * stretch it; the nested probe windows are counted by the owner. Android keeps synchronization on (see
+     * synchronization.ts).
+     */
+    private dismissScheduledPostTooltips = async () => {
+        const dismiss = async () => {
+            for (const closeButton of [ChannelScreen.scheduledPostTooltipCloseButton, ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount]) {
+                // eslint-disable-next-line no-await-in-loop -- one tooltip at a time
+                if (await isOptionalElementPresent(closeButton, timeouts.TWO_SEC)) {
+                    try {
+                        // eslint-disable-next-line no-await-in-loop -- still animating in when it was found
+                        await waitFor(closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                        // eslint-disable-next-line no-await-in-loop
+                        await closeButton.tap();
+                        // eslint-disable-next-line no-await-in-loop
+                        await waitForElementToNotExist(closeButton, timeouts.FIVE_SEC);
+                    } catch (error) {
+                        throw new Error(`AccountScreen.open: could not dismiss the scheduled-post tooltip: ${(error as Error).message}`);
+                    }
+                }
+            }
+        };
+        await (isIos() ? withSynchronizationDisabled(dismiss) : dismiss());
+    };
+
+    /**
      * Opens the account tab from wherever the app is, first dismissing what can cover it: known modals, a
      * lingering "Logout not complete" dialog, iOS system sheets, the "Removed from team" alert and the
      * scheduled-post tooltip. The optional checks are cheap when nothing is there (isOptionalElementPresent).
@@ -154,25 +183,7 @@ class AccountScreen {
             await wait(timeouts.HALF_SEC);
         }
 
-        // Dismiss the "Scheduled Posts" tutorial tooltip (regular and admin variants) before tapping
-        // the account tab. On iPad the channel is always co-visible with the sidebar, so it appears
-        // after every fresh login and sits directly over the account tab (bottom-right corner).
-        // Allow TWO_SEC for it to animate in.
-        for (const closeButton of [ChannelScreen.scheduledPostTooltipCloseButton, ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount]) {
-            // eslint-disable-next-line no-await-in-loop -- one tooltip at a time
-            if (await isOptionalElementPresent(closeButton, timeouts.TWO_SEC)) {
-                try {
-                    // eslint-disable-next-line no-await-in-loop -- still animating in when it was found
-                    await waitFor(closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                    // eslint-disable-next-line no-await-in-loop
-                    await closeButton.tap();
-                    // eslint-disable-next-line no-await-in-loop
-                    await waitForElementToNotExist(closeButton, timeouts.FIVE_SEC);
-                } catch (error) {
-                    throw new Error(`AccountScreen.open: could not dismiss the scheduled-post tooltip: ${(error as Error).message}`);
-                }
-            }
-        }
+        await this.dismissScheduledPostTooltips();
 
         try {
             await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TEN_SEC);
