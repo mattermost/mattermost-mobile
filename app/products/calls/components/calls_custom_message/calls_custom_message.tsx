@@ -8,7 +8,7 @@ import {Pressable, Text, View} from 'react-native';
 
 import {joinCallAndOpenCallScreen, leaveCallConfirmation} from '@calls/actions/calls';
 import {showLimitRestrictedAlert} from '@calls/alerts';
-import {CallCardState} from '@calls/types/calls';
+import {CallCardState, CallPostStatus} from '@calls/types/calls';
 import {getCallCardState, getCallPropsFromPost} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
@@ -183,7 +183,8 @@ export const CallsCustomMessage = ({
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId]);
 
     const callProps = getCallPropsFromPost(post);
-    const cardState = getCallCardState(callProps, numUsers, callExists);
+    const answered = callProps.call_status !== CallPostStatus.Calling || numUsers > 1;
+    const cardState = getCallCardState(callProps, answered, callExists);
 
     // The author of the call post is the caller.
     const isCaller = Boolean(currentUser && currentUser.id === post.userId);

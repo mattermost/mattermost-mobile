@@ -318,10 +318,10 @@ export function getCallPropsFromPost(post: PostModel | Post): CallsPostProps {
 /**
  * Derives which state the call post card should render. Mirrors getCallCardState in the webapp
  * (webapp/src/components/custom_post_types/post_type_event.tsx).
- * The server keeps call_status at 'calling' after the callee answers, so the number of people in
- * the call is what tells a ringing call apart from a connected one.
+ * The server keeps call_status at 'calling' after the callee answers, so callers derive `answered`
+ * from call state (the number of users in the call, or the phone leg connecting) instead.
  */
-export function getCallCardState(callProps: CallsPostProps, numUsers: number, callExists: boolean): CallCardState {
+export function getCallCardState(callProps: CallsPostProps, answered: boolean, callExists: boolean): CallCardState {
     if (callProps.end_at > 0) {
         switch (callProps.call_status) {
             case CallPostStatus.NoAnswer:
@@ -330,6 +330,8 @@ export function getCallCardState(callProps: CallsPostProps, numUsers: number, ca
                 return CallCardState.Canceled;
             case CallPostStatus.Declined:
                 return CallCardState.Declined;
+            case CallPostStatus.Failed:
+                return CallCardState.Failed;
             default:
                 return CallCardState.Ended;
         }
@@ -341,11 +343,7 @@ export function getCallCardState(callProps: CallsPostProps, numUsers: number, ca
         return CallCardState.Ended;
     }
 
-    if (callProps.call_status === CallPostStatus.Calling && numUsers <= 1) {
-        return CallCardState.Calling;
-    }
-
-    return CallCardState.Active;
+    return answered ? CallCardState.Active : CallCardState.Calling;
 }
 
 /**
@@ -368,32 +366,6 @@ export function getPhoneCallPropsFromPost(post: PostModel | Post): PhoneCallPost
         label: ensureString(post.props.display_label),
         targetUserId: ensureString(post.props.target_user_id),
     };
-}
-
-// The phone leg is kept out of the roster, so answered comes from call state, not the user count.
-export function getPhoneCallCardState(callProps: CallsPostProps, answered: boolean, callExists: boolean): CallCardState {
-    if (callProps.end_at > 0) {
-        switch (callProps.call_status) {
-            case CallPostStatus.NoAnswer:
-                return CallCardState.NoAnswer;
-            case CallPostStatus.CanceledByCaller:
-                return CallCardState.Canceled;
-            case CallPostStatus.Declined:
-                return CallCardState.Declined;
-            case CallPostStatus.Failed:
-                return CallCardState.Failed;
-            default:
-                return CallCardState.Ended;
-        }
-    }
-
-    // The call_end event lands before the post is updated with end_at, and the disconnect clears
-    // answered, so without this the card would fall back to "Calling..." for the rest of that window.
-    if (!callExists) {
-        return CallCardState.Ended;
-    }
-
-    return answered ? CallCardState.Active : CallCardState.Calling;
 }
 
 export const NO_PHONES: DialablePhone[] = [];

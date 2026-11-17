@@ -9,7 +9,7 @@ import {leaveCall} from '@calls/actions';
 import {startPhoneCall} from '@calls/alerts';
 import {getStyleSheet} from '@calls/components/calls_custom_message/calls_custom_message';
 import {CallCardState} from '@calls/types/calls';
-import {getCallPropsFromPost, getPhoneCallCardState, getPhoneCallPropsFromPost} from '@calls/utils';
+import {getCallCardState, getCallPropsFromPost, getPhoneCallPropsFromPost} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
@@ -52,7 +52,7 @@ export const PhoneCallCustomMessage = ({post, currentUser, targetUser, teammateN
         return null;
     }
 
-    const cardState = getPhoneCallCardState(getCallPropsFromPost(post), answered, callExists);
+    const cardState = getCallCardState(getCallPropsFromPost(post), answered, callExists);
     const isCaller = Boolean(currentUser && currentUser.id === post.userId);
     const isCalling = cardState === CallCardState.Calling;
     const isLive = isCalling || cardState === CallCardState.Active;

@@ -34,7 +34,6 @@ import {
     hasCaptions,
     getTranscriptionUri,
     getPhoneCallPropsFromPost,
-    getPhoneCallCardState,
     getDialablePhones,
 } from './utils';
 
@@ -702,39 +701,43 @@ describe('getCallCardState', () => {
     });
 
     it('should be calling when the call is ringing and only the caller is in it', () => {
-        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 1, true)).toBe(CallCardState.Calling);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), false, true)).toBe(CallCardState.Calling);
     });
 
     it('should be active once the callee answers, even though call_status is still calling', () => {
-        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 2, true)).toBe(CallCardState.Active);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), true, true)).toBe(CallCardState.Active);
     });
 
     it('should be active for an ongoing call with no call_status', () => {
-        expect(getCallCardState(makeCallProps(), 2, true)).toBe(CallCardState.Active);
+        expect(getCallCardState(makeCallProps(), true, true)).toBe(CallCardState.Active);
     });
 
     it('should be ended once the call is gone, before the post has an end_at', () => {
-        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 0, false)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), false, false)).toBe(CallCardState.Ended);
     });
 
     it('should be no answer for a call that timed out while ringing', () => {
-        expect(getCallCardState(makeCallProps({end_at: 31000, call_status: CallPostStatus.NoAnswer}), 0, false)).toBe(CallCardState.NoAnswer);
+        expect(getCallCardState(makeCallProps({end_at: 31000, call_status: CallPostStatus.NoAnswer}), false, false)).toBe(CallCardState.NoAnswer);
     });
 
     it('should be canceled for a call the caller hung up while ringing', () => {
-        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.CanceledByCaller}), 0, false)).toBe(CallCardState.Canceled);
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.CanceledByCaller}), false, false)).toBe(CallCardState.Canceled);
     });
 
     it('should be declined for a call the callee turned down', () => {
-        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.Declined}), 0, false)).toBe(CallCardState.Declined);
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.Declined}), false, false)).toBe(CallCardState.Declined);
+    });
+
+    it('should be failed for a call the server could not place', () => {
+        expect(getCallCardState(makeCallProps({end_at: 5000, call_status: CallPostStatus.Failed}), true, false)).toBe(CallCardState.Failed);
     });
 
     it('should be ended for a call that was answered and then hung up', () => {
-        expect(getCallCardState(makeCallProps({end_at: 500000, call_status: CallPostStatus.Ended}), 0, false)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({end_at: 500000, call_status: CallPostStatus.Ended}), false, false)).toBe(CallCardState.Ended);
     });
 
     it('should be ended for an ended call with no call_status, such as a channel call', () => {
-        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: ''}), 0, false)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: ''}), false, false)).toBe(CallCardState.Ended);
     });
 });
 
@@ -773,37 +776,6 @@ describe('getPhoneCallPropsFromPost', () => {
 
         expect(getPhoneCallPropsFromPost(TestHelper.fakePost({props: phoneProps}))?.displayNumber).toBe('+15551234567');
         expect(getPhoneCallPropsFromPost(TestHelper.fakePost({props: {phone_number: '+15551234567'}}))).toBeUndefined();
-    });
-});
-
-describe('getPhoneCallCardState', () => {
-    const makePhoneProps = (overrides: Partial<CallsPostProps>): CallsPostProps => ({
-        title: '',
-        start_at: 1000,
-        end_at: 0,
-        call_status: CallPostStatus.Calling,
-        recordings: {},
-        transcriptions: {},
-        participants: [],
-        ...overrides,
-    });
-
-    it('should show a live phone call as calling until the phone answers', () => {
-        expect(getPhoneCallCardState(makePhoneProps({}), false, true)).toBe(CallCardState.Calling);
-        expect(getPhoneCallCardState(makePhoneProps({}), true, true)).toBe(CallCardState.Active);
-    });
-
-    it('should show a phone call as ended once the call is gone but the post has no end_at yet', () => {
-        expect(getPhoneCallCardState(makePhoneProps({}), false, false)).toBe(CallCardState.Ended);
-    });
-
-    it.each([
-        [CallPostStatus.Failed, CallCardState.Failed],
-        [CallPostStatus.Declined, CallCardState.Declined],
-        [CallPostStatus.CanceledByCaller, CallCardState.Canceled],
-        [CallPostStatus.Ended, CallCardState.Ended],
-    ])('should map how the server ended a phone call (%s) to its card state', (status, expected) => {
-        expect(getPhoneCallCardState(makePhoneProps({end_at: 5000, call_status: status}), true, false)).toBe(expected);
     });
 });
 
