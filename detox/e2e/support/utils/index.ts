@@ -544,11 +544,13 @@ export async function waitForElementToExist(
     await detoxExpect(detoxElement).toExist();
 }
 
+const DETOX_EXPECTATION_FAILURE = 'Test Failed:';
+
 /**
  * Whether an element is in the hierarchy right now. It is asserted absent, which passes without a Detox failure
  * payload while it is: a failed iOS expectation ships the whole view hierarchy (and, for toBeVisible, visibility
- * screenshots), which took 47.5s for a 2s tooltip probe in run 43330325473. The assertion throws when the element
- * exists, or when the app cannot be reached, which the caller's next action on the element then reports.
+ * screenshots), which took 47.5s for a 2s tooltip probe in run 43330325473. Only a failed expectation means the
+ * element exists; any other Detox error is rethrown.
  * @param detoxElement - the element to look for
  * @returns whether it exists
  */
@@ -557,8 +559,12 @@ async function isElementPresentNow(detoxElement: Detox.NativeElement): Promise<b
         await expect(detoxElement).not.toExist();
         return false;
     } catch (error) {
-        logDebug(`isElementPresentNow: not.toExist failed, treating the element as present: ${String((error as Error)?.message ?? error).split('\n')[0]}`);
-        return true;
+        // A failed expectation comes back from the app as "Test Failed: ..."; anything else (a crash, a lost
+        // connection) is not evidence that the element exists.
+        if (String((error as Error)?.message ?? '').includes(DETOX_EXPECTATION_FAILURE)) {
+            return true;
+        }
+        throw error;
     }
 }
 

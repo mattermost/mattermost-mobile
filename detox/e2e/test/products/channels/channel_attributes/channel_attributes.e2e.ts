@@ -15,7 +15,7 @@ import {
     SECOND_FIELD_OPTIONS,
     TEST_FIELD_OPTIONS,
 } from '@support/channel_attributes_fixtures';
-import {Channel, Properties, Team, User} from '@support/server_api';
+import {Channel, Preference, Properties, Team, User} from '@support/server_api';
 import {assertServerBaseline} from '@support/server_baseline';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
@@ -250,12 +250,19 @@ const {
             // # Create a second user for the DM. DMs are server-global; no shared team needed.
             const {user: dmTarget} = await User.apiCreateUser(siteOneUrl);
 
-            // # Create the DM. It is listed without a post (a DM shows unless direct_channel_show is
-            // false). A post would reach this device, as a push and over the websocket, while reloadApp
-            // below runs: on Android one landing during the reload was followed by SQLite corruption of
-            // the server database (4e2a508, e3e8916).
+            // # Create the DM and record it as opened, which keeps it in the sidebar after the reload
+            // (filterAutoclosedDMs hides a read DM with no view or open time). A post would do that by
+            // leaving it unread, but it reaches this device as a push and over the websocket while
+            // reloadApp below runs: on Android one landing during the reload was followed by SQLite
+            // corruption of the server database (4e2a508, e3e8916).
             const {channel: dmChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, dmTarget.id]);
             testChannel = dmChannel;
+            const {error: openTimeError} = await Preference.apiSaveUserPreferences(siteOneUrl, testUser.id, [
+                {user_id: testUser.id, category: 'channel_open_time', name: dmChannel.id, value: String(Date.now())},
+            ]);
+            if (openTimeError) {
+                throw new Error(`Failed to save the DM open time: ${JSON.stringify(openTimeError)}`);
+            }
 
             // # Set an attribute value on the DM channel (server accepts it; mobile must not show it).
             await Properties.apiSetChannelAttributeValue(siteOneUrl, dmChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));

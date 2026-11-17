@@ -62,7 +62,7 @@ export async function pollUntilConverged(check: () => Promise<boolean>, options:
             reasserts += 1;
             lastReassert = now();
         }
-        await sleep(options.pollIntervalMs);
+        await sleep(Math.min(options.pollIntervalMs, Math.max(0, options.timeoutMs - (now() - start))));
     }
     /* eslint-enable no-await-in-loop */
 }

@@ -104,6 +104,14 @@ describe('pollUntilConverged', () => {
 });
 
 describe('findFirst', () => {
+    it('should not find a candidate that only appears after the budget', async () => {
+        const clock = fakeClock();
+        const found = await findFirst([['late', convergesAt(clock, 2_000)]], {timeoutMs: 1_000, pollIntervalMs: 2_000, ...clock});
+
+        assert.equal(found, undefined);
+        assert.equal(clock.now(), 1_000);
+    });
+
     it('should return the candidate that appears, even when it is not the first one checked', async () => {
         const clock = fakeClock();
         const found = await findFirst([
