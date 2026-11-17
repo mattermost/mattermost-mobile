@@ -1378,9 +1378,12 @@ jobs:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           # A triage failure must never change the outcome of the E2E run itself.
           mode: ${{ vars.E2E_TRIAGE_MODE || 'enforce' }}
-          # A lane red only on infrastructure (a dead job, missing reports) asks for one
-          # automatic re-run of the failed jobs; e2e-tests-rerun.yml carries it out.
-          rerun-attempts: '1'
+          # On a PR, a lane red only on infrastructure (a dead job, missing reports) asks for one
+          # automatic re-run of the failed jobs; e2e-tests-rerun.yml carries it out. Main asks for
+          # none: Matterwick destroys a main run's servers as soon as the run completes (PR servers
+          # are kept), so the re-run fails its server health check and posts a second channel
+          # message (run 43976673835). Go back to '1' once Matterwick keeps them for a re-run.
+          rerun-attempts: ${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && '0' || '1' }}
 
   # The PR-wide e2e-test/triage check, once every lane is final. A red lane announces triage there (pending)
   # and an enforcing triage writes its verdict, but nothing else does: a triage that ran report-only (the
