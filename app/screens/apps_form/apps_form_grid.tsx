@@ -20,6 +20,11 @@ type Props = {
     // The container field, whose collapsible_config.fields are the rows.
     field: AppField;
 
+    // The grid container's own tree path from the form root (the childPath
+    // convention). Used to give a nameless row a unique, resolvable identity;
+    // see gridRowKey.
+    gridPath: string;
+
     // Renders one leaf field as a live input, already stripped of its label,
     // help text and error: the column header carries the name, a paragraph of
     // guidance under every cell would dwarf the table, and the grid draws the
@@ -291,21 +296,34 @@ export function displayCellValue(field: AppField | undefined, value: AppFormValu
  * naturally swipes it. Taking the inputs out of the table removes all of that:
  * nothing in it is focusable, so the swipe is unambiguous.
  */
-const AppsFormGrid = ({field, renderCell, renderField, values, errors, excludeName, editable, onOpenRow}: Props) => {
+const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors, excludeName, editable, onOpenRow}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
     // A row keeps its place even without a name: its cells are addressed by
     // their own names, and a nameless row still needs to render so a required
     // cell inside it is reachable. A stray leaf, by contrast, has nothing but
-    // its name to address it, so an unnamed one is dropped.
-    const children = (field.collapsible_config?.fields || []).filter((f) => !excludeName || f.name !== excludeName);
-    const rows = children.filter(isRow);
-    const strays = children.filter((child) => !isRow(child) && child.name);
+    // its name to address it, so an unnamed one is dropped. Raw indices are
+    // tracked alongside the rows so a nameless row's key is its true tree path.
+    const rows: AppField[] = [];
+    const rowRawIndices: number[] = [];
+    const strays: AppField[] = [];
+    (field.collapsible_config?.fields || []).forEach((child, rawIndex) => {
+        if (excludeName && child.name === excludeName) {
+            return;
+        }
+        if (isRow(child)) {
+            rows.push(child);
+            rowRawIndices.push(rawIndex);
+        } else if (child.name) {
+            strays.push(child);
+        }
+    });
+    const children = [...rows, ...strays];
 
     // Each row's stable identity for keys, test ids and navigation. See
-    // gridRowKey: a named row uses its name, a nameless one a positional path.
-    const rowKeys = rows.map((row, index) => gridRowKey(field.name, row, index));
+    // gridRowKey: a named row uses its name, a nameless one its tree path.
+    const rowKeys = rows.map((row, index) => gridRowKey(gridPath, row, rowRawIndices[index]));
 
     const rowCells = rows.map((row) => cellFields(row, excludeName));
 

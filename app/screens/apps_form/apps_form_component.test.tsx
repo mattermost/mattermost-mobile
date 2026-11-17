@@ -335,14 +335,13 @@ describe('AppsFormComponent grid layout', () => {
         expect(submitMock).not.toHaveBeenCalled();
     });
 
-    it('keeps a nameless row in the grid and lets it open by its positional path', () => {
+    it('keeps a nameless row in a nameless grid reachable by its tree path', () => {
         jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({width: 400, height: 800, scale: 1, fontScale: 1});
 
-        // A grid whose single row collapsible has no name. It must still render
-        // and be reachable so its cells are not silently dropped.
+        // Both the grid and its single row collapsible have no name. The row must
+        // still render and open so its cells are not silently dropped.
         const namelessForm: Partial<AppForm> = {
             fields: [{
-                name: 'orders',
                 type: 'collapsible',
                 label: 'Orders',
                 collapsible_config: {
@@ -364,8 +363,9 @@ describe('AppsFormComponent grid layout', () => {
 
         const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(namelessForm)}/>, {database, serverUrl});
 
+        // Grid at form path '0', row at index 0 -> tree path '0/0'.
         act(() => {
-            fireEvent.press(getByTestId('apps_form_grid.row.orders::row::0.sticky'));
+            fireEvent.press(getByTestId('apps_form_grid.row.0/0.sticky'));
         });
 
         // The row opened on its own screen (title/back header is name-independent).

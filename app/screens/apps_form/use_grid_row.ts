@@ -33,41 +33,44 @@ export function findCollapsible(fields: AppField[] | undefined, name: string): A
     return undefined;
 }
 
-// Separates the grid name from the row index in a synthesized row key.
-const SYNTHETIC_ROW_SEPARATOR = '::row::';
-
 /**
  * A row's stable identity. Normally its own name — the way the server keys a
  * row across refreshes. DialogElement.name is optional, though, so a malformed
  * grid can hand us a nameless row; rather than drop it (its required cells would
- * then fail submission with nothing on screen to fix), fall back to a path built
- * from the grid container's name and the row's position.
+ * then fail submission with nothing on screen to fix), fall back to the row's
+ * tree path from the form root. gridPath is the grid container's own path and
+ * rawIndex the row's index among the container's fields, so the result is unique
+ * even across several unnamed grids — unlike the row's name, which may be blank.
  */
-export function gridRowKey(gridName: string | undefined, row: AppField, index: number): string {
-    return row.name || `${gridName || ''}${SYNTHETIC_ROW_SEPARATOR}${index}`;
+export function gridRowKey(gridPath: string, row: AppField, rawIndex: number): string {
+    return row.name || `${gridPath}/${rawIndex}`;
 }
 
 /**
- * Resolves an open row from the key gridRowKey produced. A named row is found by
- * name anywhere in the tree; a synthesized key is resolved against its grid's
- * collapsible children by position. An unnamed row inside an unnamed grid cannot
- * be told apart from another and so is not independently navigable.
+ * Walks a '/'-separated index path (the childPath convention from
+ * apps_form_component) into the unfiltered field tree. Each step indexes the
+ * current level's fields; the next level is that field's collapsible children.
+ */
+function findFieldByPath(fields: AppField[] | undefined, path: string): AppField | undefined {
+    let current = fields;
+    let found: AppField | undefined;
+    for (const part of path.split('/')) {
+        found = current?.[Number(part)];
+        if (!found) {
+            return undefined;
+        }
+        current = found.collapsible_config?.fields;
+    }
+    return found;
+}
+
+/**
+ * Resolves an open row from the key gridRowKey produced: a named row by name
+ * anywhere in the tree, an unnamed row by its tree path. The path form resolves
+ * unnamed rows even inside unnamed grids, which a name-based key cannot.
  */
 export function findGridRow(fields: AppField[] | undefined, key: string): AppField | undefined {
-    const named = findCollapsible(fields, key);
-    if (named) {
-        return named;
-    }
-
-    const separator = key.lastIndexOf(SYNTHETIC_ROW_SEPARATOR);
-    if (separator <= 0) {
-        return undefined;
-    }
-    const gridName = key.slice(0, separator);
-    const index = Number(key.slice(separator + SYNTHETIC_ROW_SEPARATOR.length));
-    const grid = findCollapsible(fields, gridName);
-    const rows = (grid?.collapsible_config?.fields || []).filter((f) => f.type === AppFieldTypes.COLLAPSIBLE);
-    return rows[index];
+    return findCollapsible(fields, key) ?? findFieldByPath(fields, key);
 }
 
 /**

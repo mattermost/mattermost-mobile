@@ -43,11 +43,12 @@ describe('findCollapsible', () => {
 
 describe('gridRowKey', () => {
     it('uses the row name when it has one', () => {
-        expect(gridRowKey('orders', leaf('row1'), 2)).toBe('row1');
+        expect(gridRowKey('0', leaf('row1'), 2)).toBe('row1');
     });
 
-    it('falls back to a positional path when the row has no name', () => {
-        expect(gridRowKey('orders', section(undefined, []), 2)).toBe('orders::row::2');
+    it('falls back to the row tree path when the row has no name', () => {
+        // Grid at path '0', row at raw index 2 -> '0/2'.
+        expect(gridRowKey('0', section(undefined, []), 2)).toBe('0/2');
     });
 });
 
@@ -58,15 +59,17 @@ describe('findGridRow', () => {
         expect(findGridRow([grid], 'row1')).toBe(row);
     });
 
-    it('resolves a nameless row by its positional path', () => {
+    it('resolves a nameless row by its tree path, even in an unnamed grid', () => {
         const row0 = section(undefined, [leaf('a')]);
         const row1 = section(undefined, [leaf('b')]);
-        const grid = section('orders', [row0, row1]);
-        expect(findGridRow([grid], 'orders::row::1')).toBe(row1);
+        const grid = section(undefined, [row0, row1]);
+
+        // grid is fields[0]; row1 is its child at index 1 -> path '0/1'.
+        expect(findGridRow([grid], '0/1')).toBe(row1);
     });
 
-    it('returns undefined when the positional path points past the rows', () => {
+    it('returns undefined when the tree path points past the fields', () => {
         const grid = section('orders', [section(undefined, [leaf('a')])]);
-        expect(findGridRow([grid], 'orders::row::5')).toBeUndefined();
+        expect(findGridRow([grid], '0/5')).toBeUndefined();
     });
 });
