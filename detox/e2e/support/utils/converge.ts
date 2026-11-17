@@ -90,3 +90,16 @@ export async function findFirst<K extends string>(
     }, options);
     return found;
 }
+
+/**
+ * Awaits every promise, then rethrows the first rejection. Unlike Promise.all, nothing is still running once the
+ * caller moves on.
+ * @param promises - the work to wait for
+ */
+export async function allOrFirstError(promises: Array<Promise<unknown>>): Promise<void> {
+    const results = await Promise.allSettled(promises);
+    const failure = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+    if (failure) {
+        throw failure.reason;
+    }
+}

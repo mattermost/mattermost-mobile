@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import {findFirst, pollUntilConverged} from './converge';
+import {allOrFirstError, findFirst, pollUntilConverged} from './converge';
 
 // A clock that only moves when the code under test sleeps, so cadence is asserted exactly.
 const fakeClock = () => {
@@ -136,5 +136,20 @@ describe('findFirst', () => {
         assert.equal(found, undefined);
         assert.equal(checks, 1);
         assert.equal(clock.now(), 0);
+    });
+});
+
+describe('allOrFirstError', () => {
+    it('should wait for every promise before rethrowing the first rejection', async () => {
+        let slowSettled = false;
+        const slow = new Promise<void>((resolve) => {
+            setTimeout(() => {
+                slowSettled = true;
+                resolve();
+            }, 20);
+        });
+
+        await assert.rejects(allOrFirstError([Promise.reject(new Error('first')), slow, Promise.reject(new Error('second'))]), /first/);
+        assert.equal(slowSettled, true);
     });
 });

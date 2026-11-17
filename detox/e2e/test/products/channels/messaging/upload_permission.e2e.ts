@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    allOrFirstError,
     assertAbacBaseline,
     convergeDepartment,
     createAbacChannel,
@@ -35,6 +34,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
+import {allOrFirstError} from '@support/utils/converge';
 import {expect} from 'detox';
 
 const UPLOAD_ACTION = 'upload_file_attachment';
@@ -97,8 +97,8 @@ describe('Messaging - Upload Permission (ABAC)', () => {
 
         // # Set each user's Department and wait until the server itself decides as the policy says
         await allOrFirstError([
-            convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Sales', testChannel.id, UPLOAD_ACTION, false),
-            convergeDepartment(siteOneUrl, allowedUser, departmentFieldId, 'Engineering', testChannel.id, UPLOAD_ACTION, true),
+            convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Sales', testChannel.id, UPLOAD_ACTION, false, timeouts.TWO_MIN),
+            convergeDepartment(siteOneUrl, allowedUser, departmentFieldId, 'Engineering', testChannel.id, UPLOAD_ACTION, true, timeouts.TWO_MIN),
         ]);
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -174,8 +174,9 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             await convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Engineering', testChannel.id, UPLOAD_ACTION, true);
 
             // # Save the value once more. Its attribute event is what the app re-checks on, and the
-            // server now answers it from the new value (the first event may have been answered from
-            // the old one).
+            // server now answers it from the new value; the first event may have been answered from
+            // a stale cached subject (server defect, see convergeDepartment).
+            // TODO: drop this save with convergeDepartment's reassert once the server is fixed.
             await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
 
             // * The button re-enables without reopening the channel

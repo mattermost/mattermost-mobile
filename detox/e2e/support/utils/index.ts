@@ -556,7 +556,8 @@ async function isElementPresentNow(detoxElement: Detox.NativeElement): Promise<b
     try {
         await expect(detoxElement).not.toExist();
         return false;
-    } catch {
+    } catch (error) {
+        logDebug(`isElementPresentNow: not.toExist failed, treating the element as present: ${String((error as Error)?.message ?? error).split('\n')[0]}`);
         return true;
     }
 }

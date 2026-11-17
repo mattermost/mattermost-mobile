@@ -251,8 +251,9 @@ const {
             const {user: dmTarget} = await User.apiCreateUser(siteOneUrl);
 
             // # Create the DM. It is listed without a post (a DM shows unless direct_channel_show is
-            // false), and a post would push to this device while reloadApp below runs: on Android a
-            // push landing during the reload corrupted the server database (4e2a508, e3e8916).
+            // false). A post would reach this device, as a push and over the websocket, while reloadApp
+            // below runs: on Android one landing during the reload was followed by SQLite corruption of
+            // the server database (4e2a508, e3e8916).
             const {channel: dmChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, dmTarget.id]);
             testChannel = dmChannel;
 

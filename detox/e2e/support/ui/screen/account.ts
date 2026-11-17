@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
-import {HomeScreen, LoginScreen, ServerListScreen, ServerScreen} from '@support/ui/screen';
+import {ChannelScreen, HomeScreen, LoginScreen, ServerListScreen, ServerScreen} from '@support/ui/screen';
 import {isAndroid, isOptionalElementPresent, timeouts, wait, waitForElementToNotExist, waitForFirstPresent} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
@@ -103,6 +103,12 @@ class AccountScreen {
         return this.accountScreen;
     };
 
+    /**
+     * Opens the account tab from wherever the app is, first dismissing what can cover it: known modals, a
+     * lingering "Logout not complete" dialog, iOS system sheets, the "Removed from team" alert and the
+     * scheduled-post tooltip. The optional checks are cheap when nothing is there (isOptionalElementPresent).
+     * @returns the account screen element
+     */
     open = async () => {
         await dismissKnownModals(2);
 
@@ -152,13 +158,19 @@ class AccountScreen {
         // the account tab. On iPad the channel is always co-visible with the sidebar, so it appears
         // after every fresh login and sits directly over the account tab (bottom-right corner).
         // Allow TWO_SEC for it to animate in.
-        for (const closeButton of [element(by.id('scheduled_post.tooltip.close.button')), element(by.id('scheduled_post_tutorial_tooltip.close'))]) {
+        for (const closeButton of [ChannelScreen.scheduledPostTooltipCloseButton, ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount]) {
             // eslint-disable-next-line no-await-in-loop -- one tooltip at a time
             if (await isOptionalElementPresent(closeButton, timeouts.TWO_SEC)) {
-                // eslint-disable-next-line no-await-in-loop
-                await closeButton.tap();
-                // eslint-disable-next-line no-await-in-loop
-                await waitForElementToNotExist(closeButton, timeouts.FIVE_SEC);
+                try {
+                    // eslint-disable-next-line no-await-in-loop -- still animating in when it was found
+                    await waitFor(closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    // eslint-disable-next-line no-await-in-loop
+                    await closeButton.tap();
+                    // eslint-disable-next-line no-await-in-loop
+                    await waitForElementToNotExist(closeButton, timeouts.FIVE_SEC);
+                } catch (error) {
+                    throw new Error(`AccountScreen.open: could not dismiss the scheduled-post tooltip: ${(error as Error).message}`);
+                }
             }
         }
 
@@ -243,6 +255,11 @@ class AccountScreen {
         await this.waitForCustomStatusCleared(timeouts.TWENTY_SEC);
     };
 
+    /**
+     * Logs out from the account screen and returns once the app is logged out: on a logged-out screen, or past
+     * the "Logout not complete" dialog via "Continue Anyway".
+     * @param serverDisplayName - when given, the confirmation alert must name this server
+     */
     logout = async (serverDisplayName: string | null = null) => {
         await this.logoutOption.tap();
         if (serverDisplayName) {

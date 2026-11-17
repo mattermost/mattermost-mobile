@@ -6,6 +6,9 @@ import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
 import {isAndroid, isIos, reloadApp, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist, waitForFirstPresent} from '@support/utils';
 import {waitFor} from 'detox';
 
+// Android CI emulators can be slow after app launch — use a longer timeout.
+const loginScreenTimeout = () => (isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC);
+
 class LoginScreen {
     testID = {
         loginScreen: 'login.screen',
@@ -53,8 +56,7 @@ class LoginScreen {
     signinButtonDisabled = element(by.id(this.testID.signinButtonDisabled));
 
     toBeVisible = async () => {
-        // Android CI emulators can be slow after app launch — use a longer timeout.
-        const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+        const timeout = loginScreenTimeout();
 
         // On Android, use the polling helper instead of waitFor().toExist() to avoid
         // BridgeIdlingResource blocking when the JS bridge is still busy after
@@ -139,15 +141,17 @@ class LoginScreen {
      * Waits for the login form. Logging out of the active server routes to the server screen
      * (SessionManager.onLogout), which does not connect on its own, so connect from there; otherwise
      * toBeVisible times out and retryWithReload connects only after reloading the app.
+     * @param serverUrl - the server to connect to from the server screen; Server 1, as retryWithReload assumes
+     * @param serverDisplayName - its display name
      * @returns the login screen element
      */
-    reachLoginForm = async () => {
+    reachLoginForm = async (serverUrl = serverOneUrl, serverDisplayName = 'Server 1') => {
         const landed = await waitForFirstPresent([
             ['login', this.loginScreen],
             ['server', ServerScreen.serverScreen],
-        ], isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC);
+        ], loginScreenTimeout());
         if (landed === 'server') {
-            await ServerScreen.connectToServer(serverOneUrl, 'Server 1');
+            await ServerScreen.connectToServer(serverUrl, serverDisplayName);
         }
         return this.toBeVisible();
     };
