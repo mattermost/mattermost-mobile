@@ -149,7 +149,40 @@ describe('pollUntilConverged deadline', () => {
     });
 });
 
+describe('pollUntilConverged slow check', () => {
+    it('should not report convergence when the check finishes after the deadline', async () => {
+        const clock = fakeClock();
+        const result = await pollUntilConverged(async () => {
+            await clock.sleep(1_500);
+            return true;
+        }, {timeoutMs: 1_000, pollIntervalMs: 500, ...clock});
+
+        assert.equal(result.converged, false);
+        assert.equal(result.checks, 1);
+    });
+
+    it('should count the single pass of a zero budget however long it takes', async () => {
+        const clock = fakeClock();
+        const result = await pollUntilConverged(async () => {
+            await clock.sleep(1_500);
+            return true;
+        }, {timeoutMs: 0, pollIntervalMs: 500, ...clock});
+
+        assert.equal(result.converged, true);
+    });
+});
+
 describe('findFirst', () => {
+    it('should not return a candidate that is observed after the deadline', async () => {
+        const clock = fakeClock();
+        const found = await findFirst([['slow', async () => {
+            await clock.sleep(1_500);
+            return true;
+        }]], {timeoutMs: 1_000, pollIntervalMs: 500, ...clock});
+
+        assert.equal(found, undefined);
+    });
+
     it('should not return a candidate that appears after the deadline when the timer wakes late', async () => {
         const clock = lateClock(500);
         const found = await findFirst([['late', convergesAt(clock, 1_200)]], {timeoutMs: 1_000, pollIntervalMs: 2_000, ...clock});

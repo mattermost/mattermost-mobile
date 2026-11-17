@@ -38,8 +38,8 @@ const defaultSleep = (ms: number) => new Promise<void>((resolve) => {
  * dropped by repeating the write that should have changed it.
  *
  * The first check always runs, even with a zero budget. Every later check runs only while the deadline has not
- * passed, and each sleep is capped at the time left, so a state that appears after the deadline is never reported,
- * even when a timer or a reassert overshoots.
+ * passed, and each sleep is capped at the time left. A state observed after the deadline is never reported as
+ * converged, even when a timer, a reassert or the check itself overshoots. A zero budget is one pass that counts.
  * @param check - resolves true once the expected state is observed
  * @param options - budget, poll cadence and optional reassert step
  * @returns whether the state converged, with the number of checks and reasserts it took
@@ -59,8 +59,9 @@ export async function pollUntilConverged(check: () => Promise<boolean>, options:
             return {converged: false, checks, reasserts, elapsedMs: elapsed()};
         }
         checks += 1;
-        if (await check()) {
-            return {converged: true, checks, reasserts, elapsedMs: now() - start};
+        const observed = await check();
+        if (observed && (options.timeoutMs === 0 || elapsed() <= options.timeoutMs)) {
+            return {converged: true, checks, reasserts, elapsedMs: elapsed()};
         }
         if (elapsed() >= options.timeoutMs) {
             return {converged: false, checks, reasserts, elapsedMs: elapsed()};
@@ -86,7 +87,7 @@ export async function findFirst<K extends string>(
     options: Pick<ConvergeOptions, 'timeoutMs' | 'pollIntervalMs' | 'now' | 'sleep'>,
 ): Promise<K | undefined> {
     let found: K | undefined;
-    await pollUntilConverged(async () => {
+    const {converged} = await pollUntilConverged(async () => {
         for (const [key, isPresent] of candidates) {
             // eslint-disable-next-line no-await-in-loop -- candidates are checked one at a time, in priority order
             if (await isPresent()) {
@@ -96,7 +97,7 @@ export async function findFirst<K extends string>(
         }
         return false;
     }, options);
-    return found;
+    return converged ? found : undefined;
 }
 
 /**
