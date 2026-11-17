@@ -363,9 +363,9 @@ describe('AppsFormComponent grid layout', () => {
 
         const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(namelessForm)}/>, {database, serverUrl});
 
-        // Grid at form path '0', row at index 0 -> tree path '0/0'.
+        // Grid at form path '0', row at index 0 -> namespaced path '::pos::0/0'.
         act(() => {
-            fireEvent.press(getByTestId('apps_form_grid.row.0/0.sticky'));
+            fireEvent.press(getByTestId('apps_form_grid.row.::pos::0/0.sticky'));
         });
 
         // The row opened on its own screen (title/back header is name-independent).

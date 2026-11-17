@@ -5,6 +5,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {BackHandler, useWindowDimensions} from 'react-native';
 
 import {AppFieldTypes} from '@constants/apps';
+import useDidUpdate from '@hooks/did_update';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -33,17 +34,28 @@ export function findCollapsible(fields: AppField[] | undefined, name: string): A
     return undefined;
 }
 
+// Marks a key as a positional path rather than a row name. Names and paths live
+// in separate namespaces so a row that happens to be named like a path (e.g.
+// "0/0") can never be mistaken for a nameless row's identity, and resolution
+// never has to guess which kind a bare key is. The prefix carries characters a
+// server-assigned element name does not use.
+const POSITIONAL_KEY_PREFIX = '::pos::';
+
+export function isPositionalRowKey(key: string): boolean {
+    return key.startsWith(POSITIONAL_KEY_PREFIX);
+}
+
 /**
  * A row's stable identity. Normally its own name — the way the server keys a
  * row across refreshes. DialogElement.name is optional, though, so a malformed
  * grid can hand us a nameless row; rather than drop it (its required cells would
- * then fail submission with nothing on screen to fix), fall back to the row's
+ * then fail submission with nothing on screen to fix), fall back to a namespaced
  * tree path from the form root. gridPath is the grid container's own path and
  * rawIndex the row's index among the container's fields, so the result is unique
  * even across several unnamed grids — unlike the row's name, which may be blank.
  */
 export function gridRowKey(gridPath: string, row: AppField, rawIndex: number): string {
-    return row.name || `${gridPath}/${rawIndex}`;
+    return row.name || `${POSITIONAL_KEY_PREFIX}${gridPath}/${rawIndex}`;
 }
 
 /**
@@ -65,12 +77,16 @@ function findFieldByPath(fields: AppField[] | undefined, path: string): AppField
 }
 
 /**
- * Resolves an open row from the key gridRowKey produced: a named row by name
- * anywhere in the tree, an unnamed row by its tree path. The path form resolves
- * unnamed rows even inside unnamed grids, which a name-based key cannot.
+ * Resolves an open row from the key gridRowKey produced. The namespace decides
+ * how: a positional key is walked as a tree path (and resolves unnamed rows even
+ * inside unnamed grids); anything else is a name, found anywhere in the tree. A
+ * name is never resolved as a path or vice versa, so the two cannot collide.
  */
 export function findGridRow(fields: AppField[] | undefined, key: string): AppField | undefined {
-    return findCollapsible(fields, key) ?? findFieldByPath(fields, key);
+    if (isPositionalRowKey(key)) {
+        return findFieldByPath(fields, key.slice(POSITIONAL_KEY_PREFIX.length));
+    }
+    return findCollapsible(fields, key);
 }
 
 /**
@@ -93,6 +109,16 @@ export default function useGridRow(fields: AppField[] | undefined, submitButtons
     );
 
     const closeRow = useCallback(() => setOpenRowName(undefined), []);
+
+    // A positional key only means "the row at this spot", so once the fields are
+    // replaced (a server refresh) it may point at a different row; close it
+    // rather than show the wrong row and edit its cells. A named selection is
+    // safe — the name resolves to the same row wherever it moved to.
+    useDidUpdate(() => {
+        if (openRowName && isPositionalRowKey(openRowName)) {
+            setOpenRowName(undefined);
+        }
+    }, [fields]);
 
     /**
      * The row's first cell is its name, the way the grid's first column is the
