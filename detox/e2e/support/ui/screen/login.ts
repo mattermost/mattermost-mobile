@@ -3,7 +3,7 @@
 
 import {serverOneUrl} from '@support/test_config';
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, isIos, reloadApp, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, reloadApp, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist, waitForFirstPresent} from '@support/utils';
 import {waitFor} from 'detox';
 
 class LoginScreen {
@@ -135,8 +135,25 @@ class LoginScreen {
         throw new Error('LoginScreen.waitUntilOnChannelList: neither channel list nor channel appeared');
     };
 
+    /**
+     * Waits for the login form. Logging out of the active server routes to the server screen
+     * (SessionManager.onLogout), which does not connect on its own, so connect from there; otherwise
+     * toBeVisible times out and retryWithReload connects only after reloading the app.
+     * @returns the login screen element
+     */
+    reachLoginForm = async () => {
+        const landed = await waitForFirstPresent([
+            ['login', this.loginScreen],
+            ['server', ServerScreen.serverScreen],
+        ], isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC);
+        if (landed === 'server') {
+            await ServerScreen.connectToServer(serverOneUrl, 'Server 1');
+        }
+        return this.toBeVisible();
+    };
+
     loginWithRetryIfStuck = async (user: any = {}) => {
-        await this.toBeVisible();
+        await this.reachLoginForm();
         await this.usernameInput.tap({x: 150, y: 10});
         await this.usernameInput.replaceText(user.newUser.email);
         await this.passwordInput.tap();

@@ -7,6 +7,7 @@ import {v4 as uuidv4} from 'uuid';
 
 import {logDebug} from '../../../provision/log';
 
+import {findFirst} from './converge';
 import {createSynchronization} from './synchronization';
 
 export * from './email';
@@ -541,6 +542,51 @@ export async function waitForElementToExist(
     }
     /* eslint-enable no-await-in-loop */
     await detoxExpect(detoxElement).toExist();
+}
+
+/**
+ * Whether an element is in the hierarchy right now. It is asserted absent, which passes without a Detox failure
+ * payload while it is: a failed iOS expectation ships the whole view hierarchy (and, for toBeVisible, visibility
+ * screenshots), which took 47.5s for a 2s tooltip probe in run 43330325473. The assertion throws when the element
+ * exists, or when the app cannot be reached, which the caller's next action on the element then reports.
+ * @param detoxElement - the element to look for
+ * @returns whether it exists
+ */
+async function isElementPresentNow(detoxElement: Detox.NativeElement): Promise<boolean> {
+    try {
+        await expect(detoxElement).not.toExist();
+        return false;
+    } catch {
+        return true;
+    }
+}
+
+/**
+ * Waits up to timeoutMs for whichever candidate appears first; one check each when timeoutMs is 0. On iOS the
+ * polling runs with synchronization off, so a busy app cannot stretch a short probe. Android keeps it on: there
+ * a disable right after a reload or enable is the looper race synchronization.ts describes.
+ * @param candidates - keyed elements, earlier ones win when several exist
+ * @param timeoutMs - how long to wait for one of them
+ * @returns the key of the element found, or undefined
+ */
+export async function waitForFirstPresent<K extends string>(
+    candidates: ReadonlyArray<readonly [K, Detox.NativeElement]>,
+    timeoutMs = 0,
+): Promise<K | undefined> {
+    const probes = candidates.map(([key, detoxElement]) => [key, () => isElementPresentNow(detoxElement)] as const);
+    const probe = () => findFirst(probes, {timeoutMs, pollIntervalMs: timeouts.HALF_SEC});
+    return isIos() ? withSynchronizationDisabled(probe) : probe();
+}
+
+/**
+ * Whether an optional element (a tooltip, a one-off dialog) shows up within timeoutMs, without the cost of a
+ * failed expectation when it does not.
+ * @param detoxElement - the element to look for
+ * @param timeoutMs - how long to wait for it; 0 checks once
+ * @returns whether it appeared
+ */
+export async function isOptionalElementPresent(detoxElement: Detox.NativeElement, timeoutMs = 0): Promise<boolean> {
+    return (await waitForFirstPresent([['present', detoxElement]], timeoutMs)) !== undefined;
 }
 
 export async function waitForElementToHaveText(

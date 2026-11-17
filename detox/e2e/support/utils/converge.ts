@@ -66,3 +66,27 @@ export async function pollUntilConverged(check: () => Promise<boolean>, options:
     }
     /* eslint-enable no-await-in-loop */
 }
+
+/**
+ * Polls the candidates in order until one reports present, for at most `timeoutMs` (one pass when it is 0).
+ * @param candidates - keyed presence checks, earlier ones win when several hold at once
+ * @param options - budget and poll cadence
+ * @returns the key of the first candidate found, or undefined when none appeared in time
+ */
+export async function findFirst<K extends string>(
+    candidates: ReadonlyArray<readonly [K, () => Promise<boolean>]>,
+    options: Pick<ConvergeOptions, 'timeoutMs' | 'pollIntervalMs' | 'now' | 'sleep'>,
+): Promise<K | undefined> {
+    let found: K | undefined;
+    await pollUntilConverged(async () => {
+        for (const [key, isPresent] of candidates) {
+            // eslint-disable-next-line no-await-in-loop -- candidates are checked one at a time, in priority order
+            if (await isPresent()) {
+                found = key;
+                return true;
+            }
+        }
+        return false;
+    }, options);
+    return found;
+}

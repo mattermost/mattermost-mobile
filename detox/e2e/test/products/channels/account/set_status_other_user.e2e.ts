@@ -21,7 +21,7 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isOptionalElementPresent, timeouts} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 describe('Account - Set User Status (Other User)', () => {
@@ -53,14 +53,11 @@ describe('Account - Set User Status (Other User)', () => {
         await AccountScreen.toBeVisible();
         await AccountScreen.selectUserStatus(AccountScreen.awayUserStatusOption);
 
-        // # Log out as the first user. After logout the app may land on the server
-        // list (iOS) or straight on the login form — tap the server item if needed.
+        // # Log out as the first user. Logout returns once a logged-out screen is up: the server
+        // list needs the server item tapped; the server screen and login form are handled by login.
         await HomeScreen.logout();
-        try {
-            await waitFor(ServerListScreen.serverListScreen).toExist().withTimeout(timeouts.TWO_SEC);
+        if (await isOptionalElementPresent(ServerListScreen.serverListScreen)) {
             await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
-        } catch {
-            // Already on the login form — nothing to tap.
         }
 
         // # Log in as the first user via API so the post is authored by them
