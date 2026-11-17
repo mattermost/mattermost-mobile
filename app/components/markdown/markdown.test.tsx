@@ -5,7 +5,7 @@ import {screen} from '@testing-library/react-native';
 import * as CommonMark from 'commonmark';
 const {Node} = CommonMark;
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 
 import {Preferences, Screens} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
@@ -29,6 +29,18 @@ jest.mock('./markdown_link', () => {
         __esModule: true,
         default: ({href, children}: {href: string; children: React.ReactNode}) => (
             MockReact.createElement(Text, {testID: 'markdown_link', href}, children)
+        ),
+    };
+});
+
+jest.mock('./markdown_image', () => {
+    const MockReact = require('react');
+    const {View} = require('react-native');
+
+    return {
+        __esModule: true,
+        default: (props: any) => (
+            MockReact.createElement(View, {testID: 'mock_markdown_image', ...props})
         ),
     };
 });
@@ -307,6 +319,107 @@ describe('Markdown', () => {
 
             expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
             expect(screen.getByText('Call 555-123-4567')).toBeVisible();
+        });
+    });
+
+    describe('android data image blocks', () => {
+        const DATA_URI = 'data:image/png;base64,iVBORw0KGgo=';
+        const originalOS = Platform.OS;
+
+        afterEach(() => {
+            Platform.OS = originalOS;
+        });
+
+        it('should extract a bare data image from paragraph text on Android preserving order', () => {
+            Platform.OS = 'android';
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    postId='post1'
+                    value={`Before ![alt](${DATA_URI}) After`}
+                />,
+            );
+
+            const paragraph = screen.getByTestId('markdown_paragraph');
+            const runs = React.Children.toArray(paragraph.props.children);
+            expect(runs).toHaveLength(3);
+
+            const images = screen.getAllByTestId('mock_markdown_image');
+            expect(images).toHaveLength(1);
+            expect(images[0].props.source).toBe(DATA_URI);
+            expect(images[0].props.isInline).toBe(false);
+            expect((runs[1] as any).props.src).toBe(DATA_URI);
+            expect((runs[1] as any).props.isInline).toBe(false);
+        });
+
+        it('should keep remote images inline on Android', () => {
+            Platform.OS = 'android';
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    postId='post1'
+                    imagesMetadata={{'https://example.com/a.png': {height: 10, width: 10} as PostImage}}
+                    value='Before ![alt](https://example.com/a.png) After'
+                />,
+            );
+
+            const paragraph = screen.getByTestId('markdown_paragraph');
+            const runs = React.Children.toArray(paragraph.props.children);
+            expect(runs).toHaveLength(1);
+
+            const images = screen.getAllByTestId('mock_markdown_image');
+            expect(images).toHaveLength(1);
+            expect(images[0].props.isInline).not.toBe(false);
+        });
+
+        it('should extract a linked data image on Android keeping the link destination', () => {
+            Platform.OS = 'android';
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    postId='post1'
+                    value={`[![alt](${DATA_URI})](https://example.com)`}
+                />,
+            );
+
+            const images = screen.getAllByTestId('mock_markdown_image');
+            expect(images).toHaveLength(1);
+            expect(images[0].props.source).toBe(DATA_URI);
+            expect(images[0].props.isInline).toBe(false);
+            expect(images[0].props.linkDestination).toBe('https://example.com');
+        });
+
+        it('should keep data images inline on iOS', () => {
+            Platform.OS = 'ios';
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    postId='post1'
+                    value={`Before ![alt](${DATA_URI}) After`}
+                />,
+            );
+
+            const paragraph = screen.getByTestId('markdown_paragraph');
+            const runs = React.Children.toArray(paragraph.props.children);
+            expect(runs).toHaveLength(1);
+
+            const images = screen.getAllByTestId('mock_markdown_image');
+            expect(images).toHaveLength(1);
+            expect(images[0].props.isInline).not.toBe(false);
+        });
+
+        it('should keep linked data images inline when links are disabled on Android', () => {
+            Platform.OS = 'android';
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    postId='post1'
+                    disableLinks={true}
+                    value={`[![alt](${DATA_URI})](https://example.com)`}
+                />,
+            );
+
+            expect(screen.queryAllByTestId('mock_markdown_image')).toHaveLength(0);
         });
     });
 });

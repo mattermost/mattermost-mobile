@@ -476,6 +476,7 @@ const Markdown = ({
 
         return (
             <MarkdownImage
+                key={src}
                 disabled={disableInteraction}
                 errorTextStyle={[computeTextStyle(textStyles, baseTextStyle, context), textStyles.error]}
                 layoutHeight={layoutHeight}
