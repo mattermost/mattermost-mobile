@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, useCallback, useRef, useState} from 'react';
-import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
+import {type ImageLoadEventData} from 'expo-image';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
+import {Image as RNImage, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import parseUrl from 'url-parse';
 
@@ -49,6 +50,8 @@ const MarkTableImage = ({
     const isDataImage = isDataImageUri(source);
     const sourceKey = isDataImage ? '' : removeImageProxyForKey(source);
     const metadata = isDataImage ? undefined : secureGetFromRecord(imagesMetadata, sourceKey);
+    const dataExtension = isDataImage ? getDataImageExtension(source) : undefined;
+    const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(undefined);
     const fileId = useRef<string | null>(null);
     if (fileId.current === null) {
         fileId.current = isDataImage ? getDataImageFileId(source) : `uid-${urlSafeBase64Encode(sourceKey)}`;
@@ -82,8 +85,8 @@ const MarkTableImage = ({
                 has_preview_image: true,
                 post_id: postId,
                 uri: source,
-                width: 100,
-                height: 100,
+                width: intrinsicSize?.width ?? 100,
+                height: intrinsicSize?.height ?? 100,
                 mime_type: getDataImageMimeType(source),
                 size: 0,
                 user_id: '',
@@ -115,7 +118,33 @@ const MarkTableImage = ({
             size: 0,
             user_id: '',
         };
-    }, [getImageSource, metadata?.height, metadata?.width, postId, isDataImage, source]);
+    }, [getImageSource, metadata?.height, metadata?.width, postId, isDataImage, source, intrinsicSize?.width, intrinsicSize?.height]);
+
+    useEffect(() => {
+        if (!isDataImage || dataExtension === 'svg') {
+            return undefined;
+        }
+        setIntrinsicSize(undefined);
+        let cancelled = false;
+        RNImage.getSize(source, (w, h) => {
+            if (!cancelled && w > 0 && h > 0) {
+                setIntrinsicSize({width: w, height: h});
+            }
+        }, () => {
+            // Keep 100x100 fallback; onLoad below will still try to correct it.
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [isDataImage, dataExtension, source]);
+
+    const handleLoad = useCallback((event: ImageLoadEventData) => {
+        const width = event?.source?.width;
+        const height = event?.source?.height;
+        if (width && height) {
+            setIntrinsicSize((prev) => (prev?.width === width && prev?.height === height ? prev : {width, height}));
+        }
+    }, []);
 
     const handlePreviewImage = useCallback(() => {
         const file = getFileInfo();
@@ -149,8 +178,8 @@ const MarkTableImage = ({
         );
     } else {
         const {height, width} = calculateDimensions(
-            isDataImage ? 100 : metadata?.height,
-            isDataImage ? 100 : metadata?.width,
+            isDataImage ? (intrinsicSize?.height ?? 100) : metadata?.height,
+            isDataImage ? (intrinsicSize?.width ?? 100) : metadata?.width,
             100, 100,
         );
         image = (
@@ -164,6 +193,7 @@ const MarkTableImage = ({
                         imageUri={source}
                         forwardRef={ref}
                         onError={onLoadFailed}
+                        onLoad={isDataImage && dataExtension !== 'svg' ? handleLoad : undefined}
                         contentFit='contain'
                         style={{width, height}}
                         theme={theme}
