@@ -77,6 +77,10 @@ const phoneCallErrors = defineMessages({
         id: 'mobile.calls_phone_error.call_in_progress',
         defaultMessage: 'You\'re already on a phone call.',
     },
+    alreadyInCall: {
+        id: 'mobile.calls_phone_error.already_in_call',
+        defaultMessage: 'You\'re already in a call. Leave it before placing a phone call.',
+    },
     noResponse: {
         id: 'mobile.calls_phone_error.no_response',
         defaultMessage: 'Couldn\'t reach the server. Check your connection and try again.',
@@ -362,6 +366,12 @@ export const startPhoneCall = async (intl: IntlShape, serverUrl: string, phone: 
     phoneCallInProgress = true;
 
     try {
+        // The entry points only check this when their menu opens, and joinCall drops the current call silently.
+        if (getCurrentCall()) {
+            showPhoneCallError(intl, phoneCallErrors.alreadyInCall);
+            return;
+        }
+
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
         if (!user) {

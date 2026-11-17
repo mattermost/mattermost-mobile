@@ -798,6 +798,7 @@
   "mobile.calls_phone_calling": "Calling {name}…",
   "mobile.calls_phone_canceled": "Call canceled",
   "mobile.calls_phone_declined": "Call declined",
+  "mobile.calls_phone_error.already_in_call": "You're already in a call. Leave it before placing a phone call.",
   "mobile.calls_phone_error.ambiguous_number": "Start international numbers with + and the country code.",
   "mobile.calls_phone_error.call_in_progress": "You're already on a phone call.",
   "mobile.calls_phone_error.fallback": "The call couldn't be placed. Please try again.",

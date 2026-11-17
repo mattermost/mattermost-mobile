@@ -497,8 +497,9 @@ describe('alerts', () => {
         };
 
         beforeEach(() => {
-            const {getCallsConfig} = require('@calls/state');
+            const {getCallsConfig, getCurrentCall} = require('@calls/state');
             getCallsConfig.mockReturnValue({DefaultEnabled: true});
+            getCurrentCall.mockReturnValue(null);
         });
 
         it('shows the mapped alert for a server error ID', async () => {
@@ -529,6 +530,18 @@ describe('alerts', () => {
             await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
 
             expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'The call couldn\'t be placed. Please try again.');
+        });
+
+        it('alerts instead of dropping the current call when one started after the menu opened', async () => {
+            const {joinCall} = require('@calls/actions');
+            const {getCurrentCall} = require('@calls/state');
+            getCurrentCall.mockReturnValue({channelId: 'channel1'});
+            const mockAlert = jest.spyOn(Alert, 'alert');
+
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+
+            expect(joinCall).not.toHaveBeenCalled();
+            expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'You\'re already in a call. Leave it before placing a phone call.');
         });
 
         it('ignores a second call while the first is still being placed', async () => {
