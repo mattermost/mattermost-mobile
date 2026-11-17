@@ -59,6 +59,7 @@ import type {
 
 export const handleCallUserJoined = (serverUrl: string, msg: WebSocketMessage<UserJoinedData & {is_sip_participant?: boolean}>) => {
     if (msg.data.is_sip_participant) {
+        logDebug('calls: handleCallUserJoined skipped, SIP participants are not part of the roster');
         return;
     }
 
