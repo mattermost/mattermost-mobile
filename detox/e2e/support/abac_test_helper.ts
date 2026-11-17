@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AccessControl, Channel, Team, User} from '@support/server_api';
+import {AccessControl, Channel, Setup, Team, User} from '@support/server_api';
 import {getResponseFromError} from '@support/server_api/common';
 import {assertServerBaseline} from '@support/server_baseline';
 import {timeouts} from '@support/utils';
@@ -34,6 +34,23 @@ export const getProvisionedDepartmentField = async (baseUrl: string): Promise<{i
         throw new Error('The "Department" profile attribute is missing; provisioning must run first');
     }
     return field;
+};
+
+/**
+ * Creates a public channel for an ABAC suite, retrying transient server errors and throwing with the server's
+ * error instead of leaving the caller to dereference a missing channel (9a4b375: a timed-out create, then 404).
+ * Each attempt uses a fresh random name, so a retry cannot duplicate the channel.
+ * @param baseUrl - the server URL
+ * @param teamId - the team to create it in
+ * @param prefix - the channel name prefix
+ * @returns the created channel
+ */
+export const createAbacChannel = async (baseUrl: string, teamId: string, prefix: string) => {
+    const {channel, error} = await Setup.retryTransient(() => Channel.apiCreateChannel(baseUrl, {teamId, type: 'O', prefix}), 'apiCreateChannel');
+    if (!channel?.id) {
+        throw new Error(`Failed to create the ${prefix} channel: ${JSON.stringify(error)}`);
+    }
+    return channel;
 };
 
 /**

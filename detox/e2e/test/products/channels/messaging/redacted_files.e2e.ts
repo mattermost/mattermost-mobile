@@ -9,10 +9,9 @@
 
 import path from 'path';
 
-import {assertAbacBaseline, createChannelMember, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
+import {assertAbacBaseline, createAbacChannel, createChannelMember, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
 import {
     AccessControl,
-    Channel,
     Post,
     Setup,
     System,
@@ -60,12 +59,7 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
 
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: team.id,
-            type: 'O',
-            prefix: 'abac-test',
-        });
-        testChannel = channel;
+        testChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-test');
 
         // # Create denied user (Department: "Sales") and add to team + channel
         deniedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'denied');

@@ -11,13 +11,13 @@ import {
     allOrFirstError,
     assertAbacBaseline,
     convergeDepartment,
+    createAbacChannel,
     createChannelMember,
     getProvisionedDepartmentField,
     setDepartment,
 } from '@support/abac_test_helper';
 import {
     AccessControl,
-    Channel,
     Setup,
     System,
     Team,
@@ -74,12 +74,7 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
 
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: team.id,
-            type: 'O',
-            prefix: 'abac-bor',
-        });
-        testChannel = channel;
+        testChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-bor');
 
         // # Create the denied and allowed users and add them to team + channel
         deniedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'denied');
