@@ -7,7 +7,14 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment, waitForServerActionDecision} from '@support/abac_test_helper';
+import {
+    allOrFirstError,
+    assertAbacBaseline,
+    convergeDepartment,
+    createChannelMember,
+    getProvisionedDepartmentField,
+    setDepartment,
+} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -34,6 +41,8 @@ import {expect} from 'detox';
 
 // Skipped on servers without burn-on-read permission policies.
 const describeOrSkip = serverSupportsPolicyAction('create_burn_on_read_post') ? describe : describe.skip;
+
+const BOR_ACTION = 'create_burn_on_read_post';
 
 describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
     const serverOneDisplayName = 'Server 1';
@@ -72,20 +81,9 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         });
         testChannel = channel;
 
-        // # Create denied user (Department: "Sales") and add to team + channel
-        ({user: deniedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'denied'}));
-        await Team.apiAddUserToTeam(siteOneUrl, deniedUser.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, testChannel.id);
-        await setDepartment(siteOneUrl, deniedUser.id, department.id, 'Sales');
-
-        // # Create allowed user (Department: "Engineering") and add to team + channel
-        ({user: allowedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'allowed'}));
-        await Team.apiAddUserToTeam(siteOneUrl, allowedUser.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, testChannel.id);
-        await setDepartment(siteOneUrl, allowedUser.id, department.id, 'Engineering');
-
-        // # Wait for the server-side attribute view to pick up the values (30s refresh gate)
-        await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
+        // # Create the denied and allowed users and add them to team + channel
+        deniedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'denied');
+        allowedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'allowed');
 
         // # In this channel only, Engineering may compose burn-on-read posts and Sales may not
         const {policy, error: policyError} = await AccessControl.apiCreateChannelPermissionPolicy(
@@ -107,6 +105,12 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         if (activateError) {
             throw new Error(`Failed to activate permission policy: ${JSON.stringify(activateError)}`);
         }
+
+        // # Set each user's Department and wait until the server itself decides as the policy says
+        await allOrFirstError([
+            convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Sales', testChannel.id, BOR_ACTION, false),
+            convergeDepartment(siteOneUrl, allowedUser, departmentFieldId, 'Engineering', testChannel.id, BOR_ACTION, true),
+        ]);
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
     });
@@ -153,14 +157,9 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
     });
 
     it('MM-70693_2 - should withhold the control for a denied user and show it without reopening the channel once their attribute satisfies the policy', async () => {
-        // # Start from a server-side deny. A first attempt has it already (set before the policy),
-        // so this returns on the first poll. An in-place retry (iOS CI) follows an attempt that
-        // granted the user and only restored the attribute at the end; the deny can take over a
-        // minute to land (run 41768017254), so the retry waits for it here.
-        const denied = await waitForServerActionDecision(siteOneUrl, deniedUser, testChannel.id, 'create_burn_on_read_post', false, timeouts.TWO_MIN);
-        if (!denied) {
-            throw new Error('Server still grants create_burn_on_read_post to the denied user (Department: Sales)');
-        }
+        // # Start from a server-side deny. A first attempt has it from beforeAll; an in-place retry
+        // follows an attempt that granted the user and only restored the attribute at the end.
+        await convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Sales', testChannel.id, BOR_ACTION, false);
 
         // # Log in as the denied user and open the channel
         await LoginScreen.login(deniedUser);
@@ -175,12 +174,18 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await wait(timeouts.FIVE_SEC);
         await expect(ChannelScreen.borAction).not.toExist();
 
-        // # Change the user's attribute so the policy now grants burn-on-read
-        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
         let grantError: unknown;
         try {
-            // * The control appears on its own. The server's attribute view refreshes on a 30s gate,
-            // which the app's delayed re-check is built to outlast.
+            // # Change the user's attribute so the policy grants burn-on-read, and wait until the
+            // server itself grants it: until then no client can show the control.
+            await convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Engineering', testChannel.id, BOR_ACTION, true);
+
+            // # Save the value once more. Its attribute event is what the app re-checks on, and the
+            // server now answers it from the new value (the first event may have been answered from
+            // the old one).
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
+
+            // * The control appears without reopening the channel
             await waitFor(ChannelScreen.borAction).
                 toExist().
                 withTimeout(timeouts.ONE_MIN);

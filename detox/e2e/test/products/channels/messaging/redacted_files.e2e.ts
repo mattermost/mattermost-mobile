@@ -9,7 +9,7 @@
 
 import path from 'path';
 
-import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
+import {assertAbacBaseline, createChannelMember, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -68,15 +68,11 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         testChannel = channel;
 
         // # Create denied user (Department: "Sales") and add to team + channel
-        ({user: deniedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'denied'}));
-        await Team.apiAddUserToTeam(siteOneUrl, deniedUser.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, testChannel.id);
+        deniedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'denied');
         await setDepartment(siteOneUrl, deniedUser.id, department.id, 'Sales');
 
         // # Create allowed user (Department: "Engineering") and add to team + channel
-        ({user: allowedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'allowed'}));
-        await Team.apiAddUserToTeam(siteOneUrl, allowedUser.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, testChannel.id);
+        allowedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'allowed');
         await setDepartment(siteOneUrl, allowedUser.id, department.id, 'Engineering');
 
         const upload = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, path.join(FIXTURES_DIR, 'sample.txt'));
