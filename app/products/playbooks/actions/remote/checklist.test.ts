@@ -15,6 +15,8 @@ import {
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
+import TestHelper from '@test/test_helper';
+import {logDebug} from '@utils/log';
 
 import {
     updateChecklistItem,
@@ -153,56 +155,113 @@ describe('checklist', () => {
     });
 
     describe('runChecklistItem', () => {
+        const changedCommand = '/echo changed';
+
+        function runWithItem(item: Partial<PlaybookChecklistItem> = {}) {
+            const leading = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'leading-item', command: '/leading'});
+            const target = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: itemId, command, ...item});
+            return TestHelper.fakePlaybookRun({
+                id: playbookRunId,
+                checklists: [TestHelper.fakePlaybookChecklist(playbookRunId, {items: [leading, target]})],
+            });
+        }
+
+        function runDisplayedItem() {
+            return runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber, itemId, command);
+        }
+
+        function expectCommandsNotLogged() {
+            const logged = JSON.stringify(jest.mocked(logDebug).mock.calls);
+            expect(logged).not.toContain(command);
+            expect(logged).not.toContain(changedCommand);
+        }
+
         it('should handle client error', async () => {
             jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
-            const result = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
-            expect(result.error).toBeDefined();
+            const result = await runDisplayedItem();
+            expect('error' in result && result.error).toBeDefined();
+            expect(mockClient.fetchPlaybookRun).not.toHaveBeenCalled();
+            expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
         });
 
-        it('should handle API exception', async () => {
+        it('should not run the command when the run cannot be fetched', async () => {
+            mockClient.fetchPlaybookRun.mockRejectedValueOnce(new Error('network'));
+
+            const result = await runDisplayedItem();
+            expect('error' in result && result.error).toBeDefined();
+            expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
+            expect(handlePlaybookRuns).not.toHaveBeenCalled();
+            expectCommandsNotLogged();
+        });
+
+        it('should handle API exception after the task matches', async () => {
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(runWithItem());
             mockClient.runChecklistItemSlashCommand.mockImplementationOnce(throwFunc);
 
-            const result = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
-            expect(result.error).toBeDefined();
+            const result = await runDisplayedItem();
+            expect('error' in result && result.error).toBeDefined();
+            expect(mockClient.runChecklistItemSlashCommand).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
+            expect(handlePlaybookRuns).not.toHaveBeenCalled();
         });
 
-        it('should run checklist item successfully', async () => {
+        it('should run checklist item successfully when the server task matches', async () => {
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(runWithItem());
             mockClient.runChecklistItemSlashCommand.mockResolvedValueOnce({});
 
-            const result = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
-            expect(result.error).toBeUndefined();
-            expect(result.data).toBe(true);
+            const result = await runDisplayedItem();
+            expect(result).toEqual({data: true, command});
+            expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(playbookRunId);
             expect(mockClient.runChecklistItemSlashCommand).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
+            expect(handlePlaybookRuns).not.toHaveBeenCalled();
         });
 
         it('should set trigger id if it is returned', async () => {
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(runWithItem());
             mockClient.runChecklistItemSlashCommand.mockResolvedValueOnce({trigger_id: 'trigger_id'});
             const setTriggerId = jest.fn();
-            jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({
-                setTriggerId,
-            } as any);
+            jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({setTriggerId} as any);
 
-            const result = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
-            expect(result.error).toBeUndefined();
+            const result = await runDisplayedItem();
+            expect(result).toEqual({data: true, command});
             expect(setTriggerId).toHaveBeenCalledWith('trigger_id');
         });
 
         it('should not set trigger id if it is not returned', async () => {
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(runWithItem());
             mockClient.runChecklistItemSlashCommand.mockResolvedValueOnce({});
             const setTriggerId = jest.fn();
-            jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({
-                setTriggerId,
-            } as any);
+            jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({setTriggerId} as any);
 
-            const result = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
-            expect(result.error).toBeUndefined();
+            const result = await runDisplayedItem();
+            expect(result).toEqual({data: true, command});
             expect(setTriggerId).not.toHaveBeenCalled();
+        });
+
+        it.each([
+            ['command', {command: changedCommand}],
+            ['id', {id: 'different-item-id'}],
+        ])('should not run the command when the task %s changed', async (_kind, item) => {
+            const run = runWithItem(item);
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(run);
+            jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({data: []});
+
+            const result = await runDisplayedItem();
+            expect(result).toEqual({outdated: true});
+            expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
+            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [run], false, true);
+            expectCommandsNotLogged();
+        });
+
+        it('should not run the command when saving the refreshed run fails', async () => {
+            const dbError = new Error('db');
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(runWithItem({command: changedCommand}));
+            jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({error: dbError});
+
+            const result = await runDisplayedItem();
+            expect(result).toEqual({error: dbError});
+            expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
+            expectCommandsNotLogged();
         });
     });
 
