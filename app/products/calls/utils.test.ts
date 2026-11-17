@@ -789,8 +789,12 @@ describe('getPhoneCallCardState', () => {
     });
 
     it('should show a live phone call as calling until the phone answers', () => {
-        expect(getPhoneCallCardState(makePhoneProps({}), false)).toBe(CallCardState.Calling);
-        expect(getPhoneCallCardState(makePhoneProps({}), true)).toBe(CallCardState.Active);
+        expect(getPhoneCallCardState(makePhoneProps({}), false, true)).toBe(CallCardState.Calling);
+        expect(getPhoneCallCardState(makePhoneProps({}), true, true)).toBe(CallCardState.Active);
+    });
+
+    it('should show a phone call as ended once the call is gone but the post has no end_at yet', () => {
+        expect(getPhoneCallCardState(makePhoneProps({}), false, false)).toBe(CallCardState.Ended);
     });
 
     it.each([
@@ -799,7 +803,7 @@ describe('getPhoneCallCardState', () => {
         [CallPostStatus.CanceledByCaller, CallCardState.Canceled],
         [CallPostStatus.Ended, CallCardState.Ended],
     ])('should map how the server ended a phone call (%s) to its card state', (status, expected) => {
-        expect(getPhoneCallCardState(makePhoneProps({end_at: 5000, call_status: status}), true)).toBe(expected);
+        expect(getPhoneCallCardState(makePhoneProps({end_at: 5000, call_status: status}), true, false)).toBe(expected);
     });
 });
 

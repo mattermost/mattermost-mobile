@@ -6,7 +6,7 @@ import {of as of$} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {PhoneCallCustomMessage} from '@calls/components/phone_call_custom_message/phone_call_custom_message';
-import {observeCurrentCall, observeIsPhoneDialingAvailable} from '@calls/state';
+import {observeCallsState, observeCurrentCall, observeIsPhoneDialingAvailable} from '@calls/state';
 import {getPhoneCallPropsFromPost} from '@calls/utils';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
@@ -34,6 +34,10 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         ),
         answered: currentCall.pipe(
             map((call) => call?.threadId === post.id && Boolean(call.dmCalleeAnsweredAt)),
+            distinctUntilChanged(),
+        ),
+        callExists: observeCallsState(serverUrl).pipe(
+            map((state) => Boolean(state.calls[post.channelId])),
             distinctUntilChanged(),
         ),
     };

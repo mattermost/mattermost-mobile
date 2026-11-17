@@ -45,6 +45,7 @@ describe('PhoneCallCustomMessage', () => {
             canDial: true,
             inCall: false,
             answered: false,
+            callExists: true,
         };
     }
 

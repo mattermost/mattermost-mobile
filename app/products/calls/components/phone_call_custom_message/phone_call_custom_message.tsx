@@ -28,9 +28,10 @@ type Props = {
     canDial: boolean;
     inCall: boolean;
     answered: boolean;
+    callExists: boolean;
 }
 
-export const PhoneCallCustomMessage = ({post, currentUser, targetUser, teammateNameDisplay, canDial, inCall, answered}: Props) => {
+export const PhoneCallCustomMessage = ({post, currentUser, targetUser, teammateNameDisplay, canDial, inCall, answered, callExists}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -51,7 +52,7 @@ export const PhoneCallCustomMessage = ({post, currentUser, targetUser, teammateN
         return null;
     }
 
-    const cardState = getPhoneCallCardState(getCallPropsFromPost(post), answered);
+    const cardState = getPhoneCallCardState(getCallPropsFromPost(post), answered, callExists);
     const isCaller = Boolean(currentUser && currentUser.id === post.userId);
     const isCalling = cardState === CallCardState.Calling;
     const isLive = isCalling || cardState === CallCardState.Active;

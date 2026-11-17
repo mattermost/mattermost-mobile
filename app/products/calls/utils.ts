@@ -371,7 +371,7 @@ export function getPhoneCallPropsFromPost(post: PostModel | Post): PhoneCallPost
 }
 
 // The phone leg is kept out of the roster, so answered comes from call state, not the user count.
-export function getPhoneCallCardState(callProps: CallsPostProps, answered: boolean): CallCardState {
+export function getPhoneCallCardState(callProps: CallsPostProps, answered: boolean, callExists: boolean): CallCardState {
     if (callProps.end_at > 0) {
         switch (callProps.call_status) {
             case CallPostStatus.NoAnswer:
@@ -385,6 +385,12 @@ export function getPhoneCallCardState(callProps: CallsPostProps, answered: boole
             default:
                 return CallCardState.Ended;
         }
+    }
+
+    // The call_end event lands before the post is updated with end_at, and the disconnect clears
+    // answered, so without this the card would fall back to "Calling..." for the rest of that window.
+    if (!callExists) {
+        return CallCardState.Ended;
     }
 
     return answered ? CallCardState.Active : CallCardState.Calling;
