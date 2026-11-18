@@ -5,7 +5,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getConfigValue, getCurrentTeamId, getLicense} from '@queries/servers/system';
+import {getConfigValue, getCurrentTeamId, getCurrentUserId, getLicense} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
 import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts, updateScheduledPost} from './scheduled_post';
@@ -36,6 +36,14 @@ const scheduledPost: ScheduledPost = {
     create_at: Date.now(),
     user_id: 'userid1',
     error_code: '',
+};
+
+const weeklyScheduledPost: ScheduledPost = {
+    ...scheduledPost,
+    id: 'weeklyScheduledPostId1',
+    type: 'burn_on_read',
+    repeat_type: 'weekly',
+    repeat_timezone: 'America/New_York',
 };
 
 const scheduledPostsResponse: FetchScheduledPostsResponse = {
@@ -96,12 +104,6 @@ jest.mock('@queries/servers/system', () => ({
 jest.mock('@managers/websocket_manager', () => ({
     getClient: jest.fn(() => mockWebSocketClient),
 }));
-
-jest.mock('@utils/scheduled_post', () => {
-    return {
-        isScheduledPostModel: jest.fn(() => false),
-    };
-});
 
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 const mockedGetLicense = jest.mocked(getLicense);
@@ -207,7 +209,7 @@ describe('fetchScheduledPosts', () => {
 
 describe('updateScheduledPost', () => {
     it('handle not found database', async () => {
-        const result = await updateScheduledPost('foo', scheduledPost, 123) as unknown as {error: Error};
+        const result = await updateScheduledPost('foo', scheduledPost, {scheduled_at: 123}) as unknown as {error: Error};
         expect(result).toEqual({error: 'foo database not found'});
         expect(logError).toHaveBeenCalled();
         expect(forceLogoutIfNecessary).toHaveBeenCalled();
@@ -215,7 +217,7 @@ describe('updateScheduledPost', () => {
 
     it('base case', async () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
-        const result = await updateScheduledPost(serverUrl, scheduledPost, 123);
+        const result = await updateScheduledPost(serverUrl, scheduledPost, {scheduled_at: 123});
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(scheduledPost);
     });
@@ -223,7 +225,7 @@ describe('updateScheduledPost', () => {
     it('request error', async () => {
         const error = new Error('custom error');
         mockClient.updateScheduledPost = jest.fn().mockRejectedValueOnce(error);
-        const result = await updateScheduledPost(serverUrl, scheduledPost, 123);
+        const result = await updateScheduledPost(serverUrl, scheduledPost, {scheduled_at: 123});
         expect(result.error).toBe('custom error');
         expect(logError).toHaveBeenCalledWith('error on updateScheduledPost', error.message);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
@@ -234,11 +236,60 @@ describe('updateScheduledPost', () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const mockResponse = {...scheduledPost, update_at: Date.now()};
         mockClient.updateScheduledPost.mockImplementationOnce(() => Promise.resolve(mockResponse));
-        const result = await updateScheduledPost(serverUrl, scheduledPost, 123, true);
-        console.log(result.error);
+        const result = await updateScheduledPost(serverUrl, scheduledPost, {scheduled_at: 123}, true);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(mockResponse);
         expect(spyHandleScheduledPosts).not.toHaveBeenCalled();
+    });
+
+    it('should override the recurrence with the scheduling info without mutating the given post', async () => {
+        mockClient.updateScheduledPost.mockResolvedValueOnce({...scheduledPost});
+        await updateScheduledPost(serverUrl, weeklyScheduledPost, {
+            scheduled_at: 123,
+            repeat_type: '',
+            repeat_timezone: '',
+        });
+
+        expect(mockClient.updateScheduledPost).toHaveBeenCalledWith(
+            expect.objectContaining({
+                scheduled_at: 123,
+                repeat_type: '',
+                repeat_timezone: '',
+            }),
+            mockConnectionId,
+        );
+        expect(weeklyScheduledPost).toEqual({
+            ...scheduledPost,
+            id: 'weeklyScheduledPostId1',
+            type: 'burn_on_read',
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
+        });
+    });
+
+    it('should keep the recurrence stored on a scheduled post model when the scheduling info omits it', async () => {
+        jest.mocked(getCurrentUserId).mockResolvedValueOnce(user1.id);
+        mockClient.updateScheduledPost.mockResolvedValueOnce({...weeklyScheduledPost});
+
+        const [model] = await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts: [weeklyScheduledPost],
+            prepareRecordsOnly: false,
+        });
+
+        await updateScheduledPost(serverUrl, model, {scheduled_at: 999});
+
+        expect(mockClient.updateScheduledPost).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: weeklyScheduledPost.id,
+                user_id: user1.id,
+                scheduled_at: 999,
+                type: weeklyScheduledPost.type,
+                repeat_type: 'weekly',
+                repeat_timezone: 'America/New_York',
+            }),
+            mockConnectionId,
+        );
     });
 });
 

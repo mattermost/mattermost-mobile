@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen, ChannelScreen} from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {device, waitFor} from 'detox';
+import {getRandomId, reloadApp, timeouts, wait} from '@support/utils';
+import {waitFor} from 'detox';
 
 // Option IDs for the test attribute field. Server requires exactly 26 alphanumeric characters
 // (model.IsValidId).
@@ -75,7 +75,7 @@ export async function assertOnReloadedApp(steps: () => Promise<void>) {
     /* eslint-disable no-await-in-loop -- each attempt reloads the app the previous one left behind */
     for (let attempt = 1; attempt <= ATTRIBUTE_RENDER_ATTEMPTS; attempt++) {
         try {
-            await device.reloadReactNative();
+            await reloadApp();
             await ChannelListScreen.toBeVisible();
             await steps();
             return;

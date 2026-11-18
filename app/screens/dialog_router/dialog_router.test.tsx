@@ -4,8 +4,11 @@
 import {act, render} from '@testing-library/react-native';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
+import {DeviceEventEmitter} from 'react-native';
 
+import {Events} from '@constants';
 import {getTranslations} from '@i18n';
+import IntegrationsManager from '@managers/integrations_manager';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
 
 import {DialogRouter} from './dialog_router';
@@ -26,6 +29,11 @@ jest.mock('@actions/remote/integrations', () => ({
 }));
 
 jest.mock('@utils/interactive_dialog_adapter');
+
+jest.mock('@managers/integrations_manager', () => {
+    const manager = {getTopDialogTriggerId: jest.fn()};
+    return {getManager: jest.fn(() => manager)};
+});
 
 const mockSubmitInteractiveDialog = require('@actions/remote/integrations').submitInteractiveDialog;
 const mockLookupInteractiveDialog = require('@actions/remote/integrations').lookupInteractiveDialog;
@@ -132,6 +140,8 @@ describe('DialogRouter', () => {
             submit: expect.any(Function),
             performLookupCall: expect.any(Function),
             refreshOnSelect: expect.any(Function),
+            refreshForm: expect.any(Function),
+            refreshNonce: 0,
             channelId: 'channel-id-1',
         }, undefined);
     });
@@ -530,6 +540,163 @@ describe('DialogRouter', () => {
                 first_name: true,
                 nickname: 'Adie',
             });
+        });
+    });
+
+    describe('refresh requests', () => {
+        const sourceUrl = 'https://test.com/dialog/source';
+        const refreshedDialog = {...mockConfig.dialog, title: 'Refreshed'};
+
+        // A fresh submission per call: refreshes add selected_field to it.
+        beforeEach(() => {
+            mockInteractiveDialogAdapter.convertValuesToSubmission.mockImplementation(() => ({
+                url: mockConfig.url,
+                callback_id: 'test-callback',
+                state: '',
+                submission: {},
+                user_id: '',
+                channel_id: '',
+                team_id: '',
+                cancelled: false,
+            }));
+        });
+
+        const latestProps = () => mockAppsFormComponent.mock.calls.at(-1)[0];
+
+        const renderRouter = (dialog: Partial<InteractiveDialogConfig['dialog']> = {}) => renderWithIntl(
+            <DialogRouter
+                config={{...mockConfig, dialog: {...mockConfig.dialog, ...dialog}}}
+                channelId='channel-id-1'
+            />,
+        );
+
+        it('should send a field refresh to source_url with the selected field', async () => {
+            renderRouter({source_url: sourceUrl});
+
+            await act(() => latestProps().refreshOnSelect({name: 'test_field', refresh: true} as AppField, {test_field: 'a'}));
+
+            expect(mockSubmitInteractiveDialog).toHaveBeenCalledWith(mockServerUrl, expect.objectContaining({
+                url: sourceUrl,
+                type: 'refresh',
+                submission: {selected_field: 'test_field'},
+            }));
+        });
+
+        it('should send a field refresh to the submit url when the dialog has no source_url', async () => {
+            renderRouter();
+
+            await act(() => latestProps().refreshOnSelect({name: 'test_field', refresh: true} as AppField, {test_field: 'a'}));
+
+            expect(mockSubmitInteractiveDialog).toHaveBeenCalledWith(mockServerUrl, expect.objectContaining({
+                url: mockConfig.url,
+                type: 'refresh',
+            }));
+        });
+
+        it('should keep the typed value in the form returned by a field refresh', async () => {
+            mockSubmitInteractiveDialog.mockResolvedValue({data: {type: 'form', form: refreshedDialog}});
+            renderRouter({source_url: sourceUrl});
+
+            await act(() => latestProps().refreshOnSelect({name: 'test_field', refresh: true} as AppField, {test_field: 'typed'}));
+
+            expect(latestProps().form.fields[0].value).toBe('typed');
+        });
+
+        // e.g. a submit_buttons "Add Note" that returns the dialog again: carrying the
+        // note into the new form made a later "Save & Close" save it a second time.
+        it('should not carry a submitted value into the form the submit returns', async () => {
+            mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
+                data: {type: 'form', form: refreshedDialog},
+            } as any);
+            renderRouter();
+
+            await act(() => latestProps().submit({test_field: 'typed'}));
+
+            expect(latestProps().form.fields[0].value).toBeUndefined();
+        });
+
+        it('should bump refreshNonce when a dialog closes and this one is on top again', () => {
+            jest.mocked(IntegrationsManager.getManager(mockServerUrl).getTopDialogTriggerId).mockReturnValue(mockConfig.trigger_id);
+            renderRouter({source_url: sourceUrl, refresh_on_return: true});
+
+            act(() => {
+                DeviceEventEmitter.emit(Events.INTERACTIVE_DIALOG_CLOSED, {serverUrl: mockServerUrl, triggerId: 'child'});
+            });
+
+            expect(latestProps().refreshNonce).toBe(1);
+        });
+
+        it('should not bump refreshNonce while another dialog is still on top', () => {
+            jest.mocked(IntegrationsManager.getManager(mockServerUrl).getTopDialogTriggerId).mockReturnValue('other-dialog');
+            renderRouter({source_url: sourceUrl, refresh_on_return: true});
+
+            act(() => {
+                DeviceEventEmitter.emit(Events.INTERACTIVE_DIALOG_CLOSED, {serverUrl: mockServerUrl, triggerId: 'child'});
+            });
+
+            expect(latestProps().refreshNonce).toBe(0);
+        });
+
+        it('should not bump refreshNonce when the dialog does not set refresh_on_return', () => {
+            jest.mocked(IntegrationsManager.getManager(mockServerUrl).getTopDialogTriggerId).mockReturnValue(mockConfig.trigger_id);
+            renderRouter({source_url: sourceUrl});
+
+            act(() => {
+                DeviceEventEmitter.emit(Events.INTERACTIVE_DIALOG_CLOSED, {serverUrl: mockServerUrl, triggerId: 'child'});
+            });
+
+            expect(latestProps().refreshNonce).toBe(0);
+        });
+
+        it('should refresh the whole form from source_url without a selected field', async () => {
+            mockSubmitInteractiveDialog.mockResolvedValue({data: {type: 'form', form: refreshedDialog}});
+            renderRouter({source_url: sourceUrl, refresh_on_return: true});
+
+            const result = await act(() => latestProps().refreshForm({test_field: 'typed'}));
+
+            expect(mockSubmitInteractiveDialog).toHaveBeenCalledWith(mockServerUrl, expect.objectContaining({
+                url: sourceUrl,
+                type: 'refresh',
+                submission: {},
+            }));
+            expect(result.data.type).toBe('form');
+            expect(mockInteractiveDialogAdapter.convertToAppForm).toHaveBeenLastCalledWith(expect.objectContaining({dialog: refreshedDialog}));
+        });
+
+        it('should ignore a refresh response superseded by a newer refresh', async () => {
+            let resolveFirst: (value: unknown) => void = () => undefined;
+            mockSubmitInteractiveDialog.
+                mockReturnValueOnce(new Promise((resolve) => {
+                    resolveFirst = resolve;
+                })).
+                mockResolvedValueOnce({data: {type: 'form', form: refreshedDialog}});
+            renderRouter({source_url: sourceUrl, refresh_on_return: true});
+
+            const {refreshForm} = latestProps();
+            const first = refreshForm({});
+            await act(() => refreshForm({}));
+            resolveFirst({data: {type: 'form', form: {...mockConfig.dialog, title: 'Stale'}}});
+
+            expect(await act(() => first)).toEqual({data: {type: 'ok'}});
+            expect(mockInteractiveDialogAdapter.convertToAppForm).not.toHaveBeenCalledWith(expect.objectContaining({dialog: expect.objectContaining({title: 'Stale'})}));
+        });
+
+        it('should ignore a field refresh response superseded by a newer refresh', async () => {
+            let resolveFirst: (value: unknown) => void = () => undefined;
+            mockSubmitInteractiveDialog.
+                mockReturnValueOnce(new Promise((resolve) => {
+                    resolveFirst = resolve;
+                })).
+                mockResolvedValueOnce({data: {type: 'form', form: refreshedDialog}});
+            renderRouter({source_url: sourceUrl, refresh_on_return: true});
+
+            const {refreshOnSelect, refreshForm} = latestProps();
+            const first = refreshOnSelect({name: 'test_field', refresh: true} as AppField, {test_field: 'a'});
+            await act(() => refreshForm({}));
+            resolveFirst({data: {type: 'form', form: {...mockConfig.dialog, title: 'Stale'}}});
+
+            expect(await act(() => first)).toEqual({data: {type: 'form'}});
+            expect(mockInteractiveDialogAdapter.convertToAppForm).not.toHaveBeenCalledWith(expect.objectContaining({dialog: expect.objectContaining({title: 'Stale'})}));
         });
     });
 });

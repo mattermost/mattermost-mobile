@@ -312,6 +312,8 @@ export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo
     return {
         ...post,
         scheduled_at: schedulingInfo.scheduled_at,
+        repeat_type: schedulingInfo.repeat_type,
+        repeat_timezone: schedulingInfo.repeat_timezone,
         priority: post.root_id ? undefined : postPriority,
         metadata: {
             files: postFiles,

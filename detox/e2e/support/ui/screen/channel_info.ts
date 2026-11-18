@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled, withSynchronizationDisabledOnAndroid} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -197,69 +197,45 @@ class ChannelInfoScreen {
         await expect(this.ignoreMentionsOptionToggledOff).toBeVisible();
     };
 
+    // Android: sync stays off from the long press through the copy tap (Fabric idling-resource deadlock,
+    // MM-T868/T869), in one window so it is not turned on and off again between them.
     copyChannelHeader = async () => {
         const copyAction = element(by.id(this.testID.copyHeaderTextAction));
-        await longPressWithRetry(
-            this.extraHeaderContent,
-            copyAction,
-            5,
-            by.id(this.testID.scrollView),
-        );
-
-        // Tap copy — disable sync on Android to avoid Fabric idling-resource deadlock (MM-T868/T869).
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        try {
+        await withSynchronizationDisabledOnAndroid(async () => {
+            await longPressWithRetry(
+                this.extraHeaderContent,
+                copyAction,
+                5,
+                by.id(this.testID.scrollView),
+            );
             await copyAction.tap();
             await wait(timeouts.ONE_SEC);
-        } finally {
-            if (isAndroid()) {
-                await safeEnableSynchronization();
-            }
-        }
+        });
     };
 
     cancelCopyChannelHeader = async () => {
-        await longPressWithRetry(
-            this.extraHeaderContent,
-            element(by.id(this.testID.copyHeaderTextAction)),
-            5,
-            by.id(this.testID.scrollView),
-        );
-
         const cancelAction = element(by.id(this.testID.copyHeaderCancelAction));
-        await waitForElementToBeVisible(cancelAction, timeouts.FIVE_SEC);
-        await wait(timeouts.HALF_SEC);
-
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        try {
+        await withSynchronizationDisabledOnAndroid(async () => {
+            await longPressWithRetry(
+                this.extraHeaderContent,
+                element(by.id(this.testID.copyHeaderTextAction)),
+                5,
+                by.id(this.testID.scrollView),
+            );
+            await waitForElementToBeVisible(cancelAction, timeouts.FIVE_SEC);
+            await wait(timeouts.HALF_SEC);
             await cancelAction.tap();
             await wait(timeouts.ONE_SEC);
-        } finally {
-            if (isAndroid()) {
-                await safeEnableSynchronization();
-            }
-        }
+        });
     };
 
     copyChannelPurpose = async () => {
         const copyAction = element(by.id(this.testID.copyPurposeAction));
-        await longPressWithRetry(this.publicPrivateTitlePurpose, copyAction);
-
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        try {
+        await withSynchronizationDisabledOnAndroid(async () => {
+            await longPressWithRetry(this.publicPrivateTitlePurpose, copyAction);
             await copyAction.tap();
             await wait(timeouts.ONE_SEC);
-        } finally {
-            if (isAndroid()) {
-                await safeEnableSynchronization();
-            }
-        }
+        });
     };
 
     cancelCopyChannelPurpose = async () => {

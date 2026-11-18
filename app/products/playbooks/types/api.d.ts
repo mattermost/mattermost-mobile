@@ -78,6 +78,9 @@ type TimelineEvent = {
     id: string;
     playbook_run_id: string;
     create_at: number;
+
+    // The server does not send soft deletes; filtered out only as a precaution.
+    delete_at?: number;
     event_at: number;
     event_type: string;
     summary: string;
@@ -152,7 +155,9 @@ type PlaybookRun = {
     remove_channel_member_on_removed_participant: boolean;
     invited_user_ids: string[];
     invited_group_ids: string[];
-    timeline_events: TimelineEvent[];
+
+    // null, not [], when the run has no events: the server sends a Go nil slice.
+    timeline_events: TimelineEvent[] | null;
     participant_ids: string[];
     broadcast_channel_ids: string[];
     webhook_on_creation_urls: string[];

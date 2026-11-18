@@ -25,7 +25,7 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {reloadApp, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Archive Channel', () => {
@@ -59,7 +59,7 @@ describe('Channels - Archive Channel', () => {
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
         await wait(timeouts.TWO_SEC);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
@@ -92,7 +92,7 @@ describe('Channels - Archive Channel', () => {
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
         await wait(timeouts.TWO_SEC);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
@@ -113,7 +113,7 @@ describe('Channels - Archive Channel', () => {
         const {channel: privateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
         await wait(timeouts.TWO_SEC);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelScreen.open(channelsCategory, privateChannel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();

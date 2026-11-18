@@ -14,8 +14,8 @@ import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {getRandomId, reloadApp, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -226,7 +226,7 @@ async function openChannel(channelName: string) {
             await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, siblingFieldId, true);
         }
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);
         await ChannelInfoScreen.open();
@@ -288,7 +288,7 @@ async function openChannel(channelName: string) {
         await ChannelScreen.back();
 
         // # Restart the app.
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);
         await ChannelInfoScreen.open();
@@ -470,7 +470,7 @@ async function openChannel(channelName: string) {
         // regardless of display configuration.
         await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, OPTION_IDS.medium);
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);
         await ChannelInfoScreen.open();
@@ -593,7 +593,7 @@ async function openChannel(channelName: string) {
         // Admin sets a value out-of-band.
         await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, OPTION_IDS.medium);
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);
         await ChannelInfoScreen.open();
@@ -627,7 +627,7 @@ async function openChannel(channelName: string) {
         await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, channelFieldId, true);
 
         // No value is set — the attribute is required-and-unset.
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);
         await ChannelInfoScreen.open();
