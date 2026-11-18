@@ -6,8 +6,8 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
-import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {ChannelScreen, HomeScreen, LoginScreen, ServerListScreen, ServerScreen} from '@support/ui/screen';
+import {isAndroid, isIos, isOptionalElementPresent, timeouts, wait, waitForElementToNotExist, waitForFirstPresent, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 import {logInfo} from '../../../../provision/log';
@@ -103,6 +103,41 @@ class AccountScreen {
         return this.accountScreen;
     };
 
+    /**
+     * Dismisses the "Scheduled Posts" tutorial tooltip (regular and admin variants) if it is up. On iPad the channel
+     * is always co-visible with the sidebar, so it appears after every fresh login and sits directly over the account
+     * tab (bottom-right corner); TWO_SEC allows for it to animate in. On iOS the whole dismissal (probe, visibility
+     * wait, tap and disappearance wait, for both variants) is one synchronization-disabled action, so a busy app cannot
+     * stretch it; the nested probe windows are counted by the owner. Android keeps synchronization on (see
+     * synchronization.ts).
+     */
+    private dismissScheduledPostTooltips = async () => {
+        const dismiss = async () => {
+            for (const closeButton of [ChannelScreen.scheduledPostTooltipCloseButton, ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount]) {
+                // eslint-disable-next-line no-await-in-loop -- one tooltip at a time
+                if (await isOptionalElementPresent(closeButton, timeouts.TWO_SEC)) {
+                    try {
+                        // eslint-disable-next-line no-await-in-loop -- still animating in when it was found
+                        await waitFor(closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                        // eslint-disable-next-line no-await-in-loop
+                        await closeButton.tap();
+                        // eslint-disable-next-line no-await-in-loop
+                        await waitForElementToNotExist(closeButton, timeouts.FIVE_SEC);
+                    } catch (error) {
+                        throw new Error(`AccountScreen.open: could not dismiss the scheduled-post tooltip: ${(error as Error).message}`);
+                    }
+                }
+            }
+        };
+        await (isIos() ? withSynchronizationDisabled(dismiss) : dismiss());
+    };
+
+    /**
+     * Opens the account tab from wherever the app is, first dismissing what can cover it: known modals, a
+     * lingering "Logout not complete" dialog, iOS system sheets, the "Removed from team" alert and the
+     * scheduled-post tooltip. The optional checks are cheap when nothing is there (isOptionalElementPresent).
+     * @returns the account screen element
+     */
     open = async () => {
         await dismissKnownModals(2);
 
@@ -115,7 +150,7 @@ class AccountScreen {
         // Dismiss any lingering "Logout not complete" dialog left over from a
         // previous test's logout. This can happen on both platforms when the
         // server was unreachable and the handler in logout() didn't dismiss it.
-        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TWO_SEC)) {
+        if (await isOptionalElementPresent(Alert.logoutNotCompleteTitle) && await Alert.dismissLogoutNotCompleteIfPresent()) {
             logInfo('AccountScreen.open dismissed lingering "Logout not complete" dialog');
         }
 
@@ -143,26 +178,12 @@ class AccountScreen {
         // dismissing through `Alert.okButton`, whose
         // platform-aware locator handles iOS (`by.label('OK').atIndex(1)`) and
         // Android (`by.text('OK')`) correctly.
-        try {
-            await waitFor(Alert.removedFromTeamTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        if (await isOptionalElementPresent(Alert.removedFromTeamTitle, timeouts.TWO_SEC)) {
             await Alert.okButton.tap();
             await wait(timeouts.HALF_SEC);
-        } catch { /* no team-removed alert */ }
+        }
 
-        // Dismiss the "Scheduled Posts" tutorial tooltip before tapping the account tab.
-        // On iPad the channel is always co-visible with the sidebar, so this tooltip appears
-        // after every fresh login and sits directly over the account tab (bottom-right corner).
-        // Wait up to TWO_SEC for the tooltip to finish animating in before dismissing.
-        try {
-            await waitFor(element(by.id('scheduled_post.tooltip.close.button'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await element(by.id('scheduled_post.tooltip.close.button')).tap();
-            await waitFor(element(by.id('scheduled_post.tooltip.close.button'))).not.toExist().withTimeout(timeouts.FIVE_SEC);
-        } catch { /* no tooltip */ }
-        try {
-            await waitFor(element(by.id('scheduled_post_tutorial_tooltip.close'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await element(by.id('scheduled_post_tutorial_tooltip.close')).tap();
-            await waitFor(element(by.id('scheduled_post_tutorial_tooltip.close'))).not.toExist().withTimeout(timeouts.FIVE_SEC);
-        } catch { /* no admin-variant tooltip */ }
+        await this.dismissScheduledPostTooltips();
 
         try {
             await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TEN_SEC);
@@ -245,6 +266,11 @@ class AccountScreen {
         await this.waitForCustomStatusCleared(timeouts.TWENTY_SEC);
     };
 
+    /**
+     * Logs out from the account screen and returns once the app is logged out: on a logged-out screen, or past
+     * the "Logout not complete" dialog via "Continue Anyway".
+     * @param serverDisplayName - when given, the confirmation alert must name this server
+     */
     logout = async (serverDisplayName: string | null = null) => {
         await this.logoutOption.tap();
         if (serverDisplayName) {
@@ -252,11 +278,18 @@ class AccountScreen {
         }
         await Alert.logoutButton.tap();
 
-        // Handle "Logout not complete" dialog that appears when the server is
-        // unreachable (offline, slow network). Tap "Continue Anyway" to force
-        // the logout to complete instead of leaving the app in a stuck state.
-        // Use TEN_SEC because CI environments can be slow to show this dialog.
-        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TEN_SEC)) {
+        // When the server-side logout fails (offline, slow network) the app raises "Logout not
+        // complete" instead of navigating away (logout() in app/actions/remote/session.ts), so the
+        // first of the dialog or a logged-out screen to appear decides. TEN_SEC because CI can be
+        // slow to show the dialog. "Continue Anyway" completes the logout instead of leaving the
+        // app stuck.
+        const outcome = await waitForFirstPresent([
+            ['logoutNotComplete', Alert.logoutNotCompleteTitle],
+            ['server', ServerScreen.serverScreen],
+            ['login', LoginScreen.loginScreen],
+            ['serverList', ServerListScreen.serverListScreen],
+        ], timeouts.TEN_SEC);
+        if (outcome === 'logoutNotComplete' && await Alert.dismissLogoutNotCompleteIfPresent()) {
             logInfo('AccountScreen.logout dismissed "Logout not complete" dialog');
         }
 

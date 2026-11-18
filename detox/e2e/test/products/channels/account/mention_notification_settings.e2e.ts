@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Setup, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -22,7 +22,25 @@ import {
     SettingsScreen,
 } from '@support/ui/screen';
 import {getRandomId, isIos, timeouts} from '@support/utils';
+import {pollUntilConverged} from '@support/utils/converge';
 import {expect} from 'detox';
+
+/**
+ * Waits until the server holds the mention settings the screen saved on back. The save is not awaited before the
+ * screen closes, and the reopened screen reads its values once at mount, so reopening before the save lands shows
+ * the previous values (4db91d8 MM-T5107_2).
+ * @param userId - the user whose notify_props were saved
+ * @param expected - the notify_props values the save should have written
+ */
+const waitForSavedNotifyProps = async (userId: string, expected: Record<string, string>) => {
+    const {converged} = await pollUntilConverged(async () => {
+        const {user} = await User.apiGetUserById(siteOneUrl, userId);
+        return Object.entries(expected).every(([key, value]) => user?.notify_props?.[key] === value);
+    }, {timeoutMs: timeouts.TEN_SEC, pollIntervalMs: timeouts.HALF_SEC});
+    if (!converged) {
+        throw new Error(`Mention settings were not saved on the server: expected ${JSON.stringify(expected)}`);
+    }
+};
 
 describe('Account - Settings - Mention Notification Settings', () => {
     const serverOneDisplayName = 'Server 1';
@@ -74,6 +92,7 @@ describe('Account - Settings - Mention Notification Settings', () => {
         await MentionNotificationSettingsScreen.keywordsInput.typeText(keywords);
         await MentionNotificationSettingsScreen.keywordsInput.typeText(commasSeparator);
         await MentionNotificationSettingsScreen.back();
+        await waitForSavedNotifyProps(testUser.id, {first_name: 'true', channel: 'false'});
         await MentionNotificationSettingsScreen.open();
 
         // * Verify toggles are switched and keywords are saved as lowercase without spaces
@@ -93,6 +112,7 @@ describe('Account - Settings - Mention Notification Settings', () => {
         await MentionNotificationSettingsScreen.toggleChannelWideMentionsOptionOn();
         await MentionNotificationSettingsScreen.keywordsInput.clearText();
         await MentionNotificationSettingsScreen.back();
+        await waitForSavedNotifyProps(testUser.id, {first_name: 'false', channel: 'true'});
         await MentionNotificationSettingsScreen.open();
 
         // * Verify toggles are switched back to original state and keywords are cleared
