@@ -8,7 +8,7 @@ import {Stack, useNavigationContainerRef} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {IntlProvider} from 'react-intl';
-import {Keyboard, Platform, StyleSheet} from 'react-native';
+import {Keyboard, Platform, StatusBar, StyleSheet} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -117,6 +117,12 @@ export default function RootLayout() {
     useEffect(() => {
         setAndroidNavigationBarColor();
     }, [setAndroidNavigationBarColor]);
+
+    useDidMount(() => {
+        if (Platform.OS === 'android') {
+            StatusBar.setBackgroundColor('transparent');
+        }
+    });
 
     // Track navigation state changes
     useEffect(() => {
