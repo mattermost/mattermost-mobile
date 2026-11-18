@@ -33,7 +33,7 @@ type Props = {
 const styles = StyleSheet.create({
     container: {marginTop: 10},
     flex: {flex: 1},
-    footer: {height: Platform.select({android: 64, default: 20})},
+    footer: {height: Platform.select({android: 100, default: 20})},
 });
 
 const ThreadPostList = ({
