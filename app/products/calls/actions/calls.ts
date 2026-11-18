@@ -375,6 +375,15 @@ export const muteMyself = () => {
     }
 };
 
+// Skips mirrorMuteToNativeCall: CallKit already holds this state, and mirroring it makes iOS echo it back.
+export const applyNativeCallMute = (muted: boolean) => {
+    if (muted) {
+        connection?.mute();
+    } else {
+        connection?.unmute();
+    }
+};
+
 export const unmuteMyself = () => {
     if (!connection) {
         return;
