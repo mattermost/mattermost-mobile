@@ -75,7 +75,7 @@ describe('PostOptions', () => {
             user_id: TestHelper.basicUser!.id,
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -112,7 +112,7 @@ describe('PostOptions', () => {
                 // missing expire_at key indicates unrevealed BoR post
             },
         });
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -150,7 +150,7 @@ describe('PostOptions', () => {
                 expire_at: Date.now() + 1000000000,
             },
         });
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -183,7 +183,7 @@ describe('PostOptions', () => {
             message: 'This is a regular post',
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const postModel = models[0] as PostModel;
 
         renderWithEverything(
@@ -214,7 +214,7 @@ describe('PostOptions', () => {
             user_id: TestHelper.basicUser!.id,
             message: 'This is a regular post',
         });
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const notBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -253,7 +253,7 @@ describe('PostOptions', () => {
             },
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const ownBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -285,7 +285,7 @@ describe('PostOptions', () => {
             },
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const otherUserBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -327,7 +327,7 @@ describe('PostOptions', () => {
             user_id: TestHelper.basicUser!.id,
             message: 'This is a regular post',
         });
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
 
         renderWithEverything(
             <PostOptions

@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
+import {hasUnverifiedAttachmentPostsInThread} from '@actions/local/post';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
@@ -33,6 +34,7 @@ import {handleFirstConnect, handleReconnect} from './index';
 
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/ephemeral_mode/cleanup');
+jest.mock('@actions/local/post');
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/ephemeral_mode');
@@ -144,6 +146,8 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(getCurrentTeamId).mockResolvedValue(currentTeamId);
             jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
             jest.mocked(isRedactionEnforced).mockResolvedValue(false);
+            jest.mocked(invalidateRedactionOnResync).mockResolvedValue(true);
+            jest.mocked(hasUnverifiedAttachmentPostsInThread).mockResolvedValue(false);
             jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('');
             jest.mocked(EphemeralStore.wasNotificationTapped).mockReturnValue(false);
         });
@@ -237,10 +241,49 @@ describe('WebSocket Index Actions', () => {
                 toBeLessThan(jest.mocked(fetchPostsForChannel).mock.invocationCallOrder[0]);
         });
 
-        it('should fetch thread posts when CRT enabled', async () => {
+        it('should not force a page for the visible channel when the epoch was raised', async () => {
+            // The raised epoch marks cached posts as stale, so fetchPostsForChannel pages only when
+            // posts with attachments are behind it.
+            jest.mocked(isRedactionEnforced).mockResolvedValue(true);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
+
+            await handleReconnect(serverUrl);
+
+            expect(fetchPostsForChannel).toHaveBeenCalledTimes(1);
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect', false);
+        });
+
+        it('should force a page for the visible channel when the epoch could not be raised while enforced', async () => {
+            jest.mocked(isRedactionEnforced).mockResolvedValue(true);
+            jest.mocked(invalidateRedactionOnResync).mockResolvedValue(false);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
+
+            await handleReconnect(serverUrl);
+
+            expect(fetchPostsForChannel).toHaveBeenCalledTimes(1);
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect', true);
+        });
+
+        it('should fetch the newest thread page when the thread has unverified attachments', async () => {
+            const threadId = 'thread-id';
+            jest.mocked(isRedactionEnforced).mockResolvedValue(true);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['thread']);
+            jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+            jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue(threadId);
+            jest.mocked(getLastPostInThread).mockResolvedValue(TestHelper.fakePostModel({id: 'post-id', createAt: 123}));
+            jest.mocked(hasUnverifiedAttachmentPostsInThread).mockResolvedValue(true);
+
+            await handleReconnect(serverUrl);
+
+            expect(fetchPostThread).toHaveBeenCalledTimes(1);
+            expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, threadId, {}, false, 'WebSocket Reconnect');
+        });
+
+        it('should fetch thread posts incrementally when CRT enabled and the thread has no unverified attachments', async () => {
             const threadId = 'thread-id';
             const lastPost = TestHelper.fakePostModel({id: 'post-id', createAt: 123});
 
+            jest.mocked(isRedactionEnforced).mockResolvedValue(true);
             jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['thread']);
 
             jest.mocked(getIsCRTEnabled).mockResolvedValue(true);

@@ -104,6 +104,13 @@ export type HandlePostsArgs = {
 // arguments beyond the record pair. Not part of the server-facing Post contract.
 export type PostWithRedactionEpoch = Post & {redaction_verified_epoch?: number};
 
+export type RevokedFile = Pick<FileInfo, 'id' | 'name' | 'extension' | 'mime_type' | 'localPath'>;
+
+export type HandlePostsResult = {
+  models: Model[];
+  revokedFiles: RevokedFile[];
+};
+
 export type HandleThreadsArgs = {
   threads?: ThreadWithLastFetchedAt[];
   prepareRecordsOnly?: boolean;

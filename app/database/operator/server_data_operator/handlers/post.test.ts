@@ -12,7 +12,6 @@ import {transformDraftRecord, transformPostsInChannelRecord} from '@database/ope
 import {createPostsChain} from '@database/operator/utils/post';
 import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
 import TestHelper from '@test/test_helper';
-import {deleteDownloadedFiles} from '@utils/file';
 import {logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
@@ -28,10 +27,6 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
 
-jest.mock('@utils/file', () => ({
-    ...jest.requireActual('@utils/file'),
-    deleteDownloadedFiles: jest.fn(),
-}));
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
     logWarning: jest.fn(),
@@ -1320,53 +1315,55 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
             expect(rows[0].redactionVerifiedEpoch).toBe(7);
         });
 
-        it('should remove the downloaded bytes when a denial is confirmed', async () => {
-            // Destroying the FileModel rows only hides the attachments in the UI; the blobs would
-            // stay readable on disk, which is the one thing the mobile app can still control.
+        it('should return revoked files for posts reported as redacted', async () => {
             const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid1']};
-            await operator.handlePosts({
-                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-                order: [postId],
-                posts: [withFiles],
-                prepareRecordsOnly: false,
-            });
+            await write(withFiles);
             await operator.handleFiles({
                 files: [{id: 'fileid1', post_id: postId, name: 'secret.png', extension: 'png', localPath: '/tmp/secret.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
                 prepareRecordsOnly: false,
             });
 
-            // prepareRecordsOnly, as every fetch path calls it: the eviction must not depend on the
-            // handler committing the batch itself.
-            const models = await operator.handlePosts({
+            const {revokedFiles} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [postId],
                 posts: [basePost({redacted_file_count: 1} as PostMetadata)],
-                prepareRecordsOnly: true,
-            });
-            expect(deleteDownloadedFiles).toHaveBeenCalled();
-            await operator.batchRecords(models, 'test');
-
-            expect(deleteDownloadedFiles).toHaveBeenCalledWith(databaseName, [expect.objectContaining({id: 'fileid1'})]);
-        });
-
-        it('should not touch cached bytes when files simply were not part of a payload', async () => {
-            // Thread and search payloads arrive without file_ids all the time; that is not a denial.
-            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid2']};
-            await operator.handlePosts({
-                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-                order: [postId],
-                posts: [withFiles],
                 prepareRecordsOnly: false,
             });
+
+            expect(revokedFiles).toHaveLength(1);
+            expect(revokedFiles[0]).toEqual({id: 'fileid1', name: 'secret.png', extension: 'png', mime_type: 'image/png', localPath: '/tmp/secret.png'});
+        });
+
+        it('should not report files that are only missing from the payload', async () => {
+            // Thread and search payloads arrive without file_ids all the time; that is not a denial.
+            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid2']};
+            await write(withFiles);
             await operator.handleFiles({
                 files: [{id: 'fileid2', post_id: postId, name: 'ok.png', extension: 'png', localPath: '/tmp/ok.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
                 prepareRecordsOnly: false,
             });
-            jest.mocked(deleteDownloadedFiles).mockClear();
 
-            await write(basePost({} as PostMetadata));
+            const {revokedFiles} = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({} as PostMetadata)],
+                prepareRecordsOnly: false,
+            });
 
-            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+            const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
+            expect(files).toHaveLength(0);
+            expect(revokedFiles).toHaveLength(0);
+        });
+
+        it('should throw when its own commit fails', async () => {
+            jest.spyOn(database, 'write').mockRejectedValueOnce(new Error('write failed'));
+
+            await expect(operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({} as PostMetadata)],
+                prepareRecordsOnly: false,
+            })).rejects.toThrow('write failed');
         });
 
         it('should discard a whole response from a superseded generation', async () => {
@@ -1423,7 +1420,7 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
                 prepareRecordsOnly: false,
                 redactionVerifiedEpoch: 2,
             });
-            await operator.handlePosts({
+            const {revokedFiles} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [postId],
                 posts: [basePost({redacted_file_count: 1})],
@@ -1433,7 +1430,7 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
 
             const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
             expect(files).toHaveLength(1);
-            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+            expect(revokedFiles).toHaveLength(0);
         });
 
         it('should store a newer epoch for a post whose access did not change', async () => {
@@ -1684,7 +1681,7 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
         it('should prepare each linked file once when two hosts embed the same post', async () => {
             // processRecords does not dedupe, and two creates with one id would fail the whole batch.
             await writeLinked({}, 2);
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: ['host-1', 'host-2'],
                 posts: [hostPost([permalinkEmbed()], {id: 'host-1'}), hostPost([permalinkEmbed()], {id: 'host-2'})],

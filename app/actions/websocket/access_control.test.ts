@@ -5,13 +5,14 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {getRedactionEpochState, getRequiredRedactionEpoch} from '@actions/local/redaction';
 import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
-import {refetchPostsForRedaction} from '@actions/remote/post';
-import {Events, WebsocketEvents} from '@constants';
+import {fetchPostThread, fetchPostsForChannel} from '@actions/remote/post';
+import {ActionType, Events, WebsocketEvents} from '@constants';
 import {DOWNLOAD_FILE_ATTACHMENT_ACTION, RenderPermissionAction} from '@constants/access_control';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import EphemeralStore from '@store/ephemeral_store';
 import RenderPermissionsStore from '@store/render_permissions_store';
+import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import {
@@ -28,7 +29,7 @@ import {
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@actions/remote/post', () => ({
-    refetchPostsForRedaction: jest.fn(() => Promise.resolve({})),
+    fetchPostsForChannel: jest.fn(() => Promise.resolve({})),
     fetchPostThread: jest.fn(() => Promise.resolve({posts: []})),
 }));
 
@@ -102,7 +103,6 @@ beforeEach(async () => {
         systems: [{id: 'currentUserId', value: currentUserId}],
         prepareRecordsOnly: false,
     });
-    jest.mocked(refetchPostsForRedaction).mockClear();
 });
 
 afterEach(async () => {
@@ -393,7 +393,7 @@ describe('redaction invalidation triggers', () => {
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
-        expect(refetchPostsForRedaction).toHaveBeenCalledWith(serverUrl, channelId);
+        expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, channelId, false, false, undefined, false);
     });
 
     it('should not refetch for a server the user is not looking at', async () => {
@@ -406,16 +406,24 @@ describe('redaction invalidation triggers', () => {
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
-        expect(refetchPostsForRedaction).not.toHaveBeenCalled();
+        expect(fetchPostsForChannel).not.toHaveBeenCalled();
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
     });
 
     it('should advance immediately and without coalescing on resync', async () => {
         // The reconnect path fetches the visible channel right after, and that fetch must capture the
         // raised epoch rather than the one it is replacing.
-        await invalidateRedactionOnResync(serverUrl);
+        expect(await invalidateRedactionOnResync(serverUrl)).toBe(true);
 
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
+    });
+
+    it('should report that the epoch was not raised on resync when its write fails', async () => {
+        // The reconnect path then forces a page, since cached posts were not marked as stale.
+        const redaction = jest.requireActual<typeof import('@actions/local/redaction')>('@actions/local/redaction');
+        jest.spyOn(redaction, 'invalidateRedactionGlobally').mockResolvedValueOnce(undefined);
+
+        expect(await invalidateRedactionOnResync(serverUrl)).toBe(false);
     });
 
     it('should raise the epoch on resync even while policies are not enforced', async () => {
@@ -483,7 +491,7 @@ describe('permission policy changed actions', () => {
         expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.expired).toBe(true);
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
         expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
-        expect(refetchPostsForRedaction).not.toHaveBeenCalled();
+        expect(fetchPostsForChannel).not.toHaveBeenCalled();
     });
 
     // The write and management gates read the render decisions, and neither action hides a channel or a file.
@@ -597,19 +605,60 @@ describe('attribute view convergence retry', () => {
         expect(after.counter).toBe(before.counter + 1);
         expect(after.global).toBe(after.counter);
     });
+
+    it('should force a page for the visible channel when the retry could not raise the epoch', async () => {
+        // Cached posts were not marked as stale, so whether they have attachments behind the epoch
+        // cannot tell what needs re-verifying.
+        await operator.handleSystem({
+            systems: [{id: 'currentChannelId', value: channelId}],
+            prepareRecordsOnly: false,
+        });
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
+        await flushCoalescer();
+        jest.mocked(fetchPostsForChannel).mockClear();
+
+        const redaction = jest.requireActual<typeof import('@actions/local/redaction')>('@actions/local/redaction');
+        jest.spyOn(redaction, 'invalidateRedactionGlobally').mockResolvedValueOnce(undefined);
+        await flushAttributeViewRetry();
+
+        expect(fetchPostsForChannel).toHaveBeenCalledTimes(1);
+        expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, channelId, false, false, undefined, true);
+    });
 });
 
 describe('EphemeralStore interaction', () => {
-    it('should refresh an open thread with a full fetch', async () => {
+    const openThread = async (metadata: PostMetadata) => {
+        const root = TestHelper.fakePost({id: 'rootpostid', channel_id: channelId, metadata});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
+            order: [root.id],
+            posts: [root],
+            prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
+        });
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
-        jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('rootpostid');
+        jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue(root.id);
+    };
 
-        const {fetchPostThread} = require('@actions/remote/post');
+    it('should refresh an open thread with attachments behind the epoch with a full fetch', async () => {
+        await openThread({redacted_file_count: 1});
+
         handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
         await flushCoalescer();
 
         // No pagination options: an incremental thread fetch cannot re-deliver a cached reply whose
         // only change was its redaction state.
+        expect(fetchPostThread).toHaveBeenCalledTimes(1);
         expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, 'rootpostid');
+    });
+
+    it('should not refetch an open text-only thread', async () => {
+        await openThread({});
+
+        handlePermissionPolicyUpdatedEvent(serverUrl, permissionPolicyUpdated());
+        await flushCoalescer();
+
+        expect(fetchPostThread).not.toHaveBeenCalled();
     });
 });

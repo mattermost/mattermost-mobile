@@ -19,6 +19,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
+import {useClearViewableItemsOnUnmount} from '@hooks/in_viewport';
 import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {emitPostsInViewport} from '@utils/post_list/viewport';
@@ -52,6 +53,7 @@ const styles = StyleSheet.create({
 
 const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
+    useClearViewableItemsOnUnmount(Screens.MENTIONS);
     const route = useRoute();
     const isFocused = useIsFocused();
     const {formatMessage} = useIntl();
