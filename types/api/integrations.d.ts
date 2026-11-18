@@ -46,7 +46,7 @@ type DialogSubmission = {
     channel_id: string;
     team_id: string;
     submission: {
-        [x: string]: string;
+        [x: string]: string | string[] | boolean | number;
     };
     cancelled: boolean;
     file_ids?: string[];
@@ -77,7 +77,7 @@ type DialogElement = {
     name: string;
     type: InteractiveDialogElementType;
     subtype?: InteractiveDialogTextSubtype;
-    default: string | boolean;
+    default: string | boolean | string[];
     placeholder: string;
     help_text: string;
     optional: boolean;
@@ -89,6 +89,12 @@ type DialogElement = {
     multiselect?: boolean;
     allow_multiple?: boolean;
     refresh?: boolean;
+    label_position?: 'before' | 'after';
+    matrix_config?: {
+        rows: DialogOption[];
+        columns: DialogOption[];
+        row_selection?: 'multiple' | 'single';
+    };
 
     // Date/DateTime fields
     min_date?: string;
@@ -170,5 +176,5 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button' | 'collapsible'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button' | 'collapsible' | 'checkbox_group' | 'checkbox_matrix'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

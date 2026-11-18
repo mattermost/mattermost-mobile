@@ -74,6 +74,12 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     // State to accumulate values across multiform steps
     const [accumulatedValues, setAccumulatedValues] = useState<AppFormValues>({});
 
+    // Element definitions from the multiform steps already completed.
+    //
+    // Needed for correctness: convertAppFormValuesToDialogSubmission looks every value
+    // up by element name and DROPS any it cannot find. Each step's server response
+    // replaces dialog.elements wholesale, so converting the accumulated values against
+    // only the final step's elements silently discarded every earlier step's answers.
     const [accumulatedElements, setAccumulatedElements] = useState<DialogElement[]>([]);
 
     // Values to keep in the fields of a form returned by a field refresh, which the
@@ -378,6 +384,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 // Accumulate values from field refresh for preservation
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
+                setAccumulatedElements(mergeElements(accumulatedElements, currentConfig.dialog.elements || []));
                 setPrefillValues(newAccumulatedValues);
 
                 const {submission: refreshedSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
@@ -416,7 +423,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         } catch (error) {
             return makeRefreshError(error);
         }
-    }, [currentConfig, accumulatedValues, accumulatedFileFields, requestRefresh, makeRefreshError]);
+    }, [currentConfig, accumulatedValues, accumulatedElements, mergeElements, accumulatedFileFields, requestRefresh, makeRefreshError]);
 
     // Re-fetches the whole form without a selected field when a dialog stacked on top
     // of this one closes (refresh_on_return).
