@@ -179,7 +179,14 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
 
     return (
         <Animated.View style={[StyleSheet.absoluteFill, containerStyle]}>
-            <Animated.View style={[styles.container, controlsOpacityStyle]}>
+            <View
+                onTouchEnd={handleBackgroundPress}
+                style={StyleSheet.absoluteFill}
+            />
+            <Animated.View
+                pointerEvents={visible ? 'auto' : 'none'}
+                style={[styles.container, controlsOpacityStyle]}
+            >
                 <ViewPositionProvider>
                     <View
                         onTouchEnd={handleBackgroundPress}
