@@ -167,6 +167,43 @@ describe('removePlaybookTasksMissingFromRun', () => {
         expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([run.checklists[0].id]);
     });
 
+    it('should keep only tasks and checklists newer than the snapshot', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 2, 3, true)[0];
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const snapshotAt = run.update_at;
+        const [taskChecklist, newerChecklist] = run.checklists;
+        const [older, sameAge, newer] = taskChecklist.items;
+        const olderModel = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(older.id);
+        const sameAgeModel = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(sameAge.id);
+        const newerModel = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(newer.id);
+        const newerChecklistModel = await database.get<PlaybookChecklistModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).find(newerChecklist.id);
+        const staleItems = await Promise.all(newerChecklist.items.map((item) => {
+            return database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(item.id);
+        }));
+
+        await database.write(async () => {
+            await olderModel.update((record) => {
+                record.updateAt = snapshotAt - 1;
+            });
+            await sameAgeModel.update((record) => {
+                record.updateAt = snapshotAt;
+            });
+            await newerModel.update((record) => {
+                record.updateAt = snapshotAt + 1;
+            });
+            await newerChecklistModel.update((record) => {
+                record.updateAt = snapshotAt + 1;
+            });
+            await database.batch(...staleItems.map((item) => item.prepareDestroyPermanently()));
+        });
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []});
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([newer.id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([taskChecklist.id, newerChecklist.id].sort());
+    });
+
     it('should leave tasks from another run in place', async () => {
         const runs = TestHelper.createPlaybookRuns(2, 1, 1, true);
         await handlePlaybookRuns(serverUrl, runs, false, true);
