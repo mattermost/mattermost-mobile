@@ -12,6 +12,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 export interface AgentPostProps {
     post: PostModel;
     currentUserId?: string;
+    isReplyPost: boolean;
     location: AvailableScreens;
     isDM: boolean;
 }

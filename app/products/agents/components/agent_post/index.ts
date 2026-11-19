@@ -17,6 +17,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type OwnProps = {
     post: PostModel;
     currentUserId?: string;
+    isReplyPost: boolean;
     location: AvailableScreens;
 };
 

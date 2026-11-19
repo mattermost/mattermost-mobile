@@ -74,6 +74,7 @@ interface RoundViewProps {
     round: Round;
     postId: string;
     conversationId: string;
+    isReplyPost: boolean;
     location: AvailableScreens;
     isDM: boolean;
     approvalStage: ToolApprovalStage;
@@ -90,6 +91,7 @@ const RoundView = ({
     round,
     postId,
     conversationId,
+    isReplyPost,
     location,
     isDM,
     approvalStage,
@@ -122,6 +124,7 @@ const RoundView = ({
                         value={round.text}
                         theme={theme}
                         location={location}
+                        isReplyPost={isReplyPost}
                     />
                     {showCursor && (
                         <StreamingIndicator/>
@@ -148,11 +151,12 @@ export interface AgentPostNewProps {
     post: PostModel;
     conversationId: string;
     currentUserId?: string;
+    isReplyPost: boolean;
     location: AvailableScreens;
     isDM: boolean;
 }
 
-const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: AgentPostNewProps) => {
+const AgentPostNew = ({post, conversationId, currentUserId, isReplyPost, location, isDM}: AgentPostNewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -327,6 +331,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         round={round}
                         postId={post.id}
                         conversationId={conversationId}
+                        isReplyPost={isReplyPost}
                         location={location}
                         isDM={isDM}
                         approvalStage={stage}
