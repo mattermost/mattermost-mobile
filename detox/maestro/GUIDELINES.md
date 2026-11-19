@@ -285,10 +285,10 @@ Maestro flows run against Matterwick cloud servers (`SITE_1_URL`, `SITE_2_URL`, 
 |---|---|---|
 | Trial Enterprise license | `detox/provision/` (`ensureTrialLicense`) | Calls + Custom Profile Attributes |
 | Calls plugin installed | `detox/provision/` (`REQUIRED_PLUGINS`) | Calls flows |
-| Calls `DefaultEnabled` | `detox/maestro/fixtures/calls_seed.ts` | Calls flows |
+| Calls `DefaultEnabled` | `detox/provision/` (`CONFIG_BASELINE`); also `detox/maestro/fixtures/calls_seed.ts` | Calls flows |
 | Per-channel calls enable | `detox/maestro/fixtures/seed.ts` | Cloud servers may not auto-enable per channel |
 | `EnableChannelBookmarks` | Not set by this repo; enable on the server before the run | Bookmark flows |
-| `ExperimentalViewArchivedChannels` | Not set by this repo; enable on the server before the run | Archive flows |
+| `ExperimentalViewArchivedChannels` | `detox/provision/` (`CONFIG_BASELINE`, set to `true`) | Archive flows |
 | `RateLimitSettings.Enable=false` | Not set by this repo; depends on the server configuration | Prevents 429s on burst traffic |
 | `AllowDownloadLogs=false` (MM-T67856_4 only) | Dedicated CI step | Isolated attach-logs variant |
 
