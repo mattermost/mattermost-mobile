@@ -12,7 +12,6 @@ import {transformDraftRecord, transformPostsInChannelRecord} from '@database/ope
 import {createPostsChain} from '@database/operator/utils/post';
 import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
 import TestHelper from '@test/test_helper';
-import {deleteDownloadedFiles} from '@utils/file';
 import {logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
@@ -28,10 +27,6 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
 
-jest.mock('@utils/file', () => ({
-    ...jest.requireActual('@utils/file'),
-    deleteDownloadedFiles: jest.fn(),
-}));
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
     logWarning: jest.fn(),
@@ -1320,53 +1315,55 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
             expect(rows[0].redactionVerifiedEpoch).toBe(7);
         });
 
-        it('should remove the downloaded bytes when a denial is confirmed', async () => {
-            // Destroying the FileModel rows only hides the attachments in the UI; the blobs would
-            // stay readable on disk, which is the one thing the mobile app can still control.
+        it('should return revoked files for posts reported as redacted', async () => {
             const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid1']};
-            await operator.handlePosts({
-                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-                order: [postId],
-                posts: [withFiles],
-                prepareRecordsOnly: false,
-            });
+            await write(withFiles);
             await operator.handleFiles({
                 files: [{id: 'fileid1', post_id: postId, name: 'secret.png', extension: 'png', localPath: '/tmp/secret.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
                 prepareRecordsOnly: false,
             });
 
-            // prepareRecordsOnly, as every fetch path calls it: the eviction must not depend on the
-            // handler committing the batch itself.
-            const models = await operator.handlePosts({
+            const {revokedFiles} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [postId],
                 posts: [basePost({redacted_file_count: 1} as PostMetadata)],
-                prepareRecordsOnly: true,
-            });
-            expect(deleteDownloadedFiles).toHaveBeenCalled();
-            await operator.batchRecords(models, 'test');
-
-            expect(deleteDownloadedFiles).toHaveBeenCalledWith(databaseName, [expect.objectContaining({id: 'fileid1'})]);
-        });
-
-        it('should not touch cached bytes when files simply were not part of a payload', async () => {
-            // Thread and search payloads arrive without file_ids all the time; that is not a denial.
-            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid2']};
-            await operator.handlePosts({
-                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-                order: [postId],
-                posts: [withFiles],
                 prepareRecordsOnly: false,
             });
+
+            expect(revokedFiles).toHaveLength(1);
+            expect(revokedFiles[0]).toEqual({id: 'fileid1', name: 'secret.png', extension: 'png', mime_type: 'image/png', localPath: '/tmp/secret.png'});
+        });
+
+        it('should not report files that are only missing from the payload', async () => {
+            // Thread and search payloads arrive without file_ids all the time; that is not a denial.
+            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid2']};
+            await write(withFiles);
             await operator.handleFiles({
                 files: [{id: 'fileid2', post_id: postId, name: 'ok.png', extension: 'png', localPath: '/tmp/ok.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
                 prepareRecordsOnly: false,
             });
-            jest.mocked(deleteDownloadedFiles).mockClear();
 
-            await write(basePost({} as PostMetadata));
+            const {revokedFiles} = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({} as PostMetadata)],
+                prepareRecordsOnly: false,
+            });
 
-            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+            const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
+            expect(files).toHaveLength(0);
+            expect(revokedFiles).toHaveLength(0);
+        });
+
+        it('should throw when its own commit fails', async () => {
+            jest.spyOn(database, 'write').mockRejectedValueOnce(new Error('write failed'));
+
+            await expect(operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({} as PostMetadata)],
+                prepareRecordsOnly: false,
+            })).rejects.toThrow('write failed');
         });
 
         it('should discard a whole response from a superseded generation', async () => {
@@ -1423,7 +1420,7 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
                 prepareRecordsOnly: false,
                 redactionVerifiedEpoch: 2,
             });
-            await operator.handlePosts({
+            const {revokedFiles} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [postId],
                 posts: [basePost({redacted_file_count: 1})],
@@ -1433,7 +1430,7 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
 
             const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
             expect(files).toHaveLength(1);
-            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+            expect(revokedFiles).toHaveLength(0);
         });
 
         it('should store a newer epoch for a post whose access did not change', async () => {
@@ -1535,6 +1532,241 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
             const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
             expect(rows[0].redactionVerifiedEpoch).toBe(2);
             expect(rows[0].metadata?.redacted_file_count).toBe(1);
+        });
+    });
+
+    describe('=> HandlePosts: permalink embed files', () => {
+        // A permalink embed carries the linked post's files, so a host response can restore them
+        // without re-fetching the linked post. Each case pins one rule for when those copies may write rows.
+        const linkedId = 'linked-id';
+        const hostId = 'host-id';
+        const fileA = TestHelper.fakeFileInfo({id: 'file-a', post_id: linkedId});
+        const fileB = TestHelper.fakeFileInfo({id: 'file-b', post_id: linkedId});
+
+        const linkedPost = (over: Partial<Post> = {}): Post => TestHelper.fakePost({
+            id: linkedId,
+            channel_id: 'channel-b',
+            create_at: 1000,
+            update_at: 1000,
+            metadata: {},
+            ...over,
+        });
+
+        const permalinkEmbed = (over: Partial<Post> = {}): PostEmbed => ({
+            type: 'permalink',
+            url: '',
+            data: {
+                post_id: linkedId,
+                post: linkedPost({metadata: {files: [fileA, fileB]}, ...over}),
+                channel_id: 'channel-b',
+                team_name: 'team',
+                channel_display_name: 'B',
+                channel_type: 'O',
+            },
+        });
+
+        const hostPost = (embeds: PostEmbed[], over: Partial<Post> = {}): Post => TestHelper.fakePost({
+            id: hostId,
+            channel_id: 'channel-a',
+            create_at: 1000,
+            update_at: 1000,
+            metadata: {embeds},
+            ...over,
+        });
+
+        const writeLinked = async (over: Partial<Post> = {}, epoch?: number) => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [linkedId],
+                posts: [linkedPost(over)],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: epoch,
+            });
+        };
+
+        const writeHost = async (embeds: PostEmbed[], epoch?: number) => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [hostId],
+                posts: [hostPost(embeds)],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: epoch,
+            });
+        };
+
+        const linkedRowIds = async () => {
+            const rows = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', linkedId)).fetch();
+            return rows.map((r) => r.id).sort();
+        };
+
+        const enforceAbac = async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                    {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+        };
+
+        it('should store the files a stamped host embed lists for a stored linked post', async () => {
+            await writeLinked({}, 2);
+            await writeHost([permalinkEmbed()], 2);
+
+            expect(await linkedRowIds()).toEqual(['file-a', 'file-b']);
+
+            // The preview renders from the stored embed, so collecting its files must not strip them.
+            const storedHost = await database.get<PostModel>(MM_TABLES.SERVER.POST).find(hostId);
+            const embedData = storedHost.metadata?.embeds?.[0]?.data as PermalinkEmbedData | undefined;
+            expect(embedData?.post?.metadata?.files).toHaveLength(2);
+        });
+
+        it('should add the embed files missing from the rows a linked post already has', async () => {
+            await writeLinked({metadata: {files: [fileA]}, file_ids: [fileA.id]}, 2);
+            await writeHost([permalinkEmbed()], 2);
+
+            expect(await linkedRowIds()).toEqual(['file-a', 'file-b']);
+        });
+
+        it('should restore the rows of a linked post denied under an older epoch', async () => {
+            await writeLinked({metadata: {redacted_file_count: 2}}, 2);
+            await writeHost([permalinkEmbed()], 3);
+
+            expect(await linkedRowIds()).toEqual(['file-a', 'file-b']);
+        });
+
+        it('should not write rows for a linked post that is redacted in the same batch', async () => {
+            await writeLinked({}, 2);
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [hostId, linkedId],
+                posts: [hostPost([permalinkEmbed()]), linkedPost({metadata: {redacted_file_count: 2}})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not let an embed override a denial the linked post got under the same epoch', async () => {
+            await writeLinked({metadata: {redacted_file_count: 2}}, 2);
+            await writeHost([permalinkEmbed()], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not write rows from an embed verified under an older epoch than the linked post', async () => {
+            await writeLinked({}, 5);
+            await writeHost([permalinkEmbed()], 4);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not write rows from the embeds of a superseded host response', async () => {
+            await writeLinked({}, 2);
+            await writeHost([], 3);
+            await writeHost([permalinkEmbed()], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not write rows from an embed that reports redacted files', async () => {
+            await writeLinked({}, 2);
+            await writeHost([permalinkEmbed({metadata: {files: [fileA, fileB], redacted_file_count: 1}})], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should prepare each linked file once when two hosts embed the same post', async () => {
+            // processRecords does not dedupe, and two creates with one id would fail the whole batch.
+            await writeLinked({}, 2);
+            const {models} = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: ['host-1', 'host-2'],
+                posts: [hostPost([permalinkEmbed()], {id: 'host-1'}), hostPost([permalinkEmbed()], {id: 'host-2'})],
+                prepareRecordsOnly: true,
+                redactionVerifiedEpoch: 2,
+            });
+
+            const fileIds = models.filter((m) => m.collection.table === MM_TABLES.SERVER.FILE).map((m) => m.id).sort();
+            expect(fileIds).toEqual(['file-a', 'file-b']);
+        });
+
+        it('should not write rows from an embed older than the stored linked post', async () => {
+            // The server caches embeds, so an edit that removed the files can leave them in an older copy.
+            await writeLinked({update_at: 2000}, 2);
+            await writeHost([permalinkEmbed({update_at: 1000})], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not write rows for a linked post that is not stored', async () => {
+            // No cleanup path, data retention included, would ever remove rows for a post we never held.
+            await writeHost([permalinkEmbed()], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not let a stamped embed override a denial stored without an epoch', async () => {
+            // A notification payload stores the denial unstamped; a host response captured before it
+            // cannot be ordered against it.
+            await writeLinked({metadata: {redacted_file_count: 2}});
+            await writeHost([permalinkEmbed()], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not write rows from an embed of a deleted post', async () => {
+            await writeLinked({}, 2);
+            await writeHost([permalinkEmbed({delete_at: 2000})], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should not write rows for a linked post marked as deleted', async () => {
+            await writeLinked({}, 2);
+            const stored = await database.get<PostModel>(MM_TABLES.SERVER.POST).find(linkedId);
+            await database.write(async () => {
+                await stored.update((p) => {
+                    p.deleteAt = 2000;
+                });
+            });
+            await writeHost([permalinkEmbed()], 2);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should only write embed files that belong to the linked post', async () => {
+            const misfiled = TestHelper.fakeFileInfo({id: 'file-x', post_id: hostId});
+            await writeLinked({}, 2);
+            await writeHost([permalinkEmbed({metadata: {files: [fileA, misfiled]}})], 2);
+
+            expect(await linkedRowIds()).toEqual(['file-a']);
+            expect(await database.get(MM_TABLES.SERVER.FILE).query(Q.where('id', 'file-x')).fetch()).toHaveLength(0);
+        });
+
+        it('should not write rows from an unstamped host response while ABAC is enforced', async () => {
+            await writeLinked({}, 2);
+            await enforceAbac();
+            await writeHost([permalinkEmbed()]);
+
+            expect(await linkedRowIds()).toHaveLength(0);
+        });
+
+        it('should restore a denial cached before ABAC was turned off from an unstamped host response', async () => {
+            await writeLinked({metadata: {redacted_file_count: 2}}, 2);
+            await writeHost([permalinkEmbed()]);
+
+            expect(await linkedRowIds()).toEqual(['file-a', 'file-b']);
+        });
+
+        it('should write rows from an unstamped host response for a linked post never verified', async () => {
+            // A thread root is stored unstamped and without metadata, so only the embed can supply its rows.
+            await writeLinked({});
+            await writeHost([permalinkEmbed()]);
+
+            expect(await linkedRowIds()).toEqual(['file-a', 'file-b']);
         });
     });
 });

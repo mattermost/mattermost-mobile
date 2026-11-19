@@ -22,7 +22,7 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {enableSynchronization, getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Convert to Private Channel', () => {
@@ -48,7 +48,7 @@ describe('Channels - Convert to Private Channel', () => {
         await LoginScreen.login(testUser);
 
         // Re-enable synchronization now that the app has settled past the init bridge burst.
-        await device.enableSynchronization();
+        await enableSynchronization();
 
         // Wait for the channel list header plus button to be fully visible and hittable
         // before any test attempts to tap it. A fixed sleep was insufficient on CI where

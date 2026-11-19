@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ApiResp, LiveKitSessionResponse} from '@calls/types/calls';
+import {isLiveKitSessionResponse} from './livekit_session';
+
+import type {ApiResp, LiveKitSessionResponse, PhoneCallResponse, PhoneTarget} from '@calls/types/calls';
 import type {RTCIceServer} from '@livekit/react-native-webrtc';
 import type {CallChannelState, CallJobState, CallsConfig, CallsVersionInfo} from '@mattermost/calls/lib/types';
 
@@ -12,6 +14,7 @@ export interface ClientCallsMix {
     getCallsConfig: (groupLabel?: RequestGroupLabel) => Promise<CallsConfig>;
     getVersion: (groupLabel?: RequestGroupLabel) => Promise<CallsVersionInfo>;
     createLiveKitSession: (channelId: string, title?: string, threadId?: string) => Promise<LiveKitSessionResponse>;
+    phoneCall: (phone: PhoneTarget) => Promise<PhoneCallResponse>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<CallChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<RTCIceServer[]>;
@@ -61,10 +64,29 @@ const ClientCalls = (superclass: any) => class extends superclass {
     };
 
     createLiveKitSession = async (channelId: string, title?: string, threadId?: string) => {
-        return this.doFetch(
+        const session = await this.doFetch(
             `${this.getCallsRoute()}/livekit-token`,
             {method: 'post', body: {channel_id: channelId, title, thread_id: threadId}},
-        ) as LiveKitSessionResponse;
+        );
+
+        if (!isLiveKitSessionResponse(session, this.getBaseRoute())) {
+            throw new Error('Invalid LiveKit session response');
+        }
+
+        return session;
+    };
+
+    phoneCall = async ({number, targetUserId, displayLabel}: PhoneTarget) => {
+        const session = await this.doFetch(
+            `${this.getCallsRoute()}/phone-call`,
+            {method: 'post', body: {number, target_user_id: targetUserId, display_label: displayLabel}},
+        );
+
+        if (!isLiveKitSessionResponse(session, this.getBaseRoute()) || typeof (session as PhoneCallResponse).channel_id !== 'string') {
+            throw new Error('Invalid phone call response');
+        }
+
+        return session as PhoneCallResponse;
     };
 
     getVersion = async (groupLabel?: RequestGroupLabel) => {

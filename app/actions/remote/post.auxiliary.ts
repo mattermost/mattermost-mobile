@@ -3,14 +3,16 @@
 
 import {chunk} from 'lodash';
 
-import {prepareModelsForChannelPosts} from '@actions/local/post';
+import {batchRecordsAndDeleteRevokedFiles, prepareModelsForChannelPosts} from '@actions/local/post';
 import {ActionType} from '@constants';
-import DatabaseManager from '@database/manager';
 import {removeDuplicatesModels} from '@helpers/database';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 
 import {fetchPostAuthors, fetchPostsForChannel} from './post';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {RevokedFile} from '@typings/database/database';
 
 /**
  * processChannelPostsByTeam is to fetch posts for each channel in a team, and prepare the models for the posts.
@@ -29,7 +31,7 @@ export async function processChannelPostsByTeam(
     groupLabel?: RequestGroupLabel,
     isCRTEnabled = false,
 ): Promise<void> {
-    const prepareModelsPromises: Array<Promise<Model[]>> = [];
+    const prepareModelsPromises: Array<Promise<{models: Model[]; revokedFiles: RevokedFile[]}>> = [];
     const allPosts: Post[] = [];
 
     const chunks = chunk(channelIds, 10);
@@ -75,10 +77,14 @@ export async function processChannelPostsByTeam(
     }
 
     if (prepareModelsPromises.length) {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const models = await Promise.all(prepareModelsPromises);
-        await operator.batchRecords(removeDuplicatesModels(models.flat()), 'processTeamChannels');
+        const prepared = await Promise.all(prepareModelsPromises);
+        const models = prepared.flatMap((p) => p.models);
+        const revokedFiles = prepared.flatMap((p) => p.revokedFiles);
+        try {
+            await batchRecordsAndDeleteRevokedFiles(serverUrl, removeDuplicatesModels(models), revokedFiles, 'processTeamChannels');
+        } catch (error) {
+            logError('error on processChannelPostsByTeam', getFullErrorMessage(error));
+        }
     }
     if (!skipAuthors && allPosts.length) {
         await fetchPostAuthors(serverUrl, allPosts, false, groupLabel);

@@ -11,7 +11,7 @@ import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam, type MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, type MyUserRequest} from '@actions/remote/user';
-import {General, Preferences, Screens} from '@constants';
+import {Events, General, Preferences, Screens, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -23,12 +23,13 @@ import {getDeviceToken, getVoIPDeviceToken} from '@queries/app/global';
 import {getChannelById, queryChannelsById, queryMyChannelsByChannelIds} from '@queries/servers/channel';
 import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
+import {isChannelAccessEnforced} from '@queries/servers/render_permissions';
 import {getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {NavigationStore} from '@store/navigation_store';
 import {isDefaultChannel, isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
-import {getFullErrorMessage} from '@utils/errors';
+import {getFullErrorMessage, getServerError} from '@utils/errors';
 import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
@@ -359,6 +360,20 @@ export async function verifyPushProxy(serverUrl: string, groupLabel?: RequestGro
     }
 }
 
+// A sync leaves out a channel the user can no longer read just as it leaves out one they left, so the
+// server is asked why the open channel is gone: a read denial is then reported as such, not as a removal.
+async function kickFromMissingChannel(serverUrl: string, database: Database, channelId: string) {
+    let event: string | undefined;
+    const channel = await getChannelById(database, channelId);
+    if (channel && !isDMorGM(channel) && await isChannelAccessEnforced(database)) {
+        const {error} = await fetchChannelById(serverUrl, channelId);
+        if (getServerError(error) === ServerErrors.CHANNEL_ACCESS_DENIED) {
+            event = Events.CHANNEL_ACCESS_REVOKED;
+        }
+    }
+    await handleKickFromChannel(serverUrl, channelId, event);
+}
+
 export async function handleEntryAfterLoadNavigation(
     serverUrl: string,
     teamMembers: TeamMembership[],
@@ -401,14 +416,14 @@ export async function handleEntryAfterLoadNavigation(
             // Switched channels while loading
             if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
                 if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
-                    await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+                    await kickFromMissingChannel(serverUrl, database, currentChannelIdAfterLoad);
                 } else {
                     await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
                 }
             }
         } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
             if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
-                await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+                await kickFromMissingChannel(serverUrl, database, currentChannelIdAfterLoad);
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
             }

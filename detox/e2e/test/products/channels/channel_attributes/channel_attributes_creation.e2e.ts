@@ -14,8 +14,8 @@ import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeForm, ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, CreateOrEditChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {getRandomId, reloadApp, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -126,7 +126,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
     // to make a newly created field show up.
     async function setupChannelAttributeField(opts: Parameters<typeof Properties.apiSetupChannelAttributeField>[1]) {
         const result = await Properties.apiSetupChannelAttributeField(siteOneUrl, opts);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         return result;
     }
@@ -224,7 +224,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
             throw new Error('MM-T6330_4 could not disable ChannelAttributes');
         }
         try {
-            await device.reloadReactNative();
+            await reloadApp();
             await ChannelListScreen.toBeVisible();
             await CreateOrEditChannelScreen.openCreateChannel();
 
@@ -234,7 +234,7 @@ function assertStoredValue(fieldName: string, stored: unknown, expected: string)
             await CreateOrEditChannelScreen.close();
         } finally {
             await enableChannelAttributes(siteOneUrl);
-            await device.reloadReactNative();
+            await reloadApp();
         }
     });
 

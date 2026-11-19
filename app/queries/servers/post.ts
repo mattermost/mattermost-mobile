@@ -141,6 +141,15 @@ export const queryPostReplies = (database: Database, rootId: string, excludeDele
     return database.get<PostModel>(POST).query(...clauses);
 };
 
+export const queryNewestThreadReplies = (database: Database, rootId: string, limit: number) => {
+    return database.get<PostModel>(POST).query(
+        Q.where('root_id', rootId),
+        Q.where('delete_at', Q.eq(0)),
+        Q.sortBy('create_at', Q.desc),
+        Q.take(limit),
+    );
+};
+
 export const getRecentPostsInThread = async (database: Database, rootId: string) => {
     const chunks = await queryPostsInThread(database, rootId, true, true).fetch();
     if (chunks.length) {

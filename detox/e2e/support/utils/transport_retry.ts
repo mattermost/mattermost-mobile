@@ -8,13 +8,16 @@ export const NETWORK_RETRY_DELAY_MS = 2000; // timeouts.TWO_SEC (non-LOW_BANDWID
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-const TIMEOUT_STATUS = new Set([0, 520, 522, 524]);
+// 0: no response at all. 520/522/524: Cloudflare timeout family. 521/523: Cloudflare could not
+// reach the origin at all, so the request provably had no side effect (same PRE_ORIGIN_STATUSES
+// reasoning as the client interceptor in server_api/client.ts).
+const TRANSPORT_STATUSES = new Set([0, 520, 521, 522, 523, 524]);
 
 export const isTransportFailure = (result: ApiResult): boolean => {
     if (!result.error) {
         return false;
     }
-    if (result.status !== undefined && TIMEOUT_STATUS.has(result.status)) {
+    if (result.status !== undefined && TRANSPORT_STATUSES.has(result.status)) {
         return true;
     }
     const message = typeof result.error === 'string'

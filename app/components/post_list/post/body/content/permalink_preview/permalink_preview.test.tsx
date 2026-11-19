@@ -601,20 +601,19 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             expect(fetchLinkedPost).toHaveBeenCalledTimes(2);
         });
 
-        it('should re-fetch the linked post when the embed lists files the database is missing', () => {
+        it('should fetch a linked post again after a successful fetch, in case it was evicted since', async () => {
+            jest.mocked(fetchLinkedPost).mockResolvedValueOnce({post: TestHelper.fakePost({id: 'evicted-post'}), redactionVerifiedEpoch: undefined});
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'evicted-post'}};
+            await mountAndSettle(props);
+            renderPermalinkPreview(props);
+
+            expect(fetchLinkedPost).toHaveBeenCalledTimes(2);
+        });
+
+        it('should not fetch the linked post when the embed lists files the database is missing', () => {
             renderPermalinkPreview({
                 ...baseProps,
                 hasLinkedPostFiles: false,
-                embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
-            });
-
-            expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'post-123');
-        });
-
-        it('should not re-fetch the linked post when the database already has its files', () => {
-            renderPermalinkPreview({
-                ...baseProps,
-                hasLinkedPostFiles: true,
                 embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
             });
 

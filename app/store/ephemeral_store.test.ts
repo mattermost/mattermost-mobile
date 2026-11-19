@@ -105,6 +105,16 @@ describe('EphemeralStore', () => {
             expect(EphemeralStore.isItemInViewPort('Thread-post-3')).toBe(true);
         });
 
+        it('should remove only the given location', () => {
+            EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
+
+            EphemeralStore.removeViewableItems('Thread');
+
+            expect(EphemeralStore.isItemInViewPort('Channel-post-1')).toBe(true);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-2')).toBe(false);
+        });
+
         it('should drop every list when cleared', () => {
             EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
             EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
@@ -172,6 +182,26 @@ describe('EphemeralStore', () => {
 
             expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
             expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-1')).toBe(false);
+        });
+    });
+
+    describe('linked post fetch attempts', () => {
+        const serverUrl = 'linked-post-server';
+        const otherServerUrl = 'linked-post-server-2';
+
+        afterEach(() => {
+            EphemeralStore.clearLinkedPostFetchAttempts(serverUrl);
+            EphemeralStore.clearLinkedPostFetchAttempts(otherServerUrl);
+        });
+
+        it('should clear only the given server, so a new session can fetch again', () => {
+            EphemeralStore.addLinkedPostFetchAttempt(serverUrl, 'post-1|missing|2');
+            EphemeralStore.addLinkedPostFetchAttempt(otherServerUrl, 'post-1|missing|2');
+
+            EphemeralStore.clearLinkedPostFetchAttempts(serverUrl);
+
+            expect(EphemeralStore.hasLinkedPostFetchAttempt(serverUrl, 'post-1|missing|2')).toBe(false);
+            expect(EphemeralStore.hasLinkedPostFetchAttempt(otherServerUrl, 'post-1|missing|2')).toBe(true);
         });
     });
 

@@ -1,4 +1,4 @@
-# Server Database - Schema Version 23
+# Server Database - Schema Version 25
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -113,6 +113,8 @@ scheduled_at number
 processed_at number NULL
 error_code string
 type string NULL
+repeat_type string
+repeat_timezone string
 
 
 File
@@ -205,6 +207,7 @@ is_active boolean
 active_stage number
 active_stage_title string
 participant_ids string # stringified array of user IDs
+timeline_events string NULL # stringified array of task_state_modified timeline events; other event types are not stored
 summary string
 current_status string # (valid values InProgres, Finished)
 owner_user_id string INDEX FK >- User.id

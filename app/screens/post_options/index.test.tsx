@@ -3,9 +3,12 @@
 
 import {screen, waitFor} from '@testing-library/react-native';
 
-import {ActionType, Screens} from '@constants';
+import {ActionType, License, Screens} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
+import RenderPermissionsStore, {RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -72,7 +75,7 @@ describe('PostOptions', () => {
             user_id: TestHelper.basicUser!.id,
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -109,7 +112,7 @@ describe('PostOptions', () => {
                 // missing expire_at key indicates unrevealed BoR post
             },
         });
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -147,7 +150,7 @@ describe('PostOptions', () => {
                 expire_at: Date.now() + 1000000000,
             },
         });
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -180,7 +183,7 @@ describe('PostOptions', () => {
             message: 'This is a regular post',
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const postModel = models[0] as PostModel;
 
         renderWithEverything(
@@ -211,7 +214,7 @@ describe('PostOptions', () => {
             user_id: TestHelper.basicUser!.id,
             message: 'This is a regular post',
         });
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const notBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -250,7 +253,7 @@ describe('PostOptions', () => {
             },
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const ownBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -282,7 +285,7 @@ describe('PostOptions', () => {
             },
         });
 
-        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
         const otherUserBoRPost = models[0] as PostModel;
 
         renderWithEverything(
@@ -298,5 +301,49 @@ describe('PostOptions', () => {
         await waitFor(() => {
             expect(screen.queryByTestId('bor_read_receipts')).not.toBeVisible();
         });
+    });
+
+    it('should not offer pinning while a write access policy denies the channel', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+                {id: 'FeatureFlagChannelPermissionActions', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+            prepareRecordsOnly: false,
+        });
+        RenderPermissionsStore.setEntry(serverUrl, TestHelper.basicChannel!.id, {
+            epoch: 1,
+            decisions: {[RenderPermissionAction.ChannelWriteAccess]: {allowed: false, evaluated: true}},
+        }, RENDER_PERMISSIONS_TTL_MS);
+
+        const post = TestHelper.fakePost({
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.basicUser!.id,
+            message: 'This is a regular post',
+        });
+        const {models} = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+
+        renderWithEverything(
+            <PostOptions
+                postId={models[0].id}
+                serverUrl={serverUrl}
+                showAddReaction={true}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+            />,
+            {database, serverUrl},
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByText('Copy Link')).toBeVisible();
+            expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
+        });
+
+        RenderPermissionsStore.removeServer(serverUrl);
     });
 });

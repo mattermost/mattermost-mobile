@@ -28,9 +28,10 @@ type Props = {
     channelId: string;
     isChannelShared: boolean;
     channelDisplayName: string;
+    disabled?: boolean;
 }
 
-const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, channelDisplayName}: Props) => {
+const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, channelDisplayName, disabled}: Props) => {
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const [sharedCount, setSharedCount] = useState(0);
@@ -100,7 +101,7 @@ const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, channelDispla
                 defaultMessage: 'Share with connected workspaces',
             })}
             description={description}
-            disabled={loading}
+            disabled={loading || disabled}
             icon='circle-multiple-outline'
             type={Platform.select({ios: 'arrow', default: 'default'})}
             testID='channel_settings.share_with_connected_workspaces.option'

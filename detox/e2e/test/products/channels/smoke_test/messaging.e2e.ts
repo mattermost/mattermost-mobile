@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -150,12 +150,12 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
         await EmojiPickerScreen.open();
 
-        await device.disableSynchronization();
-        await EmojiPickerScreen.searchInput.replaceText('clown_face');
-        await EmojiPickerScreen.searchInput.tapReturnKey();
-        await waitFor(element(by.text('🤡'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await element(by.text('🤡')).tap();
-        await device.enableSynchronization();
+        await withSynchronizationDisabled(async () => {
+            await EmojiPickerScreen.searchInput.replaceText('clown_face');
+            await EmojiPickerScreen.searchInput.tapReturnKey();
+            await waitFor(element(by.text('🤡'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await element(by.text('🤡')).tap();
+        });
 
         // * Verify reaction is added to the message
         await waitFor(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toExist().withTimeout(timeouts.TEN_SEC);
@@ -244,8 +244,16 @@ describe('Smoke Test - Messaging', () => {
     it('MM-T4786_6 - should be able to post labeled permalink and labeled channel link', async () => {
         // # Post a target message in a target channel
         const permalinkTargetMessage = `Message ${getRandomId()}`;
-        const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
+
+        // Each call creates a new random name, so a retry cannot duplicate the channel.
+        const {channel: targetChannel, error: createError} = await Setup.retryTransient(() => Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id}), 'apiCreateChannel');
+        if (!targetChannel?.id) {
+            throw new Error(`Failed to create the target channel: ${JSON.stringify(createError)}`);
+        }
+        const {error: addError} = await Setup.retryTransient(() => Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id), 'apiAddUserToChannel');
+        if (addError) {
+            throw new Error(`Failed to add the user to the target channel: ${JSON.stringify(addError)}`);
+        }
         const permalinkTargetPost = await Post.apiCreatePost(siteOneUrl, {
             channelId: targetChannel.id,
             message: permalinkTargetMessage,

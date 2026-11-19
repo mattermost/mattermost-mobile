@@ -228,6 +228,8 @@ baseClient.interceptors.response.use(
         // A write may already have reached the origin behind 502/503/504 and CF 520/522/524, so
         // only idempotent methods are retried on those; CF 521/523 never reach the origin at all.
         const isSafeToRetry = isTransientHttpStatus(status) &&
+            Boolean(config) &&
+            isReplayableBody(config.data) &&
             (IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) || PRE_ORIGIN_STATUSES.has(status));
 
         if (isSafeToRetry && hasRetryBudget(config, 0) && (config._5xxRetries ?? 0) < 3) {
@@ -287,7 +289,7 @@ export const isHtmlInterstitialError = (error: unknown): boolean => {
 const retryInterstitial = async (config: InterstitialConfig, marker: string) => {
     const attempts = (config._htmlInterstitialRetries ?? 0) + 1;
 
-    if (attempts > MAX_INTERSTITIAL_RETRIES || !hasRetryBudget(config, 0)) {
+    if (!isReplayableBody(config.data) || attempts > MAX_INTERSTITIAL_RETRIES || !hasRetryBudget(config, 0)) {
         throw new Error(`Server returned "${marker}" HTML for ${config.url} (retries exhausted or retry budget spent)`);
     }
 

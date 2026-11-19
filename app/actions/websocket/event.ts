@@ -343,7 +343,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         // Attribute-based access control policies
         case WebsocketEvents.PERMISSION_POLICY_UPDATED:
-            handlePermissionPolicyUpdatedEvent(serverUrl);
+            handlePermissionPolicyUpdatedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_ACCESS_CONTROL_UPDATED:

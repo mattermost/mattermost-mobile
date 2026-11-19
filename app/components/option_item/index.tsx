@@ -241,6 +241,7 @@ const OptionItem = ({
                 value={selected}
                 trackColor={trackColor}
                 thumbColor={thumbColor}
+                disabled={disabled}
                 testID={`${testID}.toggled.${selected}.button`}
             />
         );
@@ -353,7 +354,10 @@ const OptionItem = ({
     );
     if ((Object.values(TouchableOptionTypes) as string[]).includes(type)) {
         return (
-            <TouchableOpacity onPress={onPress}>
+            <TouchableOpacity
+                onPress={onPress}
+                disabled={disabled}
+            >
                 {component}
             </TouchableOpacity>
         );

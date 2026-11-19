@@ -6,11 +6,13 @@
 import CallsNative from '@mattermost/calls-native';
 import {Alert} from 'react-native';
 
+import {fetchMyChannel} from '@actions/remote/channel';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
     endCallConfirmationAlert,
+    expectPhoneCallOutcome,
     leaveAndJoinWithAlert,
     needsRecordingErrorAlert,
     needsRecordingWillBePostedAlert,
@@ -42,7 +44,7 @@ import {
     setScreenShareURL,
     startOutgoingCall,
 } from '@calls/state';
-import {type AudioDeviceType, type Call, type CallsConnection, EndCallReturn} from '@calls/types/calls';
+import {type AudioDeviceType, type Call, type CallsConnection, type CallTarget, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed, getCallsTransport} from '@calls/utils';
 import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
@@ -211,7 +213,7 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
 
 export const joinCall = async (
     serverUrl: string,
-    channelId: string,
+    target: CallTarget,
     userId: string,
     hasMicPermission: boolean,
     intl: IntlShape,
@@ -241,13 +243,31 @@ export const joinCall = async (
         connection = null;
     }
     const transport = getCallsTransport(config);
-    newCurrentCall(serverUrl, channelId, userId, transport, opts);
+    const phoneNumber = target.type === 'phone' ? target.phone.number : undefined;
 
-    // Register with the system call UI so the user gets lock-screen /
-    // control-center controls if they background or lock mid-call. Skip
-    // when a mapping already exists — that means we're inside the
-    // inbound-push flow and the native layer already reported the call.
-    const ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId);
+    // A phone target only learns its channel (the Calls bot DM) from the server.
+    let channelId = target.type === 'channel' ? target.channelID : '';
+    let ownedNativeUUID: string | undefined;
+
+    const onChannelResolved = async (resolvedChannelId: string) => {
+        channelId = resolvedChannelId;
+
+        // The call screen reads the channel from the database, and the server may have just created the DM.
+        if (phoneNumber) {
+            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            if (database && !await getChannelById(database, channelId)) {
+                await fetchMyChannel(serverUrl, '', channelId);
+            }
+        }
+
+        newCurrentCall(serverUrl, channelId, userId, transport, opts);
+
+        // Register with the system call UI so the user gets lock-screen /
+        // control-center controls if they background or lock mid-call. Skip
+        // when a mapping already exists — that means we're inside the
+        // inbound-push flow and the native layer already reported the call.
+        ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId, phoneNumber);
+    };
 
     // Held locally as well as on the module-level `connection`: waitForPeerConnection has its own
     // 5s timeout that a disconnect doesn't settle early, so a join we've already abandoned can
@@ -255,7 +275,7 @@ export const joinCall = async (
     // the catch below must act on *this* connection, never on whatever is current by then.
     let conn: CallsConnection;
     try {
-        conn = await newCallConnection(serverUrl, channelId, (err?: Error) => {
+        conn = await newCallConnection(serverUrl, target, (err?: Error) => {
             // Tearing down the call state is only ours to do while we're still the current
             // connection: an abandoned join closing late would otherwise drop the user out of
             // the call they moved on to.
@@ -267,10 +287,18 @@ export const joinCall = async (
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, intl, transport, title, rootId);
+        }, onChannelResolved, setScreenShareURL, hasMicPermission, intl, transport, title, rootId);
         connection = conn;
     } catch (error) {
-        endNativeCall(serverUrl, channelId, 'failed');
+        // An empty channel means a phone call that failed before its channel resolved: no call state or native call exists.
+        if (channelId) {
+            endNativeCall(serverUrl, channelId, 'failed');
+
+            // Only drop the call state if it's still ours; the user may have joined another call meanwhile.
+            if (getCurrentCall()?.channelId === channelId) {
+                myselfLeftCall();
+            }
+        }
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -281,6 +309,11 @@ export const joinCall = async (
         setCurrentCallConnected(channelId, sessionId);
         reportNativeCallConnected(ownedNativeUUID);
 
+        const call = getCallsState(serverUrl).calls[channelId];
+        if (target.type === 'phone') {
+            expectPhoneCallOutcome(serverUrl, call?.id, intl);
+        }
+
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (!database) {
@@ -290,7 +323,6 @@ export const joinCall = async (
         // If this was a call started by ourselves, then we should have subscribed in the start_call ws handler
         // (unless we received the start_call ws before the post/thread ws).
         // If this was us joining an existing call, follow the thread here.
-        const call = getCallsState(serverUrl).calls[channelId];
         if (call && call.threadId) {
             const thread = await getThreadById(database, call.threadId);
             if (thread && !thread.isFollowing) {

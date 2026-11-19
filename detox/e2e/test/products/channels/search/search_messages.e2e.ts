@@ -28,7 +28,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {getRandomId, reloadApp, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
@@ -320,7 +320,7 @@ describe('Search - Search Messages', () => {
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, testTeamTwo.id);
         const {channel: testChannelTwo} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeamTwo.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, testChannelTwo.id);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         // * Verify on first team

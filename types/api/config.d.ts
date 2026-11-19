@@ -134,9 +134,11 @@ interface ClientConfig {
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
+    FeatureFlagChannelPermissionActions?: string;
     FeatureFlagCustomProfileAttributes?: string;
     FeatureFlagMmBlocksEnabled?: string;
     FeatureFlagPermissionPolicies?: string;
+    FeatureFlagRecurringScheduledPosts?: string;
     FeatureFlagSessionAttributes?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;

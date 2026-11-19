@@ -13,6 +13,8 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
 
 import ButtonComponentLibrary from './button.cl';
+import CheckboxGroupSettingComponentLibrary from './checkbox_group_setting.cl';
+import CheckboxMatrixSettingComponentLibrary from './checkbox_matrix_setting.cl';
 import ChipComponentLibrary from './chip.cl';
 import MmBlocksComponentLibrary from './mm_blocks.cl';
 import OptionItemComponentLibrary from './option_item.cl';
@@ -22,6 +24,8 @@ import TagComponentLibrary from './tag.cl';
 const componentMap = {
     'MM blocks': MmBlocksComponentLibrary,
     Button: ButtonComponentLibrary,
+    CheckboxGroupSetting: CheckboxGroupSettingComponentLibrary,
+    CheckboxMatrixSetting: CheckboxMatrixSettingComponentLibrary,
     Chip: ChipComponentLibrary,
     OptionItem: OptionItemComponentLibrary,
     Tag: TagComponentLibrary,

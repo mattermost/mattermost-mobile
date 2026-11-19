@@ -176,6 +176,22 @@ describe('CurrentCallBar', () => {
         expect(queryByTestId('calls.calling_text')).toBeNull();
     });
 
+    it('shows the dialed number for an answered phone call', () => {
+        const props = getCallingProps();
+        const answered = {
+            ...props,
+            currentCall: {...props.currentCall!, phone: '+15551234567'},
+            isDMCalling: false,
+            dmCallee: undefined,
+            dmCalleeAnsweredAt: now - 5000,
+        };
+        const {getByText, queryByText} = renderWithIntlAndTheme(<CurrentCallBar {...answered}/>);
+
+        expect(getByText('+15551234567')).toBeVisible();
+        expect(queryByText('No one is talking')).toBeNull();
+        expect(getByText('00:05')).toBeVisible();
+    });
+
     it('should show the speaker and the channel name for a regular call', () => {
         const baseProps = getBaseProps();
         const props = {

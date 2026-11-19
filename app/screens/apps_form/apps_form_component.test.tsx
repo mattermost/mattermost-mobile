@@ -82,8 +82,15 @@ jest.mock('@actions/remote/command', () => ({
     handleGotoLocation: jest.fn(),
 }));
 
+type MockFieldProps = {name: string; value: AppFormValue; onChange: (name: string, value: AppFormValue) => void};
+
+// Latest props each field rendered with, keyed by field name.
+const mockFieldProps: Record<string, MockFieldProps> = {};
 jest.mock('./apps_form_field', () => {
-    const MockField = () => null;
+    const MockField = (props: {name: string}) => {
+        mockFieldProps[props.name] = props as MockFieldProps;
+        return null;
+    };
     return {
         __esModule: true,
         default: MockField,
@@ -123,9 +130,9 @@ describe('AppsFormComponent submit button', () => {
         renderWithEverything(<AppsFormComponent {...getProps()}/>, {database, serverUrl});
 
         const headerRight = getHeaderSubmit();
-        expect(headerRight).toBeTruthy();
+        expect(headerRight).toEqual(expect.any(Function));
 
-        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
@@ -161,9 +168,9 @@ describe('AppsFormComponent submit button', () => {
         renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
 
         const headerRight = getHeaderSubmit();
-        expect(headerRight).toBeTruthy();
+        expect(headerRight).toEqual(expect.any(Function));
 
-        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
@@ -174,12 +181,58 @@ describe('AppsFormComponent submit button', () => {
         );
 
         const headerRight = getHeaderSubmit();
-        expect(headerRight).toBeTruthy();
+        expect(headerRight).toEqual(expect.any(Function));
 
         // The header submit is now a checkmark icon button, so the label is exposed
         // to assistive tech via accessibilityLabel rather than visible text.
-        const {getByLabelText} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        const {getByLabelText} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
         expect(getByLabelText('Triage')).toBeTruthy();
+    });
+
+    describe('checkbox_matrix validation on submit', () => {
+        // Goes through fieldsAsElements() so a dropped matrix_config would skip validation.
+        const matrixForm = (value: string[]): Partial<AppForm> => ({
+            fields: [{
+                name: 'permissions',
+                type: 'checkbox_matrix',
+                is_required: false,
+                value,
+                matrix_config: {
+                    rows: [{label: 'Posts', value: 'posts'}],
+                    columns: [{label: 'View', value: 'view'}],
+                    row_selection: 'multiple',
+                },
+            }] as AppField[],
+        });
+
+        const submitViaHeader = async () => {
+            const headerRight = getHeaderSubmit();
+            expect(headerRight).toEqual(expect.any(Function));
+            const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
+            await act(async () => {
+                pressSubmit(getByTestId('interactive_dialog.submit.button'));
+            });
+        };
+
+        it('should block submit when a matrix entry references an unknown row', async () => {
+            const props = getProps(matrixForm(['nope:view']));
+            renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+            await submitViaHeader();
+
+            expect(props.submit).not.toHaveBeenCalled();
+        });
+
+        // Control: proves the block above is caused by the malformed value and not by
+        // submission being broken in this harness for some unrelated reason.
+        it('should allow submit when the matrix entry is valid', async () => {
+            const props = getProps(matrixForm(['posts:view']));
+            renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+            await submitViaHeader();
+
+            expect(props.submit).toHaveBeenCalled();
+        });
     });
 });
 
@@ -191,6 +244,15 @@ describe('initValues', () => {
         ];
 
         expect(initValues(fields)).toEqual({name: 'Alice', agree: true});
+    });
+
+    it('should initialize empty-string checkbox values as empty arrays', () => {
+        const fields: AppField[] = [
+            {name: 'tags', type: 'checkbox_group', value: ''} as AppField,
+            {name: 'permissions', type: 'checkbox_matrix', value: ''} as AppField,
+        ];
+
+        expect(initValues(fields)).toEqual({tags: [], permissions: []});
     });
 });
 
@@ -223,7 +285,8 @@ describe('AppsFormComponent collapsible field data flow', () => {
         renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 
         const headerRight = getHeaderSubmit();
-        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        expect(headerRight).toEqual(expect.any(Function));
+        const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
 
         await act(async () => {
             const button = getByTestId('interactive_dialog.submit.button');
@@ -238,5 +301,150 @@ describe('AppsFormComponent collapsible field data flow', () => {
             resolveSubmit({data: {type: 'ok'}});
             await new Promise((r) => setImmediate(r));
         });
+    });
+});
+
+describe('AppsFormComponent refresh on return', () => {
+    let database: Database;
+
+    const fields = (tasks: string, pickOptions: string[]) => [
+        {name: 'notes', type: 'text', value: ''},
+        {name: 'tasks', type: 'text', value: tasks},
+        {name: 'pick', type: 'static_select', options: pickOptions.map((value) => ({label: value, value}))},
+    ] as AppField[];
+
+    const formBefore = {title: 'Cargo', fields: fields('1 task', ['a', 'b'])} as AppForm;
+    const formAfter = {title: 'Cargo', fields: fields('2 tasks', ['a'])} as AppForm;
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should refresh with the current values and keep what the user entered', async () => {
+        const props = {...getProps(), refreshForm: jest.fn().mockResolvedValue({data: {type: 'form'}})};
+        const {rerender} = renderWithEverything(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={0}
+            />,
+            {database, serverUrl},
+        );
+
+        act(() => {
+            mockFieldProps.notes.onChange('notes', 'my notes');
+            mockFieldProps.pick.onChange('pick', {label: 'b', value: 'b'});
+        });
+
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formBefore}
+                    refreshNonce={1}
+                />,
+            );
+        });
+
+        expect(props.refreshForm).toHaveBeenCalledWith(expect.objectContaining({notes: 'my notes', tasks: '1 task'}));
+
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formAfter}
+                refreshNonce={1}
+            />,
+        );
+
+        expect(mockFieldProps.notes.value).toBe('my notes');
+        expect(mockFieldProps.tasks.value).toBe('2 tasks');
+
+        // The picked option was removed by the refresh.
+        expect(mockFieldProps.pick.value).toBe('');
+    });
+
+    it('should not re-apply user values when the form is replaced without a refresh on return', () => {
+        const props = getProps();
+        const {rerender} = renderWithEverything(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+            />,
+            {database, serverUrl},
+        );
+
+        act(() => {
+            mockFieldProps.notes.onChange('notes', 'my notes');
+        });
+
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formAfter}
+            />,
+        );
+
+        expect(mockFieldProps.notes.value).toBe('');
+    });
+
+    it('should not restore a value when a removed field returns in a later refresh', async () => {
+        const props = {...getProps(), refreshForm: jest.fn().mockResolvedValue({data: {type: 'form'}})};
+        const formWithoutNotes = {title: 'Cargo', fields: formBefore.fields.filter((f) => f.name !== 'notes')} as AppForm;
+        const {rerender} = renderWithEverything(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={0}
+            />,
+            {database, serverUrl},
+        );
+
+        act(() => {
+            mockFieldProps.notes.onChange('notes', 'my notes');
+        });
+
+        // # The first refresh removes the field
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formBefore}
+                    refreshNonce={1}
+                />,
+            );
+        });
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formWithoutNotes}
+                refreshNonce={1}
+            />,
+        );
+
+        // # The second refresh brings it back
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formWithoutNotes}
+                    refreshNonce={2}
+                />,
+            );
+        });
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={2}
+            />,
+        );
+
+        expect(mockFieldProps.notes.value).toBe('');
     });
 });

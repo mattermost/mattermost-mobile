@@ -44,6 +44,7 @@ import {
     cancelOutgoingCall,
     clearStartUnmuted,
     myselfLeftCall,
+    phoneCallAnswered,
     setCalls,
     setCallScreenOff,
     setCallScreenOn,
@@ -84,7 +85,7 @@ import {getCurrentUser, getUserById} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
-import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
+import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 jest.mock('@calls/native_call', () => ({
@@ -1263,6 +1264,22 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current, {...newConfig, pluginEnabled: false});
     });
 
+    it('ignores a reaction without an emoji name', () => {
+        const callsState = {...DefaultCallsState, serverUrl: 'server1', calls: {'channel-1': call1}};
+        const currentCall: CurrentCall = {...DefaultCurrentCall, serverUrl: 'server1', ...call1};
+        const {result} = renderHook(() => useCurrentCall());
+        act(() => {
+            setCallsState('server1', callsState);
+            setCurrentCall(currentCall);
+        });
+
+        act(() => {
+            userReacted('server1', 'channel-1', {user_id: 'user-1', session_id: 'session1', timestamp: 1} as UserReactionData);
+        });
+
+        assert.deepEqual(result.current, currentCall);
+    });
+
     it('user reactions', () => {
         // userReacted schedules a REACTION_TIMEOUT cleanup per reaction.
         enableFakeTimers();
@@ -2070,6 +2087,42 @@ describe('useCallsState', () => {
 
             await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
+        });
+
+        it('answering a phone call stops the ringback and keeps the first answer time', async () => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': {...callIOwn, phone: '+15551234567'}}});
+            newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd);
+            const {result} = renderHook(() => useCurrentCall());
+            await connect();
+
+            jest.setSystemTime(1000);
+            act(() => phoneCallAnswered('channel-ringback'));
+            const answeredAt = result.current?.dmCalleeAnsweredAt;
+            jest.setSystemTime(5000);
+            act(() => phoneCallAnswered('channel-ringback'));
+
+            expect(answeredAt).toBe(1000);
+            expect(result.current?.dmCalleeAnsweredAt).toBe(1000);
+            expect(CallsNative.stopRingtone).toHaveBeenCalled();
+        });
+
+        it('keeps a phone call\'s ringback playing until the no-answer timeout even with ringing disabled', async () => {
+            setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: false});
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': {...callIOwn, phone: '+15551234567'}}});
+            newCurrentCall('server1', 'channel-ringback', 'myUserId', CallsTransport.Rtcd);
+
+            await connect();
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
+
+            await act(async () => {
+                await advanceTimers(Calls.RINGBACK_TONE_TIMEOUT);
+            });
+            expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
+
+            await act(async () => {
+                await advanceTimers(Calls.PHONE_RINGBACK_TONE_TIMEOUT - Calls.RINGBACK_TONE_TIMEOUT);
+            });
+            expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
         });
 
         it('stops automatically when the call reaches the ringback timeout', async () => {

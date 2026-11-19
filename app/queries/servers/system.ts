@@ -177,6 +177,18 @@ export const getConfigBooleanValue = async (database: Database, key: keyof Clien
     return v ? v === 'true' : defaultValue;
 };
 
+/**
+ * Mirrors attributeBasedAccessControlEnabled (server app/access_control.go). No license term: the
+ * client gate must be neither narrower nor broader than the server predicate it mirrors.
+ */
+export const isRedactionEnforced = async (database: Database): Promise<boolean> => {
+    const [flag, setting] = await Promise.all([
+        getConfigValue(database, 'FeatureFlagPermissionPolicies'),
+        getConfigValue(database, 'EnableAttributeBasedAccessControl'),
+    ]);
+    return flag === 'true' && setting === 'true';
+};
+
 export const getLastGlobalDataRetentionRun = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN);

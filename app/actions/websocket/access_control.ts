@@ -3,22 +3,25 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {hasUnverifiedAttachmentPostsInThread} from '@actions/local/post';
 import {
     RedactionInvalidationReason,
     invalidateChannelsRedaction,
     invalidateRedactionGlobally,
-    isRedactionEnforced,
     type RedactionReason,
 } from '@actions/local/redaction';
-import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
+import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
+import {fetchPostThread, fetchPostsForChannel} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
+import {DOWNLOAD_FILE_ATTACHMENT_ACTION, RenderPermissionAction} from '@constants/access_control';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {getAccessControlGroupId} from '@queries/servers/properties';
-import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentChannelId, getCurrentUserId, isRedactionEnforced} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
@@ -53,6 +56,9 @@ type PendingInvalidation = {
 // save sends one event per child channel, and each would otherwise be its own write and refetch.
 const pendingInvalidations = new Map<string, PendingInvalidation>();
 const attributeViewRetries = new Map<string, ReturnType<typeof setTimeout>>();
+
+// Every connected client gets a policy update at once, so each one's channel list request is spread out.
+const pendingReconciles = new Map<string, ReturnType<typeof setTimeout>>();
 
 // A trigger awaits the feature predicate before registering anything, so a logout landing in that
 // window would leave a timer clearRedactionInvalidations never saw. The token lets the in-flight
@@ -90,7 +96,11 @@ const closeFileViewersIfAffected = async (serverUrl: string, channelIds?: Set<st
     }
 };
 
-const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string>) => {
+/**
+ * @param forceReverification fetches the newest page even when no stored post with attachments is
+ * behind its epoch, for callers whose epoch write failed and so could not mark cached posts as stale.
+ */
+const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string>, forceReverification = false) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -102,21 +112,25 @@ const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string
 
         const currentChannelId = await getCurrentChannelId(database);
         if (currentChannelId && (!channelIds || channelIds.has(currentChannelId))) {
-            const {error} = await refetchPostsForRedaction(serverUrl, currentChannelId);
+            const {error} = await fetchPostsForChannel(serverUrl, currentChannelId, false, false, undefined, forceReverification);
             if (error) {
                 logError('refreshVisibleSurfaces: failed to re-fetch channel posts', currentChannelId, getFullErrorMessage(error));
             }
         }
 
-        // No fromCreateAt: an incremental thread fetch cannot re-deliver replies whose only change
-        // was their redaction state. A thread lives in one channel, so a scoped change elsewhere
-        // leaves it alone.
+        // A thread lives in one channel, so a scoped change elsewhere leaves it alone. When it is
+        // affected, only a full page re-delivers replies whose only change was their redaction state,
+        // and only replies with attachments render differently once re-verified.
         const threadId = EphemeralStore.getCurrentThreadId();
         const threadRoot = threadId && channelIds ? await getPostById(database, threadId) : undefined;
         if (threadId && (!channelIds || !threadRoot || channelIds.has(threadRoot.channelId))) {
-            const {error} = await fetchPostThread(serverUrl, threadId);
-            if (error) {
-                logError('refreshVisibleSurfaces: failed to re-fetch thread posts', getFullErrorMessage(error));
+            if (forceReverification || await hasUnverifiedAttachmentPostsInThread(database, threadId)) {
+                const {error} = await fetchPostThread(serverUrl, threadId);
+                if (error) {
+                    logError('refreshVisibleSurfaces: failed to re-fetch thread posts', getFullErrorMessage(error));
+                }
+            } else {
+                logDebug('refreshVisibleSurfaces: thread has no unverified attachments, skipping', threadId);
             }
         }
     } catch (error) {
@@ -142,7 +156,7 @@ const scheduleAttributeViewRetry = (serverUrl: string) => {
             const next = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.AttributeViewRetry);
             logDebug('scheduleAttributeViewRetry: re-evaluated after the server attribute view refresh window', String(next));
             await closeFileViewersIfAffected(serverUrl);
-            await refreshVisibleSurfaces(serverUrl);
+            await refreshVisibleSurfaces(serverUrl, undefined, next === undefined);
         } catch (error) {
             logError('scheduleAttributeViewRetry', getFullErrorMessage(error));
         }
@@ -196,6 +210,8 @@ export const scheduleRedactionInvalidation = async (
     needsAttributeViewRetry = false,
 ) => {
     const token = cleanupToken(serverUrl);
+
+    RenderPermissionsStore.revokeFetches(serverUrl, channelId);
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isRedactionEnforced(database))) {
@@ -236,9 +252,46 @@ export const scheduleRedactionInvalidation = async (
     }
 };
 
-// The payload carries nothing, so every cached channel has to be treated as affected.
-export const handlePermissionPolicyUpdatedEvent = (serverUrl: string) => {
-    scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+// A burst of policy updates inside the window costs one reconcile.
+const scheduleChannelAccessReconcile = (serverUrl: string) => {
+    if (pendingReconciles.has(serverUrl)) {
+        return;
+    }
+
+    const timeout = setTimeout(() => {
+        pendingReconciles.delete(serverUrl);
+        reconcileChannelAccess(serverUrl);
+    }, Math.floor(Math.random() * ATTRIBUTE_VIEW_RETRY_JITTER_MS));
+
+    pendingReconciles.set(serverUrl, timeout);
+};
+
+const RENDER_PERMISSION_ACTIONS: string[] = Object.values(RenderPermissionAction);
+
+// A server that predates the action list leaves it out, and then any action may have changed.
+const policyActionsChanged = (actions: string[] | undefined, dependsOn: string[]) => {
+    return !actions || dependsOn.some((action) => actions.includes(action));
+};
+
+/**
+ * Every connected client gets this event, so each step runs only when an action it depends on is among
+ * the ones the change touched. The policy is system-scoped, so every cached channel is affected.
+ */
+export const handlePermissionPolicyUpdatedEvent = (serverUrl: string, msg: WebSocketMessage) => {
+    const actions: string[] | undefined = msg.data?.actions;
+
+    // Raising the epoch revalidates the render decisions as well, so they only need expiring on their own.
+    if (policyActionsChanged(actions, [DOWNLOAD_FILE_ATTACHMENT_ACTION])) {
+        scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+    } else if (policyActionsChanged(actions, RENDER_PERMISSION_ACTIONS)) {
+        RenderPermissionsStore.expireServer(serverUrl);
+    } else {
+        logDebug('handlePermissionPolicyUpdatedEvent: no action this client caches changed');
+    }
+
+    if (policyActionsChanged(actions, [RenderPermissionAction.ChannelReadAccess])) {
+        scheduleChannelAccessReconcile(serverUrl);
+    }
 };
 
 // Scoped to the one channel, so a single policy edit does not invalidate every cached channel.
@@ -250,6 +303,7 @@ export const handleChannelAccessControlUpdatedEvent = (serverUrl: string, msg: W
     }
 
     scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.ChannelPolicy, channelId);
+    checkChannelAccess(serverUrl, channelId);
 };
 
 /**
@@ -370,18 +424,21 @@ export const invalidateRedactionForChannelMembership = (serverUrl: string, chann
  * Raised even while ABAC is not enforced: it may have been turned off while events were lost, and a
  * denial cached before that is only re-checked once it is behind the epoch. It costs one write; with
  * enforcement off nothing without a cached denial is gated.
+ * @returns whether the epoch was raised; when it was not, cached posts were not marked as stale.
  */
-export const invalidateRedactionOnResync = async (serverUrl: string) => {
+export const invalidateRedactionOnResync = async (serverUrl: string): Promise<boolean> => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.Resync);
+        const epoch = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.Resync);
 
         // A viewer left open across a long background can hold attachments the missed events revoked.
         if (await isRedactionEnforced(database)) {
             await closeFileViewersIfAffected(serverUrl);
         }
+        return epoch !== undefined;
     } catch (error) {
         logError('invalidateRedactionOnResync', getFullErrorMessage(error));
+        return false;
     }
 };
 
@@ -399,5 +456,11 @@ export const clearRedactionInvalidations = (serverUrl: string) => {
     if (retry) {
         clearTimeout(retry);
         attributeViewRetries.delete(serverUrl);
+    }
+
+    const reconcile = pendingReconciles.get(serverUrl);
+    if (reconcile) {
+        clearTimeout(reconcile);
+        pendingReconciles.delete(serverUrl);
     }
 };

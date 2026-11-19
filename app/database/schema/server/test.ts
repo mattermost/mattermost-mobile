@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 23,
+            version: 25,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -514,6 +514,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         active_stage: {name: 'active_stage', type: 'number'},
                         active_stage_title: {name: 'active_stage_title', type: 'string'},
                         participant_ids: {name: 'participant_ids', type: 'string'}, // JSON string
+                        timeline_events: {name: 'timeline_events', type: 'string', isOptional: true}, // JSON string
                         summary: {name: 'summary', type: 'string'},
                         current_status: {name: 'current_status', type: 'string', isIndexed: true},
                         last_status_update_at: {name: 'last_status_update_at', type: 'number'},
@@ -541,6 +542,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'active_stage', type: 'number'},
                         {name: 'active_stage_title', type: 'string'},
                         {name: 'participant_ids', type: 'string'}, // JSON string
+                        {name: 'timeline_events', type: 'string', isOptional: true}, // JSON string
                         {name: 'summary', type: 'string'},
                         {name: 'current_status', type: 'string', isIndexed: true},
                         {name: 'last_status_update_at', type: 'number'},
@@ -786,6 +788,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         processed_at: {name: 'processed_at', type: 'number'},
                         error_code: {name: 'error_code', type: 'string'},
                         type: {name: 'type', type: 'string', isOptional: true},
+                        repeat_type: {name: 'repeat_type', type: 'string'},
+                        repeat_timezone: {name: 'repeat_timezone', type: 'string'},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
@@ -799,6 +803,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'processed_at', type: 'number'},
                         {name: 'error_code', type: 'string'},
                         {name: 'type', type: 'string', isOptional: true},
+                        {name: 'repeat_type', type: 'string'},
+                        {name: 'repeat_timezone', type: 'string'},
                     ],
                 },
                 [SYSTEM]: {
