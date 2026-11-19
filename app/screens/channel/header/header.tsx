@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
+import {fetchCustomProfileAttributes} from '@actions/remote/custom_profile';
 import {useAgentsConfig} from '@agents/store/agents_config';
 import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
@@ -34,12 +35,15 @@ import {typography} from '@utils/typography';
 import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
+import type {DialablePhone} from '@calls/types/calls';
 import type {NavigationButtonProps} from '@components/navigation_button';
 import type {ResolvedChannelAttribute} from '@utils/channel_attributes';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
     canCallDMUser: boolean;
+    dmPhoneUserId?: string;
+    dmUserPhones: DialablePhone[];
     channelId: string;
     channelType: ChannelType;
     currentUserId: string;
@@ -66,6 +70,9 @@ type ChannelProps = {
 
     // searchTerm: string;
 };
+
+const PHONE_ATTRIBUTES_TTL_MS = 5 * 60 * 1000;
+const lastPhoneAttributesFetch = new Map<string, number>();
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     customStatusContainer: {
@@ -95,6 +102,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     canAddBookmarks,
     canCallDMUser,
+    dmPhoneUserId,
+    dmUserPhones,
     channelId,
     channelType,
     currentUserId,
@@ -138,7 +147,7 @@ const ChannelHeader = ({
 
     const isDMorGM = isTypeDMorGM(channelType);
     const isDM = isDMChannel(channelType);
-    const navigationHeaderCallButton = useNavigationHeaderCallButtonForDM(channelId, channelType);
+    const navigationHeaderCallButton = useNavigationHeaderCallButtonForDM(channelId, channelType, dmPhoneUserId, dmUserPhones);
     const contextStyle = useMemo(() => ({
         top: defaultHeight,
     }), [defaultHeight]);
@@ -329,6 +338,24 @@ const ChannelHeader = ({
         };
         asyncEffect();
     }, [channelId, serverUrl, isPlaybooksEnabled]);
+
+    useEffect(() => {
+        if (!dmPhoneUserId || !callsConfig.EnableSIPOutbound) {
+            return;
+        }
+
+        const key = `${serverUrl}:${dmPhoneUserId}`;
+        const now = Date.now();
+        if (now - (lastPhoneAttributesFetch.get(key) ?? 0) < PHONE_ATTRIBUTES_TTL_MS) {
+            return;
+        }
+        lastPhoneAttributesFetch.set(key, now);
+        fetchCustomProfileAttributes(serverUrl, dmPhoneUserId, true).then(({error}) => {
+            if (error && lastPhoneAttributesFetch.get(key) === now) {
+                lastPhoneAttributesFetch.delete(key);
+            }
+        });
+    }, [dmPhoneUserId, callsConfig.EnableSIPOutbound, serverUrl]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
 

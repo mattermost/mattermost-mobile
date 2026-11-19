@@ -8,12 +8,14 @@ import {useIntl, defineMessages} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 import urlParse from 'url-parse';
 
+import {showPhoneLinkOptions} from '@calls/components/phone_link_options';
+import {isPhoneDialingAvailable} from '@calls/state';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
-import {isTelHref} from '@utils/phone_number';
+import {getTelNumber, isTelHref} from '@utils/phone_number';
 import {openLink} from '@utils/url/links';
 
 type MarkdownLinkProps = {
@@ -76,7 +78,12 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     const serverUrl = useServerUrl();
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        openLink(href, serverUrl, siteURL ?? '', intl);
+        if (!isTelHref(href) || !isPhoneDialingAvailable(serverUrl)) {
+            openLink(href, serverUrl, siteURL ?? '', intl);
+            return;
+        }
+
+        showPhoneLinkOptions(intl, serverUrl, {number: getTelNumber(href)}, () => openLink(href, serverUrl, siteURL ?? '', intl));
     }, [href, intl, serverUrl, siteURL]));
 
     const handleLongPress = useCallback(() => {
