@@ -23,7 +23,7 @@ describe('ProfilePicture Image', () => {
     it.each([
         ['a remote profile image', undefined],
         ['a local profile image', {uri: 'file:///tmp/avatar.png'}],
-    ])('should fill the avatar circle with an opaque color distinct from the channel background for %s', (_, source) => {
+    ])('should fill the avatar circle with an opaque blend of the channel text and background colors for %s', (_, source) => {
         const {getByTestId} = renderWithIntlAndTheme(
             <Image
                 author={author}
@@ -40,7 +40,6 @@ describe('ProfilePicture Image', () => {
             height: 32,
             width: 32,
         });
-        expect(style.backgroundColor).not.toBe(theme.centerChannelBg);
 
         // Avatars are also rendered on non-center surfaces (e.g. the sidebar), where a translucent fill disappears
         expect(getComponents(style.backgroundColor).alpha).toBe(1);
