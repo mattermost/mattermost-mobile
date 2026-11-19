@@ -6,7 +6,7 @@ import {queryPlaybookChecklistByRun} from '@playbooks/database/queries/checklist
 import {queryPlaybookChecklistItemsByChecklists} from '@playbooks/database/queries/item';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 export async function handlePlaybookRuns(serverUrl: string, runs: PlaybookRun[], prepareRecordsOnly = false, processChildren = false) {
     try {
@@ -23,45 +23,57 @@ export async function handlePlaybookRuns(serverUrl: string, runs: PlaybookRun[],
     }
 }
 
-// handlePlaybookRuns only upserts. Drop local tasks the refreshed run no longer contains.
+// handlePlaybookRuns only upserts. Drop local tasks this snapshot no longer contains.
 export async function removePlaybookTasksMissingFromRun(serverUrl: string, run: PlaybookRun) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const localChecklists = await queryPlaybookChecklistByRun(database, run.id).fetch();
-        if (!localChecklists.length) {
-            return {data: true as const};
-        }
-
         const serverChecklistIds = new Set((run.checklists ?? []).map((checklist) => checklist.id));
-        const serverChecklistIdByItemId = new Map<string, string>();
-        (run.checklists ?? []).forEach((checklist) => {
-            (checklist.items ?? []).forEach((item) => {
-                serverChecklistIdByItemId.set(item.id, checklist.id);
-            });
-        });
-        const localItems = await queryPlaybookChecklistItemsByChecklists(database, localChecklists.map((checklist) => checklist.id)).fetch();
-        const itemsToRemove = localItems.filter((item) => !serverChecklistIdByItemId.has(item.id));
-        const itemsToMove = localItems.flatMap((item) => {
-            const checklistId = serverChecklistIdByItemId.get(item.id);
-            if (checklistId === undefined || checklistId === item.checklistId) {
-                return [];
-            }
-            return [{item, checklistId}];
-        });
-        const checklistsToRemove = localChecklists.filter((checklist) => !serverChecklistIds.has(checklist.id));
-        if (!itemsToRemove.length && !itemsToMove.length && !checklistsToRemove.length) {
-            return {data: true as const};
-        }
+        const serverItemIds = new Set(
+            (run.checklists ?? []).flatMap((checklist) => (checklist.items ?? []).map((item) => item.id)),
+        );
+        const snapshotAt = run.update_at ?? 0;
 
-        const prepared = [
-            ...itemsToRemove.map((item) => item.prepareDestroyPermanently()),
-            ...itemsToMove.map(({item, checklistId}) => item.prepareUpdate((record) => {
-                record.checklistId = checklistId;
-            })),
-            ...checklistsToRemove.map((checklist) => checklist.prepareDestroyPermanently()),
-        ];
         await database.write(async () => {
-            await database.batch(...prepared);
+            const storedRun = await getPlaybookRunById(database, run.id);
+            if (storedRun && storedRun.updateAt > snapshotAt) {
+                logDebug(
+                    'removePlaybookTasksMissingFromRun: local run is newer than this snapshot',
+                    `runId=${run.id}`,
+                );
+                return;
+            }
+
+            const localChecklists = await queryPlaybookChecklistByRun(database, run.id).fetch();
+            if (!localChecklists.length) {
+                return;
+            }
+
+            const localItems = await queryPlaybookChecklistItemsByChecklists(
+                database,
+                localChecklists.map((checklist) => checklist.id),
+            ).fetch();
+            const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && item.updateAt <= snapshotAt);
+            const survivingChecklistIds = new Set<string>();
+            localItems.forEach((item) => {
+                if (serverItemIds.has(item.id) || item.updateAt > snapshotAt) {
+                    survivingChecklistIds.add(item.checklistId);
+                }
+            });
+            const checklistsToRemove = localChecklists.filter((checklist) => {
+                return !serverChecklistIds.has(checklist.id) &&
+                    checklist.updateAt <= snapshotAt &&
+                    !survivingChecklistIds.has(checklist.id);
+            });
+            if (!itemsToRemove.length && !checklistsToRemove.length) {
+                return;
+            }
+
+            // Prepare and batch in this writer. WatermelonDB rejects prepared records
+            // that wait until a later turn to be submitted.
+            await database.batch(
+                ...itemsToRemove.map((item) => item.prepareDestroyPermanently()),
+                ...checklistsToRemove.map((checklist) => checklist.prepareDestroyPermanently()),
+            );
         });
 
         return {data: true as const};
