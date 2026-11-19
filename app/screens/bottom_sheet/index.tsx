@@ -46,6 +46,9 @@ type Props = {
 
 const PADDING_TOP_MOBILE = 20;
 
+// The default @gorhom/bottom-sheet handle (10pt padding around a 4pt indicator) is drawn inside the snap point height
+export const HANDLE_HEIGHT = 24;
+
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         bottomSheet: {
