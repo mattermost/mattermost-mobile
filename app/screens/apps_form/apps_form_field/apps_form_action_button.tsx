@@ -18,6 +18,10 @@ import {typography} from '@utils/typography';
 type Props = {
     field: AppField;
     testID: string;
+
+    // Renders as a small text-link rather than a full filled button, for tight
+    // spaces like a grid cell where a primary button would dominate the row.
+    compact?: boolean;
 };
 
 const messages = defineMessages({
@@ -37,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     errorText: {color: theme.errorTextColor, marginTop: 4, ...typography('Body', 75, 'Regular')},
 }));
 
-const AppsFormActionButton = ({field, testID}: Props) => {
+const AppsFormActionButton = ({field, testID, compact}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -66,6 +70,8 @@ const AppsFormActionButton = ({field, testID}: Props) => {
             onPress={handlePress}
             text={field.modal_label || field.label || ''}
             theme={theme}
+            size={compact ? 'xs' : undefined}
+            emphasis={compact ? 'link' : undefined}
             showLoader={loading}
             disabled={loading || Boolean(field.readonly) || !field.action_button_url}
             testID={testID}

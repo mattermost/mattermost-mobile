@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {BackHandler, useWindowDimensions} from 'react-native';
+import {BackHandler} from 'react-native';
 
 import {AppFieldTypes} from '@constants/apps';
 import useDidUpdate from '@hooks/did_update';
@@ -98,8 +98,9 @@ export function findGridRow(fields: AppField[] | undefined, key: string): AppFie
  * row on screen.
  */
 export default function useGridRow(fields: AppField[] | undefined, submitButtons: string | undefined, values: AppFormValues) {
-    const {width} = useWindowDimensions();
-    const inlineEdit = width >= GRID_INLINE_EDIT_MIN_WIDTH;
+    // Combined mode: cells edit inline at every width and a row can also open
+    // into the roomy single-row view; the two coexist.
+    const inlineEdit = true;
 
     const [openRowName, setOpenRowName] = useState<string | undefined>(undefined);
 
@@ -154,14 +155,6 @@ export default function useGridRow(fields: AppField[] | undefined, submitButtons
         });
         return () => subscription.remove();
     }, [openRow, closeRow]);
-
-    // A grid being edited row by row cannot stay open once the viewport is
-    // wide enough to edit the table itself.
-    useEffect(() => {
-        if (inlineEdit) {
-            setOpenRowName(undefined);
-        }
-    }, [inlineEdit]);
 
     return {inlineEdit, openRow, setOpenRowName, closeRow, rowTitle};
 }

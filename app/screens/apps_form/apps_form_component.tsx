@@ -653,7 +653,12 @@ function AppsFormComponent({
         if (!field.name) {
             return null;
         }
-        const cellField: AppField = {...field, label: '', modal_label: '', description: ''};
+
+        // An action_button's label IS its button text, so keep it — stripping it
+        // would leave a blank, untappable-looking cell. Every other field type
+        // gets its label from the column header, so it is stripped as usual.
+        const isActionButton = field.type === AppFieldTypes.ACTION_BUTTON;
+        const cellField: AppField = isActionButton ? field : {...field, label: '', modal_label: '', description: ''};
         const value = secureGetFromRecord(values, field.name);
 
         // The visible label is stripped (the column header carries it), so name
@@ -665,6 +670,7 @@ function AppsFormComponent({
                 key={field.name}
                 name={field.name}
                 accessibilityLabel={cellAccessibilityLabel}
+                compact={true}
                 errorText={undefined}
                 value={value || ''}
                 performLookup={performLookup}

@@ -40,6 +40,10 @@ export type Props = {
     // Names the control for assistive tech when the field's own label is
     // stripped (a grid cell: the column header carries the name instead).
     accessibilityLabel?: string;
+
+    // Renders controls compactly for tight spaces (a grid cell): an
+    // action_button becomes a small text-link rather than a full filled button.
+    compact?: boolean;
     errorText?: string;
     value: AppFormValue;
     onChange: (name: string, value: AppFormValue) => void;
@@ -107,6 +111,7 @@ const AppsFormFieldComponent = React.memo(({
     field,
     name,
     accessibilityLabel,
+    compact,
     errorText,
     value,
     onChange,
@@ -340,6 +345,7 @@ const AppsFormFieldComponent = React.memo(({
                 <AppsFormActionButton
                     field={field}
                     testID={testID}
+                    compact={compact}
                 />
             );
         }

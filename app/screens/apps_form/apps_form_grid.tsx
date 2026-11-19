@@ -65,6 +65,9 @@ type Props = {
 const COLUMN_WIDTH = 150;
 const STICKY_COLUMN_WIDTH = 124;
 
+// A narrow frozen column that holds only the open-row (expand) control.
+const EXPAND_COLUMN_WIDTH = 44;
+
 const HEADER_HEIGHT = 38;
 
 // Tall enough for the 40pt input every settings component renders, plus a
@@ -118,8 +121,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         stickyColumn: {
             backgroundColor: theme.centerChannelBg,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.16),
-            borderRightWidth: 1,
+
+            // The frozen/scroll seam is drawn by the sticky cells' own right
+            // divider (see cell/headerCell), so the column itself draws none —
+            // otherwise the two would stack into a double line.
         },
         row: {
             flexDirection: 'row',
@@ -134,6 +139,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.12),
             borderBottomWidth: 1,
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.12),
+            borderRightWidth: 1,
             justifyContent: 'center',
             paddingHorizontal: 8,
         },
@@ -155,6 +162,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         cell: {
             backgroundColor: theme.centerChannelBg,
             justifyContent: 'center',
+
+            // A vertical divider separates one column from the next. (Still no
+            // horizontal rule: the inputs supply their own, and a cell border
+            // too would stack three lines between one row and the next.)
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.12),
+            borderRightWidth: 1,
 
             // A select sizes itself to 100% of the cell and then adds its own
             // right margin, so it ends up a few points wider than the column.
@@ -181,6 +194,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         cellInput: {
             width: '100%',
+        },
+
+        // The expand control's own narrow column: the icon centred, a faint
+        // tint so the column reads as an action rather than an empty gutter.
+        expandCell: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: changeOpacity(theme.buttonBg, 0.04),
+        },
+        expandCellPressed: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.16),
+        },
+        expandIcon: {
+            color: theme.buttonBg,
         },
         cellError: {
             bottom: 4,
@@ -344,8 +371,12 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
     // from colliding.
     const columns = Array.from({length: columnCount}, (_, columnIndex) => {
         const source = rowCells.find((cells) => cells[columnIndex])?.[columnIndex];
+
+        // An action_button carries its own label on the button itself, so its
+        // column header is left blank to avoid repeating the word in both places.
+        const isActionButton = source?.type === AppFieldTypes.ACTION_BUTTON;
         return {
-            label: source ? (source.label || source.name || '') : '',
+            label: (source && !isActionButton) ? (source.label || source.name || '') : '',
             key: source ? source.name : `column-${columnIndex}`,
         };
     });
@@ -406,6 +437,18 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
             );
         }
 
+        const errorNode = Boolean(error) && (
+            <Text
+                style={style.cellError}
+                numberOfLines={2}
+                testID={`${testID}.error`}
+            >
+                {error}
+            </Text>
+        );
+
+        // Every cell edits in place. The row is opened from its own expand
+        // column (see renderExpandCell), so no cell carries an open control.
         return (
             <View
                 key={key}
@@ -416,6 +459,7 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
                         height: rowHeights[rowIndex],
                         paddingBottom: rowHasError[rowIndex] ? ERROR_HEIGHT : 0,
                     },
+                    isSticky && rowHasError[rowIndex] && style.errorMark,
                 ]}
                 accessibilityLabel={cell?.label}
                 testID={testID}
@@ -425,18 +469,38 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
                         {renderCell(cell)}
                     </View>
                 )}
-                {Boolean(error) && (
-                    <Text
-                        style={style.cellError}
-                        numberOfLines={2}
-                        testID={`${testID}.error`}
-                    >
-                        {error}
-                    </Text>
-                )}
+                {errorNode}
             </View>
         );
     };
+
+    // The expand control sits in its own narrow frozen column so it never
+    // crowds the first cell's value. The whole cell is the tap target.
+    const renderExpandCell = (rowIndex: number) => (
+        <Pressable
+            key={`expand-${rowKeys[rowIndex]}`}
+            onPress={() => onOpenRow?.(rowKeys[rowIndex])}
+            accessibilityRole='button'
+            accessibilityLabel={rows[rowIndex].label || rows[rowIndex].name}
+            style={({pressed}: PressableStateCallbackType) => [
+                style.cell,
+                style.expandCell,
+                {width: EXPAND_COLUMN_WIDTH, height: rowHeights[rowIndex], paddingBottom: rowHasError[rowIndex] ? ERROR_HEIGHT : 0},
+                pressed && style.expandCellPressed,
+            ]}
+            testID={`apps_form_grid.row.${rowKeys[rowIndex]}.open`}
+        >
+            <CompassIcon
+                name='arrow-expand'
+                size={16}
+                style={style.expandIcon}
+            />
+        </Pressable>
+    );
+
+    const expandHeaderCell = () => (
+        <View style={[style.headerCell, style.expandCell, {width: EXPAND_COLUMN_WIDTH, height: HEADER_HEIGHT}]}/>
+    );
 
     // A row is split across the two panes, so each half is its own press
     // target; tapping the sticky cell and tapping a cell three columns along
@@ -497,8 +561,16 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
                     style={style.stickyColumn}
                     testID='apps_form_grid.sticky_column'
                 >
-                    {headerCell(0, STICKY_COLUMN_WIDTH)}
-                    {rows.map((_, rowIndex) => renderRow(rowIndex, 'sticky', renderCellAt(rowIndex, 0, STICKY_COLUMN_WIDTH)))}
+                    <View style={style.headerRow}>
+                        {headerCell(0, STICKY_COLUMN_WIDTH)}
+                        {expandHeaderCell()}
+                    </View>
+                    {rows.map((_, rowIndex) => renderRow(rowIndex, 'sticky', (
+                        <>
+                            {renderCellAt(rowIndex, 0, STICKY_COLUMN_WIDTH)}
+                            {renderExpandCell(rowIndex)}
+                        </>
+                    )))}
                 </View>
                 <ScrollView
                     horizontal={true}
