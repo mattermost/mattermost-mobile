@@ -87,7 +87,15 @@ diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/Ex
 index 2579cb3..18a742a 100644
 --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
 +++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
-@@ -43,6 +43,8 @@
+@@ -15,6 +15,7 @@
+ import com.bumptech.glide.load.model.Headers
+ import com.bumptech.glide.load.model.LazyHeaders
+ import com.bumptech.glide.request.RequestListener
++import com.bumptech.glide.request.RequestOptions
+ import com.bumptech.glide.request.target.Target
+ import com.github.penfeizhou.animation.apng.APNGDrawable
+ import com.github.penfeizhou.animation.gif.GifDrawable
+@@ -43,6 +44,8 @@
  import kotlinx.coroutines.Dispatchers
  import kotlinx.coroutines.withContext
  import java.net.URL
@@ -96,19 +104,10 @@ index 2579cb3..18a742a 100644
  
  class ExpoImageModule : Module() {
    override fun definition() = ModuleDefinition {
-@@ -104,6 +106,76 @@
-               imagesLoaded++
+@@ -113,6 +116,76 @@
+       }
+     }
  
-               if (imagesLoaded == urls.size) {
-+                promise.resolve(true)
-+              }
-+              return true
-+            }
-+          })
-+          .submit()
-+      }
-+    }
-+
 +    AsyncFunction("prefetchWithSources") { sources: List<SourceMap>, cachePolicy: CachePolicy, promise: Promise ->
 +      val context = appContext.reactContext ?: return@AsyncFunction false
 +
@@ -170,10 +169,19 @@ index 2579cb3..18a742a 100644
 +              isFirstResource: Boolean
 +            ): Boolean {
 +              if (imagesLoaded.incrementAndGet() == sources.size && !failed.get()) {
-                 promise.resolve(true)
-               }
-               return true
-@@ -184,13 +256,17 @@
++                promise.resolve(true)
++              }
++              return true
++            }
++          })
++          .submit()
++      }
++    }
++
+     AsyncFunction("loadAsync") Coroutine { source: SourceMap, options: ImageLoadOptions? ->
+       ImageLoadTask(appContext, source, options ?: ImageLoadOptions()).load()
+     }
+@@ -184,13 +257,17 @@
        return@AsyncFunction true
      }.runOnQueue(Queues.MAIN)
  
@@ -545,7 +553,7 @@ index 6aa92cc..38dc2e4 100644
  internal import SDWebImageSVGCoder
  
  public final class ImageModule: Module {
-@@ -200,6 +199,52 @@
+@@ -200,6 +199,54 @@
        }
      }
  
@@ -565,6 +573,8 @@ index 6aa92cc..38dc2e4 100644
 +
 +      sources.forEach { source in
 +        guard let url = source.uri else {
++          lock.lock()
++          defer { lock.unlock() }
 +          if !failed {
 +            failed = true
 +            promise.resolve(false)
@@ -598,7 +608,7 @@ index 6aa92cc..38dc2e4 100644
      AsyncFunction("generateBlurhashAsync") { (source: Either<Image, URL>, numberOfComponents: CGSize, promise: Promise) in
        let parsedNumberOfComponents = (width: Int(numberOfComponents.width), height: Int(numberOfComponents.height))
        generatePlaceholder(source: source) { (image: UIImage) in
-@@ -223,9 +268,22 @@
+@@ -223,9 +270,22 @@
        return true
      }
  
@@ -624,7 +634,7 @@ index 6aa92cc..38dc2e4 100644
        }
      }
  
-@@ -282,7 +340,6 @@
+@@ -282,7 +342,6 @@
    static func registerCoders() {
      SDImageCodersManager.shared.addCoder(WebPCoder.shared)
      SDImageCodersManager.shared.addCoder(PSDCoder.shared)
@@ -843,7 +853,7 @@ diff --git a/node_modules/expo-image/src/Image.tsx b/node_modules/expo-image/src
 index 15e034d..c991437 100644
 --- a/node_modules/expo-image/src/Image.tsx
 +++ b/node_modules/expo-image/src/Image.tsx
-@@ -96,8 +96,18 @@ export class Image extends React.PureComponent<ImageProps> {
+@@ -96,8 +96,18 @@
     * finished prefetching.
     */
    static async prefetch(urls: string | string[], options?: ImagePrefetchOptions): Promise<boolean>;
@@ -863,7 +873,7 @@ index 15e034d..c991437 100644
      options?: ImagePrefetchOptions['cachePolicy'] | ImagePrefetchOptions
    ): Promise<boolean> {
      let cachePolicy: ImagePrefetchOptions['cachePolicy'] = 'memory-disk';
-@@ -112,7 +122,28 @@ export class Image extends React.PureComponent<ImageProps> {
+@@ -112,7 +122,50 @@
          break;
      }
  
@@ -882,18 +892,40 @@ index 15e034d..c991437 100644
 +      // prefetchWithSources (e.g. Android before a native rebuild).
 +      const imageSources = sources as ImageSource[];
 +      const prefetchWithSources = (ImageModule as typeof ImageModule & {
-+        prefetchWithSources?: (sources: ImageSource[], cachePolicy: typeof cachePolicy) => Promise<boolean>;
++        prefetchWithSources?: (sources: ImageSource[], cachePolicy: ImagePrefetchOptions['cachePolicy']) => Promise<boolean>;
 +      }).prefetchWithSources;
 +      if (typeof prefetchWithSources === 'function') {
 +        return prefetchWithSources.call(ImageModule, imageSources, cachePolicy);
 +      }
-+      const uris = imageSources.map((source) => source.uri).filter((uri): uri is string => typeof uri === 'string' && uri.length > 0);
-+      return ImageModule.prefetch(uris, cachePolicy, headers);
++      if (imageSources.length === 0) {
++        return true;
++      }
++      // Plain-URL prefetch accepts a single header set per call, so group the
++      // sources by their own headers to avoid dropping source-specific headers.
++      // Like the native implementations, a source without a usable URI fails
++      // the whole prefetch instead of being silently skipped.
++      const groups = new Map<string, {uris: string[]; headers?: Record<string, string>}>();
++      for (const source of imageSources) {
++        if (typeof source.uri !== 'string' || source.uri.length === 0) {
++          return false;
++        }
++        const key = JSON.stringify(source.headers ?? null);
++        let group = groups.get(key);
++        if (!group) {
++          group = {uris: [], headers: {...headers, ...source.headers}};
++          groups.set(key, group);
++        }
++        group.uris.push(source.uri);
++      }
++      const results = await Promise.all(
++        [...groups.values()].map((group) => ImageModule.prefetch(group.uris, cachePolicy, group.headers)),
++      );
++      return results.every(Boolean);
 +    }
    }
  
    /**
-@@ -135,8 +156,8 @@ export class Image extends React.PureComponent<ImageProps> {
+@@ -135,8 +188,8 @@
     * It may resolve to `false` on Android when the activity is no longer available.
     * Resolves to `false` on Web.
     */
