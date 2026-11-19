@@ -14,7 +14,7 @@ import {
     deleteChecklistItem as localDeleteChecklistItem,
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
-import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {handlePlaybookRuns, removePlaybookTasksMissingFromRun} from '@playbooks/actions/local/run';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -85,6 +85,11 @@ export const runChecklistItem = async (
             if (result.error) {
                 logDebug('error on runChecklistItem', getFullErrorMessage(result.error));
                 return {error: result.error};
+            }
+            const pruned = await removePlaybookTasksMissingFromRun(serverUrl, run);
+            if (pruned.error) {
+                logDebug('error on runChecklistItem', getFullErrorMessage(pruned.error));
+                return {error: pruned.error};
             }
             return {outdated: true as const};
         }

@@ -13,7 +13,7 @@ import {
     deleteChecklistItem as localDeleteChecklistItem,
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
-import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {handlePlaybookRuns, removePlaybookTasksMissingFromRun} from '@playbooks/actions/local/run';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import TestHelper from '@test/test_helper';
 import {logDebug} from '@utils/log';
@@ -245,11 +245,26 @@ describe('checklist', () => {
             const run = runWithItem(item);
             mockClient.fetchPlaybookRun.mockResolvedValueOnce(run);
             jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({data: []});
+            jest.mocked(removePlaybookTasksMissingFromRun).mockResolvedValueOnce({data: true});
 
             const result = await runDisplayedItem();
             expect(result).toEqual({outdated: true});
             expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
             expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [run], false, true);
+            expect(removePlaybookTasksMissingFromRun).toHaveBeenCalledWith(serverUrl, run);
+            expectCommandsNotLogged();
+        });
+
+        it('should not run the command when removing stale tasks fails', async () => {
+            const dbError = new Error('db');
+            const run = runWithItem({command: changedCommand});
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(run);
+            jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({data: []});
+            jest.mocked(removePlaybookTasksMissingFromRun).mockResolvedValueOnce({error: dbError});
+
+            const result = await runDisplayedItem();
+            expect(result).toEqual({error: dbError});
+            expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
             expectCommandsNotLogged();
         });
 
