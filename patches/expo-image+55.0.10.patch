@@ -873,7 +873,7 @@ index 15e034d..c991437 100644
      options?: ImagePrefetchOptions['cachePolicy'] | ImagePrefetchOptions
    ): Promise<boolean> {
      let cachePolicy: ImagePrefetchOptions['cachePolicy'] = 'memory-disk';
-@@ -112,7 +122,50 @@
+@@ -112,7 +122,46 @@
          break;
      }
  
@@ -900,10 +900,6 @@ index 15e034d..c991437 100644
 +      if (imageSources.length === 0) {
 +        return true;
 +      }
-+      // Plain-URL prefetch accepts a single header set per call, so group the
-+      // sources by their own headers to avoid dropping source-specific headers.
-+      // Like the native implementations, a source without a usable URI fails
-+      // the whole prefetch instead of being silently skipped.
 +      const groups = new Map<string, {uris: string[]; headers?: Record<string, string>}>();
 +      for (const source of imageSources) {
 +        if (typeof source.uri !== 'string' || source.uri.length === 0) {
@@ -925,7 +921,7 @@ index 15e034d..c991437 100644
    }
  
    /**
-@@ -135,8 +188,8 @@
+@@ -135,8 +184,8 @@
     * It may resolve to `false` on Android when the activity is no longer available.
     * Resolves to `false` on Web.
     */
