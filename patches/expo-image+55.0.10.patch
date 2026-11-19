@@ -109,7 +109,11 @@ index 2579cb3..18a742a 100644
      }
  
 +    AsyncFunction("prefetchWithSources") { sources: List<SourceMap>, cachePolicy: CachePolicy, promise: Promise ->
-+      val context = appContext.reactContext ?: return@AsyncFunction false
++      val context = appContext.reactContext
++      if (context == null) {
++        promise.resolve(false)
++        return@AsyncFunction false
++      }
 +
 +      if (sources.isEmpty()) {
 +        promise.resolve(true)
@@ -895,7 +899,8 @@ index 15e034d..c991437 100644
 +        prefetchWithSources?: (sources: ImageSource[], cachePolicy: ImagePrefetchOptions['cachePolicy']) => Promise<boolean>;
 +      }).prefetchWithSources;
 +      if (typeof prefetchWithSources === 'function') {
-+        return prefetchWithSources.call(ImageModule, imageSources, cachePolicy);
++        const sourcesWithHeaders = headers ? imageSources.map((source) => ({...source, headers: {...headers, ...source.headers}})) : imageSources;
++        return prefetchWithSources.call(ImageModule, sourcesWithHeaders, cachePolicy);
 +      }
 +      if (imageSources.length === 0) {
 +        return true;
@@ -913,10 +918,19 @@ index 15e034d..c991437 100644
 +        }
 +        group.uris.push(source.uri);
 +      }
-+      const results = await Promise.all(
-+        [...groups.values()].map((group) => ImageModule.prefetch(group.uris, cachePolicy, group.headers)),
-+      );
-+      return results.every(Boolean);
++      try {
++        await Promise.all(
++          [...groups.values()].map(async (group) => {
++            const ok = await ImageModule.prefetch(group.uris, cachePolicy, group.headers);
++            if (!ok) {
++              throw new Error('prefetch failed');
++            }
++          }),
++        );
++        return true;
++      } catch {
++        return false;
++      }
 +    }
    }
  
