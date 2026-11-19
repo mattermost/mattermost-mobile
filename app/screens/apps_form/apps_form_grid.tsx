@@ -7,8 +7,6 @@ import {Pressable, type PressableStateCallbackType, ScrollView, Text, View} from
 import CompassIcon from '@components/compass_icon';
 import {AppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
-import {getDateValue} from '@utils/date_utils';
-import {isAppSelectOption} from '@utils/dialog_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -44,17 +42,14 @@ type Props = {
     // both; a failed required stray would then block submission invisibly.
     renderField: (field: AppField) => React.ReactNode;
 
-    // Read here rather than inside a cell because a display cell shows the
-    // value itself, and because the editing table sizes a row around its error.
-    values: AppFormValues;
+    // Read here (not inside a cell) because the table sizes a row around its
+    // error strip.
     errors: {[name: string]: string};
 
     // Names excluded from the grid (the form's submit buttons field).
     excludeName?: string;
 
-    // True where there is room to type in the cells themselves. False on a
-    // phone, where the cells show values and onOpenRow is called instead.
-    editable: boolean;
+    // Opens a row in its own single-row view (from the expand column).
     onOpenRow?: (rowKey: string) => void;
 };
 
@@ -75,12 +70,6 @@ const HEADER_HEIGHT = 38;
 // which carries its own 10pt top margin — lines up with a text input beside it
 // without the grid having to know the difference.
 const CELL_HEIGHT = 46;
-
-// A display cell holds one line of text, so it needs less.
-const DISPLAY_CELL_HEIGHT = 44;
-
-// Shown in place of a password value in the read-only overview.
-const MASKED_VALUE = '••••••';
 
 // Reserved only on a row that actually has an error, and only where the cells
 // are edited in place. Both panes derive it from the same errors object, which
@@ -129,9 +118,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         row: {
             flexDirection: 'row',
         },
-        rowPressed: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-        },
         headerRow: {
             flexDirection: 'row',
         },
@@ -177,21 +163,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             overflow: 'hidden',
         },
 
-        // A display cell has no input to supply a rule, so it draws its own.
-        //
-        // justifyContent is reset because the base cell centres its content to
-        // sit an input in the middle of the row. That is a vertical centring
-        // there and a horizontal one here, where the direction is row, and a
-        // column of values centred on itself does not read as a column.
-        displayCell: {
-            alignItems: 'center',
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderBottomWidth: 1,
-            flexDirection: 'row',
-            gap: 4,
-            justifyContent: 'flex-start',
-            paddingHorizontal: 12,
-        },
         cellInput: {
             width: '100%',
         },
@@ -217,20 +188,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             right: 6,
             ...typography('Body', 25),
         },
-        value: {
-            color: theme.centerChannelColor,
-            flexShrink: 1,
-            ...typography('Body', 100),
-        },
-
-        // An empty cell shows a dash rather than nothing, so a blank column
-        // reads as "not filled in" instead of as a rendering fault.
-        empty: {
-            color: changeOpacity(theme.centerChannelColor, 0.4),
-        },
-        invalid: {
-            color: theme.errorTextColor,
-        },
 
         // The bar marks a row whose error may be in a column that is scrolled
         // out of sight. It is on the sticky cell because that is the part of
@@ -238,10 +195,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         errorMark: {
             borderLeftColor: theme.errorTextColor,
             borderLeftWidth: 3,
-        },
-        chevron: {
-            color: changeOpacity(theme.centerChannelColor, 0.32),
-            marginLeft: 'auto',
         },
     };
 });
@@ -253,47 +206,6 @@ const isRow = (child: AppField) => child.type === AppFieldTypes.COLLAPSIBLE;
 
 const cellFields = (row: AppField, excludeName?: string): AppField[] =>
     (row.collapsible_config?.fields || []).filter((f) => f.name && f.name !== excludeName);
-
-/**
- * What a cell shows when it is not being edited.
- *
- * Stringifying the value is not enough for most of the types a column can
- * hold: a select carries its label on the chosen option, a multiselect carries
- * a list of them, and a date is an ISO string that nobody wants to read across
- * a table. The row's own screen shows each of these in its real control; this
- * is only the summary in the overview.
- */
-export function displayCellValue(field: AppField | undefined, value: AppFormValue | undefined): string {
-    if (value === undefined || value === null || value === false || value === '') {
-        return '';
-    }
-
-    // A password cell must never show its value in the read-only overview.
-    // The row's own screen still edits it in a real secure input.
-    if (field?.subtype === 'password') {
-        return MASKED_VALUE;
-    }
-    if (field?.type === AppFieldTypes.DATE || field?.type === AppFieldTypes.DATETIME) {
-        const moment = getDateValue(value, field.datetime_config?.location_timezone, field.type === AppFieldTypes.DATETIME);
-        return moment ? moment.format(field.type === AppFieldTypes.DATETIME ? 'lll' : 'll') : String(value);
-    }
-    if (Array.isArray(value)) {
-        return value.map((entry) => (isAppSelectOption(entry) ? entry.label : String(entry))).filter(Boolean).join(', ');
-    }
-    if (isAppSelectOption(value)) {
-        return value.label || '';
-    }
-
-    // A select may carry a primitive value (e.g. a server default) rather than
-    // a resolved option; show the matching option's label where there is one.
-    if (field?.options?.length) {
-        const option = field.options.find((o) => o.value === value);
-        if (option) {
-            return option.label || String(value);
-        }
-    }
-    return String(value);
-}
 
 /**
  * Lays a collapsible's child sections out as a real table: one row per child
@@ -323,7 +235,7 @@ export function displayCellValue(field: AppField | undefined, value: AppFormValu
  * naturally swipes it. Taking the inputs out of the table removes all of that:
  * nothing in it is focusable, so the swipe is unambiguous.
  */
-const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors, excludeName, editable, onOpenRow}: Props) => {
+const AppsFormGrid = ({field, gridPath, renderCell, renderField, errors, excludeName, onOpenRow}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
@@ -382,12 +294,9 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
     });
 
     const rowHasError = rowCells.map((cells) => cells.some((cell) => cell.name && Boolean(secureGetFromRecord(errors, cell.name))));
-    const baseHeight = editable ? CELL_HEIGHT : DISPLAY_CELL_HEIGHT;
 
-    // A display cell has nowhere to put a message, so it does not reserve the
-    // room for one; the row is marked instead and the message shows on the
-    // row's own screen.
-    const rowHeights = rowHasError.map((hasError) => baseHeight + (editable && hasError ? ERROR_HEIGHT : 0));
+    // A row with an error reserves room below its inputs for the message.
+    const rowHeights = rowHasError.map((hasError) => CELL_HEIGHT + (hasError ? ERROR_HEIGHT : 0));
 
     const renderCellAt = (rowIndex: number, columnIndex: number, width: number) => {
         const cell = rowCells[rowIndex][columnIndex];
@@ -395,47 +304,6 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
         const error = cell?.name ? secureGetFromRecord(errors, cell.name) : undefined;
         const isSticky = columnIndex === 0;
         const testID = cell?.name ? `apps_form_grid.cell.${cell.name}` : undefined;
-
-        if (!editable) {
-            const text = cell?.name ? displayCellValue(cell, secureGetFromRecord(values, cell.name)) : '';
-            const isBoolTrue = cell?.type === AppFieldTypes.BOOL && Boolean(cell.name && secureGetFromRecord(values, cell.name));
-
-            return (
-                <View
-                    key={key}
-                    style={[
-                        style.cell,
-                        style.displayCell,
-                        {width, height: rowHeights[rowIndex]},
-                        isSticky && rowHasError[rowIndex] && style.errorMark,
-                    ]}
-                    accessibilityLabel={cell?.label}
-                    testID={testID}
-                >
-                    {isBoolTrue ? (
-                        <CompassIcon
-                            name='check'
-                            size={18}
-                            style={style.value}
-                        />
-                    ) : (
-                        <Text
-                            style={[style.value, !text && style.empty, Boolean(error) && style.invalid]}
-                            numberOfLines={1}
-                        >
-                            {text || '—'}
-                        </Text>
-                    )}
-                    {isSticky && (
-                        <CompassIcon
-                            name='chevron-right'
-                            size={18}
-                            style={style.chevron}
-                        />
-                    )}
-                </View>
-            );
-        }
 
         const errorNode = Boolean(error) && (
             <Text
@@ -505,34 +373,16 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
     // A row is split across the two panes, so each half is its own press
     // target; tapping the sticky cell and tapping a cell three columns along
     // open the same row. They are named apart because they are two nodes.
-    const renderRow = (rowIndex: number, pane: 'sticky' | 'columns', content: React.ReactNode) => {
-        const row = rows[rowIndex];
-        const rowKey = rowKeys[rowIndex];
-
-        if (editable) {
-            return (
-                <View
-                    key={rowKey}
-                    style={style.row}
-                >
-                    {content}
-                </View>
-            );
-        }
-
-        return (
-            <Pressable
-                key={rowKey}
-                onPress={() => onOpenRow?.(rowKey)}
-                accessibilityRole='button'
-                accessibilityLabel={row.label || row.name}
-                style={({pressed}: PressableStateCallbackType) => [style.row, pressed && style.rowPressed]}
-                testID={`apps_form_grid.row.${rowKey}.${pane}`}
-            >
-                {content}
-            </Pressable>
-        );
-    };
+    // Cells edit in place and the row opens from its own expand column, so a
+    // row is just a layout container, not a press target.
+    const renderRow = (rowIndex: number, content: React.ReactNode) => (
+        <View
+            key={rowKeys[rowIndex]}
+            style={style.row}
+        >
+            {content}
+        </View>
+    );
 
     const headerCell = (columnIndex: number, width: number) => (
         <View
@@ -565,7 +415,7 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
                         {headerCell(0, STICKY_COLUMN_WIDTH)}
                         {expandHeaderCell()}
                     </View>
-                    {rows.map((_, rowIndex) => renderRow(rowIndex, 'sticky', (
+                    {rows.map((_, rowIndex) => renderRow(rowIndex, (
                         <>
                             {renderCellAt(rowIndex, 0, STICKY_COLUMN_WIDTH)}
                             {renderExpandCell(rowIndex)}
@@ -588,7 +438,6 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
                         </View>
                         {rows.map((_, rowIndex) => renderRow(
                             rowIndex,
-                            'columns',
                             scrollingColumns.map((columnIndex) => renderCellAt(rowIndex, columnIndex, COLUMN_WIDTH)),
                         ))}
                     </View>

@@ -305,9 +305,20 @@ describe('AppsFormComponent grid layout', () => {
         expect(queryByTestId('AppFormSection.orders')).toBeNull();
     });
 
-    it('opens a row on its own screen on a narrow viewport, and Done returns to the table without submitting', () => {
-        jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({width: 400, height: 800, scale: 1, fontScale: 1});
+    it('edits cells inline and exposes an expand control to open the row', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
 
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
+
+        // Cells are live inputs, so each leaf field renders an AppsFormField.
+        expect(mockFieldProps.cell_order).toBeTruthy();
+        expect(mockFieldProps.cell_weight).toBeTruthy();
+
+        // Each row also has its own expand control to open the single-row view.
+        expect(getByTestId('apps_form_grid.row.row1.open')).toBeTruthy();
+    });
+
+    it('opens a row from the expand control, and Done returns to the table without submitting', () => {
         const submitMock = jest.fn().mockResolvedValue({data: {type: 'ok'}});
         const props = {...getProps(gridForm), submit: submitMock};
         const {getByTestId, queryByTestId} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
@@ -315,7 +326,7 @@ describe('AppsFormComponent grid layout', () => {
         expect(queryByTestId('apps_form_row_detail.row1')).toBeNull();
 
         act(() => {
-            fireEvent.press(getByTestId('apps_form_grid.row.row1.sticky'));
+            fireEvent.press(getByTestId('apps_form_grid.row.row1.open'));
         });
 
         // The row opens on its own screen and the header becomes Done.
@@ -336,8 +347,6 @@ describe('AppsFormComponent grid layout', () => {
     });
 
     it('keeps a nameless row in a nameless grid reachable by its tree path', () => {
-        jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({width: 400, height: 800, scale: 1, fontScale: 1});
-
         // Both the grid and its single row collapsible have no name. The row must
         // still render and open so its cells are not silently dropped.
         const namelessForm: Partial<AppForm> = {
@@ -365,25 +374,11 @@ describe('AppsFormComponent grid layout', () => {
 
         // Grid at form path '0', row at index 0 -> namespaced path '::pos::0/0'.
         act(() => {
-            fireEvent.press(getByTestId('apps_form_grid.row.::pos::0/0.sticky'));
+            fireEvent.press(getByTestId('apps_form_grid.row.::pos::0/0.open'));
         });
 
         // The row opened on its own screen (title/back header is name-independent).
         expect(getByTestId('apps_form_row_detail.title')).toBeTruthy();
-    });
-
-    it('edits grid cells in place on a wide viewport instead of opening a row', () => {
-        jest.spyOn(require('react-native'), 'useWindowDimensions').mockReturnValue({width: 900, height: 800, scale: 1, fontScale: 1});
-        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
-
-        const {queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
-
-        // The cells are live inputs, so each leaf field renders an AppsFormField.
-        expect(mockFieldProps.cell_order).toBeTruthy();
-        expect(mockFieldProps.cell_weight).toBeTruthy();
-
-        // Rows are not press targets when the table edits in place.
-        expect(queryByTestId('apps_form_grid.row.row1.sticky')).toBeNull();
     });
 });
 

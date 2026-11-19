@@ -252,7 +252,7 @@ function AppsFormComponent({
 
     // Owns which grid row (if any) is open on its own screen, and whether the
     // viewport is wide enough to edit a grid's cells in place instead.
-    const {inlineEdit: inlineEditGrid, openRow, setOpenRowName, closeRow, rowTitle} = useGridRow(form.fields, form.submit_buttons, values);
+    const {openRow, setOpenRowName, closeRow, rowTitle} = useGridRow(form.fields, form.submit_buttons, values);
 
     // Tracks per-section expand triggers. Incrementing a key forces the named
     // CollapsibleSection to open even if the user previously collapsed it.
@@ -686,21 +686,19 @@ function AppsFormComponent({
     // force-expand keys line up; filtered-out children just render as null.
     const renderField = useCallback((field: AppField, path: string, depth = 0): React.ReactNode => {
         if (field.type === AppFieldTypes.COLLAPSIBLE) {
-            // A grid container lays its child sections out as table rows rather
-            // than stacked collapsibles. Whether the cells are editable in place
-            // depends on the viewport; see AppsFormGrid and useGridRow.
+            // A grid container lays its child sections out as an editable table:
+            // cells edit in place, and a row can be opened into its own single-
+            // row view. See AppsFormGrid and useGridRow.
             if (field.collapsible_config?.layout === 'grid') {
                 return (
                     <AppsFormGrid
                         key={sectionKeyFor(field, path)}
                         field={field}
                         gridPath={path}
-                        values={values}
                         errors={errors}
                         excludeName={form.submit_buttons}
                         renderCell={renderGridCell}
                         renderField={(f) => renderField(f, f.name || '')}
-                        editable={inlineEditGrid}
                         onOpenRow={setOpenRowName}
                     />
                 );
@@ -747,7 +745,7 @@ function AppsFormComponent({
                 serverUrl={serverUrl}
             />
         );
-    }, [values, errors, expandVersions, performLookup, onChange, setFieldUploading, channelId, serverUrl, form.submit_buttons, renderGridCell, inlineEditGrid, setOpenRowName]);
+    }, [values, errors, expandVersions, performLookup, onChange, setFieldUploading, channelId, serverUrl, form.submit_buttons, renderGridCell, setOpenRowName]);
 
     // A grid row's cells are leaf fields, so they render through the normal
     // field path with full label, help text and error. They are never

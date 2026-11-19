@@ -9,13 +9,6 @@ import useDidUpdate from '@hooks/did_update';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {secureGetFromRecord} from '@utils/types';
 
-// Below this the cells of a grid are not edited in place. It is a width, not a
-// platform: a tablet has the room for a row of inputs and a phone does not, and
-// the same dialog should follow the viewport it is actually in — including when
-// a tablet is rotated. 600dp is where two ordinary columns plus the sticky one
-// stop being most of the screen.
-export const GRID_INLINE_EDIT_MIN_WIDTH = 600;
-
 // Rows of a grid are collapsibles nested inside the grid container, so finding
 // the open one means walking the tree rather than scanning the top level.
 export function findCollapsible(fields: AppField[] | undefined, name: string): AppField | undefined {
@@ -90,18 +83,13 @@ export function findGridRow(fields: AppField[] | undefined, key: string): AppFie
 }
 
 /**
- * Owns which grid row is open on its own screen, and whether there is room to
- * skip that step and edit the table in place.
+ * Owns which grid row (if any) is open on its own single-row screen.
  *
- * The open row is held by name rather than as the field itself, so a refresh
+ * The open row is held by key rather than as the field itself, so a refresh
  * that rebuilds the form from the server does not leave a stale copy of the
  * row on screen.
  */
 export default function useGridRow(fields: AppField[] | undefined, submitButtons: string | undefined, values: AppFormValues) {
-    // Combined mode: cells edit inline at every width and a row can also open
-    // into the roomy single-row view; the two coexist.
-    const inlineEdit = true;
-
     const [openRowName, setOpenRowName] = useState<string | undefined>(undefined);
 
     const openRow = useMemo(
@@ -156,5 +144,5 @@ export default function useGridRow(fields: AppField[] | undefined, submitButtons
         return () => subscription.remove();
     }, [openRow, closeRow]);
 
-    return {inlineEdit, openRow, setOpenRowName, closeRow, rowTitle};
+    return {openRow, setOpenRowName, closeRow, rowTitle};
 }
