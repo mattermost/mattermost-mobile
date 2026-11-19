@@ -104,7 +104,7 @@ index 2579cb3..18a742a 100644
  
  class ExpoImageModule : Module() {
    override fun definition() = ModuleDefinition {
-@@ -113,6 +116,76 @@
+@@ -113,6 +116,80 @@
        }
      }
  
@@ -185,7 +185,7 @@ index 2579cb3..18a742a 100644
      AsyncFunction("loadAsync") Coroutine { source: SourceMap, options: ImageLoadOptions? ->
        ImageLoadTask(appContext, source, options ?: ImageLoadOptions()).load()
      }
-@@ -184,13 +257,17 @@
+@@ -184,13 +261,17 @@
        return@AsyncFunction true
      }.runOnQueue(Queues.MAIN)
  
@@ -877,7 +877,7 @@ index 15e034d..c991437 100644
      options?: ImagePrefetchOptions['cachePolicy'] | ImagePrefetchOptions
    ): Promise<boolean> {
      let cachePolicy: ImagePrefetchOptions['cachePolicy'] = 'memory-disk';
-@@ -112,7 +122,46 @@
+@@ -112,7 +122,56 @@
          break;
      }
  
@@ -935,7 +935,7 @@ index 15e034d..c991437 100644
    }
  
    /**
-@@ -135,8 +184,8 @@
+@@ -135,8 +194,8 @@
     * It may resolve to `false` on Android when the activity is no longer available.
     * Resolves to `false` on Web.
     */
