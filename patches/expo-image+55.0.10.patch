@@ -87,7 +87,93 @@ diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/Ex
 index 2579cb3..18a742a 100644
 --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
 +++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
-@@ -184,13 +175,17 @@ class ExpoImageModule : Module() {
+@@ -43,6 +43,8 @@
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.withContext
+ import java.net.URL
++import java.util.concurrent.atomic.AtomicBoolean
++import java.util.concurrent.atomic.AtomicInteger
+ 
+ class ExpoImageModule : Module() {
+   override fun definition() = ModuleDefinition {
+@@ -104,6 +106,76 @@
+               imagesLoaded++
+ 
+               if (imagesLoaded == urls.size) {
++                promise.resolve(true)
++              }
++              return true
++            }
++          })
++          .submit()
++      }
++    }
++
++    AsyncFunction("prefetchWithSources") { sources: List<SourceMap>, cachePolicy: CachePolicy, promise: Promise ->
++      val context = appContext.reactContext ?: return@AsyncFunction false
++
++      if (sources.isEmpty()) {
++        promise.resolve(true)
++        return@AsyncFunction
++      }
++
++      val imagesLoaded = AtomicInteger(0)
++      val failed = AtomicBoolean(false)
++
++      sources.forEach { source ->
++        val model = try {
++          source.createGlideModelProvider(context)?.getGlideModel()
++        } catch (_: Exception) {
++          null
++        } ?: source.uri
++
++        if (model == null) {
++          if (failed.compareAndSet(false, true)) {
++            promise.resolve(false)
++          }
++          return@forEach
++        }
++
++        val options = try {
++          source.createGlideOptions(context)
++        } catch (_: Exception) {
++          RequestOptions()
++        }.customize(`when` = cachePolicy == CachePolicy.MEMORY) {
++          diskCacheStrategy(DiskCacheStrategy.NONE)
++        }
++
++        Glide
++          .with(context)
++          .load(model)
++          .apply(options)
++          // Keep parity with `prefetch` so the prefetched entry matches the final image load.
++          .encodeQuality(100)
++          .downsample(NoopDownsampleStrategy)
++          .listener(object : RequestListener<Drawable> {
++            override fun onLoadFailed(
++              e: GlideException?,
++              model: Any?,
++              target: Target<Drawable>,
++              isFirstResource: Boolean
++            ): Boolean {
++              if (failed.compareAndSet(false, true)) {
++                promise.resolve(false)
++              }
++              return true
++            }
++
++            override fun onResourceReady(
++              resource: Drawable,
++              model: Any,
++              target: Target<Drawable>,
++              dataSource: DataSource,
++              isFirstResource: Boolean
++            ): Boolean {
++              if (imagesLoaded.incrementAndGet() == sources.size && !failed.get()) {
+                 promise.resolve(true)
+               }
+               return true
+@@ -184,13 +256,17 @@
        return@AsyncFunction true
      }.runOnQueue(Queues.MAIN)
  
@@ -459,15 +545,33 @@ index 6aa92cc..38dc2e4 100644
  internal import SDWebImageSVGCoder
  
  public final class ImageModule: Module {
-@@ -200,6 +199,36 @@ public final class ImageModule: Module {
+@@ -200,6 +199,52 @@
        }
      }
  
 +    AsyncFunction("prefetchWithSources") { (sources: [ImageSource], cachePolicy: ImageCachePolicy, promise: Promise) in
++      if sources.isEmpty {
++        promise.resolve(true)
++        return
++      }
++
 +      var imagesLoaded = 0
 +      var failed = false
++      // Completion handlers run on the main queue by default (SDWebImage dispatches
++      // them via SDCallbackQueue.mainQueue unless the context overrides it), but guard
++      // the shared counters anyway so a future callback-queue change can't introduce
++      // a data race.
++      let lock = NSLock()
 +
 +      sources.forEach { source in
++        guard let url = source.uri else {
++          if !failed {
++            failed = true
++            promise.resolve(false)
++          }
++          return
++        }
++
 +        var context = createSDWebImageContext(forSource: source, cachePolicy: cachePolicy)
 +
 +        // Override cache if cachePath is provided
@@ -475,17 +579,15 @@ index 6aa92cc..38dc2e4 100644
 +        context[.imageCache] = customCache
 +        context[.originalImageCache] = customCache
 +
-+        guard let url = source.uri else {
-+          return
-+        }
-+
 +        SDWebImagePrefetcher.shared.prefetchURLs([url], context: context, progress: nil, completed: { _, skipped in
++          lock.lock()
++          defer { lock.unlock() }
 +          if skipped > 0 && !failed {
 +            failed = true
 +            promise.resolve(false)
 +          } else {
 +            imagesLoaded = imagesLoaded + 1
-+            if imagesLoaded == sources.count {
++            if imagesLoaded == sources.count && !failed {
 +              promise.resolve(true)
 +            }
 +          }
@@ -496,7 +598,7 @@ index 6aa92cc..38dc2e4 100644
      AsyncFunction("generateBlurhashAsync") { (source: Either<Image, URL>, numberOfComponents: CGSize, promise: Promise) in
        let parsedNumberOfComponents = (width: Int(numberOfComponents.width), height: Int(numberOfComponents.height))
        generatePlaceholder(source: source) { (image: UIImage) in
-@@ -223,9 +252,22 @@ public final class ImageModule: Module {
+@@ -223,9 +268,22 @@
        return true
      }
  
@@ -522,7 +624,7 @@ index 6aa92cc..38dc2e4 100644
        }
      }
  
-@@ -282,7 +324,6 @@ public final class ImageModule: Module {
+@@ -282,7 +340,6 @@
    static func registerCoders() {
      SDImageCodersManager.shared.addCoder(WebPCoder.shared)
      SDImageCodersManager.shared.addCoder(PSDCoder.shared)
@@ -761,7 +863,7 @@ index 15e034d..c991437 100644
      options?: ImagePrefetchOptions['cachePolicy'] | ImagePrefetchOptions
    ): Promise<boolean> {
      let cachePolicy: ImagePrefetchOptions['cachePolicy'] = 'memory-disk';
-@@ -112,7 +122,18 @@ export class Image extends React.PureComponent<ImageProps> {
+@@ -112,7 +122,28 @@ export class Image extends React.PureComponent<ImageProps> {
          break;
      }
  
@@ -775,8 +877,18 @@ index 15e034d..c991437 100644
 +      // plain URL strings
 +      return ImageModule.prefetch(sources as string[], cachePolicy, headers);
 +    } else {
-+      // ImageSource objects with cacheKey and cachePath per image
-+      return ImageModule.prefetchWithSources(sources as ImageSource[], cachePolicy);
++      // ImageSource objects with cacheKey and cachePath per image.
++      // Fall back to plain URL prefetch on native builds that don't expose
++      // prefetchWithSources (e.g. Android before a native rebuild).
++      const imageSources = sources as ImageSource[];
++      const prefetchWithSources = (ImageModule as typeof ImageModule & {
++        prefetchWithSources?: (sources: ImageSource[], cachePolicy: typeof cachePolicy) => Promise<boolean>;
++      }).prefetchWithSources;
++      if (typeof prefetchWithSources === 'function') {
++        return prefetchWithSources.call(ImageModule, imageSources, cachePolicy);
++      }
++      const uris = imageSources.map((source) => source.uri).filter((uri): uri is string => typeof uri === 'string' && uri.length > 0);
++      return ImageModule.prefetch(uris, cachePolicy, headers);
 +    }
    }
  
