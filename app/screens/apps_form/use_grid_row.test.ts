@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act, renderHook} from '@testing-library/react-native';
+
 import {AppFieldTypes} from '@constants/apps';
 
-import {findCollapsible, findGridRow, gridRowKey} from './use_grid_row';
+import useGridRow, {findCollapsible, findGridRow, gridRowKey} from './use_grid_row';
 
 const leaf = (name: string): AppField => ({name, type: AppFieldTypes.TEXT} as AppField);
 const section = (name: string | undefined, fields: AppField[]): AppField => ({
@@ -85,5 +87,64 @@ describe('findGridRow', () => {
     it('returns undefined when the tree path points past the fields', () => {
         const grid = section('orders', [section(undefined, [leaf('a')])]);
         expect(findGridRow([grid], '::pos::0/5')).toBeUndefined();
+    });
+});
+
+describe('useGridRow', () => {
+    const grid = (rows: AppField[]) => [section('orders', rows)];
+
+    it('drops a positional selection when the field tree is replaced', () => {
+        // An unnamed row opened by positional path must not survive a refresh
+        // that swaps the field tree — it could now point at a different row.
+        const rowA = section(undefined, [leaf('cell_a')]);
+        const first = grid([rowA]);
+        const {result, rerender} = renderHook(
+            ({fields}) => useGridRow(fields, undefined, {}),
+            {initialProps: {fields: first}},
+        );
+
+        act(() => {
+            result.current.setOpenRowName(gridRowKey('0', rowA, 0));
+        });
+        expect(result.current.openRow).toBe(rowA);
+
+        // A server refresh hands back a fresh tree (new array identity).
+        rerender({fields: grid([section(undefined, [leaf('cell_a')])])});
+        expect(result.current.openRow).toBeUndefined();
+    });
+
+    it('keeps a named selection across a field-tree replacement', () => {
+        const first = grid([section('row1', [leaf('cell_a')])]);
+        const {result, rerender} = renderHook(
+            ({fields}) => useGridRow(fields, undefined, {}),
+            {initialProps: {fields: first}},
+        );
+
+        act(() => {
+            result.current.setOpenRowName('row1');
+        });
+        expect(result.current.openRow?.name).toBe('row1');
+
+        // The same row, rebuilt in a fresh tree, still resolves by name.
+        const rebuilt = section('row1', [leaf('cell_a')]);
+        rerender({fields: grid([rebuilt])});
+        expect(result.current.openRow).toBe(rebuilt);
+    });
+
+    it('never uses a password first cell as the row title', () => {
+        const row = section('row1', [
+            {name: 'secret', type: AppFieldTypes.TEXT, subtype: 'password', label: 'Secret'} as AppField,
+        ]);
+        const {result} = renderHook(() => useGridRow(grid([row]), undefined, {secret: 'hunter2'}));
+
+        // Falls back to the row label/name, never the typed secret.
+        expect(result.current.rowTitle(row)).toBe('row1');
+    });
+
+    it('uses the typed value of the first cell as the row title', () => {
+        const row = section('row1', [leaf('cell_order')]);
+        const {result} = renderHook(() => useGridRow(grid([row]), undefined, {cell_order: 'SO-1042'}));
+
+        expect(result.current.rowTitle(row)).toBe('SO-1042');
     });
 });

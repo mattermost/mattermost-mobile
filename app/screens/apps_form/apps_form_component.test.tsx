@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent} from '@testing-library/react-native';
+import {act, fireEvent, within} from '@testing-library/react-native';
 import React from 'react';
 
 import DatabaseManager from '@database/manager';
@@ -82,7 +82,7 @@ jest.mock('@actions/remote/command', () => ({
     handleGotoLocation: jest.fn(),
 }));
 
-type MockFieldProps = {name: string; value: AppFormValue; onChange: (name: string, value: AppFormValue) => void};
+type MockFieldProps = {name: string; value: AppFormValue; onChange: (name: string, value: AppFormValue) => void; field: AppField; accessibilityLabel?: string; compact?: boolean};
 
 // Latest props each field rendered with, keyed by field name.
 const mockFieldProps: Record<string, MockFieldProps> = {};
@@ -316,6 +316,97 @@ describe('AppsFormComponent grid layout', () => {
 
         // Each row also has its own expand control to open the single-row view.
         expect(getByTestId('apps_form_grid.row.row1.open')).toBeTruthy();
+    });
+
+    it('strips a cell field label but names the input, and keeps an action_button label', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [{
+                        name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_action', type: 'action_button', label: 'Details', action_button_url: '/x'},
+                        ]},
+                    } as AppField],
+                },
+            } as AppField],
+        };
+
+        renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // A normal cell's visible label is stripped (the column header carries
+        // it), but the input is still named for screen readers and rendered
+        // compactly.
+        expect(mockFieldProps.cell_order.field.label).toBe('');
+        expect(mockFieldProps.cell_order.accessibilityLabel).toBe('Order');
+        expect(mockFieldProps.cell_order.compact).toBe(true);
+
+        // An action_button's label IS its button text, so it is kept.
+        expect(mockFieldProps.cell_action.field.label).toBe('Details');
+    });
+
+    it('blanks an action_button column header but keeps normal column headers', () => {
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [{
+                        name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_action', type: 'action_button', label: 'Details', action_button_url: '/x'},
+                        ]},
+                    } as AppField],
+                },
+            } as AppField],
+        };
+
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // A normal column keeps its header label; the action_button column's
+        // header is blank (the button carries the word itself).
+        expect(within(getByTestId('apps_form_grid.header.cell_order')).queryByText('Order')).toBeTruthy();
+        expect(within(getByTestId('apps_form_grid.header.cell_action')).queryByText('Details')).toBeNull();
+    });
+
+    it('falls back to rendering fields when a grid has no row cells to lay out', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        // A grid container whose only child is a leaf (no row collapsibles) has
+        // no columns; it must render that field rather than crash on the header.
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [
+                        {name: 'stray', type: 'text', label: 'Stray'} as AppField,
+                    ],
+                },
+            } as AppField],
+        };
+
+        const {queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // No table is drawn, but the stray field still renders.
+        expect(queryByTestId('apps_form_grid.orders')).toBeNull();
+        expect(mockFieldProps.stray).toBeTruthy();
     });
 
     it('opens a row from the expand control, and Done returns to the table without submitting', () => {

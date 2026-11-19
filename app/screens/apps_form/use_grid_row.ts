@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {BackHandler} from 'react-native';
 
 import {AppFieldTypes} from '@constants/apps';
@@ -74,6 +74,11 @@ function findFieldByPath(fields: AppField[] | undefined, path: string): AppField
  * how: a positional key is walked as a tree path (and resolves unnamed rows even
  * inside unnamed grids); anything else is a name, found anywhere in the tree. A
  * name is never resolved as a path or vice versa, so the two cannot collide.
+ *
+ * A name lookup returns the first match in a depth-first walk, so this assumes
+ * the server keys rows uniquely by name (two rows sharing a name would both
+ * resolve to the first). Unnamed rows avoid this by construction via the
+ * positional path.
  */
 export function findGridRow(fields: AppField[] | undefined, key: string): AppField | undefined {
     if (isPositionalRowKey(key)) {
@@ -92,19 +97,37 @@ export function findGridRow(fields: AppField[] | undefined, key: string): AppFie
 export default function useGridRow(fields: AppField[] | undefined, submitButtons: string | undefined, values: AppFormValues) {
     const [openRowName, setOpenRowName] = useState<string | undefined>(undefined);
 
-    const openRow = useMemo(
-        () => (openRowName ? findGridRow(fields, openRowName) : undefined),
-        [fields, openRowName],
-    );
+    // The field tree the open row was resolved against. A positional key only
+    // identifies a row by position, so if the tree is later replaced (a server
+    // refresh) that key may point at a different row; comparing against this
+    // reference lets us drop the selection before it ever resolves to the wrong
+    // one, rather than catching it a frame late in the effect below.
+    const openFieldsRef = useRef(fields);
+
+    const openRow = useMemo(() => {
+        if (!openRowName) {
+            return undefined;
+        }
+        if (isPositionalRowKey(openRowName) && fields !== openFieldsRef.current) {
+            return undefined;
+        }
+        return findGridRow(fields, openRowName);
+    }, [fields, openRowName]);
+
+    // Open a row, remembering the field tree it was resolved against.
+    const openRowByKey = useCallback((key: string) => {
+        openFieldsRef.current = fields;
+        setOpenRowName(key);
+    }, [fields]);
 
     const closeRow = useCallback(() => setOpenRowName(undefined), []);
 
-    // A positional key only means "the row at this spot", so once the fields are
-    // replaced (a server refresh) it may point at a different row; close it
-    // rather than show the wrong row and edit its cells. A named selection is
-    // safe — the name resolves to the same row wherever it moved to.
+    // Null a stale positional selection once the fields are replaced. The memo
+    // above already hides it this render; this clears the lingering state. A
+    // named selection is safe — its name resolves to the same row wherever it
+    // moved to.
     useDidUpdate(() => {
-        if (openRowName && isPositionalRowKey(openRowName)) {
+        if (openRowName && isPositionalRowKey(openRowName) && fields !== openFieldsRef.current) {
             setOpenRowName(undefined);
         }
     }, [fields]);
@@ -144,5 +167,5 @@ export default function useGridRow(fields: AppField[] | undefined, submitButtons
         return () => subscription.remove();
     }, [openRow, closeRow]);
 
-    return {openRow, setOpenRowName, closeRow, rowTitle};
+    return {openRow, setOpenRowName: openRowByKey, closeRow, rowTitle};
 }

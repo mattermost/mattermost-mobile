@@ -36,6 +36,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomWidth: 1,
             flexDirection: 'row',
             gap: 4,
+
+            // Keep the back control a comfortable (>=44pt) touch target.
+            minHeight: 44,
             paddingBottom: 10,
             paddingHorizontal: 15,
             paddingTop: 4,

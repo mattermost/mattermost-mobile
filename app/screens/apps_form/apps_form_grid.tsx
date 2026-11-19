@@ -167,12 +167,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
         },
 
-        // The expand control's own narrow column: the icon centred, a faint
-        // tint so the column reads as an action rather than an empty gutter.
+        // The expand control's own narrow column: the icon centred, a light
+        // tint so the column reads as an action rather than an empty gutter
+        // (kept visible in dark mode too).
         expandCell: {
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: changeOpacity(theme.buttonBg, 0.04),
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         },
         expandCellPressed: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.16),
@@ -370,9 +371,6 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, errors, exclude
         <View style={[style.headerCell, style.expandCell, {width: EXPAND_COLUMN_WIDTH, height: HEADER_HEIGHT}]}/>
     );
 
-    // A row is split across the two panes, so each half is its own press
-    // target; tapping the sticky cell and tapping a cell three columns along
-    // open the same row. They are named apart because they are two nodes.
     // Cells edit in place and the row opens from its own expand column, so a
     // row is just a layout container, not a press target.
     const renderRow = (rowIndex: number, content: React.ReactNode) => (
