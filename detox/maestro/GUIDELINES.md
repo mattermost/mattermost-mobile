@@ -145,7 +145,7 @@ These align with [Maestro docs](https://docs.maestro.dev/) and lessons from Matt
 - **Exception**: Apple system apps (Photos, Safari share sheet) have no testIDs — share-extension coordinate-tap utils live on `rf-split/maestro-ios-deferred-flows` (not in default CI on `rf-split/maestro`).
 - If an element lacks a testID, add one in `app/` — do not work around with coordinates.
 - **`text:` is allowed in exactly two cases** (both already relied on by merged flows; prefer `id:` everywhere else):
-  1. **iOS `FloatingTextInput` fields.** The component passes its testID to the container, not to the inner `TextInput`, so on iOS neither the field nor its value is queryable by `id:` — only the rendered label is. Hence `text: "Enter Server URL"` / `text: "Display Name"` in `subflows/server/` **on iOS only**. Android exposes these fields normally and **must** use `id:` (`server_form.server_url.input`, `server_form.server_display_name.input`). CI 33915931136: Android `tapOn: text: Display Name` failed 10/10 flows. The inline validation error *is* addressable: `<testID>.error` (see `app/components/floating_input/floating_input_container.tsx`).
+  1. **iOS `FloatingTextInput` fields.** The component passes its testID to the container, not to the inner `TextInput`, so on iOS neither the field nor its value is queryable by `id:` — only the rendered label is. Hence `text: "Enter Server URL"` / `text: "Display Name"` in `subflows/server/` **on iOS only**. Android exposes these fields normally and **must** use `id:` (`server_form.server_url.input`, `server_form.server_display_name.input`). Android `tapOn: text: Display Name` failed every flow in CI, so Android uses `id:`. The inline validation error *is* addressable: `<testID>.error` (see `app/components/floating_input/floating_input_container.tsx`).
   2. **System (SpringBoard / Android framework) alert buttons** — `Allow`, `Okay`, `Not now`, `No thanks`. These are OS-owned views with no app testID and cannot be given one. Keep them `optional: true`; do not substitute `point:`, which is more brittle than the label.
 - Verify hierarchy before authoring: `maestro --device <id> hierarchy`
 - `text:` is a **full-string regex**, so a prefix or fragment matches nothing — silently under `optional: true`. `text: "mattermost.com"` does not match the title "Mattermost | Collaboration Platform…". Match the whole string or use a regex that spans it, and beware labels assembled from server config (the login placeholder gains an "AD/LDAP Username" segment only when LDAP is enabled).
@@ -238,7 +238,7 @@ Allowed **only** on toggle taps (idempotent state) and genuinely intermittent sy
 
 ### Bottom sheets (iOS)
 
-`@gorhom/bottom-sheet` content is invisible to XCUITest unless `accessibilityViewIsModal={true}` on the content container (already set in `app/screens/bottom_sheet/index.tsx`). Callers must pass explicit `testID` on inner `OptionItem` components.
+`@gorhom/bottom-sheet` content is invisible to XCUITest unless `accessibilityViewIsModal={true}` on the content container (set in `app/screens/bottom_sheet/index.tsx` for phones, `!isTablet`). Callers must pass explicit `testID` on inner `OptionItem` components.
 
 ### Screenshots
 
@@ -279,16 +279,17 @@ curl -sS -X PUT \
 
 ## 4. Server provisioning & fixtures
 
-Maestro flows run against Matterwick cloud servers (`SITE_1_URL`, `SITE_2_URL`, `SITE_3_URL`). CI provisions via `detox/provision_server.js` + `detox/maestro/fixtures/seed.ts`.
+Maestro flows run against Matterwick cloud servers (`SITE_1_URL`, `SITE_2_URL`, `SITE_3_URL`). CI provisions via `detox/provision/` (`npm run provision`) + `detox/maestro/fixtures/seed.ts`.
 
 | Setting | Set by | Why |
 |---|---|---|
-| Trial Enterprise license | `detox/provision_server.js` | Calls + Custom Profile Attributes |
-| Calls plugin + `DefaultEnabled` | `detox/provision_server.js` | Calls flows |
+| Trial Enterprise license | `detox/provision/` (`ensureTrialLicense`) | Calls + Custom Profile Attributes |
+| Calls plugin installed | `detox/provision/` (`REQUIRED_PLUGINS`) | Calls flows |
+| Calls `DefaultEnabled` | `detox/maestro/fixtures/calls_seed.ts` | Calls flows |
 | Per-channel calls enable | `detox/maestro/fixtures/seed.ts` | Cloud servers may not auto-enable per channel |
-| `EnableChannelBookmarks` | `detox/provision_server.js` | Bookmark flows |
-| `ExperimentalViewArchivedChannels` | `detox/provision_server.js` | Archive flows |
-| `RateLimitSettings.Enable=false` | `detox/provision_server.js` | Prevents 429s on burst traffic |
+| `EnableChannelBookmarks` | Not set by this repo; enable on the server before the run | Bookmark flows |
+| `ExperimentalViewArchivedChannels` | Not set by this repo; enable on the server before the run | Archive flows |
+| `RateLimitSettings.Enable=false` | Not set by this repo; depends on the server configuration | Prevents 429s on burst traffic |
 | `AllowDownloadLogs=false` (MM-T67856_4 only) | Dedicated CI step | Isolated attach-logs variant |
 
 **iOS file bookmark fixture**: document picker reads from FileProvider.LocalStorage — CI copies `test_bookmark.png` there in `e2e-maestro-template.yml`.
@@ -351,7 +352,7 @@ Before opening a PR, verify every changed flow:
 cd detox/maestro && npm run validate-headers
 ```
 
-CI runs the same script in `e2e-detox-pr.yml` (`validate-maestro-flow-headers`) before Maestro tests.
+CI runs the same script in `.github/workflows/ci.yml` (job `ci/detox-validate-flow-headers`) before Maestro tests.
 
 **Forbidden** without artifact evidence:
 

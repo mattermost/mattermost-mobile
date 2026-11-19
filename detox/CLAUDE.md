@@ -66,8 +66,8 @@ cd detox && npm run tsc
 # Lint
 cd detox && npm run lint
 
-# Fix lint issues
-cd detox && npm run check     # runs both lint and tsc
+# Lint + tsc + unit tests + Maestro flow-header validation
+cd detox && npm run check
 
 # Build Android APK for tests
 cd detox && npm run e2e:android-build
@@ -221,7 +221,7 @@ detox/
 │   │           └── index.ts       # Re-exports all screens
 │   └── test/
 │       └── products/
-│           ├── channels/          # ~100 test files
+│           ├── channels/          # bulk of the suite
 │           │   ├── autocomplete/  # 8 files
 │           │   ├── search/        # 5 files
 │           │   ├── messaging/     # 24 files
@@ -485,6 +485,8 @@ So:
 
 ## TEST COVERAGE MAP
 
+The tables list key files only — `ls` the folder before concluding a scenario is untested.
+
 ### Smoke (`e2e/test/products/channels/smoke_test/`) — CMT older-server subset
 
 Quick regression of core flows. Used when CMT runs against non-latest server versions; PR E2E uses the full suite.
@@ -513,10 +515,10 @@ Quick regression of core flows. Used when CMT runs against non-latest server ver
 
 ### Other Areas
 
-- **messaging/** (24 files) — sending, editing, reactions, attachments, markdown
-- **channels/** (16 files) — create, archive, join, leave, DMs, group messages
-- **account/** (15 files) — profile, notifications, preferences, timezone
-- **threads/** (6 files) — thread replies, following, unread
+- **messaging/** — sending, editing, reactions, attachments, markdown
+- **channels/** — create, archive, join, leave, DMs, group messages
+- **account/** — profile, notifications, preferences, timezone
+- **threads/** — thread replies, following, unread
 
 ---
 
@@ -540,7 +542,7 @@ Quick regression of core flows. Used when CMT runs against non-latest server ver
 
 ### Date Suggestion Autocomplete (MM-T3393 Step 3)
 
-`DateSuggestion` component is commented out in `app/components/autocomplete/autocomplete.tsx` (lines 219–220). The `before:`, `after:`, and `on:` modifiers do **not** show a date picker. Do not write tests asserting date autocomplete behavior until this is implemented.
+`DateSuggestion` component is commented out in `app/components/autocomplete/autocomplete.tsx`. The `before:`, `after:`, and `on:` modifiers do **not** show a date picker. Do not write tests asserting date autocomplete behavior until this is implemented.
 
 ### Channel Mention in Search (MM-T3393 Step 2)
 
@@ -624,7 +626,7 @@ Artifacts saved to `detox/artifacts/` after each run:
 
 `debugSynchronization: 20000` means Detox logs sync status after 20s of waiting. If you see these logs:
 - App has pending network requests → add `waitFor` instead of `wait`
-- Animations running → use `withTimeout` with a longer period or disable animations in test
+- Animations running → disable animations in test
 
 ### CI-Specific Debugging
 
