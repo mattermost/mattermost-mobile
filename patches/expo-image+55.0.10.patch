@@ -113,7 +113,7 @@ index 2579cb3..18a742a 100644
 +
 +      if (sources.isEmpty()) {
 +        promise.resolve(true)
-+        return@AsyncFunction
++        return@AsyncFunction true
 +      }
 +
 +      val imagesLoaded = AtomicInteger(0)
