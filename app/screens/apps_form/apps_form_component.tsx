@@ -654,11 +654,18 @@ function AppsFormComponent({
             return null;
         }
 
-        // An action_button's label IS its button text, so keep it — stripping it
-        // would leave a blank, untappable-looking cell. Every other field type
-        // gets its label from the column header, so it is stripped as usual.
-        const isActionButton = field.type === AppFieldTypes.ACTION_BUTTON;
-        const cellField: AppField = isActionButton ? field : {...field, label: '', modal_label: '', description: ''};
+        // An action_button's label IS its button text, so keep the field intact
+        // — stripping it would leave a blank, untappable-looking cell. A markdown
+        // field's description IS its displayed content, so keep that too;
+        // clearing it would render an empty cell. Every other field type takes
+        // its label from the column header, so label/help text are stripped.
+        const cellField: AppField = (() => {
+            if (field.type === AppFieldTypes.ACTION_BUTTON) {
+                return field;
+            }
+            const keepDescription = field.type === AppFieldTypes.MARKDOWN;
+            return {...field, label: '', modal_label: '', description: keepDescription ? field.description : ''};
+        })();
         const value = secureGetFromRecord(values, field.name);
 
         // The visible label is stripped (the column header carries it), so name

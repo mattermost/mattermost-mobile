@@ -587,6 +587,7 @@
   "interactive_dialog.error.too_short": "Minimum input length is {minLength}.",
   "interactive_dialog.grid.back_to_table": "Table",
   "interactive_dialog.grid.done": "Done",
+  "interactive_dialog.grid.open_row": "Open row {number}",
   "interactive_dialog.refresh_failed": "Failed to refresh form fields",
   "interactive_dialog.submission_failed": "Submission failed",
   "interactive_dialog.submission_failed_network": "Submission failed due to network error. Please check your connection and try again.",

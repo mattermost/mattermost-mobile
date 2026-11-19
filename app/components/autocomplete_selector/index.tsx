@@ -253,6 +253,10 @@ function AutoCompleteSelector({
             )}
             <TouchableWithFeedback
                 accessibilityLabel={accessibilityLabel}
+
+                // With an explicit label the child text no longer names the
+                // control, so announce the current selection as the value.
+                accessibilityValue={accessibilityLabel ? {text: itemText || title} : undefined}
                 disabled={disabled}
                 onPress={goToSelectorScreen}
                 style={disabled ? style.disabled : null}

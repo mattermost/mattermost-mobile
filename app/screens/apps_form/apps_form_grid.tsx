@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessages, useIntl} from 'react-intl';
 import {Pressable, type PressableStateCallbackType, ScrollView, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -12,6 +13,10 @@ import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import {gridRowKey} from './use_grid_row';
+
+const messages = defineMessages({
+    openRow: {id: 'interactive_dialog.grid.open_row', defaultMessage: 'Open row {number}'},
+});
 
 type Props = {
 
@@ -237,6 +242,7 @@ const cellFields = (row: AppField, excludeName?: string): AppField[] =>
  * nothing in it is focusable, so the swipe is unambiguous.
  */
 const AppsFormGrid = ({field, gridPath, renderCell, renderField, errors, excludeName, onOpenRow}: Props) => {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
@@ -350,7 +356,7 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, errors, exclude
             key={`expand-${rowKeys[rowIndex]}`}
             onPress={() => onOpenRow?.(rowKeys[rowIndex])}
             accessibilityRole='button'
-            accessibilityLabel={rows[rowIndex].label || rows[rowIndex].name}
+            accessibilityLabel={rows[rowIndex].label || rows[rowIndex].name || intl.formatMessage(messages.openRow, {number: rowIndex + 1})}
             style={({pressed}: PressableStateCallbackType) => [
                 style.cell,
                 style.expandCell,
