@@ -14,6 +14,7 @@ import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmatio
 import * as Permissions from '@calls/actions/permissions';
 import {expectPhoneCallOutcome, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
+import {mirrorMuteToNativeCall} from '@calls/native_call';
 import * as State from '@calls/state';
 import {
     myselfLeftCall,
@@ -669,6 +670,30 @@ describe('Actions.Calls', () => {
         });
 
         expect(getConnectionForTesting()!.unmute).toHaveBeenCalled();
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
+    });
+
+    it.each([
+        [true, 'mute', 'unmute'],
+        [false, 'unmute', 'mute'],
+    ] as const)('applyNativeCallMute(%s) calls connection.%s without mirroring back to the native call', async (muted, called, notCalled) => {
+        renderHook(() => useCurrentCall());
+        addFakeCall('server1', 'channel-id');
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            newCurrentCall('server1', 'channel-id', 'myUserId', CallsTransport.Rtcd);
+        });
+
+        await act(async () => {
+            CallsActions.applyNativeCallMute(muted);
+        });
+
+        expect(getConnectionForTesting()![called]).toHaveBeenCalled();
+        expect(getConnectionForTesting()![notCalled]).not.toHaveBeenCalled();
+        expect(mirrorMuteToNativeCall).not.toHaveBeenCalled();
 
         await act(async () => {
             CallsActions.leaveCall();

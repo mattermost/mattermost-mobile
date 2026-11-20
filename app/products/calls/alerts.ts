@@ -4,7 +4,7 @@
 import {defineMessage, defineMessages, type IntlShape, type MessageDescriptor} from 'react-intl';
 import {Alert, type AlertButton, Platform} from 'react-native';
 
-import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
+import {hasMicrophonePermission, joinCall, leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {dismissIncomingCall, hostRemove} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {hostRemovedErr, userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
@@ -346,8 +346,11 @@ const doJoinCall = async (
         return false;
     }
 
+    // DM and GM calls start live while channel calls start muted, so sync native call state to that.
     if (isDMorGM) {
         unmuteMyself();
+    } else {
+        muteMyself();
     }
 
     return true;

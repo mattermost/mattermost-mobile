@@ -185,6 +185,8 @@ jest.mock('@livekit/react-native-webrtc', () => {
         RTCSessionDescription: jest.fn(),
         RTCView: jest.fn(),
         registerGlobals: jest.fn(),
+        AudioDeviceModule: {setMuteMode: jest.fn()},
+        AudioEngineMuteMode: {VoiceProcessing: 0, RestartEngine: 1, InputMixer: 2},
     };
 });
 

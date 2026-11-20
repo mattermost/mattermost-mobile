@@ -30,6 +30,7 @@ jest.mock('@calls/actions', () => ({
     leaveCall: jest.fn(),
     joinCall: jest.fn().mockResolvedValue({}),
     hasMicrophonePermission: jest.fn().mockResolvedValue(true),
+    muteMyself: jest.fn(),
     unmuteMyself: jest.fn(),
     dismissIncomingCall: jest.fn(),
     removeIncomingCall: jest.fn(),
@@ -391,6 +392,26 @@ describe('alerts', () => {
             const result = await leaveAndJoinWithAlert(intl as any, 'server1', 'join-channel');
             expect(mockAlert).not.toHaveBeenCalled();
             expect(result).toBe(true);
+        });
+
+        it.each([
+            ['public', 'O', true],
+            ['direct message', 'D', false],
+        ])('syncs the starting mute state after joining a %s channel (muted: %s)', async (_label, type, muted) => {
+            const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted} = require('@calls/state');
+            const {getChannelById} = require('@queries/servers/channel');
+            const {muteMyself, unmuteMyself} = require('@calls/actions');
+            getChannelById.mockImplementation(() => ({displayName: 'join-channel', type}));
+            getCallsState.mockReturnValue({enabled: {'join-channel': true}});
+            getChannelsWithCalls.mockReturnValue({});
+            getCurrentCall.mockReturnValue(null);
+            getCallsConfig.mockReturnValue({});
+            setMicPermissionsGranted.mockReturnValue(true);
+
+            await leaveAndJoinWithAlert(intl as any, 'server1', 'join-channel');
+
+            expect(muteMyself).toHaveBeenCalledTimes(muted ? 1 : 0);
+            expect(unmuteMyself).toHaveBeenCalledTimes(muted ? 0 : 1);
         });
 
         it('does not ask to switch calls when the current call is the one being joined', async () => {
