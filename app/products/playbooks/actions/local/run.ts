@@ -53,18 +53,19 @@ export async function removePlaybookTasksMissingFromRun(serverUrl: string, run: 
                 localChecklists.map((checklist) => checklist.id),
             ).fetch();
 
-            // Playbooks stamps UpdateAt with millisecond time, so a later write can share
-            // this snapshot's timestamp. Delete only records that are strictly older.
-            const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && item.updateAt < snapshotAt);
+            // A later write can share this snapshot's millisecond timestamp, and Playbooks can
+            // store 0 when it never set UpdateAt. Neither value proves the record is older.
+            const isOlderThanSnapshot = (updateAt: number) => updateAt > 0 && updateAt < snapshotAt;
+            const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && isOlderThanSnapshot(item.updateAt));
             const survivingChecklistIds = new Set<string>();
             localItems.forEach((item) => {
-                if (serverItemIds.has(item.id) || item.updateAt >= snapshotAt) {
+                if (serverItemIds.has(item.id) || !isOlderThanSnapshot(item.updateAt)) {
                     survivingChecklistIds.add(item.checklistId);
                 }
             });
             const checklistsToRemove = localChecklists.filter((checklist) => {
                 return !serverChecklistIds.has(checklist.id) &&
-                    checklist.updateAt < snapshotAt &&
+                    isOlderThanSnapshot(checklist.updateAt) &&
                     !survivingChecklistIds.has(checklist.id);
             });
             if (!itemsToRemove.length && !checklistsToRemove.length) {
