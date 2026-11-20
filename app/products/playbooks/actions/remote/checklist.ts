@@ -14,7 +14,7 @@ import {
     deleteChecklistItem as localDeleteChecklistItem,
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
-import {handlePlaybookRuns, removePlaybookTasksMissingFromRun} from '@playbooks/actions/local/run';
+import {getStoredPlaybookTaskIds, handlePlaybookRuns, removePlaybookTasksMissingFromRun} from '@playbooks/actions/local/run';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -67,6 +67,13 @@ export const runChecklistItem = async (
     try {
         const client = NetworkManager.getClient(serverUrl);
 
+        // Capture the cached tasks before the fetch. A task that arrives while the
+        // request is in flight is not part of this snapshot and must not be deleted.
+        const known = await getStoredPlaybookTaskIds(serverUrl, playbookRunId);
+        if ('error' in known) {
+            logDebug('error on runChecklistItem', getFullErrorMessage(known.error));
+        }
+
         // The run endpoint executes whatever command is stored for this position.
         // Confirm it is still the task the user saw before calling it.
         const run = await client.fetchPlaybookRun(playbookRunId);
@@ -86,10 +93,12 @@ export const runChecklistItem = async (
                 logDebug('error on runChecklistItem', getFullErrorMessage(result.error));
                 return {error: result.error};
             }
-            const pruned = await removePlaybookTasksMissingFromRun(serverUrl, run);
-            if (pruned.error) {
-                logDebug('error on runChecklistItem', getFullErrorMessage(pruned.error));
-                return {error: pruned.error};
+            if ('data' in known && known.data) {
+                const pruned = await removePlaybookTasksMissingFromRun(serverUrl, run, known.data);
+                if (pruned.error) {
+                    logDebug('error on runChecklistItem', getFullErrorMessage(pruned.error));
+                    return {error: pruned.error};
+                }
             }
             return {outdated: true as const};
         }

@@ -13,7 +13,7 @@ import {
     deleteChecklistItem as localDeleteChecklistItem,
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
-import {handlePlaybookRuns, removePlaybookTasksMissingFromRun} from '@playbooks/actions/local/run';
+import {getStoredPlaybookTaskIds, handlePlaybookRuns, removePlaybookTasksMissingFromRun} from '@playbooks/actions/local/run';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import TestHelper from '@test/test_helper';
 import {logDebug} from '@utils/log';
@@ -71,6 +71,7 @@ beforeAll(() => {
 beforeEach(async () => {
     jest.clearAllMocks();
     jest.mocked(localUpdateChecklistItem).mockResolvedValue({data: true});
+    jest.mocked(getStoredPlaybookTaskIds).mockResolvedValue({data: {checklistIds: ['checklist-id'], itemIds: [itemId]}});
     await DatabaseManager.init([serverUrl]);
 });
 
@@ -251,7 +252,21 @@ describe('checklist', () => {
             expect(result).toEqual({outdated: true});
             expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
             expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [run], false, true);
-            expect(removePlaybookTasksMissingFromRun).toHaveBeenCalledWith(serverUrl, run);
+            expect(removePlaybookTasksMissingFromRun).toHaveBeenCalledWith(serverUrl, run, {checklistIds: ['checklist-id'], itemIds: [itemId]});
+            expect(jest.mocked(getStoredPlaybookTaskIds).mock.invocationCallOrder[0]).toBeLessThan(mockClient.fetchPlaybookRun.mock.invocationCallOrder[0]);
+            expectCommandsNotLogged();
+        });
+
+        it('should not prune when the stored tasks cannot be read', async () => {
+            jest.mocked(getStoredPlaybookTaskIds).mockResolvedValueOnce({error: new Error('db')});
+            const run = runWithItem({command: changedCommand});
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(run);
+            jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({data: []});
+
+            const result = await runDisplayedItem();
+            expect(result).toEqual({outdated: true});
+            expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
+            expect(removePlaybookTasksMissingFromRun).not.toHaveBeenCalled();
             expectCommandsNotLogged();
         });
 

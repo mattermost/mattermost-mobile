@@ -23,8 +23,34 @@ export async function handlePlaybookRuns(serverUrl: string, runs: PlaybookRun[],
     }
 }
 
+export type StoredPlaybookTaskIds = {
+    checklistIds: string[];
+    itemIds: string[];
+};
+
+// Read the tasks already stored for this run. The caller captures them before the
+// fetch, so a task that arrives while the fetch is in flight is not deleted.
+export async function getStoredPlaybookTaskIds(serverUrl: string, runId: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const checklists = await queryPlaybookChecklistByRun(database, runId).fetch();
+        const items = checklists.length ? await queryPlaybookChecklistItemsByChecklists(
+            database,
+            checklists.map((checklist) => checklist.id),
+        ).fetch() : [];
+        const data: StoredPlaybookTaskIds = {
+            checklistIds: checklists.map((checklist) => checklist.id),
+            itemIds: items.map((item) => item.id),
+        };
+        return {data};
+    } catch (error) {
+        logError('failed to read stored playbook tasks', getFullErrorMessage(error));
+        return {error};
+    }
+}
+
 // handlePlaybookRuns only upserts. Drop local tasks this snapshot no longer contains.
-export async function removePlaybookTasksMissingFromRun(serverUrl: string, run: PlaybookRun) {
+export async function removePlaybookTasksMissingFromRun(serverUrl: string, run: PlaybookRun, knownTaskIds: StoredPlaybookTaskIds) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverChecklistIds = new Set((run.checklists ?? []).map((checklist) => checklist.id));
@@ -53,19 +79,25 @@ export async function removePlaybookTasksMissingFromRun(serverUrl: string, run: 
                 localChecklists.map((checklist) => checklist.id),
             ).fetch();
 
-            // A later write can share this snapshot's millisecond timestamp, and Playbooks can
-            // store 0 when it never set UpdateAt. Neither value proves the record is older.
-            const isOlderThanSnapshot = (updateAt: number) => updateAt > 0 && updateAt < snapshotAt;
-            const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && isOlderThanSnapshot(item.updateAt));
+            // Only a task stored before this fetch, with a positive timestamp older than
+            // the snapshot, is stale. A task that arrives during the fetch can keep an older
+            // UpdateAt: DuplicateChecklist stamps a copy and appends the original. 0 means
+            // UpdateAt was never set, and an equal timestamp can belong to a later write.
+            const knownChecklistIds = new Set(knownTaskIds.checklistIds);
+            const knownItemIds = new Set(knownTaskIds.itemIds);
+            const isStale = (id: string, knownIds: Set<string>, updateAt: number) => {
+                return knownIds.has(id) && updateAt > 0 && updateAt < snapshotAt;
+            };
+            const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && isStale(item.id, knownItemIds, item.updateAt));
             const survivingChecklistIds = new Set<string>();
             localItems.forEach((item) => {
-                if (serverItemIds.has(item.id) || !isOlderThanSnapshot(item.updateAt)) {
+                if (serverItemIds.has(item.id) || !isStale(item.id, knownItemIds, item.updateAt)) {
                     survivingChecklistIds.add(item.checklistId);
                 }
             });
             const checklistsToRemove = localChecklists.filter((checklist) => {
                 return !serverChecklistIds.has(checklist.id) &&
-                    isOlderThanSnapshot(checklist.updateAt) &&
+                    isStale(checklist.id, knownChecklistIds, checklist.updateAt) &&
                     !survivingChecklistIds.has(checklist.id);
             });
             if (!itemsToRemove.length && !checklistsToRemove.length) {
