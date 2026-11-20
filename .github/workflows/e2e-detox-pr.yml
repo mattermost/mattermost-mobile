@@ -492,14 +492,20 @@ jobs:
             *) echo "::error::USE_E2E_TEST_STACK must be variable, true or false"; exit 1 ;;
           esac
           # Matterwick's servers: always without e2e-test-stack, and with it when the dispatch gives any of the five
-          # (resolve-server-topology then requires all five, and fails on a missing one).
+          # (resolve-server-topology then requires all five, and fails on a missing one); without e2e-test-stack all five are required here.
           matterwick=true
           if [ "$use" = true ]; then
             matterwick=false
-            for name in ANDROID_SITE_1_URL ANDROID_SITE_2_URL IOS_SITE_1_URL IOS_SITE_2_URL SITE_3_URL; do
-              [ -z "${!name}" ] || matterwick=true
-            done
           fi
+          for name in ANDROID_SITE_1_URL ANDROID_SITE_2_URL IOS_SITE_1_URL IOS_SITE_2_URL SITE_3_URL; do
+            if [ -n "${!name}" ]; then
+              matterwick=true
+            elif [ "$use" = false ]; then
+              echo "::error::${name} is required while e2e-test-stack is off"
+              missing=true
+            fi
+          done
+          [ "${missing:-}" != true ] || exit 1
           {
             echo "use=$use"
             echo "matterwick=$matterwick"

@@ -353,6 +353,8 @@ jobs:
       count: ${{ needs.generate-specs.outputs.stack-count }}
       license: enterprise-advanced
       shared_admin_password: true
+      # The reaper does not renew a batch: the first pass and any re-run must end within it.
+      ttl: 2h
     secrets:
       E2E_STACK_PRIVATE_KEY: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
 
