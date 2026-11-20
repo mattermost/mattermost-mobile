@@ -221,24 +221,29 @@ describe('removePlaybookTasksMissingFromRun', () => {
         expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([taskChecklist.id, newerChecklist.id].sort());
     });
 
-    it('should keep a checklist and task whose timestamp was never set', async () => {
-        const run = TestHelper.createPlaybookRuns(1, 3, 1, true)[0];
-        const [staleChecklist, unsetChecklist, unsetTaskChecklist] = run.checklists;
-        const unsetTask = unsetTaskChecklist.items[0];
-        staleChecklist.update_at = 1;
-        staleChecklist.items[0].update_at = 1;
+    it('should remove a captured task whose timestamp was never set', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 2, 1, true)[0];
+        const [unsetChecklist, unsetTaskChecklist] = run.checklists;
         unsetChecklist.update_at = 0;
         unsetChecklist.items = [];
         unsetChecklist.items_order = [];
-        unsetTaskChecklist.update_at = 1;
-        unsetTask.update_at = 0;
+        unsetTaskChecklist.update_at = 0;
+        unsetTaskChecklist.items[0].update_at = 0;
         await handlePlaybookRuns(serverUrl, [run], false, true);
+        const known = storedTaskIds(run);
+        const arrived = TestHelper.createPlaybookChecklist(run.id, 0, 9);
+        arrived.update_at = 0;
+        await handlePlaybookRuns(serverUrl, [{
+            ...run,
+            checklists: [...run.checklists, arrived],
+            items_order: [...run.items_order, arrived.id],
+        }], false, true);
 
-        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []}, storedTaskIds(run));
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []}, known);
 
         expect(error).toBeUndefined();
-        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([unsetChecklist.id, unsetTaskChecklist.id].sort());
-        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([unsetTask.id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([arrived.id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([]);
     });
 
     it('should keep an empty checklist stored after the fetch started', async () => {

@@ -79,14 +79,13 @@ export async function removePlaybookTasksMissingFromRun(serverUrl: string, run: 
                 localChecklists.map((checklist) => checklist.id),
             ).fetch();
 
-            // Only a task stored before this fetch, with a positive timestamp older than
-            // the snapshot, is stale. A task that arrives during the fetch can keep an older
-            // UpdateAt: DuplicateChecklist stamps a copy and appends the original. 0 means
-            // UpdateAt was never set, and an equal timestamp can belong to a later write.
+            // Only a task stored before this fetch is eligible. A task that arrives during
+            // the fetch can keep an older or unset UpdateAt, so its id is not in this set.
+            // An equal timestamp can belong to a later write and stays.
             const knownChecklistIds = new Set(knownTaskIds.checklistIds);
             const knownItemIds = new Set(knownTaskIds.itemIds);
             const isStale = (id: string, knownIds: Set<string>, updateAt: number) => {
-                return knownIds.has(id) && updateAt > 0 && updateAt < snapshotAt;
+                return knownIds.has(id) && updateAt < snapshotAt;
             };
             const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && isStale(item.id, knownItemIds, item.updateAt));
             const survivingChecklistIds = new Set<string>();
