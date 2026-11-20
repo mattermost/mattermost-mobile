@@ -8,6 +8,8 @@ import {Pressable, type PressableStateCallbackType, ScrollView, Text, View} from
 import CompassIcon from '@components/compass_icon';
 import {AppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
+import {getDateValue} from '@utils/date_utils';
+import {isAppSelectOption} from '@utils/dialog_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -48,7 +50,8 @@ type Props = {
     renderField: (field: AppField) => React.ReactNode;
 
     // Read here (not inside a cell) because the table sizes a row around its
-    // error strip.
+    // error strip, and because a non-inline cell shows its value as a summary.
+    values: AppFormValues;
     errors: {[name: string]: string};
 
     // Names excluded from the grid (the form's submit buttons field).
@@ -75,6 +78,27 @@ const HEADER_HEIGHT = 38;
 // which carries its own 10pt top margin — lines up with a text input beside it
 // without the grid having to know the difference.
 const CELL_HEIGHT = 46;
+
+// Shown in place of a password value in a read-only summary cell.
+const MASKED_VALUE = '••••••';
+
+// Field types compact enough to edit inside a single-line cell. Everything else
+// — a radio's stacked options, a date picker, a file control, a nested section,
+// a multi-line textarea — is too tall for the fixed row height, so the cell
+// shows a read-only summary and the field is edited in the row's own screen.
+const INLINE_CELL_TYPES = new Set<AppFieldType>([
+    AppFieldTypes.TEXT,
+    AppFieldTypes.STATIC_SELECT,
+    AppFieldTypes.DYNAMIC_SELECT,
+    AppFieldTypes.USER,
+    AppFieldTypes.CHANNEL,
+    AppFieldTypes.BOOL,
+    AppFieldTypes.ACTION_BUTTON,
+    AppFieldTypes.MARKDOWN,
+]);
+
+const rendersInlineInCell = (field: AppField): boolean =>
+    Boolean(field.type && INLINE_CELL_TYPES.has(field.type)) && field.subtype !== 'textarea';
 
 // Reserved only on a row that actually has an error, and only where the cells
 // are edited in place. Both panes derive it from the same errors object, which
@@ -172,6 +196,29 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
         },
 
+        // A summary cell shows one line of text (a taller control is edited on
+        // the row's own screen), so it lays its value out horizontally with a
+        // little side padding rather than centring an input.
+        summaryCell: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 12,
+        },
+        summaryText: {
+            color: theme.centerChannelColor,
+            flexShrink: 1,
+            ...typography('Body', 100),
+        },
+
+        // An empty summary shows a dash, so a blank column reads as "not filled
+        // in" rather than as a rendering fault.
+        summaryEmpty: {
+            color: changeOpacity(theme.centerChannelColor, 0.4),
+        },
+        summaryInvalid: {
+            color: theme.errorTextColor,
+        },
+
         // The expand control's own narrow column: the icon centred, a light
         // tint so the column reads as an action rather than an empty gutter
         // (kept visible in dark mode too).
@@ -214,6 +261,42 @@ const cellFields = (row: AppField, excludeName?: string): AppField[] =>
     (row.collapsible_config?.fields || []).filter((f) => f.name && f.name !== excludeName);
 
 /**
+ * What a non-inline cell shows: a one-line summary of its value, since the
+ * control itself is too tall to edit here. A select carries its label on the
+ * chosen option, a multiselect a list of them, a date an ISO string nobody
+ * wants to read across a table; a password is never shown. The row's own screen
+ * edits each of these in its real control.
+ */
+export function displayCellValue(field: AppField | undefined, value: AppFormValue | undefined): string {
+    if (value === undefined || value === null || value === false || value === '') {
+        return '';
+    }
+    if (field?.subtype === 'password') {
+        return MASKED_VALUE;
+    }
+    if (field?.type === AppFieldTypes.DATE || field?.type === AppFieldTypes.DATETIME) {
+        const moment = getDateValue(value, field.datetime_config?.location_timezone, field.type === AppFieldTypes.DATETIME);
+        return moment ? moment.format(field.type === AppFieldTypes.DATETIME ? 'lll' : 'll') : String(value);
+    }
+    if (Array.isArray(value)) {
+        return value.map((entry) => (isAppSelectOption(entry) ? entry.label : String(entry))).filter(Boolean).join(', ');
+    }
+    if (isAppSelectOption(value)) {
+        return value.label || '';
+    }
+
+    // A select may carry a primitive value (e.g. a server default) rather than a
+    // resolved option; show the matching option's label where there is one.
+    if (field?.options?.length) {
+        const option = field.options.find((o) => o.value === value);
+        if (option) {
+            return option.label || String(value);
+        }
+    }
+    return String(value);
+}
+
+/**
  * Lays a collapsible's child sections out as a real table: one row per child
  * section, one column per cell, column headers from the cells' own labels.
  *
@@ -241,7 +324,7 @@ const cellFields = (row: AppField, excludeName?: string): AppField[] =>
  * naturally swipes it. Taking the inputs out of the table removes all of that:
  * nothing in it is focusable, so the swipe is unambiguous.
  */
-const AppsFormGrid = ({field, gridPath, renderCell, renderField, errors, excludeName, onOpenRow}: Props) => {
+const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors, excludeName, onOpenRow}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -322,8 +405,42 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, errors, exclude
             </Text>
         );
 
-        // Every cell edits in place. The row is opened from its own expand
-        // column (see renderExpandCell), so no cell carries an open control.
+        // A cell compact enough to fit the row edits in place. A taller control
+        // (radio, date, file, a nested section) shows a one-line summary of its
+        // value instead and is edited on the row's own screen, which has room.
+        const inline = Boolean(cell) && rendersInlineInCell(cell);
+
+        if (!inline) {
+            const text = cell?.name ? displayCellValue(cell, secureGetFromRecord(values, cell.name)) : '';
+            return (
+                <View
+                    key={key}
+                    style={[
+                        style.cell,
+                        style.summaryCell,
+                        {
+                            width,
+                            height: rowHeights[rowIndex],
+                            paddingBottom: rowHasError[rowIndex] ? ERROR_HEIGHT : 0,
+                        },
+                        isSticky && rowHasError[rowIndex] && style.errorMark,
+                    ]}
+                    accessibilityLabel={cell?.label}
+                    testID={testID}
+                >
+                    <Text
+                        style={[style.summaryText, !text && style.summaryEmpty, Boolean(error) && style.summaryInvalid]}
+                        numberOfLines={1}
+                    >
+                        {text || '—'}
+                    </Text>
+                    {errorNode}
+                </View>
+            );
+        }
+
+        // The row is opened from its own expand column (see renderExpandCell),
+        // so no cell carries an open control.
         return (
             <View
                 key={key}

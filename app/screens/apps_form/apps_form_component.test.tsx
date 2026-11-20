@@ -305,6 +305,49 @@ describe('AppsFormComponent grid layout', () => {
         expect(queryByTestId('AppFormSection.orders')).toBeNull();
     });
 
+    it('shows a tall field (radio) as a read-only summary in the cell, editable in the row view', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        // A radio's stacked options do not fit a single-line cell, so the cell
+        // shows its selected value and the field is edited on the row's screen.
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [{
+                        name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_status', type: 'radio', label: 'Status', value: 'shipped', options: [
+                                {label: 'New', value: 'new'},
+                                {label: 'Shipped', value: 'shipped'},
+                            ]},
+                        ]},
+                    } as AppField],
+                },
+            } as AppField],
+        };
+
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // The text cell edits inline (renders an AppsFormField); the radio cell
+        // does not — it shows the selected option's label as a summary.
+        expect(mockFieldProps.cell_order).toBeTruthy();
+        expect(mockFieldProps.cell_status).toBeUndefined();
+        expect(within(getByTestId('apps_form_grid.cell.cell_status')).queryByText('Shipped')).toBeTruthy();
+
+        // Opening the row edits the radio in full (now an AppsFormField).
+        act(() => {
+            fireEvent.press(getByTestId('apps_form_grid.row.row1.open'));
+        });
+        expect(mockFieldProps.cell_status).toBeTruthy();
+    });
+
     it('edits cells inline and exposes an expand control to open the row', () => {
         Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
 

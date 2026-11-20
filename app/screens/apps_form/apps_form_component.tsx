@@ -702,6 +702,7 @@ function AppsFormComponent({
                         key={sectionKeyFor(field, path)}
                         field={field}
                         gridPath={path}
+                        values={values}
                         errors={errors}
                         excludeName={form.submit_buttons}
                         renderCell={renderGridCell}
