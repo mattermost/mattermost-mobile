@@ -18,7 +18,7 @@ defineMessages({
 });
 
 import {storeVoIPDeviceToken} from '@actions/app/global';
-import {dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
+import {applyNativeCallMute, dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
     clearNativeCallMapping,
@@ -213,11 +213,7 @@ class CallsNativeSingleton {
         if (!currentCall || currentCall.serverUrl !== mapping.serverUrl || currentCall.channelId !== mapping.channelId) {
             return;
         }
-        if (muted) {
-            muteMyself();
-        } else {
-            unmuteMyself();
-        }
+        applyNativeCallMute(muted);
     };
 }
 

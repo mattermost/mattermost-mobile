@@ -9,6 +9,7 @@ export {
     leaveCall,
     muteMyself,
     unmuteMyself,
+    applyNativeCallMute,
     raiseHand,
     unraiseHand,
     handleCallsSlashCommand,
