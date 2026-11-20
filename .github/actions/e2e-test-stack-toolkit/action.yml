@@ -1,0 +1,89 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+name: E2E test stack toolkit
+description: >-
+  Checks out mattermost-test-automation-toolkit's e2e-test-stack action into .e2e-test-stack-toolkit, for
+  `uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack`. The ref is main or a full commit, resolved to a commit.
+  With check, only the pinned commit or a commit on the toolkit's main is accepted, so the action that runs has been
+  reviewed: jobs that hold the AWS role check; jobs without it take the commit the run already checked.
+
+inputs:
+  ref:
+    description: main, or a full 40-character commit; empty is the pinned commit
+    required: false
+    default: ""
+  check:
+    description: Whether to require the pinned commit or a commit on the toolkit's main; without it, ref must be a full commit
+    required: false
+    default: "true"
+
+outputs:
+  sha:
+    description: The toolkit commit checked out
+    value: ${{ steps.resolve.outputs.sha }}
+
+runs:
+  using: composite
+  steps:
+    - name: resolve
+      id: resolve
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REF: ${{ inputs.ref }}
+        CHECK: ${{ inputs.check }}
+        # The toolkit commit this repository pins: toolkit #21.
+        PINNED: a93fbc8c136107e2a7ed1d04d8f04846bea29360
+        REPO: mattermost/mattermost-test-automation-toolkit
+      run: |
+        set -euo pipefail
+        err=$(mktemp)
+        api() {
+          local out attempt
+          for attempt in 1 2 3; do
+            if out=$(gh api "$@" 2> "$err"); then
+              printf '%s' "$out"
+              return 0
+            fi
+            [ "$attempt" -eq 3 ] || sleep $((attempt * 5))
+          done
+          echo "::error::GitHub API call failed: $(tr '\n' ' ' < "$err")" >&2
+          return 1
+        }
+        ref=${REF:-$PINNED}
+        if [ "$CHECK" != true ] && ! [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+          # Unchecked, only the commit a checked job resolved, so every job of a run uses the same toolkit code.
+          echo "::error::an unchecked toolkit ref must be the full commit the run's settings resolved"
+          exit 1
+        fi
+        if [ "$ref" = main ]; then
+          sha=$(api "repos/${REPO}/commits/main" --jq .sha)
+        elif [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+          sha=$ref
+        else
+          echo "::error::the toolkit ref must be main or a full 40-character commit"
+          exit 1
+        fi
+        if ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+          echo "::error::the toolkit's main resolved to '${sha}', not a commit"
+          exit 1
+        fi
+        if [ "$CHECK" = true ] && [ "$sha" != "$PINNED" ]; then
+          # On main: main is the same as the commit or ahead of it.
+          status=$(api "repos/${REPO}/compare/main...${sha}" --jq .status)
+          case "$status" in
+            identical | behind) ;;
+            *) echo "::error::toolkit commit ${sha} is not on the toolkit's main (${status})"; exit 1 ;;
+          esac
+        fi
+        echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+        echo "e2e-test-stack toolkit: ${ref} at ${sha}"
+
+    - name: checkout
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      with:
+        repository: mattermost/mattermost-test-automation-toolkit
+        ref: ${{ steps.resolve.outputs.sha }}
+        path: .e2e-test-stack-toolkit
+        sparse-checkout: actions/e2e-test-stack
+        persist-credentials: false

@@ -22,6 +22,10 @@ on:
         description: "Names this batch within the run: its artifact and instance key; lowercase letters, digits and hyphens"
         type: string
         required: true
+      toolkit_ref:
+        description: "The mattermost-test-automation-toolkit ref whose e2e-test-stack action runs: main or a full commit on its main; empty is the pinned commit"
+        type: string
+        default: ""
       account:
         description: "AWS account whose control plane creates the batch: prod or dev"
         type: string
@@ -59,9 +63,29 @@ on:
         type: string
         default: "enterprise-advanced"
       server_env:
-        description: "Server settings as a JSON object of strings"
+        description: "Server settings as a JSON object of strings; the default is Matterwick's for mobile's E2E servers, with Shared Channels on from the start and email on"
         type: string
-        default: ""
+        default: >-
+          {"MM_SERVICESETTINGS_ENABLETUTORIAL":"false","MM_SERVICESETTINGS_ENABLEONBOARDINGFLOW":"false",
+          "MM_SERVICESETTINGS_ENABLEUSERTYPINGMESSAGES":"false","MM_SERVICESETTINGS_SESSIONLENGTHMOBILEINHOURS":"5000",
+          "MM_SERVICESETTINGS_SESSIONCACHEINMINUTES":"180","MM_SERVICEENVIRONMENT":"test",
+          "MM_RATELIMITSETTINGS_ENABLE":"true","MM_RATELIMITSETTINGS_PERSEC":"10000",
+          "MM_RATELIMITSETTINGS_MAXBURST":"50000","MM_RATELIMITSETTINGS_MEMORYSTORESIZE":"10000",
+          "MM_RATELIMITSETTINGS_VARYBYREMOTEADDR":"false","MM_RATELIMITSETTINGS_VARYBYUSER":"false",
+          "MM_TEAMSETTINGS_EXPERIMENTALENABLEAUTOMATICREPLIES":"true","MM_FEATUREFLAGS_CHANNELBOOKMARKS":"true",
+          "MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES":"true","MM_FEATUREFLAGS_INTERACTIVEDIALOGAPPSFORM":"true",
+          "MM_FEATUREFLAGS_MMBLOCKSENABLED":"true","MM_FILESETTINGS_ENABLEPUBLICLINK":"true",
+          "MM_PASSWORDSETTINGS_MINIMUMLENGTH":"8","MM_PLUGINSETTINGS_ENABLEMARKETPLACE":"true",
+          "MM_PLUGINSETTINGS_ENABLEREMOTEMARKETPLACE":"true","MM_PLUGINSETTINGS_ENABLEUPLOADS":"true",
+          "MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION":"true","MM_SERVICESETTINGS_ENABLECHANNELBOOKMARKS":"true",
+          "MM_SERVICESETTINGS_MAXIMUMACTIVEUSERS":"999999","MM_SERVICESETTINGS_MAXIMUMLOGINATTEMPTS":"999999",
+          "MM_SERVICESETTINGS_SESSIONLENGTHWEBINHOURS":"4320",
+          "MM_SUPPORTSETTINGS_HELPLINK":"https://docs.mattermost.com/",
+          "MM_SUPPORTSETTINGS_REPORTAPROBLEMTYPE":"default","MM_TEAMSETTINGS_MAXUSERSPERTEAM":"999999",
+          "MM_EXPERIMENTALSETTINGS_ENABLEWATERMARK":"false","MM_EXPERIMENTALSETTINGS_RESTRICTSYSTEMADMIN":"false",
+          "MM_CONNECTEDWORKSPACESSETTINGS_ENABLEREMOTECLUSTERSERVICE":"true",
+          "MM_CONNECTEDWORKSPACESSETTINGS_ENABLESHAREDCHANNELS":"true","MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS":"true",
+          "MM_EMAILSETTINGS_FEEDBACKEMAIL":"test@example.com","MM_EMAILSETTINGS_REPLYTOADDRESS":"test@example.com"}
       wait_for_migrations:
         description: "Wait for server migrations before reporting ready"
         type: boolean
@@ -100,6 +124,7 @@ env:
   CHANNEL: ${{ inputs.channel }}
   LICENSE: ${{ inputs.license }}
   RESPONSE_FILE: e2e-test-stack-create.json
+  TOOLKIT_REF: ${{ inputs.toolkit_ref }}
 
 jobs:
   create:
@@ -125,13 +150,26 @@ jobs:
           node-version: "26"
           package-manager-cache: false
 
+      # This repository's toolkit action, at this workflow's own commit (never the code under test).
+      - name: ci/checkout-toolkit-action
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          sparse-checkout: .github/actions/e2e-test-stack-toolkit
+          persist-credentials: false
+
+      # The e2e-test-stack action at TOOLKIT_REF: main, a commit on the toolkit's main, or the pinned commit.
+      - name: ci/toolkit
+        uses: ./.github/actions/e2e-test-stack-toolkit
+        with:
+          ref: ${{ env.TOOLKIT_REF }}
+
       # This run's create response for the batch, if any. On a re-run of this job it names the earlier attempt's
       # batch, destroyed below before another is created, in the account that attempt recorded; on the first attempt
       # there must be none, as two creates never share a batch name. One that can't be downloaded stops the create
       # rather than lose that batch.
       - name: ci/find-earlier-response
         id: earlier
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack@a93fbc8c136107e2a7ed1d04d8f04846bea29360 # toolkit #21
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
         with:
           operation: earlier-response
           artifact-name: e2e-test-stack-create-${{ inputs.batch }}
@@ -170,7 +208,7 @@ jobs:
       # earlier attempt recorded, so its batch is destroyed where it was created; a different one fails here.
       - name: ci/role
         id: role
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack@a93fbc8c136107e2a7ed1d04d8f04846bea29360 # toolkit #21
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
         with:
           operation: role
           account: ${{ inputs.account }}
@@ -192,7 +230,7 @@ jobs:
       - name: ci/destroy-earlier-batch
         id: destroy-earlier
         if: steps.earlier.outputs.found == 'true' && github.run_attempt > 1
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack@a93fbc8c136107e2a7ed1d04d8f04846bea29360 # toolkit #21
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
         with:
           operation: destroy
           caller-key: ${{ env.CALLER_KEY }}
@@ -213,7 +251,7 @@ jobs:
 
       - name: ci/create
         id: create
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack@a93fbc8c136107e2a7ed1d04d8f04846bea29360 # toolkit #21
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
         with:
           operation: create
           caller-key: ${{ env.CALLER_KEY }}
@@ -233,7 +271,19 @@ jobs:
           shared-admin-password: ${{ inputs.shared_admin_password }}
           response-path: ${{ runner.temp }}/${{ env.RESPONSE_FILE }}
 
-      # Its secrets are sealed to this repository's key, so it is safe to upload from a public repository.
+      # This attempt's own response, which destroy reads: every attempt's batch is destroyed from its own.
+      - name: ci/upload-attempt-response
+        if: always() && steps.create.outputs.response-path != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-test-stack-create-response-${{ inputs.batch }}-${{ github.run_attempt }}
+          path: |
+            ${{ steps.create.outputs.response-path }}
+            ${{ runner.temp }}/e2e-test-stack-account
+          if-no-files-found: error
+
+      # The newest response, which the shards, provisioning and a re-run's create read. Its secrets are sealed to this
+      # repository's key, so it is safe to upload from a public repository.
       - name: ci/upload-create-response
         if: always() && steps.create.outputs.response-path != ''
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -249,7 +299,7 @@ jobs:
 
       - name: ci/fetch-batch
         id: fetch
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack@a93fbc8c136107e2a7ed1d04d8f04846bea29360 # toolkit #21
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
         with:
           operation: fetch
           caller-key: ${{ env.CALLER_KEY }}
