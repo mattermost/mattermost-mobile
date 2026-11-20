@@ -167,7 +167,7 @@ describe('removePlaybookTasksMissingFromRun', () => {
         expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([run.checklists[0].id]);
     });
 
-    it('should keep only tasks and checklists newer than the snapshot', async () => {
+    it('should delete only tasks that are older than the snapshot', async () => {
         const run = TestHelper.createPlaybookRuns(1, 2, 3, true)[0];
         await handlePlaybookRuns(serverUrl, [run], false, true);
         const snapshotAt = run.update_at;
@@ -200,7 +200,7 @@ describe('removePlaybookTasksMissingFromRun', () => {
         const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []});
 
         expect(error).toBeUndefined();
-        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([newer.id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([sameAge.id, newer.id].sort());
         expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([taskChecklist.id, newerChecklist.id].sort());
     });
 

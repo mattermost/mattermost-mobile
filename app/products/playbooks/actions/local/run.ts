@@ -52,16 +52,19 @@ export async function removePlaybookTasksMissingFromRun(serverUrl: string, run: 
                 database,
                 localChecklists.map((checklist) => checklist.id),
             ).fetch();
-            const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && item.updateAt <= snapshotAt);
+
+            // Playbooks stamps UpdateAt with millisecond time, so a later write can share
+            // this snapshot's timestamp. Delete only records that are strictly older.
+            const itemsToRemove = localItems.filter((item) => !serverItemIds.has(item.id) && item.updateAt < snapshotAt);
             const survivingChecklistIds = new Set<string>();
             localItems.forEach((item) => {
-                if (serverItemIds.has(item.id) || item.updateAt > snapshotAt) {
+                if (serverItemIds.has(item.id) || item.updateAt >= snapshotAt) {
                     survivingChecklistIds.add(item.checklistId);
                 }
             });
             const checklistsToRemove = localChecklists.filter((checklist) => {
                 return !serverChecklistIds.has(checklist.id) &&
-                    checklist.updateAt <= snapshotAt &&
+                    checklist.updateAt < snapshotAt &&
                     !survivingChecklistIds.has(checklist.id);
             });
             if (!itemsToRemove.length && !checklistsToRemove.length) {
