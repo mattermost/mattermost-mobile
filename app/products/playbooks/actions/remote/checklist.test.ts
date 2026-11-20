@@ -257,6 +257,19 @@ describe('checklist', () => {
             expectCommandsNotLogged();
         });
 
+        it('should not run the command when the checklist items are null', async () => {
+            const run = runWithItem();
+            run.checklists[0].items = null as unknown as PlaybookChecklistItem[];
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(run);
+            jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({data: []});
+            jest.mocked(removePlaybookTasksMissingFromRun).mockResolvedValueOnce({data: true});
+
+            const result = await runDisplayedItem();
+            expect(result).toEqual({outdated: true});
+            expect(mockClient.runChecklistItemSlashCommand).not.toHaveBeenCalled();
+            expectCommandsNotLogged();
+        });
+
         it('should not prune when the stored tasks cannot be read', async () => {
             jest.mocked(getStoredPlaybookTaskIds).mockResolvedValueOnce({error: new Error('db')});
             const run = runWithItem({command: changedCommand});

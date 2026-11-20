@@ -77,7 +77,7 @@ export const runChecklistItem = async (
         // The run endpoint executes whatever command is stored for this position.
         // Confirm it is still the task the user saw before calling it.
         const run = await client.fetchPlaybookRun(playbookRunId);
-        const serverItem = run.checklists[checklistNumber]?.items[itemNumber];
+        const serverItem = run.checklists?.[checklistNumber]?.items?.[itemNumber];
         const serverCommand = serverItem?.command ?? '';
         const idMatches = serverItem?.id === itemId;
         const commandMatches = serverCommand === displayedCommand;
