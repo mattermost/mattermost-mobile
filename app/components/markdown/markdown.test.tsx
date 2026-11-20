@@ -376,4 +376,20 @@ describe('Markdown', () => {
             expect(links[0].props.href).toBe('custom:action');
         });
     });
+
+    describe('link scheme allowlist with server config', () => {
+        it('should use server-configured CustomUrlSchemes', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    customUrlSchemes={['server-custom']}
+                    value='[link](server-custom:action)'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links).toHaveLength(1);
+            expect(links[0].props.href).toBe('server-custom:action');
+        });
+    });
 });
