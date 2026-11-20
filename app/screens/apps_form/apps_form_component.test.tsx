@@ -323,10 +323,14 @@ describe('AppsFormComponent grid layout', () => {
                         label: 'Row 1',
                         collapsible_config: {fields: [
                             {name: 'cell_order', type: 'text', label: 'Order'},
-                            {name: 'cell_status', type: 'radio', label: 'Status', value: 'shipped', options: [
-                                {label: 'New', value: 'new'},
-                                {label: 'Shipped', value: 'shipped'},
-                            ]},
+                            {name: 'cell_status',
+                                type: 'radio',
+                                label: 'Status',
+                                value: 'shipped',
+                                options: [
+                                    {label: 'New', value: 'new'},
+                                    {label: 'Shipped', value: 'shipped'},
+                                ]},
                         ]},
                     } as AppField],
                 },

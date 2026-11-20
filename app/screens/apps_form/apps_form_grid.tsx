@@ -196,6 +196,21 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
         },
 
+        // A bare text input renders borderless, so inside a cell it reads as
+        // plain text. Box it so an editable text cell looks tappable and reads
+        // apart from a read-only summary cell. Selects and switches already
+        // carry their own affordance, so only text gets this.
+        cellTextInput: {
+            marginVertical: 3,
+            marginHorizontal: 6,
+            borderRadius: 4,
+            borderWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            overflow: 'hidden',
+            justifyContent: 'center',
+        },
+
         // A summary cell shows one line of text (a taller control is edited on
         // the row's own screen), so it lays its value out horizontally with a
         // little side padding rather than centring an input.
@@ -457,7 +472,7 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
                 testID={testID}
             >
                 {Boolean(cell) && (
-                    <View style={style.cellInput}>
+                    <View style={[style.cellInput, cell.type === AppFieldTypes.TEXT && style.cellTextInput]}>
                         {renderCell(cell)}
                     </View>
                 )}
