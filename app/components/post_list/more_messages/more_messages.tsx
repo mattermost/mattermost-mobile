@@ -15,7 +15,6 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
-import useDidUpdate from '@hooks/did_update';
 import EphemeralStore from '@store/ephemeral_store';
 import {makeStyleSheetFromTheme, hexToHue, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -183,16 +182,13 @@ const MoreMessages = ({
         scrollToIndex(newMessageLineIndex, true);
     }, [newMessageLineIndex, scrollToIndex]);
 
-    useDidUpdate(() => {
-        setLoading(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
-    }, [serverUrl, channelId]);
-
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
             if (eventServerUrl === serverUrl && eventChannelId === channelId) {
                 setLoading(value);
             }
         });
+        setLoading(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
 
         return () => listener.remove();
     }, [serverUrl, channelId]);

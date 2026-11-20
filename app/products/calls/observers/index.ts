@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {distinctUntilChanged, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
+import {distinctUntilChanged, map, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
 
 import {
     observeCallsConfig,
@@ -117,7 +117,7 @@ export const observeCurrentSessionsDict = () => {
         switchMap(([db, call]) => (db && call ? queryUsersById(db, userIds(Object.values(call.sessions))).observeWithColumns(['nickname', 'username', 'first_name', 'last_name', 'last_picture_update']) : of$([])).pipe(
 
             // We now have a UserModel[] one for each userId, but we need the session dictionary with user models
-            // eslint-disable-next-line max-nested-callbacks
+
             switchMap((ps: UserModel[]) => of$(fillUserModels(call?.sessions || {}, ps))),
         )),
     ) as Observable<Dictionary<CallSession>>;
@@ -135,8 +135,10 @@ export const observeDMCallingState = () => {
         distinctUntilChanged(),
     );
 
-    const dmCallee = combineLatest([database, dmCalleeId]).pipe(
-        switchMap(([db, calleeId]) => (db && calleeId ? observeUser(db, calleeId) : of$(undefined))),
+    // A phone call's callee is the dialed number; the Calls bot it runs through is never shown.
+    const isPhoneCall = currentCall.pipe(map((call) => Boolean(call?.phone)), distinctUntilChanged());
+    const dmCallee = combineLatest([database, dmCalleeId, isPhoneCall]).pipe(
+        switchMap(([db, calleeId, isPhone]) => (db && calleeId && !isPhone ? observeUser(db, calleeId) : of$(undefined))),
     );
 
     const isDMCall = dmCalleeId.pipe(

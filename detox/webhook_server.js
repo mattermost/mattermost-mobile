@@ -181,13 +181,20 @@ function postMessageMenus(req, res) {
     return res.json(responseData);
 }
 
+/** Posts an interactive dialog open request to the Mattermost API. Fire-and-forget — never rethrows. */
 async function openDialog(dialog) {
     const baseUrl = getBaseUrl();
-    await axios({
-        method: 'post',
-        url: `${baseUrl}/api/v4/actions/dialogs/open`,
-        data: dialog,
-    });
+    try {
+        await axios({
+            method: 'post',
+            url: `${baseUrl}/api/v4/actions/dialogs/open`,
+            data: dialog,
+        });
+    } catch (err) {
+        // Do NOT rethrow — callers don't await, so a rethrown error becomes an unhandled
+        // rejection that exits the Node process (Node 15+ default behaviour).
+        console.error('[openDialog] failed:', err.response?.status, JSON.stringify(err.response?.data || err.message));
+    }
 }
 
 function onDialogRequest(req, res) {

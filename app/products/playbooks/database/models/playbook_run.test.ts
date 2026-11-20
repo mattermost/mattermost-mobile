@@ -24,6 +24,49 @@ describe('PlaybookRunModel', () => {
         await DatabaseManager.destroyServerDatabase(SERVER_URL);
     });
 
+    describe('timelineEvents', () => {
+        const storeTimelineEvents = async (value: string) => {
+            const run = TestHelper.createPlaybookRuns(1, 0, 0, true)[0];
+            await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+            const runModel = await operator.database.get<PlaybookRunModel>(PLAYBOOK_RUN).find(run.id);
+            await operator.database.write(async () => {
+                await runModel.update((record) => {
+                    (record._raw as unknown as Record<string, string>).timeline_events = value;
+                });
+            });
+            return runModel;
+        };
+
+        it('should keep only well-formed task state events', async () => {
+            const taskEvent = {
+                id: 'event-task',
+                playbook_run_id: 'run-1',
+                create_at: 1,
+                event_at: 1000,
+                event_type: 'task_state_modified',
+                summary: '',
+                details: '{"action":"skip"}',
+                post_id: '',
+                subject_user_id: 'user-1',
+                creator_user_id: 'user-1',
+            };
+            const runModel = await storeTimelineEvents(JSON.stringify([
+                taskEvent,
+                {...taskEvent, id: 'event-status', event_type: 'status_updated'},
+                {event_type: 'task_state_modified'},
+                null,
+            ]));
+
+            expect(runModel.timelineEvents).toEqual([taskEvent]);
+        });
+
+        it('should return an empty array for malformed JSON', async () => {
+            const runModel = await storeTimelineEvents('{invalid');
+
+            expect(runModel.timelineEvents).toEqual([]);
+        });
+    });
+
     describe('prepareDestroyWithRelations', () => {
         it('should prepare run and all its checklists and items for destruction when run has checklists with items', async () => {
             // Create playbook runs with checklists and items

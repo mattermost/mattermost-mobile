@@ -35,7 +35,11 @@ export const getResponseFromError = (err: any) => {
         // Network-level error (ECONNREFUSED, ETIMEDOUT, etc.) — no HTTP response.
         // Return a structured error object instead of throwing so callers can
         // inspect result.error without an unhandled exception breaking the hook chain.
-        const message = `No response from server: ${err?.message || String(err)}. ` +
+        // An AggregateError (one failed attempt per address) has an empty message; the codes say what failed.
+        const inner = Array.isArray(err?.errors) ? err.errors.map((e: any) => e?.code ?? e?.message) : [];
+        const codes = [...new Set([err?.code, ...inner].filter(Boolean))];
+        const detail = codes.length ? ` (${codes.join(', ')})` : '';
+        const message = `No response from server: ${err?.message || String(err)}${detail}. ` +
             'If testing against a non-default server, set the SITE_URL environment variable.';
         console.warn(`[getResponseFromError] Network error: ${message}`); // eslint-disable-line no-console
         return {error: {message}, status: 0};

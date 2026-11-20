@@ -142,7 +142,7 @@ describe('DraftInput', () => {
         });
 
         it('opens scheduled post options on long press and verify action', async () => {
-            jest.mocked(navigateToScreen).mockImplementation(() => {});
+            jest.mocked(navigateToScreen).mockImplementation(() => true);
 
             // make this a re-usable function
             await operator.handleConfigs({
@@ -157,7 +157,7 @@ describe('DraftInput', () => {
             await act(async () => {
                 fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
             });
-            expect(navigateToScreen).toHaveBeenCalledWith(Screens.SCHEDULED_POST_OPTIONS);
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.SCHEDULED_POST_OPTIONS, {hasFiles: false});
 
             // Simulate the scheduled post options screen calling back with a scheduled time
             const callback = CallbackStore.getCallback<(schedulingInfo: SchedulingInfo) => Promise<void>>();
@@ -170,8 +170,25 @@ describe('DraftInput', () => {
             expect(baseProps.sendMessage).toHaveBeenCalledWith({scheduled_at: 100});
         });
 
+        // The picker hides its recurrence toggle for drafts with attachments, since the server rejects
+        // a recurring post that has files.
+        it('should tell the scheduled post options when the draft has attachments', async () => {
+            jest.mocked(navigateToScreen).mockImplementation(() => true);
+            const props = {
+                ...baseProps,
+                files: [TestHelper.fakeFileInfo({id: 'file1'})],
+            };
+
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
+            await act(async () => {
+                fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
+            });
+
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.SCHEDULED_POST_OPTIONS, {hasFiles: true});
+        });
+
         it('should not open scheduled post options if scheduled post are disabled', async () => {
-            jest.mocked(navigateToScreen).mockImplementation(() => {});
+            jest.mocked(navigateToScreen).mockImplementation(() => true);
             const props = {
                 ...baseProps,
                 scheduledPostsEnabled: false,

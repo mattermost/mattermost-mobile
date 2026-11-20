@@ -22,11 +22,9 @@ import type PostModel from '@typings/database/models/servers/post';
 
 const observeHasLinkedPostFiles = (database: Database, p: PostModel | undefined, embedData: PermalinkEmbedData) => {
     // Embed data is recalculated per-user on every channel fetch — trust it over the DB file count.
-    if (isPermalinkEmbedRedacted(embedData)) {
+    // Without the linked post the preview renders nothing.
+    if (!p || isPermalinkEmbedRedacted(embedData)) {
         return of$(false);
-    }
-    if (!p) {
-        return of$((embedData?.post?.metadata?.files?.length ?? 0) > 0);
     }
     return queryFilesForPost(database, p.id).observe().pipe(map((files) => files.length > 0));
 };

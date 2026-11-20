@@ -21,6 +21,7 @@ import {TutorialProvider} from '@context/tutorial';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
+import {useFetchRenderPermissions} from '@hooks/render_permissions';
 import {navigateBack} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import {openUserProfile} from '@utils/navigation';
@@ -124,6 +125,7 @@ export default function ManageChannelMembers({
     }, []);
 
     useAndroidHardwareBackHandler(Screens.MANAGE_CHANNEL_MEMBERS, navigateBack);
+    useFetchRenderPermissions(channelId);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (profile.id !== currentUserId) {
@@ -231,15 +233,15 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         navigation.setOptions({
-            headerRight: () => (
+            headerRight: canManageAndRemoveMembers ? () => (
                 <NavigationButton
                     text={isManageMode ? formatMessage(messages.button_done) : formatMessage(messages.button_manage)}
                     testID={`${TEST_ID}.button`}
                     onPress={toggleManageEnabled}
                 />
-            ),
+            ) : undefined,
         });
-    }, [formatMessage, isManageMode, navigation, toggleManageEnabled]);
+    }, [canManageAndRemoveMembers, formatMessage, isManageMode, navigation, toggleManageEnabled]);
 
     const getFetchChannelMembers = useCallback(async () => {
         const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT, page: pageRef.current};

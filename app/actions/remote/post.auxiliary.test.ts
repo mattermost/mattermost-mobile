@@ -139,6 +139,7 @@ describe('post.auxilary', () => {
                 }),
             ]),
             'processTeamChannels',
+            true,
         );
 
         const postsChannel1 = await queryPostsById(operator.database, ['postid1']);

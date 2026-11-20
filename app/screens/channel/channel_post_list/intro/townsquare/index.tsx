@@ -18,6 +18,7 @@ import type RoleModel from '@typings/database/models/servers/role';
 type Props = {
     channelId: string;
     displayName: string;
+    managementDenied: boolean;
     roles: RoleModel[];
     theme: Theme;
 }
@@ -41,7 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const TownSquare = ({channelId, displayName, roles, theme}: Props) => {
+const TownSquare = ({channelId, displayName, managementDenied, roles, theme}: Props) => {
     const styles = getStyleSheet(theme);
     return (
         <View style={styles.container}>
@@ -60,7 +61,7 @@ const TownSquare = ({channelId, displayName, roles, theme}: Props) => {
             />
             <IntroOptions
                 channelId={channelId}
-                header={hasPermission(roles, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES)}
+                header={!managementDenied && hasPermission(roles, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES)}
                 canAddMembers={false}
             />
         </View>

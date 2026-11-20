@@ -17,8 +17,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal;
     try {
-        return await fetch(url, {...options, signal: controller.signal});
+        return await fetch(url, {...options, signal});
     } finally {
         clearTimeout(timer);
     }
@@ -39,6 +40,15 @@ function buildDisplayReportUrl(baseUrl, identity) {
     return `${baseUrl}/reports/${encodeURIComponent(repoTrailing)}/${encodeURIComponent(branch)}/${shortSha}/${encodeURIComponent(name)}`;
 }
 
+// The run posting the status. Its id and attempt go into the status link, where the toolkit's
+// e2e-status reads who owns the status: without them triage can't add its note to the check.
+function statusRun(identity) {
+    return {
+        id: String(process.env.GITHUB_RUN_ID || identity.gh_run_id || ''),
+        attempt: String(process.env.GITHUB_RUN_ATTEMPT || identity.gh_run_attempt || ''),
+    };
+}
+
 function buildWorkflowRunUrl(identity) {
     const server = process.env.GITHUB_SERVER_URL || 'https://github.com';
     const repository = process.env.GITHUB_REPOSITORY || identity.repository;
@@ -55,6 +65,7 @@ function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl
         failed = 0,
         reportStatus,
         upstreamSucceeded = true,
+        run,
     } = opts;
 
     if (!bothTerminal || !reportId || !displayReportUrl) {
@@ -72,12 +83,30 @@ function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl
         return runUrl;
     }
 
-    return `${displayReportUrl}?gid=${reportId}`;
+    const url = new URL(displayReportUrl);
+    url.searchParams.set('gid', reportId);
+    if (run?.id && run?.attempt) {
+        url.searchParams.set('gh_run_id', run.id);
+        url.searchParams.set('gh_run_attempt', run.attempt);
+    }
+    return url.href;
 }
 
-function decideStatus(detail, upstreamSucceeded) {
+function decideStatus(detail, upstreamSucceeded, cancelled = false) {
     const stats = detail.test_stats || {};
     const bothTerminal = TERMINAL_STATUSES.includes(detail.status);
+
+    // Specs a cancelled run never finished are counted as failed, and its server can
+    // be torn down under the steps that still run: none of that says anything about
+    // the change. Report the cancel, not failures.
+    if (cancelled) {
+        return {
+            state: 'error',
+            description: `E2E run cancelled before it finished (${stats.passed || 0} passed by then) · re-run E2E`.slice(0, 140),
+            both_terminal: bothTerminal,
+            timed_out: false,
+        };
+    }
     if (bothTerminal) {
         const clean = (stats.failed || 0) === 0 && detail.status === 'completed' && upstreamSucceeded;
         const passed = stats.passed || 0;
@@ -179,9 +208,136 @@ function overrideCommitStatus(state, description) {
     };
 }
 
-async function createCommitStatus(token, repository, sha, payload) {
+// The PR-wide triage check. Every lane's triage job writes it too (the
+// e2e-triage action's triage-status-context), with the verdict for all lanes.
+const TRIAGE_CHECK_CONTEXT = 'e2e-test/triage';
+
+/**
+ * The pending check that tells a PR its red lanes are waiting for E2E triage.
+ * Triage (the e2e-triage action in mattermost-test-automation-toolkit) runs
+ * only once every lane has finished, which can be an hour after this one, and
+ * then writes the same check with its verdict. Null when there is nothing to
+ * announce: triage is off for this run, the lane isn't red with test failures,
+ * or E2E/Override already turned it green.
+ *
+ * @returns {{state: string, context: string, description: string, target_url: string} | null}
+ */
+function triageAnnouncement({announce, state, overrideApplied, failed, runUrl, cancelled = false}) {
+    // A cancelled run is not triaged (e2e-detox-pr.yml skips tsio-triage), so the
+    // check says so instead of waiting for a verdict that will never come.
+    if (announce && cancelled) {
+        return {
+            state: 'error',
+            context: TRIAGE_CHECK_CONTEXT,
+            description: 'E2E run cancelled before triage · re-run E2E',
+            target_url: runUrl,
+        };
+    }
+    if (!announce || state !== 'failure' || overrideApplied || !(failed > 0)) {
+        return null;
+    }
+    return {
+        state: 'pending',
+        context: TRIAGE_CHECK_CONTEXT,
+        description: 'E2E failures found · triage starts when every lane has finished',
+        target_url: runUrl,
+    };
+}
+
+/** A response's text, or a note saying why it could not be read within timeoutMs. Never rejects. */
+async function readBodyWithin(res, timeoutMs, controller) {
+    let timer;
+    const timeout = new Promise((resolve) => {
+        timer = setTimeout(() => {
+            controller?.abort();
+            resolve(`(body not read within ${timeoutMs}ms)`);
+        }, timeoutMs);
+    });
+    try {
+        return await Promise.race([res.text().catch((err) => `(body unreadable: ${err.message})`), timeout]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/** Runs a response body read under timeoutMs, aborting controller if it stalls. */
+async function readWithTimeout(promise, timeoutMs, controller) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            controller?.abort();
+            reject(new Error(`body not read within ${timeoutMs}ms`));
+        }, timeoutMs);
+    });
+    try {
+        return await Promise.race([promise, timeout]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+const STATUS_POST_ATTEMPTS = 3;
+const STATUS_POST_DELAY_MS = 2000;
+
+/**
+ * A GitHub REST call, tried again on a 5xx, a 429 rate limit or a dropped connection: the callers
+ * here only post a status (posting it again repeats it) or read. Any other 4xx is the request's
+ * fault and fails at once. Resolves to the OK response, or to readBody(res) when given.
+ */
+async function githubRequestWithRetry(url, init, {
+    what = 'GitHub request',
+    fetchImpl = fetchWithTimeout,
+    wait = sleep,
+    attempts = STATUS_POST_ATTEMPTS,
+    delayMs = STATUS_POST_DELAY_MS,
+    bodyTimeoutMs = FETCH_TIMEOUT_MS,
+    readBody,
+} = {}) {
+    let lastError;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        const controller = new AbortController();
+        const signal = init?.signal ? AbortSignal.any([init.signal, controller.signal]) : controller.signal;
+        let res;
+        try {
+            res = await fetchImpl(url, {...init, signal});
+        } catch (err) {
+            lastError = new Error(`${what} failed: ${err.message}`);
+        }
+        if (res?.ok) {
+            if (!readBody) {
+                controller.abort();
+                res.body?.cancel?.().catch(Boolean);
+                return res;
+            }
+            try {
+                return await readWithTimeout(Promise.resolve().then(() => readBody(res)), bodyTimeoutMs, controller);
+            } catch (err) {
+                lastError = new Error(`${what} failed: ${err.message}`);
+            }
+        } else if (res) {
+            // The body is only for the message: a connection that drops or stalls while it is read must not
+            // escape the retry or hold it (fetchWithTimeout's timer ends when the headers arrive).
+            const body = await readBodyWithin(res, bodyTimeoutMs, controller);
+            lastError = new Error(`${what} failed: ${res.status} ${body}`);
+            if (res.status < 500 && res.status !== 429) {
+                throw lastError;
+            }
+        }
+        if (attempt < attempts) {
+            console.warn(`tsio-report-status: ${lastError.message}; trying again (${attempt + 1}/${attempts})`);
+            await wait(delayMs * attempt);
+        }
+    }
+    throw lastError;
+}
+
+/**
+ * Posts a commit status, with githubRequestWithRetry's retries: giving up on a transient error
+ * would fail the lane's job on a run whose tests passed.
+ */
+async function createCommitStatus(token, repository, sha, payload, options = {}) {
     const [owner, repo] = repository.split('/');
-    const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
+    await githubRequestWithRetry(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -190,8 +346,7 @@ async function createCommitStatus(token, repository, sha, payload) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`createCommitStatus failed: ${res.status} ${await res.text()}`);
+    }, {...options, what: 'createCommitStatus'});
 }
 
 async function reportTsioStatus(options) {
@@ -200,6 +355,7 @@ async function reportTsioStatus(options) {
         totalReportsExpected,
         commitStatusContext,
         upstreamJobsSucceeded = true,
+        cancelled = false,
         githubToken,
         e2eOverride = false,
         failOnTestFailures = true,
@@ -210,6 +366,7 @@ async function reportTsioStatus(options) {
 
         // Per-job finalize leaves this false so N platform legs do not spam the channel.
         channelNotify = false,
+        announceTriage = false,
     } = options;
 
     const baseUrl = baseUrlOverride || (useStaging ? STAGING_URL : PRODUCTION_URL);
@@ -298,7 +455,7 @@ async function reportTsioStatus(options) {
     result.test_stats = detail.test_stats || {};
 
     const {state, description, both_terminal: bothTerminal, timed_out: timedOut} =
-        decideStatus(detail, upstreamJobsSucceeded);
+        decideStatus(detail, upstreamJobsSucceeded, cancelled);
     result.timed_out = timedOut;
     result.state = state;
 
@@ -306,9 +463,28 @@ async function reportTsioStatus(options) {
         failed: result.test_stats.failed || 0,
         reportStatus: detail.status,
         upstreamSucceeded: upstreamJobsSucceeded,
+        run: statusRun(compositeIdentity),
     });
 
     await postStatus({state, description, targetUrl});
+
+    const announcement = triageAnnouncement({
+        announce: announceTriage,
+        state: result.state,
+        overrideApplied: result.override_applied,
+        failed: result.test_stats.failed || 0,
+        context: commitStatusContext,
+        runUrl,
+        cancelled,
+    });
+    if (announcement) {
+        // Best effort: the required status above is what gates the PR.
+        try {
+            await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, announcement);
+        } catch (err) {
+            console.warn(`tsio-report-status: triage check not posted: ${err.message}`);
+        }
+    }
 
     if (process.env.GITHUB_STEP_SUMMARY) {
         const stats = result.test_stats;
@@ -500,6 +676,7 @@ async function main() {
             totalReportsExpected,
             commitStatusContext: context,
             upstreamJobsSucceeded: upstreamSucceeded,
+            cancelled: args.cancelled === 'true',
             githubToken: args['github-token'] || process.env.GITHUB_TOKEN,
             e2eOverride: args['e2e-override'] === 'true',
             failOnTestFailures,
@@ -508,6 +685,7 @@ async function main() {
             audience: args.audience || 'mattermost-test-system-io',
             baseUrl: args['base-url'],
             channelNotify: args['channel-notify'] === 'true',
+            announceTriage: args['announce-triage'] === 'true',
         });
         console.log(JSON.stringify(result, null, 2));
         process.exit(0);
@@ -524,17 +702,21 @@ async function main() {
 module.exports = {
     buildDisplayReportUrl,
     buildWorkflowRunUrl,
+    createCommitStatus,
+    githubRequestWithRetry,
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
     reportTsioStatus,
     repoTail,
+    triageAnnouncement,
     mintOidcToken,
     beginGroup,
     pollGroup,
     OVERRIDE_LABEL,
     PRODUCTION_URL,
     STAGING_URL,
+    TRIAGE_CHECK_CONTEXT,
 };
 
 if (require.main === module) {

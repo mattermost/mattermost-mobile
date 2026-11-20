@@ -3,15 +3,14 @@
 
 import {defineMessage} from 'react-intl';
 
-import * as ClientConstants from '@client/rest/constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_VERIFIED, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
-import {getFullErrorMessage} from '@utils/errors';
-import {getResponseHeader} from '@utils/headers';
+import {getFullErrorMessage, preauthSecretInvalidMessage} from '@utils/errors';
+import {isPreauthRejection} from '@utils/headers';
 import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
@@ -77,18 +76,16 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
             if (!client) {
                 NetworkManager.invalidateClient(serverUrl);
             }
-            if (response.code === 403 && getResponseHeader(response.headers, ClientConstants.HEADER_X_REJECT_REASON) === 'pre-auth') {
-                return {error: {intl: pingError}, isPreauthError: true};
+            if (isPreauthRejection(response.code, response.headers)) {
+                return {error: {intl: preauthSecretInvalidMessage}, isPreauthError: true};
             }
             return {error: {intl: pingError}};
         }
     } catch (error) {
         // Check if this is a 403 with pre-auth header
         const errorObj = error as ClientError;
-        if (errorObj.status_code === 403) {
-            if (getResponseHeader(errorObj.headers, ClientConstants.HEADER_X_REJECT_REASON) === 'pre-auth') {
-                return {error: {intl: pingError}, isPreauthError: true};
-            }
+        if (isPreauthRejection(errorObj.status_code, errorObj.headers)) {
+            return {error: {intl: preauthSecretInvalidMessage}, isPreauthError: true};
         }
 
         if (!client) {

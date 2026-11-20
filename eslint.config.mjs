@@ -7,10 +7,24 @@ import * as tsparser from "@typescript-eslint/parser";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
 import stylistic from "@stylistic/eslint-plugin";
+import {readFileSync} from "node:fs";
 
 // Load custom rulesets
 import eslintMattermost, {jestConfig} from "./eslint/eslint-mattermost.mjs";
 import eslintReact from "./eslint/eslint-react.mjs";
+
+// Detox's bare element.longPress() is a single tap on Android, so it fires onPress instead of onLongPress.
+// Only zero-arg calls match; Gesture.LongPress is excluded by the lower-case property name.
+const detoxLongPressRestriction = {
+  "selector": "CallExpression[callee.type=\"MemberExpression\"][callee.property.name=\"longPress\"][arguments.length=0]",
+  "message": "Pass an explicit duration to longPress() (e.g. .longPress(timeouts.TWO_SEC)). Bare .longPress() with no args resolves to a single tap on Android, firing onPress instead of onLongPress."
+};
+
+// Only specs in the mutation manifest may change server-wide state; every other spec runs on a
+// shared pool server (the CI pool guard in detox/e2e/support/server_api/pool_guard.ts enforces the same).
+const serverMutationSpecs = JSON.parse(readFileSync(new URL("./detox/e2e/server_mutation_specs.json", import.meta.url), "utf8")).mutation.map((entry) => entry.spec);
+const serverWideMutators = "apiUpdateConfig|apiPatchConfig|apiReplaceConfig|apiPatchFeatureFlags|apiEnableFeatureFlags|apiUploadLicense|apiEnableABAC|apiCreateCustomProfileAttributeField|apiDeleteCustomProfileAttributeField|apiGetOrCreateCustomProfileAttributeField|apiLDAPSync|apiRequireLDAPServer|apiEnablePluginById|apiDisablePluginById|apiDisableNonPrepackagedPlugins|apiInstallPluginFromUrl|apiInstallPluginFromMarketplace|apiEnsurePluginInstalled|apiRemovePluginById|apiPatchSystemPropertyValues|apiSetupClassificationWithBanner|apiCleanupClassification|apiCreateRemoteCluster|apiDeleteRemoteCluster|apiDeleteAllRemoteClusters|apiEnsureAtLeastOneConfirmedRemoteCluster|apiEnsureSingleRemoteCluster|apiShareChannelWithRemote|apiCreateTermsOfService|apiEnableCustomTermsOfService|apiDisableCustomTermsOfService|apiCreatePermissionPolicy";
+const serverWideMutatorMessage = "This changes server-wide state on a shared pool server. Put the expected state in detox/shared/server-baseline.ts, or move the test into its own spec listed in detox/e2e/server_mutation_specs.json.";
 
 export default defineConfig([
   globalIgnores([
@@ -166,18 +180,27 @@ export default defineConfig([
       "max-nested-callbacks": "off",
       "no-process-env": "off",
       "no-unused-expressions": "off",
-      // SEC-10992: Detox's bare element.longPress() (no duration) resolves to a single
-      // tap on Android (detoxsingletap), not a long press — it fires onPress instead of
-      // onLongPress (e.g. opening a link bookmark's URL in the browser instead of the
-      // options sheet, which hung MM-T5725_1). Always pass an explicit duration, e.g.
-      // .longPress(timeouts.TWO_SEC). The selector matches only zero-arg calls, so
-      // .longPress(timeouts.X) / .longPress(2000) are unaffected, and Gesture.LongPress
-      // (react-native-gesture-handler) is excluded by the lower-case property name.
+      "no-restricted-syntax": ["error", detoxLongPressRestriction]
+    }
+  },
+  {
+    files: ["detox/e2e/test/**/*.e2e.ts"],
+    ignores: serverMutationSpecs,
+    rules: {
+      // Flat config replaces a rule's options wholesale, so the longPress restriction is repeated.
       "no-restricted-syntax": [
         "error",
+        detoxLongPressRestriction,
+        {"selector": `CallExpression[callee.property.name=/^(${serverWideMutators})$/]`, "message": serverWideMutatorMessage},
+        {"selector": `CallExpression[callee.name=/^(${serverWideMutators})$/]`, "message": serverWideMutatorMessage}
+      ],
+      "no-restricted-imports": [
+        "error",
         {
-          "selector": "CallExpression[callee.type=\"MemberExpression\"][callee.property.name=\"longPress\"][arguments.length=0]",
-          "message": "Pass an explicit duration to longPress() (e.g. .longPress(timeouts.TWO_SEC)). Bare .longPress() with no args resolves to a single tap on Android, firing onPress instead of onLongPress. See SEC-10992."
+          "patterns": [{
+            "group": ["@support/channel_attributes_test_helper", "@support/classification_test_helper"],
+            "message": "These helpers toggle server-wide feature flags; only specs in detox/e2e/server_mutation_specs.json may use them."
+          }]
         }
       ]
     }

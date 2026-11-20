@@ -23,7 +23,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, reloadApp, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Search', () => {
@@ -104,7 +104,7 @@ describe('Channels - Channel Bookmarks Search', () => {
         bookmarkT5614 = deleteSearchResult.bookmark;
 
         await wait(timeouts.TWO_SEC);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
     });
 

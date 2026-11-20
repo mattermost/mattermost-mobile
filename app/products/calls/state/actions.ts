@@ -26,6 +26,7 @@ import {
     type AudioRoute,
     type Call,
     type CallsConfigState,
+    CallsTransport,
     type ChannelsWithCalls,
     ChannelType,
     type CurrentCall,
@@ -35,7 +36,7 @@ import {
     type LiveCaptionMobile,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
-import {getDMCalleeId, hasOtherUserJoined} from '@calls/utils';
+import {getCallsTransport, getDMCalleeId, hasOtherUserJoined} from '@calls/utils';
 import {Calls, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -64,6 +65,13 @@ const keepMyMuteState = (call: CurrentCall): CurrentCall => {
         ...call,
         sessions: {...call.sessions, [call.mySessionId]: {...mySession, muted: false}},
     };
+};
+
+export const isLiveKitCurrentCall = (serverUrl: string, channelId: string) => {
+    const currentCall = getCurrentCall();
+    return currentCall?.serverUrl === serverUrl &&
+        currentCall.channelId === channelId &&
+        currentCall.transport === CallsTransport.LiveKit;
 };
 
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
@@ -97,10 +105,12 @@ export const setCalls = async (serverUrl: string, myUserId: string, calls: Dicti
 
     // Edge case: if the app went into the background and lost the main ws connection, we don't know who is currently
     // talking. Instead of guessing, erase voiceOn state (same state as when joining an ongoing call).
+    // A LiveKit room keeps reporting who is talking, so its state stands.
+    const roomOwnedState = currentCall.transport === CallsTransport.LiveKit ? {sessions: currentCall.sessions, voiceOn: currentCall.voiceOn} : {voiceOn: {}};
     const nextCall = keepMyMuteState({
         ...currentCall,
         ...calls[currentCall.channelId],
-        voiceOn: {},
+        ...roomOwnedState,
     });
     setCurrentCall(nextCall);
     stopRingbackIfAnswered(nextCall);
@@ -356,6 +366,16 @@ export const stopRingback = () => {
     }
 };
 
+export const phoneCallAnswered = (channelId: string) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId !== channelId || currentCall.dmCalleeAnsweredAt) {
+        return;
+    }
+
+    setCurrentCall({...currentCall, dmCalleeAnsweredAt: Date.now()});
+    stopRingback();
+};
+
 const stopRingbackIfAnswered = (call: CurrentCall) => {
     if (hasOtherUserJoined(call.sessions, call.myUserId)) {
         stopRingback();
@@ -377,7 +397,8 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         return;
     }
 
-    if (!getCallsConfig(serverUrl).EnableRinging) {
+    // The tone is the caller's only sign that the phone is ringing, so it plays whatever EnableRinging says.
+    if (!currentCall.phone && !getCallsConfig(serverUrl).EnableRinging) {
         return;
     }
 
@@ -406,7 +427,8 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
     // The callee's phone rings from the moment the call is placed, so the tone gets the remainder
     // of that window rather than a full timeout from whenever the media connection came up. Once
     // the window is gone there's nothing left to play.
-    const remaining = Calls.RINGBACK_TONE_TIMEOUT - (Date.now() - ringbackWindowStartedAt);
+    const timeout = latestCall.phone ? Calls.PHONE_RINGBACK_TONE_TIMEOUT : Calls.RINGBACK_TONE_TIMEOUT;
+    const remaining = timeout - (Date.now() - ringbackWindowStartedAt);
     if (remaining <= 0) {
         return;
     }
@@ -598,7 +620,7 @@ export const userLeftCall = (serverUrl: string, channelId: string, sessionId: st
     setCurrentCall(nextCurrentCall);
 };
 
-export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: string, {startedByMe = false, startUnmuted = false} = {}) => {
+export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: string, transport: CallsTransport, {startedByMe = false, startUnmuted = false} = {}) => {
     let existingCall: Call = DefaultCall;
     const callsState = getCallsState(serverUrl);
     if (callsState.calls[channelId]) {
@@ -626,6 +648,7 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
         serverUrl,
         channelId,
         myUserId,
+        transport,
         startedByMe: iPlacedThisCall,
         startUnmuted,
 
@@ -657,7 +680,7 @@ export const startOutgoingCall = (serverUrl: string, channelId: string) => {
         return;
     }
 
-    newCurrentCall(serverUrl, channelId, myUserId, {startedByMe: true, startUnmuted: true});
+    newCurrentCall(serverUrl, channelId, myUserId, getCallsTransport(getCallsConfig(serverUrl)), {startedByMe: true, startUnmuted: true});
 };
 
 // Stops standing in for our own mute state, leaving whatever the server last said. Used when the
@@ -986,7 +1009,7 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: User
     //  When you leave a call, you will lose the reactions you were tracking.
     //  We can revisit this if it causes UX issues.
     const currentCall = getCurrentCall();
-    if (currentCall?.channelId !== channelId) {
+    if (currentCall?.channelId !== channelId || !reaction.emoji?.name) {
         return;
     }
 

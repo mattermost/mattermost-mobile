@@ -80,7 +80,7 @@ describe('Post Queries', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [referencingPost.id, nonReferencingPost.id],
                 posts: [referencingPost, nonReferencingPost],
@@ -128,7 +128,7 @@ describe('Post Queries', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [channel1Post.id, channel2Post.id],
                 posts: [channel1Post, channel2Post],
@@ -161,7 +161,7 @@ describe('Post Queries', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [deletedPost.id],
                 posts: [deletedPost],
@@ -182,7 +182,7 @@ describe('Post Queries', () => {
                 metadata: undefined,
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [postWithoutMetadata.id],
                 posts: [postWithoutMetadata],
@@ -205,7 +205,7 @@ describe('Post Queries', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [postWithEmptyEmbeds.id],
                 posts: [postWithEmptyEmbeds],
@@ -246,7 +246,7 @@ describe('Post Queries', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [postWithMultipleEmbeds.id],
                 posts: [postWithMultipleEmbeds],
@@ -286,7 +286,7 @@ describe('Post Queries', () => {
                 },
             });
 
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [partialMatchPost.id],
                 posts: [partialMatchPost],

@@ -27,7 +27,7 @@ module.exports = {
     transformIgnorePatterns: [
         'node_modules/(?!' +
         '(@react-native|react-native)|' +
-        'expo(?:-[^/]+)?|@expo|expo-modules-core|uuid|' +
+        'expo(?:-[^/]+)?|@expo|expo-modules-core|@react-navigation/[^/]+|uuid|' +
         '@sentry/react-native|' +
         'react-intl|@formatjs/[^/]+|intl-messageformat|@messageformat/[^/]+|' +
         'validator|' +

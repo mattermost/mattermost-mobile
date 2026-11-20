@@ -12,7 +12,6 @@ import {HomeScreen} from '@support/ui/screen';
 import {
     isAndroid,
     isIos,
-    safeEnableSynchronization,
     tapNativeBackButton,
     timeouts,
     wait,
@@ -27,12 +26,20 @@ const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 // Detox actions carry no timeout, so one that never completes takes the whole file with it
 // (main 0869dc8). Only for optional scrolls — if the result is asserted right after, the
 // scroll must stay synchronized so the list settles.
+/**
+ * Runs an optional scroll with synchronization off. Only the scroll is best effort: an error from turning
+ * synchronization off or on is not, since the idling resources it leaves broken report the app busy until the file
+ * times out.
+ * @param scroll - the scroll action
+ */
 async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
-    try {
-        await withSynchronizationDisabled(scroll);
-    } catch {
-        // List not scrollable, already at the boundary, or not mounted yet.
-    }
+    await withSynchronizationDisabled(async () => {
+        try {
+            await scroll();
+        } catch {
+            // List not scrollable, already at the boundary, or not mounted yet.
+        }
+    });
 }
 
 class ChannelListScreen {
@@ -40,6 +47,7 @@ class ChannelListScreen {
         categoryHeaderPrefix: 'channel_list.category_header.',
         categoryPrefix: 'channel_list.category.',
         channelList: 'channel_list.flat_list',
+        sidebarScrollView: 'channel_list.scroll_view',
         draftChannelInfo: 'draft_post.channel_info',
         draftbuttonListScreen: 'channel_list.drafts.button',
         draftCountListScreen: 'channel_list.drafts.count',
@@ -57,6 +65,9 @@ class ChannelListScreen {
 
     channelListScreen = element(by.id(this.testID.channelListScreen));
     channelList = element(by.id(this.testID.channelList));
+
+    // On iOS the categories list grows to its full height inside this outer list, so only the outer one scrolls.
+    sidebarScroller = isIos() ? element(by.id(this.testID.sidebarScrollView)) : this.channelList;
     serverIcon = element(by.id(this.testID.serverIcon));
     headerTeamDisplayName = element(by.id(this.testID.headerTeamDisplayName));
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
@@ -118,7 +129,7 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
-        await bestEffortScroll(() => this.channelList.scrollTo('top'));
+        await bestEffortScroll(() => this.sidebarScroller.scrollTo('top'));
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -146,7 +157,7 @@ class ChannelListScreen {
                     // Not in this category yet — try the next
                 }
             }
-            await bestEffortScroll(() => this.channelList.scroll(280, 'down', 0.5, 0.45));
+            await bestEffortScroll(() => this.sidebarScroller.scroll(280, 'down', 0.5, 0.45));
         }
         /* eslint-enable no-await-in-loop */
 
@@ -192,7 +203,7 @@ class ChannelListScreen {
                     try {
                         // Synchronized on purpose: the next loop iteration asserts visibility,
                         // so the list has to settle first.
-                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                        await this.sidebarScroller.scroll(100, 'down', 0.5, 0.3);
                     } catch {
                         // The final assertion reports if the list edge still clips the row.
                     }
@@ -222,7 +233,7 @@ class ChannelListScreen {
                 break;
             } catch {
                 try {
-                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                    await this.sidebarScroller.scroll(100, 'down', 0.5, 0.3);
                 } catch {
                     // List edge reached — the taps below still report if it stays clipped.
                 }
@@ -464,16 +475,16 @@ class ChannelListScreen {
         return this.toBeVisible();
     };
 
-    openPlusMenu = async () => {
+    // afterMenuOpen runs with the plus menu open and, on Android, inside the same sync-off window as the
+    // plus tap. A caller that taps a menu item passes it here instead of calling openPlusMenu and tapping
+    // afterwards: re-enabling sync between the two taps is what raced the Android looper (see
+    // BrowseChannelsScreen.open). The pre-tap checks stay synchronized, as they were before that window.
+    openPlusMenu = async (afterMenuOpen?: () => Promise<void>) => {
         await dismissKnownModals(2);
         await this.toBeVisible();
         await waitForElementToExist(this.headerPlusButton, timeouts.HALF_MIN);
 
-        const disableSyncForOpen = isAndroid();
-        if (disableSyncForOpen) {
-            await device.disableSynchronization();
-        }
-        try {
+        const open = async () => {
             let plusTapError: unknown;
             /* eslint-disable no-await-in-loop -- retry plus-button tap while transition overlay clears */
             for (let i = 0; i < 3; i++) {
@@ -505,10 +516,14 @@ class ChannelListScreen {
 
             // Android: menu items mount before they pass the 15% visibility threshold.
             await waitForElementToExist(this.openDirectMessageItem, timeouts.TEN_SEC);
-        } finally {
-            if (disableSyncForOpen) {
-                await safeEnableSynchronization();
-            }
+            await afterMenuOpen?.();
+        };
+
+        // Depth-counted, so a caller that is already inside withSynchronizationDisabled keeps sync off too.
+        if (isAndroid()) {
+            await withSynchronizationDisabled(open);
+        } else {
+            await open();
         }
     };
 

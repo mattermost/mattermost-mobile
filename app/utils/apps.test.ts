@@ -571,6 +571,80 @@ describe('cleanForm', () => {
         cleanForm(form);
         expect(form.fields).toHaveLength(3);
     });
+
+    it('should keep a collapsible section whose title has spaces and preserve its fields', () => {
+        const form: AppForm = {
+            fields: [
+                {
+                    name: 'advanced',
+                    type: AppFieldTypes.COLLAPSIBLE,
+                    label: 'Advanced options',
+                    collapsible_config: {
+                        fields: [
+                            {name: 'required_field', type: 'text', label: 'Required'} as AppField,
+                        ],
+                    },
+                } as AppField,
+            ],
+        };
+
+        cleanForm(form);
+        expect(form.fields).toHaveLength(1);
+        expect(form.fields![0].name).toBe('advanced');
+        expect(form.fields![0].collapsible_config?.fields).toHaveLength(1);
+        expect(form.fields![0].collapsible_config?.fields![0].name).toBe('required_field');
+    });
+
+    it('should recurse into a collapsible section and clean its nested fields', () => {
+        const form: AppForm = {
+            fields: [
+                {
+                    name: 'section',
+                    type: AppFieldTypes.COLLAPSIBLE,
+                    label: 'Section',
+                    collapsible_config: {
+                        fields: [
+                            {name: '', type: 'text'} as AppField, // removed: no name
+                            {name: 'bad name', type: 'text'} as AppField, // removed: space in name
+                            {name: 'empty_select', type: AppFieldTypes.STATIC_SELECT, options: []} as AppField, // removed: no options
+                            {name: 'dynamic_no_lookup', type: AppFieldTypes.DYNAMIC_SELECT} as AppField, // removed: no lookup
+                            {name: 'keep', type: 'text', label: 'Keep'} as AppField,
+                        ],
+                    },
+                } as AppField,
+            ],
+        };
+
+        cleanForm(form);
+        const nested = form.fields![0].collapsible_config?.fields;
+        expect(nested).toHaveLength(1);
+        expect(nested![0].name).toBe('keep');
+    });
+
+    it('should enforce label uniqueness across the flattened section tree', () => {
+        const form: AppForm = {
+            fields: [
+                {name: 'top', type: 'text', label: 'shared'} as AppField,
+                {
+                    name: 'section',
+                    type: AppFieldTypes.COLLAPSIBLE,
+                    label: 'Section',
+                    collapsible_config: {
+                        fields: [
+                            {name: 'nested_dup', type: 'text', label: 'shared'} as AppField, // removed: duplicates top-level label
+                            {name: 'nested_ok', type: 'text', label: 'unique'} as AppField,
+                        ],
+                    },
+                } as AppField,
+            ],
+        };
+
+        cleanForm(form);
+        expect(form.fields![0].name).toBe('top');
+        const nested = form.fields![1].collapsible_config?.fields;
+        expect(nested).toHaveLength(1);
+        expect(nested![0].name).toBe('nested_ok');
+    });
 });
 
 describe('makeCallErrorResponse', () => {

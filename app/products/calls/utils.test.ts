@@ -6,7 +6,7 @@ import assert from 'assert';
 import {Alert} from 'react-native';
 import {SelectedTrackType} from 'react-native-video';
 
-import {CallCardState, CallPostStatus, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
+import {CallCardState, CallPostStatus, CallsTransport, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
 import {License, Post, Preferences} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import TestHelper from '@test/test_helper';
@@ -25,6 +25,7 @@ import {
     isSupportedServerCalls,
     isHostControlsAllowed,
     areGroupCallsAllowed,
+    getCallsTransport,
     isCallsCustomMessage,
     idsAreEqual,
     errorAlert,
@@ -32,8 +33,11 @@ import {
     isCallsStartedMessage,
     hasCaptions,
     getTranscriptionUri,
+    getPhoneCallPropsFromPost,
+    getDialablePhones,
 } from './utils';
 
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IntlShape} from 'react-intl';
 
@@ -462,6 +466,29 @@ describe('isHostControlsAllowed and areGroupCallsAllowed', () => {
     });
 });
 
+describe('getCallsTransport', () => {
+    const configWithVersion = (version?: string): CallsConfigState => ({
+        ...DefaultCallsConfig,
+        version: {version},
+    });
+
+    it('selects LiveKit at the 2.0.0 floor', () => {
+        expect(getCallsTransport(configWithVersion('2.0.0'))).toBe(CallsTransport.LiveKit);
+    });
+
+    it('selects LiveKit for a pre-release 2.x plugin build', () => {
+        expect(getCallsTransport(configWithVersion('2.0.1-dev'))).toBe(CallsTransport.LiveKit);
+    });
+
+    it('selects rtcd for a 1.x plugin', () => {
+        expect(getCallsTransport(configWithVersion('1.12.5'))).toBe(CallsTransport.Rtcd);
+    });
+
+    it('selects rtcd when the version has not been fetched', () => {
+        expect(getCallsTransport(DefaultCallsConfig)).toBe(CallsTransport.Rtcd);
+    });
+});
+
 describe('isCallsCustomMessage', () => {
     it('identifies calls messages', () => {
         expect(isCallsCustomMessage(TestHelper.fakePost({type: Post.POST_TYPES.CUSTOM_CALLS}))).toBe(true);
@@ -674,39 +701,43 @@ describe('getCallCardState', () => {
     });
 
     it('should be calling when the call is ringing and only the caller is in it', () => {
-        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 1, true)).toBe(CallCardState.Calling);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), false, true)).toBe(CallCardState.Calling);
     });
 
     it('should be active once the callee answers, even though call_status is still calling', () => {
-        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 2, true)).toBe(CallCardState.Active);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), true, true)).toBe(CallCardState.Active);
     });
 
     it('should be active for an ongoing call with no call_status', () => {
-        expect(getCallCardState(makeCallProps(), 2, true)).toBe(CallCardState.Active);
+        expect(getCallCardState(makeCallProps(), true, true)).toBe(CallCardState.Active);
     });
 
     it('should be ended once the call is gone, before the post has an end_at', () => {
-        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 0, false)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), false, false)).toBe(CallCardState.Ended);
     });
 
     it('should be no answer for a call that timed out while ringing', () => {
-        expect(getCallCardState(makeCallProps({end_at: 31000, call_status: CallPostStatus.NoAnswer}), 0, false)).toBe(CallCardState.NoAnswer);
+        expect(getCallCardState(makeCallProps({end_at: 31000, call_status: CallPostStatus.NoAnswer}), false, false)).toBe(CallCardState.NoAnswer);
     });
 
     it('should be canceled for a call the caller hung up while ringing', () => {
-        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.CanceledByCaller}), 0, false)).toBe(CallCardState.Canceled);
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.CanceledByCaller}), false, false)).toBe(CallCardState.Canceled);
     });
 
     it('should be declined for a call the callee turned down', () => {
-        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.Declined}), 0, false)).toBe(CallCardState.Declined);
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.Declined}), false, false)).toBe(CallCardState.Declined);
+    });
+
+    it('should be failed for a call the server could not place', () => {
+        expect(getCallCardState(makeCallProps({end_at: 5000, call_status: CallPostStatus.Failed}), true, false)).toBe(CallCardState.Failed);
     });
 
     it('should be ended for a call that was answered and then hung up', () => {
-        expect(getCallCardState(makeCallProps({end_at: 500000, call_status: CallPostStatus.Ended}), 0, false)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({end_at: 500000, call_status: CallPostStatus.Ended}), false, false)).toBe(CallCardState.Ended);
     });
 
     it('should be ended for an ended call with no call_status, such as a channel call', () => {
-        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: ''}), 0, false)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: ''}), false, false)).toBe(CallCardState.Ended);
     });
 });
 
@@ -728,5 +759,34 @@ describe('getNumUsersInCall', () => {
 
     it('should be zero when there is no call', () => {
         expect(getNumUsersInCall(undefined)).toBe(0);
+    });
+});
+
+describe('getPhoneCallPropsFromPost', () => {
+    const phoneProps = {call_type: 'phone', phone_number: '+15551234567', display_label: 'Mobile', target_user_id: 'user-2'};
+
+    it('should read a phone call post\'s number, label and target, falling back to the dialed number for display', () => {
+        const withDisplay = TestHelper.fakePost({props: {...phoneProps, display_number: '(555) 123-4567'}});
+        expect(getPhoneCallPropsFromPost(withDisplay)).toEqual({
+            number: '+15551234567',
+            displayNumber: '(555) 123-4567',
+            label: 'Mobile',
+            targetUserId: 'user-2',
+        });
+
+        expect(getPhoneCallPropsFromPost(TestHelper.fakePost({props: phoneProps}))?.displayNumber).toBe('+15551234567');
+        expect(getPhoneCallPropsFromPost(TestHelper.fakePost({props: {phone_number: '+15551234567'}}))).toBeUndefined();
+    });
+});
+
+describe('getDialablePhones', () => {
+    it('should offer only the phone attributes that have a number, trimmed', () => {
+        const attributes: CustomAttribute[] = [
+            {id: 'a', name: 'Mobile', value: '  +15551234567 ', type: 'phone'},
+            {id: 'b', name: 'Office', value: '   ', type: 'phone'},
+            {id: 'c', name: 'Pronouns', value: 'they/them', type: 'text'},
+        ];
+
+        expect(getDialablePhones(attributes)).toEqual([{label: 'Mobile', number: '+15551234567'}]);
     });
 });

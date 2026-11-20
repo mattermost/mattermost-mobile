@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -65,27 +65,13 @@ class BrowseChannelsScreen {
         }
 
         // # Open browse channels screen from the channel list header plus button.
-        await ChannelListScreen.openPlusMenu();
-
-        // openPlusMenu disables synchronization for the plus tap on Android precisely because
-        // the app is busy there, but re-enables it in its own finally -- so this tap, one line
-        // later, met the same busy app with sync back on. Detox then waits for idle before
-        // dispatching, and MM-T1719_1 timed out with both RN loopers ("mqt_v_js",
-        // "mqt_v_native") executing and this exact invocation unanswered:
-        //   matcherForTestId("plus_menu_item.browse_channels") ... click
-        // Extend the same Android-only window over the menu-item tap. withSynchronizationDisabled
-        // is depth-counted, so it nests safely.
-        //
-        // NOTE: unverified against MM-T1719_1 -- that failure does not reproduce locally, clean
-        // or under CPU load. This closes a real gap in sync coverage and matches the treatment
-        // the adjacent tap already gets, but it is not confirmed to be the cause.
-        if (isAndroid()) {
-            await withSynchronizationDisabled(async () => {
-                await ChannelListScreen.browseChannelsItem.tap();
-            });
-        } else {
+        // On Android the menu-item tap runs inside openPlusMenu's sync-off window, so sync is not turned back on
+        // between the plus tap and this tap and off again (the looper race of MM-T4932_3 / MM-T1719_1).
+        // archive_channel's hang on browse_channels.screen (runs 42521284188, 42620618054) began earlier: a
+        // disable 5s after reloadReactNative hit the same race; reloads now settle first (reloadApp).
+        await ChannelListScreen.openPlusMenu(async () => {
             await ChannelListScreen.browseChannelsItem.tap();
-        }
+        });
         await wait(timeouts.ONE_SEC);
 
         // openPlusMenu disables sync on Android; wait for the screen before returning.

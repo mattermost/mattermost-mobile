@@ -6,8 +6,6 @@ import path from 'path';
 import {
     DEMO_PLUGIN_FIXTURE_FILENAME,
     DEMO_PLUGIN_ID,
-    demoPluginInstallPlan,
-    ensureDemoPluginFixture,
 } from '../../../shared/demo-plugin-fixture';
 
 import client from './client';
@@ -238,68 +236,6 @@ export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, vers
     }
 };
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Ensure the demo plugin is active without asking the Mattermost origin to
- * download GitHub (install_from_url 524s behind Cloudflare and wedges the shard).
- * Prefer: already active → enable inactive → multipart-upload the runner fixture.
- */
-export const apiUploadAndEnablePlugin = async (options: {
-    baseUrl: string;
-    version?: string;
-    force?: boolean;
-    filename?: string;
-}): Promise<any> => {
-    const {baseUrl, version, filename = DEMO_PLUGIN_FIXTURE_FILENAME} = options;
-    const id = DemoPlugin.id;
-
-    const statusResult = await apiGetPluginStatus(baseUrl, id, version);
-    if (statusResult.error) {
-        return statusResult;
-    }
-
-    const plan = demoPluginInstallPlan(statusResult);
-    if (plan === 'noop') {
-        return {plugin: statusResult.plugin, message: 'Demo plugin already active'};
-    }
-
-    if (plan === 'enable') {
-        const enableResult = await apiEnablePluginById(baseUrl, id);
-        if (enableResult.error) {
-            return enableResult;
-        }
-        await sleep(2000);
-        return apiGetPluginStatus(baseUrl, id, version);
-    }
-
-    try {
-        await ensureDemoPluginFixture();
-    } catch (err) {
-        return {
-            error: {message: err instanceof Error ? err.message : String(err)},
-            status: 0,
-        };
-    }
-
-    const uploadResult = await apiUploadPlugin(baseUrl, filename, true);
-    if (uploadResult.error) {
-        return uploadResult;
-    }
-    await sleep(1000);
-
-    const enableResult = await apiEnablePluginById(baseUrl, id);
-    if (enableResult.error) {
-        const afterError = await apiGetPluginStatus(baseUrl, id, version);
-        if (afterError.isActive) {
-            return {plugin: afterError.plugin, message: 'Demo plugin uploaded; enable timed out but plugin is active'};
-        }
-        return enableResult;
-    }
-    await sleep(1000);
-    return apiGetPluginStatus(baseUrl, id, version);
-};
-
 /**
  * Install a plugin from the Marketplace.
  * See https://api.mattermost.com/#operation/InstallMarketplacePlugin
@@ -399,22 +335,6 @@ export const apiSubmitDemoPluginFileUploadDialog = async (
     }
 };
 
-/**
- * Clear the demo plugin's persisted file-upload KV entry for a user.
- * @param {string} baseUrl - the base server URL
- * @param {string} userId - the user ID whose KV entry to clear
- * @return {Object} returns {status} on success or {error, status} on error
- */
-export const apiClearDemoPluginFileUploadKV = async (baseUrl: string, userId: string): Promise<any> => {
-    try {
-        const kvKey = encodeURIComponent(`file_upload_${userId}`);
-        const response = await client.delete(`${baseUrl}/api/v4/plugins/${encodeURIComponent(DemoPlugin.id)}/kv/${kvKey}`);
-        return {status: response.status};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
 export const Plugin = {
     apiDisableNonPrepackagedPlugins,
     apiDisablePluginById,
@@ -427,9 +347,7 @@ export const Plugin = {
     apiInstallPluginFromUrl,
     apiRemovePluginById,
     apiUploadPlugin,
-    apiUploadAndEnablePlugin,
     apiSubmitDemoPluginFileUploadDialog,
-    apiClearDemoPluginFileUploadKV,
 };
 
 export default Plugin;

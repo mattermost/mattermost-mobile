@@ -9,7 +9,7 @@ import {
     flattenFileFieldValues,
     mergeFileFieldValues,
 } from './dialog_conversion';
-import {DialogElementTypes} from './dialog_utils';
+import {DialogElementTypes, flattenDialogElements} from './dialog_utils';
 
 describe('dialog_conversion', () => {
     describe('convertAppFormValuesToDialogSubmission', () => {
@@ -361,6 +361,95 @@ describe('dialog_conversion', () => {
             expect(result.errors).toEqual([]);
         });
 
+        it('should pass through checkbox_group array values unchanged', () => {
+            const mockCheckboxGroupElement: DialogElement = {
+                name: 'checkbox_group_field',
+                type: DialogElementTypes.CHECKBOX_GROUP,
+                display_name: 'Checkbox Group',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [
+                    {value: 'opt1', text: 'Option 1'},
+                    {value: 'opt2', text: 'Option 2'},
+                ],
+            };
+
+            const values: AppFormValues = {
+                checkbox_group_field: ['opt1', 'opt2'],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockCheckboxGroupElement]);
+
+            expect(result.submission).toEqual({
+                checkbox_group_field: ['opt1', 'opt2'],
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should pass through an empty checkbox_group array unchanged', () => {
+            const mockCheckboxGroupElement: DialogElement = {
+                name: 'checkbox_group_field',
+                type: DialogElementTypes.CHECKBOX_GROUP,
+                display_name: 'Checkbox Group',
+                optional: true,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            };
+
+            const values: AppFormValues = {
+                checkbox_group_field: [],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockCheckboxGroupElement]);
+
+            expect(result.submission).toEqual({
+                checkbox_group_field: [],
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should pass through checkbox_matrix array values unchanged', () => {
+            const mockCheckboxMatrixElement: DialogElement = {
+                name: 'checkbox_matrix_field',
+                type: DialogElementTypes.CHECKBOX_MATRIX,
+                display_name: 'Checkbox Matrix',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+                matrix_config: {
+                    rows: [{value: 'row1', text: 'Row 1'}],
+                    columns: [{value: 'col1', text: 'Col 1'}],
+                    row_selection: 'multiple',
+                },
+            };
+
+            const values: AppFormValues = {
+                checkbox_matrix_field: ['row1:col1'],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockCheckboxMatrixElement]);
+
+            expect(result.submission).toEqual({
+                checkbox_matrix_field: ['row1:col1'],
+            });
+            expect(result.errors).toEqual([]);
+        });
+
         it('should not affect single select with multiselect=false', () => {
             const mockSingleSelectElement: DialogElement = {
                 name: 'single_select',
@@ -387,6 +476,35 @@ describe('dialog_conversion', () => {
 
             expect(result.submission).toEqual({
                 single_select: 'opt1',
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should exclude action_button elements from the submission', () => {
+            const actionButtonElement: DialogElement = {
+                name: 'action_button_field',
+                type: DialogElementTypes.ACTION_BUTTON,
+                display_name: 'Open Child Dialog',
+                optional: true,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+                action_button: {url: '/plugins/my-plugin/child-dialog'},
+            };
+
+            const values: AppFormValues = {
+                text_field: 'user input text',
+                action_button_field: 'irrelevant',
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [...mockElements, actionButtonElement]);
+
+            expect(result.submission).toEqual({
+                text_field: 'user input text',
             });
             expect(result.errors).toEqual([]);
         });
@@ -498,6 +616,7 @@ describe('dialog_conversion', () => {
                 label: 'Textarea Field',
                 description: 'Enter multiple lines',
                 position: 0,
+                subtype: 'textarea',
                 min_length: 10,
                 max_length: 500,
             });
@@ -640,6 +759,45 @@ describe('dialog_conversion', () => {
             });
         });
 
+        it('should carry action_button_url and action_button_context for action_button elements', () => {
+            const element: DialogElement = {
+                name: 'action_button_field',
+                type: DialogElementTypes.ACTION_BUTTON,
+                display_name: 'Open Child Dialog',
+                help_text: '',
+                optional: true,
+                default: '',
+                placeholder: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+                action_button: {
+                    url: '/plugins/my-plugin/child-dialog',
+                    context: {parent_id: '123'},
+                },
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result.type).toBe('action_button');
+            expect(result.action_button_url).toBe('/plugins/my-plugin/child-dialog');
+            expect(result.action_button_context).toEqual({parent_id: '123'});
+        });
+
+        it('should not mark action_button elements as required when optional is omitted', () => {
+            const element = {
+                name: 'action_button_field',
+                type: DialogElementTypes.ACTION_BUTTON,
+                display_name: 'Open Child Dialog',
+                action_button: {url: '/plugins/my-plugin/child-dialog'},
+            } as DialogElement;
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result.is_required).toBe(false);
+        });
+
         it('should handle elements without options', () => {
             const element: DialogElement = {
                 name: 'text_field',
@@ -719,6 +877,144 @@ describe('dialog_conversion', () => {
             const result = convertDialogElementToAppField(element);
 
             expect(result.value).toBeUndefined();
+        });
+
+        describe('checkbox_group and checkbox_matrix conversion', () => {
+            it('should parse a comma-separated default into an array for checkbox_group', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_group_field',
+                    type: DialogElementTypes.CHECKBOX_GROUP,
+                    display_name: 'Checkbox Group',
+                    help_text: '',
+                    optional: true,
+                    options: [
+                        {value: 'opt1', text: 'Option 1'},
+                        {value: 'opt2', text: 'Option 2'},
+                    ],
+                    default: 'opt1, opt2',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.value).toEqual(['opt1', 'opt2']);
+                expect(result.options).toEqual([
+                    {label: 'Option 1', value: 'opt1'},
+                    {label: 'Option 2', value: 'opt2'},
+                ]);
+            });
+
+            it('should default checkbox_group value to an empty array when default is absent', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_group_field',
+                    type: DialogElementTypes.CHECKBOX_GROUP,
+                    display_name: 'Checkbox Group',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: '',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.value).toEqual([]);
+            });
+
+            it('should parse a semicolon-separated default into an array for checkbox_matrix', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_matrix_field',
+                    type: DialogElementTypes.CHECKBOX_MATRIX,
+                    display_name: 'Checkbox Matrix',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: 'row1:col1,col2; row2:col3',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    matrix_config: {
+                        rows: [
+                            {value: 'row1', text: 'Row 1'},
+                            {value: 'row2', text: 'Row 2'},
+                        ],
+                        columns: [
+                            {value: 'col1', text: 'Col 1'},
+                            {value: 'col2', text: 'Col 2'},
+                            {value: 'col3', text: 'Col 3'},
+                        ],
+                        row_selection: 'multiple',
+                    },
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.value).toEqual(['row1:col1,col2', 'row2:col3']);
+                expect(result.matrix_config).toEqual({
+                    rows: [
+                        {label: 'Row 1', value: 'row1'},
+                        {label: 'Row 2', value: 'row2'},
+                    ],
+                    columns: [
+                        {label: 'Col 1', value: 'col1'},
+                        {label: 'Col 2', value: 'col2'},
+                        {label: 'Col 3', value: 'col3'},
+                    ],
+                    row_selection: 'multiple',
+                });
+            });
+
+            it('should default checkbox_matrix row_selection to multiple when absent', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_matrix_field',
+                    type: DialogElementTypes.CHECKBOX_MATRIX,
+                    display_name: 'Checkbox Matrix',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: '',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    matrix_config: {
+                        rows: [{value: 'row1', text: 'Row 1'}],
+                        columns: [{value: 'col1', text: 'Col 1'}],
+                    },
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.matrix_config?.row_selection).toBe('multiple');
+                expect(result.value).toEqual([]);
+            });
+
+            it('should pass through label_position when set to before or after', () => {
+                const baseElement: DialogElement = {
+                    name: 'bool_field',
+                    type: DialogElementTypes.BOOL,
+                    display_name: 'Boolean Field',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: '',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                };
+
+                expect(convertDialogElementToAppField({...baseElement, label_position: 'before'}).label_position).toBe('before');
+                expect(convertDialogElementToAppField({...baseElement, label_position: 'after'}).label_position).toBe('after');
+                expect(convertDialogElementToAppField(baseElement).label_position).toBeUndefined();
+            });
         });
 
         describe('datetime configuration preservation', () => {
@@ -907,6 +1203,12 @@ describe('dialog_conversion', () => {
             trigger_id: 'test-trigger-id',
         };
 
+        it('should pass submit_buttons through so the named select renders as submit buttons', () => {
+            const result = convertDialogToAppForm({...mockConfig, dialog: {...mockConfig.dialog, submit_buttons: 'select_field'}});
+
+            expect(result.submit_buttons).toBe('select_field');
+        });
+
         it('should convert dialog config to app form correctly', () => {
             const result = convertDialogToAppForm(mockConfig);
 
@@ -1092,6 +1394,47 @@ describe('dialog_conversion', () => {
             });
         });
 
+        it('should set source when a refresh field is nested inside a collapsible section', () => {
+            const configWithNestedRefresh = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        {
+                            name: 'section',
+                            type: DialogElementTypes.COLLAPSIBLE,
+                            display_name: 'Section',
+                            collapsible_config: {
+                                elements: [
+                                    {
+                                        name: 'refresh_field',
+                                        type: DialogElementTypes.SELECT,
+                                        display_name: 'Refresh Field',
+                                        refresh: true,
+                                        options: [{value: 'option1', text: 'Option 1'}],
+                                        optional: false,
+                                        default: '',
+                                        placeholder: '',
+                                        help_text: '',
+                                        min_length: 0,
+                                        max_length: 0,
+                                        data_source: '',
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithNestedRefresh as InteractiveDialogConfig);
+
+            expect(result.source).toEqual({
+                path: '/dialog/refresh',
+                expand: {},
+            });
+        });
+
         it('should set source when source_url is provided', () => {
             const configWithSourceUrl = {
                 ...mockConfig,
@@ -1140,6 +1483,249 @@ describe('dialog_conversion', () => {
                 path: 'https://example.com/custom-refresh',
                 expand: {},
             });
+        });
+    });
+
+    describe('collapsible sections (interactive dialog → AppForm → submission)', () => {
+        it('converts a collapsible element into a collapsible AppField with recursively converted children', () => {
+            const element: DialogElement = {
+                name: 'contact_section',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Contact Info',
+                collapsible_config: {
+                    elements: [
+                        {name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement,
+                        {name: 'priority', type: DialogElementTypes.SELECT, display_name: 'Priority', optional: false, options: [{text: 'High', value: 'high'}]} as DialogElement,
+                    ],
+                },
+            } as DialogElement;
+
+            const field = convertDialogElementToAppField(element);
+
+            expect(field.type).toBe('collapsible');
+            expect(field.name).toBe('contact_section');
+            expect(field.label).toBe('Contact Info');
+            expect(field.collapsible_config?.fields).toHaveLength(2);
+            expect(field.collapsible_config?.fields?.[0]).toMatchObject({name: 'email', type: 'text', is_required: false});
+            expect(field.collapsible_config?.fields?.[1]).toMatchObject({name: 'priority', type: 'static_select', is_required: true});
+            expect(field.collapsible_config?.fields?.[1].options).toEqual([{label: 'High', value: 'high'}]);
+        });
+
+        it('maps collapsed/borderless to expanded/bordered (inverted), defaulting to expanded + bordered', () => {
+            const defaults = convertDialogElementToAppField({
+                name: 's',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'S',
+                collapsible_config: {elements: [] as DialogElement[]},
+            } as DialogElement);
+            expect(defaults.collapsible_config?.expanded).toBe(true);
+            expect(defaults.collapsible_config?.bordered).toBe(true);
+
+            const explicit = convertDialogElementToAppField({
+                name: 's',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'S',
+                collapsible_config: {elements: [] as DialogElement[], collapsed: true, borderless: true},
+            } as DialogElement);
+            expect(explicit.collapsible_config?.expanded).toBe(false);
+            expect(explicit.collapsible_config?.bordered).toBe(false);
+        });
+
+        it('converts nested (depth-2) collapsible sections recursively', () => {
+            const field = convertDialogElementToAppField({
+                name: 'outer',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Outer',
+                collapsible_config: {
+                    elements: [{
+                        name: 'inner',
+                        type: DialogElementTypes.COLLAPSIBLE,
+                        display_name: 'Inner',
+                        collapsible_config: {
+                            elements: [{name: 'deep', type: DialogElementTypes.TEXT, display_name: 'Deep', optional: true} as DialogElement],
+                        },
+                    } as DialogElement],
+                },
+            } as DialogElement);
+
+            const inner = field.collapsible_config?.fields?.[0];
+            expect(inner?.type).toBe('collapsible');
+            expect(inner?.collapsible_config?.fields?.[0]).toMatchObject({name: 'deep', type: 'text'});
+        });
+
+        it('places a top-level collapsible field at its element index via convertDialogToAppForm', () => {
+            const form = convertDialogToAppForm({
+                dialog: {
+                    title: 'T',
+                    elements: [
+                        {name: 'name', type: DialogElementTypes.TEXT, display_name: 'Full Name', optional: false} as DialogElement,
+                        {name: 'contact_section', type: DialogElementTypes.COLLAPSIBLE, display_name: 'Contact Info', collapsible_config: {elements: [{name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement]}} as DialogElement,
+                    ],
+                },
+            } as InteractiveDialogConfig);
+
+            expect(form.fields?.[0]).toMatchObject({name: 'name', position: 0});
+            expect(form.fields?.[1]).toMatchObject({name: 'contact_section', type: 'collapsible', position: 1});
+        });
+
+        it('submits values from fields nested in a collapsible once the elements are flattened', () => {
+            const elements: DialogElement[] = [
+                {name: 'name', type: DialogElementTypes.TEXT, display_name: 'Full Name', optional: false} as DialogElement,
+                {
+                    name: 'contact_section',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'Contact Info',
+                    collapsible_config: {
+                        elements: [
+                            {name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement,
+                            {name: 'priority', type: DialogElementTypes.SELECT, display_name: 'Priority', optional: true, options: [{text: 'High', value: 'high'}]} as DialogElement,
+                            {name: 'notify', type: DialogElementTypes.BOOL, display_name: 'Notify', optional: true} as DialogElement,
+                        ],
+                    },
+                } as DialogElement,
+            ];
+
+            // The form holds a flat value map keyed by field name (select as an AppSelectOption).
+            const values: AppFormValues = {
+                name: 'Jane Doe',
+                email: 'jane@example.com',
+                priority: {label: 'High', value: 'high'},
+                notify: true,
+            };
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission(values, flattenDialogElements(elements));
+
+            expect(errors).toEqual([]);
+            expect(submission).toEqual({
+                name: 'Jane Doe',
+                email: 'jane@example.com',
+                priority: 'high',
+                notify: true,
+            });
+        });
+
+        it('drops nested values with an error when the elements are NOT flattened (documents why the adapter flattens)', () => {
+            const elements: DialogElement[] = [
+                {
+                    name: 'contact_section',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'Contact Info',
+                    collapsible_config: {
+                        elements: [{name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement],
+                    },
+                } as DialogElement,
+            ];
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission({email: 'jane@example.com'}, elements);
+
+            expect(submission.email).toBeUndefined();
+            expect(errors).toEqual(['Field email not found in dialog elements']);
+        });
+
+        it('defaults a collapsible with no collapsible_config to an empty, expanded, bordered section', () => {
+            const field = convertDialogElementToAppField({
+                name: 'bare',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Bare',
+            } as DialogElement);
+
+            expect(field.type).toBe('collapsible');
+            expect(field.collapsible_config).toEqual({
+                fields: [],
+                expanded: true,
+                bordered: true,
+            });
+        });
+
+        it('uses the element name as the label fallback surface (label mirrors display_name, even when empty)', () => {
+            const field = convertDialogElementToAppField({
+                name: 'sec',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: '',
+                collapsible_config: {elements: [] as DialogElement[]},
+            } as DialogElement);
+
+            // The converter copies display_name verbatim; the component owns the
+            // name-fallback for the visible label.
+            expect(field.label).toBe('');
+            expect(field.name).toBe('sec');
+        });
+
+        it('preserves sibling top-level collapsibles with correct positions via convertDialogToAppForm', () => {
+            const form = convertDialogToAppForm({
+                dialog: {
+                    title: 'T',
+                    elements: [
+                        {name: 'sec_a', type: DialogElementTypes.COLLAPSIBLE, display_name: 'A', collapsible_config: {elements: [{name: 'a1', type: DialogElementTypes.TEXT, display_name: 'A1', optional: true} as DialogElement]}} as DialogElement,
+                        {name: 'sec_b', type: DialogElementTypes.COLLAPSIBLE, display_name: 'B', collapsible_config: {elements: [{name: 'b1', type: DialogElementTypes.TEXT, display_name: 'B1', optional: true} as DialogElement]}} as DialogElement,
+                    ],
+                },
+            } as InteractiveDialogConfig);
+
+            expect(form.fields).toHaveLength(2);
+            expect(form.fields?.[0]).toMatchObject({name: 'sec_a', type: 'collapsible', position: 0});
+            expect(form.fields?.[1]).toMatchObject({name: 'sec_b', type: 'collapsible', position: 1});
+
+            // Nested children keep their own converted shape; positions are only set at the top level.
+            expect(form.fields?.[0].collapsible_config?.fields?.[0]).toMatchObject({name: 'a1', type: 'text'});
+        });
+
+        it('converts nested select and bool leaves inside a collapsible (round-trips through submission)', () => {
+            const elements: DialogElement[] = [
+                {
+                    name: 'prefs',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'Preferences',
+                    collapsible_config: {
+                        elements: [
+                            {name: 'severity', type: DialogElementTypes.SELECT, display_name: 'Severity', optional: false, options: [{text: 'Low', value: 'low'}, {text: 'High', value: 'high'}]} as DialogElement,
+                            {name: 'silent', type: DialogElementTypes.BOOL, display_name: 'Silent', optional: true} as DialogElement,
+                        ],
+                    },
+                } as DialogElement,
+            ];
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission(
+                {severity: {label: 'High', value: 'high'}, silent: false},
+                flattenDialogElements(elements),
+            );
+
+            expect(errors).toEqual([]);
+            expect(submission).toEqual({severity: 'high', silent: false});
+        });
+
+        it('carries deeply nested (depth-3) leaf values into submission once flattened', () => {
+            const elements: DialogElement[] = [
+                {
+                    name: 'l1',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'L1',
+                    collapsible_config: {
+                        elements: [
+                            {
+                                name: 'l2',
+                                type: DialogElementTypes.COLLAPSIBLE,
+                                display_name: 'L2',
+                                collapsible_config: {
+                                    elements: [
+                                        {
+                                            name: 'l3',
+                                            type: DialogElementTypes.COLLAPSIBLE,
+                                            display_name: 'L3',
+                                            collapsible_config: {elements: [{name: 'deep', type: DialogElementTypes.TEXT, display_name: 'Deep', optional: true} as DialogElement]},
+                                        } as DialogElement,
+                                    ],
+                                },
+                            } as DialogElement,
+                        ],
+                    },
+                } as DialogElement,
+            ];
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission({deep: 'value'}, flattenDialogElements(elements));
+
+            expect(errors).toEqual([]);
+            expect(submission).toEqual({deep: 'value'});
         });
     });
 

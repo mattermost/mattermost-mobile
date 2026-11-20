@@ -85,6 +85,8 @@ export async function restDeferredAppEntryActions(
             ...chData,
         };
 
+        let channelsFetchComplete = Boolean(initialTeamId) && !chData?.error && Boolean(chData?.channels && chData?.memberships);
+
         const processTeams = async () => {
             for (const team of teamQueue) {
                 let data: MyChannelsRequest = {};
@@ -96,6 +98,10 @@ export async function restDeferredAppEntryActions(
 
                 } catch (error) {
                     logError('Error fetching channels for team', groupLabel, error);
+                }
+
+                if (data.error || !data.channels || !data.memberships) {
+                    channelsFetchComplete = false;
                 }
 
                 const currentTeamData: MyTeamsRequest = {
@@ -129,7 +135,7 @@ export async function restDeferredAppEntryActions(
 
                 // previously we were deleting the models via processEntryModels, but we don't want to delete any
                 // teams or channels until we have fetched all the data for the team, which now is later in the code
-                processEntryModelsForDeletion({serverUrl, operator, teamData, chData: uniqueChannelsData});
+                processEntryModelsForDeletion({serverUrl, operator, teamData, chData: uniqueChannelsData, channelsFetchComplete});
 
                 if (uniqueChannelsData?.channels?.length && uniqueChannelsData.memberships?.length && initialTeamId) {
                     if (isCRTEnabled && initialTeamId) {

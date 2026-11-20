@@ -17,11 +17,27 @@ inputs:
     description: The os of the device used for the tests
     required: false
     default: "iOS 18.1"
+  spec_files:
+    description: >-
+      Space-separated spec files to run instead of every spec under search_path (a re-run of
+      failed specs). Files outside search_path are dropped.
+    required: false
+    default: ""
   durations_file:
     description: >-
       Optional spec-duration manifest (from .github/actions/s3-spec-durations).
       When present, specs are bin-packed by recorded duration instead of split
       into equal counts. Absent/unreadable falls back to the even split.
+    required: false
+    default: ""
+  platform:
+    description: "ios or android; selects the iosTarget override in detox/e2e/server_mutation_specs.json"
+    required: false
+    default: ""
+  mutation_targets:
+    description: >-
+      Comma list of server targets available for mutation shards (B, site3).
+      Empty fails the run when any mutation spec is selected, so they never run on the pool server.
     required: false
     default: ""
 
@@ -40,9 +56,12 @@ runs:
       env:
         PARALLELISM: ${{ inputs.parallelism }}
         SEARCH_PATH: ${{ inputs.search_path }}
+        SPEC_FILES: ${{ inputs.spec_files }}
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
         DURATIONS_FILE: ${{ inputs.durations_file }}
+        PLATFORM: ${{ inputs.platform }}
+        MUTATION_TARGETS: ${{ inputs.mutation_targets }}
       run: |
         # pipefail: without it, `node ... | tee` reports tee's exit status, so a
         # crash in split-tests.js would leave output.json empty and be treated as

@@ -2,25 +2,41 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useReducer, useState} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
+import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {createChannel, patchChannel as handlePatchChannel, switchToChannelById} from '@actions/remote/channel';
+import {type ChannelAttributeFormValues} from '@components/channel_attribute_form';
 import NavigationButton from '@components/navigation_button';
 import {General, Screens} from '@constants';
 import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
+import {MISSING_REQUIRED_ATTRIBUTES_ERROR_ID} from '@constants/channel_attributes';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
+import {isPropertyFieldRequired, isPropertyValueSet, pruneStaleAttributeValues, type ChannelAttributeField} from '@utils/channel_attributes';
+import {getServerError} from '@utils/errors';
 import {changeOpacity} from '@utils/theme';
 
 import ChannelInfoForm from './channel_info_form';
 
+import type {ChannelAttributeValueInput} from '@actions/remote/channel_attributes';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+
+const messages = defineMessages({
+    missingRequiredAttributes: {
+        id: 'channel_attributes.create.missing_required',
+        defaultMessage: 'This channel is missing a required attribute. Check the channel attributes and try again.',
+    },
+    unsupportedRequiredAttribute: {
+        id: 'channel_attributes.create.unsupported_required',
+        defaultMessage: 'A required channel attribute cannot be set from this device yet. Ask an administrator to create this channel from a computer.',
+    },
+});
 
 type Props = {
     channel?: ChannelModel;
@@ -28,6 +44,8 @@ type Props = {
     headerOnly?: boolean;
     canCreatePublicChannels: boolean;
     canCreatePrivateChannels: boolean;
+    attributeFields: ChannelAttributeField[];
+    attributesBlocked: boolean;
 }
 
 enum RequestActions {
@@ -67,6 +85,8 @@ const CreateOrEditChannel = ({
     channel,
     channelInfo,
     headerOnly,
+    attributeFields,
+    attributesBlocked,
 }: Props) => {
     const navigation = useNavigation();
     const intl = useIntl();
@@ -82,6 +102,7 @@ const CreateOrEditChannel = ({
     const [displayName, setDisplayName] = useState<string>(channel?.displayName || '');
     const [purpose, setPurpose] = useState<string>(channelInfo?.purpose || '');
     const [header, setHeader] = useState<string>(channelInfo?.header || '');
+    const [attributeValues, setAttributeValues] = useState<ChannelAttributeFormValues>({});
 
     const [appState, dispatch] = useReducer((state: RequestState, action: RequestAction) => {
         switch (action.type) {
@@ -125,6 +146,36 @@ const CreateOrEditChannel = ({
         return true;
     }, [channel, displayName, intl]);
 
+    // Fields or options can be removed while this screen is open; drop stale picks or the server rejects Create.
+    useEffect(() => {
+        setAttributeValues((current) => pruneStaleAttributeValues(attributeFields, current));
+    }, [attributeFields]);
+
+    // Also pruned synchronously: a sheet opened before an option update can submit a stale pick after the effect runs.
+    const validAttributeValues = useMemo(
+        () => pruneStaleAttributeValues(attributeFields, attributeValues),
+        [attributeFields, attributeValues],
+    );
+
+    const allRequiredAttributesSet = editing || attributeFields.every((field) => !isPropertyFieldRequired(field) || isPropertyValueSet(validAttributeValues[field.id]));
+
+    // attributesBlocked: a required attribute has no mobile editor, so nothing here could satisfy the server.
+    const canSubmitAttributes = editing || !attributesBlocked;
+
+    const onAttributeValueChange = useCallback((fieldId: string, value: ChannelAttributeValueInput) => {
+        setAttributeValues((current) => {
+            if (!isPropertyValueSet(value)) {
+                if (!(fieldId in current)) {
+                    return current;
+                }
+                const next = {...current};
+                delete next[fieldId];
+                return next;
+            }
+            return {...current, [fieldId]: value as string | string[]};
+        });
+    }, []);
+
     const onCreateChannel = useCallback(async () => {
         dispatch({type: RequestActions.START});
         Keyboard.dismiss();
@@ -132,11 +183,24 @@ const CreateOrEditChannel = ({
             return;
         }
 
-        const createdChannel = await createChannel(serverUrl, displayName, purpose, header, type);
-        if (createdChannel.error) {
+        // The header button may hold a stale callback, so re-check the gate.
+        if (!allRequiredAttributesSet || !canSubmitAttributes) {
             dispatch({
                 type: RequestActions.FAILURE,
-                error: createdChannel.error as string,
+                error: formatMessage(canSubmitAttributes ? messages.missingRequiredAttributes : messages.unsupportedRequiredAttribute),
+            });
+            return;
+        }
+
+        const propertyValues = attributeFields.
+            filter((field) => isPropertyValueSet(validAttributeValues[field.id])).
+            map((field) => ({field_id: field.id, value: validAttributeValues[field.id]}));
+        const createdChannel = await createChannel(serverUrl, displayName, purpose, header, type, propertyValues);
+        if (createdChannel.error) {
+            const isMissingRequiredAttributes = getServerError(createdChannel.error) === MISSING_REQUIRED_ATTRIBUTES_ERROR_ID;
+            dispatch({
+                type: RequestActions.FAILURE,
+                error: isMissingRequiredAttributes ? formatMessage(messages.missingRequiredAttributes) : createdChannel.error as string,
             });
             return;
         }
@@ -145,7 +209,7 @@ const CreateOrEditChannel = ({
         navigation.getParent()?.goBack();
         await new Promise((resolve) => setTimeout(resolve, 250));
         switchToChannelById(serverUrl, createdChannel.channel!.id, createdChannel.channel!.team_id);
-    }, [isValidDisplayName, serverUrl, displayName, purpose, header, type, navigation]);
+    }, [isValidDisplayName, allRequiredAttributesSet, canSubmitAttributes, serverUrl, displayName, purpose, header, type, attributeFields, validAttributeValues, formatMessage, navigation]);
 
     const onUpdateChannel = useCallback(async () => {
         if (!channel) {
@@ -201,16 +265,18 @@ const CreateOrEditChannel = ({
                 purpose !== channelInfo?.purpose ||
                 header !== channelInfo?.header ||
                 type !== channel.type
-            ),
+            ) && allRequiredAttributesSet && canSubmitAttributes,
         );
-    }, [channel, displayName, purpose, header, type, channelInfo?.purpose, channelInfo?.header]);
+    }, [channel, displayName, purpose, header, type, channelInfo?.purpose, channelInfo?.header, allRequiredAttributesSet, canSubmitAttributes]);
 
     useAndroidHardwareBackHandler(Screens.CREATE_OR_EDIT_CHANNEL, close);
+
+    const displayError = appState.error || (canSubmitAttributes ? '' : formatMessage(messages.unsupportedRequiredAttribute));
 
     return (
         <View style={styles.container}>
             <ChannelInfoForm
-                error={appState.error}
+                error={displayError}
                 saving={appState.saving}
                 channelType={channel?.type}
                 editing={editing}
@@ -225,6 +291,9 @@ const CreateOrEditChannel = ({
                 onPurposeChange={setPurpose}
                 canCreatePrivateChannels={canCreatePrivateChannels}
                 canCreatePublicChannels={canCreatePublicChannels}
+                attributeFields={attributeFields}
+                attributeValues={validAttributeValues}
+                onAttributeValueChange={onAttributeValueChange}
             />
         </View>
     );

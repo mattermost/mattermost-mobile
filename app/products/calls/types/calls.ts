@@ -5,6 +5,8 @@ import {
     TranscribeAPI,
     type CallJobState,
     type CallPostProps,
+    type CallState,
+    type SessionState,
     type CallsConfig,
     type EmojiData,
     type UserReactionData,
@@ -23,10 +25,21 @@ export const CallPostStatus = {
     NoAnswer: 'no_answer',
     CanceledByCaller: 'canceled_by_caller',
     Declined: 'declined',
+    Failed: 'failed',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
 export type CallPostStatus = typeof CallPostStatus[keyof typeof CallPostStatus];
+
+// The media transport a server's calls plugin uses. Selected at runtime per server,
+// since mobile ships independently of the server.
+export const CallsTransport = {
+    Rtcd: 'rtcd',
+    LiveKit: 'livekit',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type CallsTransport = typeof CallsTransport[keyof typeof CallsTransport];
 
 // CallPostProps comes from calls-common, which has no knowledge of call_status yet.
 export type CallsPostProps = CallPostProps & {
@@ -41,6 +54,7 @@ export const CallCardState = {
     NoAnswer: 'no_answer',
     Canceled: 'canceled',
     Declined: 'declined',
+    Failed: 'failed',
     Ended: 'ended',
 } as const;
 
@@ -108,7 +122,18 @@ export type Call = {
     capState?: CallJobState;
     hostId: string;
     dismissed: Dictionary<boolean>;
+
+    // Set only for phone calls; its presence marks the call as one.
+    phone?: string;
 }
+
+// What the calls plugin adds to a call and its sessions for phone calls; @mattermost/calls doesn't declare them.
+export type PhoneCallFields = {
+    type?: string;
+    phone_number?: string;
+    display_number?: string;
+    sessions?: Array<SessionState & {is_sip_participant?: boolean}>;
+};
 
 export const DefaultCall: Call = {
     id: '',
@@ -132,6 +157,7 @@ export type CurrentCall = Call & {
     serverUrl: string;
     myUserId: string;
     mySessionId: string;
+    transport: CallsTransport;
     screenShareURL: string;
     audioDeviceInfo: AudioRoute;
     voiceOn: Dictionary<boolean>;
@@ -151,6 +177,7 @@ export const DefaultCurrentCall: CurrentCall = {
     serverUrl: '',
     myUserId: '',
     mySessionId: '',
+    transport: CallsTransport.Rtcd,
     screenShareURL: '',
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
@@ -175,12 +202,41 @@ export type ChannelsWithCalls = Dictionary<boolean>;
 export {AudioDevice};
 export type {AudioDeviceType, AudioRoute};
 
+// Response from the plugin's livekit-token endpoint: the server-minted session, the room URL
+// and the JWT granting access to it, and the call as it stood when the session was created.
+export type LiveKitSessionResponse = {
+    session_id: string;
+    token: string;
+    url: string;
+    bot_user_id: string;
+    call_state: CallState;
+}
+
+export type PhoneCallResponse = LiveKitSessionResponse & {
+    call_id: string;
+    channel_id: string;
+    bot_user_id: string;
+}
+
+export type PhoneTarget = {number: string; targetUserId?: string; displayLabel?: string};
+
+export type PhoneCallPostProps = {
+    number: string;
+    displayNumber: string;
+    label: string;
+    targetUserId: string;
+};
+
+export type DialablePhone = {label: string; number: string};
+
+export type CallTarget =
+    | {type: 'channel'; channelID: string}
+    | {type: 'phone'; phone: PhoneTarget};
+
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
-
-    // Returns false when there was no voice track to enable, so the unmute never left the device.
-    unmute: () => boolean;
+    unmute: () => void;
     waitForPeerConnection: () => Promise<string>;
     raiseHand: () => void;
     unraiseHand: () => void;
@@ -192,6 +248,7 @@ export type CallsConnection = {
 export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
     GroupCallsAllowed: boolean;
+    EnableSIPOutbound: boolean;
     pluginEnabled: boolean;
     version: CallsVersionInfo;
     last_retrieved_at: number;
@@ -220,6 +277,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     TranscribeAPI: TranscribeAPI.WhisperCPP,
     GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
     EnableDCSignaling: false,
+    EnableSIPOutbound: false,
 };
 
 export type ApiResp = {

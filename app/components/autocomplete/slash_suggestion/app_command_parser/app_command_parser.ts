@@ -11,6 +11,7 @@ import {getChannelById, getChannelByName} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';
 import {createCallRequest, filterEmptyOptions} from '@utils/apps';
+import {flattenAppFields} from '@utils/dialog_utils';
 
 import {getChannelSuggestions, getUserSuggestions, inTextMentionSuggestions} from './mentions';
 
@@ -265,6 +266,15 @@ export class ParsedCommand {
                 }, {
                     error: 'unreachable: invalid binding, neither or both Submit and Form',
                 }));
+            }
+
+            // Flatten UI-only sections to their leaf fields so the parser sees real
+            // parameters only. New object to avoid mutating the cached binding form.
+            if (this.resolvedForm?.fields) {
+                this.resolvedForm = {
+                    ...this.resolvedForm,
+                    fields: flattenAppFields(this.resolvedForm.fields),
+                };
             }
         }
         return this;

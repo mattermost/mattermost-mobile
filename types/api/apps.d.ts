@@ -149,7 +149,7 @@ type AppForm = {
     depends_on?: string[];
 };
 
-type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[] | null;
+type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[] | string[] | null;
 type AppFormValues = {[name: string]: AppFormValue};
 
 type AppSelectOption = {
@@ -179,12 +179,20 @@ type AppField = {
     position?: number;
 
     modal_label?: string;
+    label_position?: 'before' | 'after';
 
     // Select props
     refresh?: boolean;
     options?: AppSelectOption[];
     multiselect?: boolean;
     lookup?: AppCall;
+
+    // Checkbox matrix props
+    matrix_config?: {
+        rows: AppSelectOption[];
+        columns: AppSelectOption[];
+        row_selection?: 'multiple' | 'single';
+    };
 
     // File props
     allow_multiple?: boolean;
@@ -199,6 +207,19 @@ type AppField = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Action button props
+    action_button_url?: string;
+    action_button_context?: Record<string, string>;
+
+    // Collapsible section props
+    collapsible_config?: AppCollapsibleConfig;
+};
+
+type AppCollapsibleConfig = {
+    fields?: AppField[];
+    expanded?: boolean;
+    bordered?: boolean;
 };
 
 type DateTimeConfig = {

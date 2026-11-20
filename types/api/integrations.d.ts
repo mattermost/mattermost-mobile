@@ -46,10 +46,21 @@ type DialogSubmission = {
     channel_id: string;
     team_id: string;
     submission: {
-        [x: string]: string;
+        [x: string]: string | string[] | boolean | number;
     };
     cancelled: boolean;
     file_ids?: string[];
+};
+
+type ExecuteDialogActionRequest = {
+    url: string;
+    context?: Record<string, string>;
+    channel_id: string;
+    team_id: string;
+};
+
+type ExecuteDialogActionResponse = {
+    trigger_id?: string;
 };
 
 type DialogOption = {
@@ -66,7 +77,7 @@ type DialogElement = {
     name: string;
     type: InteractiveDialogElementType;
     subtype?: InteractiveDialogTextSubtype;
-    default: string | boolean;
+    default: string | boolean | string[];
     placeholder: string;
     help_text: string;
     optional: boolean;
@@ -78,12 +89,31 @@ type DialogElement = {
     multiselect?: boolean;
     allow_multiple?: boolean;
     refresh?: boolean;
+    label_position?: 'before' | 'after';
+    matrix_config?: {
+        rows: DialogOption[];
+        columns: DialogOption[];
+        row_selection?: 'multiple' | 'single';
+    };
 
     // Date/DateTime fields
     min_date?: string;
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Action button fields
+    action_button?: {
+        url: string;
+        context?: Record<string, string>;
+    };
+
+    // Collapsible section fields
+    collapsible_config?: {
+        elements?: DialogElement[];
+        collapsed?: boolean;
+        borderless?: boolean;
+    };
 };
 
 type InteractiveDialogConfig = {
@@ -100,6 +130,12 @@ type InteractiveDialogConfig = {
         notify_on_cancel: boolean;
         state: string;
         source_url?: string;
+
+        // Name of a select element whose options render as submit buttons.
+        submit_buttons?: string;
+
+        // Re-fetch the dialog from source_url when a dialog opened on top of it closes.
+        refresh_on_return?: boolean;
     };
 };
 
@@ -140,5 +176,5 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'action_button' | 'collapsible' | 'checkbox_group' | 'checkbox_matrix'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

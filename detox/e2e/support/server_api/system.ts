@@ -3,7 +3,6 @@
 
 import path from 'path';
 
-import {withFeatureFlagsLock} from '@support/feature_flags_lock';
 import {timeouts, wait} from '@support/utils';
 import {withTransportRetry} from '@support/utils/transport_retry';
 import jestExpect from 'expect';
@@ -190,6 +189,15 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
     }, {idempotent: true, label: 'apiUpdateConfig'});
 };
 
+const patchConfigOnce = async (baseUrl: string, patch: any): Promise<any> => {
+    try {
+        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patch);
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 /**
  * Replace server configuration with a complete config object.
  *
@@ -217,14 +225,34 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
     // Idempotent for the same reason as apiUpdateConfig above.
+    return withTransportRetry(() => patchConfigOnce(baseUrl, patchConfig), {idempotent: true, label: 'apiPatchConfig'});
+};
+
+const getFeatureFlags = (baseUrl: string): Promise<any> => {
     return withTransportRetry(async () => {
-        try {
-            const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
-            return {config: response.data};
-        } catch (err) {
-            return getResponseFromError(err);
+        const {config, error, status} = await apiGetConfig(baseUrl);
+        if (error || !config) {
+            return {error: error ?? {message: 'getFeatureFlags: empty config response'}, status};
         }
-    }, {idempotent: true, label: 'apiPatchConfig'});
+        return {config, flags: config.FeatureFlags ?? {}};
+    }, {idempotent: true, label: 'getFeatureFlags'});
+};
+
+/**
+ * Patch feature flags without resetting flags omitted from the requested changes.
+ * @param {string} baseUrl - the base server URL
+ * @param {Record<string, boolean>} flags - feature flags to update
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiPatchFeatureFlags = async (baseUrl: string, flags: Record<string, boolean>): Promise<any> => {
+    return withTransportRetry(async () => {
+        const {flags: current, error, status} = await getFeatureFlags(baseUrl);
+        if (error) {
+            return {error, status};
+        }
+
+        return patchConfigOnce(baseUrl, {FeatureFlags: {...current, ...flags}});
+    }, {idempotent: true, label: 'apiPatchFeatureFlags'});
 };
 
 /**
@@ -239,19 +267,12 @@ export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise
  * @param {string[]} names - the flags to turn on, e.g. ['PermissionPolicies']
  * @return {Object} returns {config} on success or {error, status} on error
  */
-const CHANNEL_PERMISSION_POLICY_FLAGS = [
-    'AttributeBasedAccessControl',
-    'PermissionPolicies',
-    'ChannelPermissionPolicies',
-];
-
-const enableFeatureFlagsUnlocked = async (baseUrl: string, names: string[]): Promise<any> => {
-    const {config, error, status} = await apiGetConfig(baseUrl);
+export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
+    const {config, flags: current, error, status} = await getFeatureFlags(baseUrl);
     if (error) {
         return {error, status};
     }
 
-    const current = config.FeatureFlags ?? {};
     const toEnable = names.filter((name) => name in current && current[name] !== true);
     if (!toEnable.length) {
         return {config};
@@ -260,32 +281,6 @@ const enableFeatureFlagsUnlocked = async (baseUrl: string, names: string[]): Pro
     const enabled = Object.fromEntries(toEnable.map((name) => [name, true]));
     return apiPatchConfig(baseUrl, {
         FeatureFlags: {...current, ...enabled},
-    });
-};
-
-export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
-    return withFeatureFlagsLock(baseUrl, () => enableFeatureFlagsUnlocked(baseUrl, names));
-};
-
-/**
- * Turn on ChannelPermissionPolicies (and its ABAC prerequisites) under the
- * FeatureFlags lock, including when the key is present but still false.
- */
-export const apiEnsureChannelPermissionPolicyFlags = async (baseUrl: string): Promise<any> => {
-    return withFeatureFlagsLock(baseUrl, async () => {
-        const enabled = await enableFeatureFlagsUnlocked(baseUrl, CHANNEL_PERMISSION_POLICY_FLAGS);
-        if (enabled.error) {
-            return enabled;
-        }
-
-        const currentFlags = enabled.config?.FeatureFlags;
-        if (!currentFlags || currentFlags.ChannelPermissionPolicies === true) {
-            return enabled;
-        }
-
-        return apiPatchConfig(baseUrl, {
-            FeatureFlags: {...currentFlags, ChannelPermissionPolicies: true},
-        });
     });
 };
 
@@ -595,9 +590,9 @@ export const System = {
     apiGetClientLicense,
     apiGetConfig,
     apiGetRemoteClusters,
-    apiPatchConfig,
     apiEnableFeatureFlags,
-    apiEnsureChannelPermissionPolicyFlags,
+    apiPatchConfig,
+    apiPatchFeatureFlags,
     apiPingServerStatus,
     apiReplaceConfig,
     waitForClientConfigFlag,

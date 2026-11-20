@@ -11,10 +11,10 @@ import {
     Channel,
     Post,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -56,7 +56,7 @@ describe('Scheduled Draft,', () => {
         // # Ensure the ScheduledPosts feature is enabled on the server so that
         // long-pressing the send button opens the schedule picker instead of
         // sending the message immediately.
-        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ScheduledPosts: true}});
+        await assertServerBaseline(siteOneUrl, ['ServiceSettings.ScheduledPosts']);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

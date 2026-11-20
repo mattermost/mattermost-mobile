@@ -6,7 +6,7 @@ import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket, deletePostsForChannel,
 } from '@actions/local/channel';
-import {storePostsForChannel} from '@actions/local/post';
+import {batchRecordsAndDeleteRevokedFiles, storePostsForChannel} from '@actions/local/post';
 import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
@@ -27,6 +27,7 @@ import {logDebug} from '@utils/log';
 import {haveSameRoles} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {RevokedFile} from '@typings/database/database';
 
 // Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
@@ -311,6 +312,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUser = await getCurrentUser(database);
         const models: Model[] = [];
+        const revokedFiles: RevokedFile[] = [];
         let joinedChannel: Channel | undefined;
 
         if (userId === currentUser?.id) {
@@ -338,7 +340,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
             const {posts, order, authors, actionType, previousPostId, redactionVerifiedEpoch} = await fetchPostsForChannel(serverUrl, channelId, true);
             if (posts?.length && order?.length && actionType) {
-                const {models: prepared} = await storePostsForChannel(
+                const {models: prepared, revokedFiles: preparedRevokedFiles} = await storePostsForChannel(
                     serverUrl, channelId,
                     posts, order, previousPostId ?? '',
                     actionType, authors || [], true, redactionVerifiedEpoch,
@@ -346,6 +348,9 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
                 if (prepared?.length) {
                     models.push(...prepared);
+                }
+                if (preparedRevokedFiles?.length) {
+                    revokedFiles.push(...preparedRevokedFiles);
                 }
             }
 
@@ -367,7 +372,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         }
 
         if (models.length) {
-            await operator.batchRecords(models, 'handleUserAddedToChannelEvent');
+            await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'handleUserAddedToChannelEvent');
         }
 
         if (joinedChannel) {

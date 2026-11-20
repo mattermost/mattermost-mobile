@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Text, type TextProps} from 'react-native';
 
 import {logDebug} from '@utils/log';
+import {getSupportedDeviceTimezone} from '@utils/timezone';
 
 export type FormattedDateFormat = Exclude<Intl.DateTimeFormatOptions, 'timeZone'>;
 
@@ -30,6 +31,13 @@ const FormattedDate = ({
         timeZone = timezone.useAutomaticTimezone ? timezone.automaticTimezone : timezone.manualTimezone;
     } else {
         timeZone = timezone ?? undefined;
+    }
+
+    // An absent/undefined `timeZone` is not resolved to the device zone by Hermes — it
+    // formats in UTC, which renders the previous day for any local-midnight value on a
+    // device at a positive UTC offset. Name the zone explicitly when we can.
+    if (!timeZone) {
+        timeZone = getSupportedDeviceTimezone();
     }
 
     let formattedDate;

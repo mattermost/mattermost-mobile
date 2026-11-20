@@ -8,11 +8,13 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
+import {getFilesByIds} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel, queryPostsById, queryPostsInChannel} from '@queries/servers/post';
 import EphemeralStore from '@store/ephemeral_store';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
+import {deleteDownloadedFiles} from '@utils/file';
 
 import * as LocalChannelActions from '../local/channel';
 import {RedactionInvalidationReason, invalidateRedactionGlobally} from '../local/redaction';
@@ -28,7 +30,6 @@ import {
     unacknowledgePost,
     revealBoRPost,
     fetchPostsForChannel,
-    refetchPostsForRedaction,
     refreshPostsForChannel,
     fetchPostsForUnreadChannels,
     fetchPosts,
@@ -157,6 +158,11 @@ jest.mock('@queries/servers/thread', () => {
     };
 });
 
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
+}));
+
 let mockAddRecentReaction: jest.Mock;
 jest.mock('@actions/local/reactions', () => {
     const original = jest.requireActual('@actions/local/reactions');
@@ -268,6 +274,22 @@ describe('create, update & delete posts', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBeTruthy();
+    });
+
+    it('createPost - should expire the channel decisions and keep the post failed when a channel policy denies it', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.CHANNEL_WRITE_ACCESS_DENIED, status_code: 403};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await createPost(serverUrl, {...post1, pending_post_id: 'pendingid1'});
+        expect(result.error).toBeUndefined();
+        expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
+
+        const stored = await getPostById(operator.database, 'pendingid1');
+        expect(stored?.props?.failed).toBe(true);
     });
 
     it('createPost - should revalidate the channel decisions when the server refuses a burn-on-read post', async () => {
@@ -440,7 +462,7 @@ describe('create, update & delete posts', () => {
     });
 
     it('deletePost - base case', async () => {
-        const postModels = await operator.handlePosts({
+        const {models: postModels} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post1.id],
             posts: [post1],
@@ -464,7 +486,7 @@ describe('create, update & delete posts', () => {
         mockClient.burnPostNow.mockReset();
         const borPost = TestHelper.fakePost({channel_id: channelId, id: 'bor_postid1', user_id: user1.id, type: 'burn_on_read'});
 
-        const postModels = await operator.handlePosts({
+        const {models: postModels} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [borPost.id],
             posts: [borPost],
@@ -499,7 +521,7 @@ describe('create, update & delete posts', () => {
     });
 
     it('deletePost - system post', async () => {
-        const postModels = await operator.handlePosts({
+        const {models: postModels} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post1.id],
             posts: [{...post1, id: `user-activity-${post1.id}`, type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType, props: {system_post_ids: [post1.id]}}],
@@ -881,8 +903,16 @@ describe('get posts', () => {
         expect(result.posts?.length).toBe(2);
     });
 
-    it('refetchPostsForRedaction - should re-verify with a page after the since-fetch when the channel already has posts', async () => {
+    it('fetchPostsForChannel - should page after the since-fetch when forced, even when cached posts are verified', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
         await operator.handleMyChannel({channels: [{
             id: channelId,
             team_id: teamId,
@@ -899,14 +929,15 @@ describe('get posts', () => {
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post1.id],
-            posts: [post1],
+            posts: [{...post1, metadata: {redacted_file_count: 1}}],
             prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
         });
 
         mockClient.getPosts.mockClear();
         mockClient.getPostsSince.mockClear();
 
-        const result = await refetchPostsForRedaction(serverUrl, channelId);
+        const result = await fetchPostsForChannel(serverUrl, channelId, false, false, undefined, true);
 
         // The page re-verifies what we hold; only the since-fetch carries deletions and edits.
         expect(result.error).toBeUndefined();
@@ -1401,6 +1432,18 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPosts - should delete revoked files after storing the page', async () => {
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [post1.id], posts: [{...post1, file_ids: ['fileid']}], prepareRecordsOnly: false});
+        await operator.handleFiles({files: [TestHelper.fakeFileInfo({id: 'fileid', post_id: post1.id})], prepareRecordsOnly: false});
+        (mockClient.getPosts as jest.Mock).mockResolvedValueOnce({order: [post1.id], posts: {[post1.id]: {...post1, file_ids: [], metadata: {redacted_file_count: 1}}}});
+
+        const result = await fetchPosts(serverUrl, channelId);
+
+        expect(result.error).toBeUndefined();
+        expect(await getFilesByIds(operator.database, ['fileid'])).toHaveLength(0);
+        expect(deleteDownloadedFiles).toHaveBeenCalledWith(serverUrl, [expect.objectContaining({id: 'fileid'})]);
     });
 
     it('fetchPostsBefore - handle database not found', async () => {

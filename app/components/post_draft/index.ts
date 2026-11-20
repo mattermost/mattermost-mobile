@@ -7,8 +7,11 @@ import {combineLatest, of as of$} from 'rxjs';
 import {filter, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
+import {withServerUrl} from '@context/server';
 import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
 import {queryDraft, observeFirstDraft} from '@queries/servers/drafts';
+import {observeChannelActionDenied} from '@queries/servers/render_permissions';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
@@ -22,10 +25,11 @@ type OwnProps = {
     channelId: string;
     channelIsArchived?: boolean;
     rootId?: string;
+    serverUrl: string;
 }
 
 const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (ownProps: WithDatabaseArgs & OwnProps) => {
-    const {database, rootId = ''} = ownProps;
+    const {database, rootId = '', serverUrl} = ownProps;
     let channelId = of$(ownProps.channelId);
     if (!ownProps.channelId) {
         channelId = observeCurrentChannelId(database);
@@ -47,6 +51,9 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
     );
 
     const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, true) : of$(true))));
+    const writeDenied = channelId.pipe(
+        switchMap((id) => observeChannelActionDenied(database, serverUrl, id, RenderPermissionAction.ChannelWriteAccess)),
+    );
 
     // Filter transient `undefined` emissions so the archived banner doesn't
     // flicker off during the archive-modal dismiss transition.
@@ -82,7 +89,8 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
         deactivatedChannel,
         files,
         message,
+        writeDenied,
     };
 });
 
-export default React.memo(withDatabase(enhanced(PostDraft)));
+export default React.memo(withDatabase(withServerUrl(enhanced(PostDraft))));

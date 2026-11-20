@@ -1,0 +1,234 @@
+# Fork PRs can't run E2E (it holds secrets), so E2E/Override from a writer waives the required
+# e2e-test/* statuses for the current head SHA only. Never check out or execute PR code here.
+name: E2E fork policy
+
+on:
+  pull_request_target:
+    # Label events only: a fork author can't trigger, cancel or extend a waiver by pushing.
+    types:
+      - labeled
+      - unlabeled
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Fork PR number to re-check (resets an invalid waiver; never creates one)
+        required: true
+        type: number
+      dry_run:
+        description: Only log what would be posted
+        required: false
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  # Only E2E/Override events share a group, so other labels can't replace a queued waiver.
+  group: >-
+    e2e-fork-policy-${{ github.event.pull_request.number || inputs.pr_number }}-${{
+    github.event_name == 'workflow_dispatch' && 'dispatch'
+    || (github.event.label.name == 'E2E/Override' && 'override' || github.run_id) }}
+  # Queue, don't cancel: a half-finished reset would leave some contexts waived.
+  cancel-in-progress: false
+
+jobs:
+  fork-e2e-policy:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
+      || (github.event.label.name == 'E2E/Override'
+          && github.event.pull_request.head.repo.full_name != github.repository
+          && (github.event.pull_request.base.ref == 'main'
+              || startsWith(github.event.pull_request.base.ref, 'release-')))
+    runs-on: ubuntu-24.04
+    permissions:
+      # Read-only apart from statuses: this job never comments, labels or touches PR code.
+      actions: read
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Decide what to post
+        id: decide
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          OVERRIDE_LABEL: E2E/Override
+          DISPATCH_PR: ${{ inputs.pr_number }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const label = process.env.OVERRIDE_LABEL;
+            const dispatched = context.eventName === 'workflow_dispatch';
+            const prNumber = dispatched ? Number(process.env.DISPATCH_PR) : context.payload.pull_request.number;
+            // Decide from the PR's current state, not the event, so a queued run acts on what is true now.
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
+            const action = dispatched ? 'dispatch' : context.payload.action;
+            const eventLabel = dispatched ? '' : (context.payload.label?.name || '');
+
+            core.setOutput('mode', 'none');
+            core.setOutput('dry_run', process.env.DRY_RUN === 'true' ? 'true' : 'false');
+            core.setOutput('pr_number', String(pr.number));
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('head_repo', pr.head.repo?.full_name || '');
+            core.setOutput('head_ref', pr.head.ref);
+
+            if (pr.head.repo?.full_name === `${owner}/${repo}`) {
+              core.info(`PR #${pr.number} is not from a fork; the E2E label manager handles it.`);
+              return;
+            }
+            // Same branches the "Required Status Checks" ruleset covers.
+            if (pr.base.ref !== 'main' && !/^release-.+\..+$/.test(pr.base.ref)) {
+              core.info(`PR #${pr.number} targets ${pr.base.ref}, which requires no E2E status; nothing to do.`);
+              return;
+            }
+
+            const hasWriteAccess = async (username) => {
+              if (!username) {
+                return false;
+              }
+              try {
+                const {data} = await github.rest.repos.getCollaboratorPermissionLevel({owner, repo, username});
+                // `permission` is the base level (maintain reads as write, triage as read), so custom roles work too.
+                return ['admin', 'write'].includes(data.permission);
+              } catch (err) {
+                core.warning(`Permission lookup for ${username}: ${err.message}`);
+                return false;
+              }
+            };
+            const reset = async (why) => {
+              core.setOutput('mode', 'pending');
+              core.info(`Fork PR #${pr.number}: ${why}; resetting any waived contexts.`);
+            };
+
+            if (!pr.labels.some((l) => l.name === label)) {
+              await reset(`${label} is not applied`);
+              return;
+            }
+
+            // Only the labeling run creates a waiver. Its sender and the latest labeler must both have write access.
+            const waiving = !dispatched && action === 'labeled' && eventLabel === label;
+            const events = await github.paginate(github.rest.issues.listEvents, {
+              owner, repo, issue_number: pr.number, per_page: 100,
+            });
+            // Events have no guaranteed order: take the newest labeling by time; a tie between actors resets.
+            const labelings = events.filter((e) => e.event === 'labeled' && e.label?.name === label);
+            const newest = Math.max(...labelings.map((e) => Date.parse(e.created_at)));
+            const newestActors = [...new Set(labelings.
+              filter((e) => Date.parse(e.created_at) === newest).
+              map((e) => e.actor?.login || ''))];
+            if (newestActors.length > 1) {
+              await reset(`${label} was applied by ${newestActors.join(', ')} at the same time`);
+              return;
+            }
+            const latest = newestActors[0] || '';
+            const approver = waiving ? (context.payload.sender?.login || '') : latest;
+            const required = [...new Set([approver, latest].filter(Boolean))];
+            for (const user of required.length ? required : ['']) {
+              if (!(await hasWriteAccess(user))) {
+                await reset(`${label} was applied by '${user}', who lacks write access`);
+                return;
+              }
+            }
+
+            // The waiver covers only the labeled commit; a manual run never creates one.
+            if (!waiving) {
+              core.info(`Fork PR #${pr.number}: ${label} by @${approver} stands; nothing new to post.`);
+              return;
+            }
+            const labeledSha = context.payload.pull_request.head.sha;
+            if (labeledSha !== pr.head.sha) {
+              core.info(`Fork PR #${pr.number} moved from ${labeledSha} to ${pr.head.sha} since it was labeled; not waiving the new commit.`);
+              return;
+            }
+
+            core.setOutput('mode', 'success');
+            core.setOutput('approver', approver);
+            core.info(`Fork PR #${pr.number} @ ${pr.head.sha}: waiving E2E on behalf of @${approver}.`);
+
+      # Base revision only: the composite action and the file it require()s load from here.
+      - name: Check out base revision
+        if: steps.decide.outputs.mode != 'none' && steps.decide.outputs.dry_run != 'true'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Waive required E2E contexts
+        if: steps.decide.outputs.mode == 'success' && steps.decide.outputs.dry_run != 'true'
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ steps.decide.outputs.head_sha }}
+          # Must contain "e2e overridden": the pending path matches on it.
+          description: e2e overridden by @${{ steps.decide.outputs.approver }} (fork PR, E2E not run)
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Reset waived E2E contexts
+        if: steps.decide.outputs.mode == 'pending' && steps.decide.outputs.dry_run != 'true'
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ steps.decide.outputs.head_sha }}
+          state: pending
+          description: E2E/Override missing or not applied by a writer; fork PRs need it to merge
+          target_url: ''
+
+      # The reset above covers the current head. Reset commits waived earlier too: the author
+      # could push away and back. Every waiver ran this workflow on the PR's head at the time,
+      # so its earlier runs list them.
+      - name: Reset earlier waived commits
+        if: "!cancelled() && steps.decide.outputs.mode == 'pending' && steps.decide.outputs.dry_run != 'true'"
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          HEAD_SHA: ${{ steps.decide.outputs.head_sha }}
+          HEAD_REPO: ${{ steps.decide.outputs.head_repo }}
+          HEAD_REF: ${{ steps.decide.outputs.head_ref }}
+        with:
+          script: |
+            const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+            const {owner, repo} = context.repo;
+            // Present only in descriptions written by the waiver, so a reset never touches a real result.
+            const MARKER = 'e2e overridden';
+
+            const shas = new Set();
+            if (process.env.HEAD_REPO) {
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner, repo, workflow_id: 'e2e-fork-policy.yml',
+                event: 'pull_request_target', branch: process.env.HEAD_REF, per_page: 100,
+              });
+              for (const run of runs) {
+                if (run.head_repository?.full_name === process.env.HEAD_REPO && run.head_sha !== process.env.HEAD_SHA) {
+                  shas.add(run.head_sha);
+                }
+              }
+            }
+
+            const failures = [];
+            for (const sha of shas) {
+              const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                owner, repo, ref: sha, per_page: 100,
+              });
+              // Newest first: the first entry per context is its current state.
+              const latest = new Map();
+              for (const status of statuses) {
+                if (!latest.has(status.context)) {
+                  latest.set(status.context, status);
+                }
+              }
+              for (const statusContext of E2E_STATUS_CONTEXTS) {
+                if (!latest.get(statusContext)?.description?.includes(MARKER)) {
+                  continue;
+                }
+                try {
+                  await github.rest.repos.createCommitStatus({
+                    owner, repo, sha, state: 'pending', context: statusContext,
+                    description: 'E2E/Override missing or not applied by a writer; fork PRs need it to merge',
+                  });
+                  core.info(`Reset ${statusContext} on ${sha}`);
+                } catch (err) {
+                  failures.push(`${statusContext} on ${sha}: ${err.message}`);
+                }
+              }
+            }
+            if (failures.length > 0) {
+              throw new Error(`Failed to reset ${failures.length} status(es): ${failures.join('; ')}`);
+            }

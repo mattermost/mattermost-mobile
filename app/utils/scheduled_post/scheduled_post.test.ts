@@ -7,7 +7,7 @@ import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import DatabaseManager from '@database/manager';
 import {showSnackBar} from '@utils/snack_bar';
 
-import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode, canPostDraftInChannelOrThread} from './index';
+import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode, canPostDraftInChannelOrThread, getScheduledPostRecurrence} from './index';
 
 import type {ServerDatabase} from '@typings/database/database';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
@@ -341,5 +341,36 @@ describe('canPostDraftInChannelOrThread', () => {
         });
         expect(result).toBe(true);
         expect(Alert.alert).not.toHaveBeenCalled();
+    });
+});
+
+describe('getScheduledPostRecurrence', () => {
+    it('should clear the recurrence when weekly is off', () => {
+        expect(getScheduledPostRecurrence(false, {useAutomaticTimezone: true, automaticTimezone: 'America/New_York', manualTimezone: ''})).toEqual({
+            repeat_type: '',
+            repeat_timezone: '',
+        });
+    });
+
+    it('should use the automatic timezone when the user has not opted out of it', () => {
+        expect(getScheduledPostRecurrence(true, {useAutomaticTimezone: true, automaticTimezone: 'America/New_York', manualTimezone: 'Asia/Tokyo'})).toEqual({
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
+        });
+    });
+
+    it('should use the manual timezone when the user opted out of the automatic one', () => {
+        expect(getScheduledPostRecurrence(true, {useAutomaticTimezone: false, automaticTimezone: 'America/New_York', manualTimezone: 'Asia/Tokyo'})).toEqual({
+            repeat_type: 'weekly',
+            repeat_timezone: 'Asia/Tokyo',
+        });
+    });
+
+    // The server rejects a weekly post without a loadable zone, so an unset timezone must not send ''.
+    it('should fall back to UTC when the user has no timezone', () => {
+        expect(getScheduledPostRecurrence(true)).toEqual({
+            repeat_type: 'weekly',
+            repeat_timezone: 'UTC',
+        });
     });
 });

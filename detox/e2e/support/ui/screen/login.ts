@@ -3,8 +3,11 @@
 
 import {serverOneUrl} from '@support/test_config';
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, isIos, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, reloadApp, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist, waitForFirstPresent} from '@support/utils';
 import {waitFor} from 'detox';
+
+// Android CI emulators can be slow after app launch — use a longer timeout.
+const loginScreenTimeout = () => (isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC);
 
 class LoginScreen {
     testID = {
@@ -35,9 +38,7 @@ class LoginScreen {
     // `accessibilityLabel="Back"`, Android via the AppCompat Toolbar's
     // default navigation-icon contentDescription "Navigate up".
     get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
+        return isIos()? element(by.label('Back')).atIndex(0): element(by.label('Navigate up')).atIndex(0);
     }
 
     titleLoginToAccount = element(by.id(this.testID.titleLoginToAccount));
@@ -55,8 +56,7 @@ class LoginScreen {
     signinButtonDisabled = element(by.id(this.testID.signinButtonDisabled));
 
     toBeVisible = async () => {
-        // Android CI emulators can be slow after app launch — use a longer timeout.
-        const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+        const timeout = loginScreenTimeout();
 
         // On Android, use the polling helper instead of waitFor().toExist() to avoid
         // BridgeIdlingResource blocking when the JS bridge is still busy after
@@ -96,7 +96,7 @@ class LoginScreen {
         const deadline = started + timeout;
 
         // Lazy require: ChannelScreen → HomeScreen → LoginScreen.
-        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+
         const {ChannelScreen} = require('@support/ui/screen');
 
         /* eslint-disable no-await-in-loop -- poll list vs channel until one appears */
@@ -137,8 +137,27 @@ class LoginScreen {
         throw new Error('LoginScreen.waitUntilOnChannelList: neither channel list nor channel appeared');
     };
 
+    /**
+     * Waits for the login form. Logging out of the active server routes to the server screen
+     * (SessionManager.onLogout), which does not connect on its own, so connect from there; otherwise
+     * toBeVisible times out and retryWithReload connects only after reloading the app.
+     * @param serverUrl - the server to connect to from the server screen; Server 1, as retryWithReload assumes
+     * @param serverDisplayName - its display name
+     * @returns the login screen element
+     */
+    reachLoginForm = async (serverUrl = serverOneUrl, serverDisplayName = 'Server 1') => {
+        const landed = await waitForFirstPresent([
+            ['login', this.loginScreen],
+            ['server', ServerScreen.serverScreen],
+        ], loginScreenTimeout());
+        if (landed === 'server') {
+            await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+        }
+        return this.toBeVisible();
+    };
+
     loginWithRetryIfStuck = async (user: any = {}) => {
-        await this.toBeVisible();
+        await this.reachLoginForm();
         await this.usernameInput.tap({x: 150, y: 10});
         await this.usernameInput.replaceText(user.newUser.email);
         await this.passwordInput.tap();
@@ -214,7 +233,7 @@ class LoginScreen {
                 // On Android, native alert buttons are rendered in uppercase
                 // ("DISMISS", "OK"). Try each variant to dismiss whichever appears.
                 try {
-                    // eslint-disable-next-line no-await-in-loop
+
                     const serverUpgradeTitle = element(by.text('Server upgrade required'));
                     // eslint-disable-next-line no-await-in-loop
                     await waitFor(serverUpgradeTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -246,7 +265,7 @@ class LoginScreen {
                     // eslint-disable-next-line no-await-in-loop
                     await wait(timeouts.ONE_SEC);
                     // eslint-disable-next-line no-await-in-loop
-                    await device.reloadReactNative();
+                    await reloadApp();
                 }
             }
         }

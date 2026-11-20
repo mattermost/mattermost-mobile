@@ -39,6 +39,10 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     FILE: 'file',
     DATE: 'date',
     DATETIME: 'datetime',
+    CHECKBOX_GROUP: 'checkbox_group',
+    CHECKBOX_MATRIX: 'checkbox_matrix',
+    ACTION_BUTTON: 'action_button',
+    COLLAPSIBLE: 'collapsible',
 };
 
 export const SelectableAppFieldTypes = [

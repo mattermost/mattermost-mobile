@@ -30,8 +30,8 @@ import {
     ServerScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {disableSynchronization, enableSynchronization, getRandomId, reloadApp, timeouts, wait, waitForElementToHaveText} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -189,12 +189,12 @@ describe('Smoke Test - Channels', () => {
 
         // Preference updates can stall Detox's idle timer; toExist avoids Android
         // edge-to-edge clipping of the action row below a 75% visibility threshold.
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await waitFor(ChannelInfoScreen.unfavoriteAction).toExist().withTimeout(timeouts.HALF_MIN);
             await waitFor(ChannelInfoScreen.unmuteAction).toExist().withTimeout(timeouts.TEN_SEC);
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
@@ -202,12 +202,12 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.unmuteAction.tap();
 
         // * Verify channel is unfavorited and unmuted
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await waitFor(ChannelInfoScreen.favoriteAction).toExist().withTimeout(timeouts.HALF_MIN);
             await waitFor(ChannelInfoScreen.muteAction).toExist().withTimeout(timeouts.TEN_SEC);
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // # Go back to channel list screen
@@ -220,7 +220,7 @@ describe('Smoke Test - Channels', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await wait(timeouts.TWO_SEC);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();

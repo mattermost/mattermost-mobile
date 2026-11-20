@@ -7,7 +7,6 @@ import {useIntl} from 'react-intl';
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
 import useFileUploadError from '@hooks/file_upload_error';
-import {useFetchRenderPermissions} from '@hooks/render_permissions';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledByPolicyWarning, uploadDisabledWarning} from '@utils/file';
 
@@ -61,7 +60,6 @@ export default function DraftHandler(props: Props) {
 
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    useFetchRenderPermissions(channelId);
 
     const uploadErrorHandlers = useRef<ErrorHandlers>({});
     const {uploadError, newUploadError} = useFileUploadError();

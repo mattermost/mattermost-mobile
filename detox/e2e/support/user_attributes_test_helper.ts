@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {CustomProfileAttributes, System, User} from '@support/server_api';
-import {safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 
 // Keep in sync with detox/provision/custom-profile-attributes.ts
 export const USER_ATTRIBUTE_FIELD_NAMES = ['Bio', 'Department', 'Team'] as const;
@@ -85,13 +85,18 @@ const ensureUserAttributeFields = async (siteOneUrl: string): Promise<string | u
     }
 
     const byName = buildFieldIdByName(fields as CustomProfileField[]);
+    const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
+    if (missing.length === 0) {
+        return undefined;
+    }
+
+    // CI fields are provisioned by the server baseline; specs never create them.
+    if (process.env.CI === 'true') {
+        return `Missing custom profile fields: ${missing.join(', ')}. The server baseline must provision them.`;
+    }
 
     /* eslint-disable no-await-in-loop -- create missing fields sequentially */
-    for (const name of USER_ATTRIBUTE_FIELD_NAMES) {
-        if (byName.has(name)) {
-            continue;
-        }
-
+    for (const name of missing) {
         const {error: createError} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(siteOneUrl, {name});
         if (createError) {
             return `Failed to create custom profile field "${name}": ${JSON.stringify(createError)}`;
@@ -196,7 +201,7 @@ export const waitForEditProfileCustomAttributes = async (firstFieldId: string): 
     const scrollView = element(by.id('edit_profile.scroll_view'));
     const firstInput = getCustomAttributeInput(firstFieldId);
 
-    await device.disableSynchronization();
+    await disableSynchronization();
     try {
         /* eslint-disable no-await-in-loop */
         for (let attempt = 0; attempt < 15; attempt++) {
@@ -215,7 +220,7 @@ export const waitForEditProfileCustomAttributes = async (firstFieldId: string): 
         /* eslint-enable no-await-in-loop */
         await waitForElementToExist(firstInput, timeouts.TEN_SEC);
     } finally {
-        await safeEnableSynchronization();
+        await enableSynchronization();
     }
 };
 
@@ -225,7 +230,7 @@ export const scrollProfileAttributeIntoView = async (
     const titleEl = element(by.text(fieldName).withAncestor(by.id('user_profile.custom_attributes.list')));
     const scrollView = element(by.id('user_profile.scroll_view'));
 
-    await device.disableSynchronization();
+    await disableSynchronization();
     try {
         /* eslint-disable no-await-in-loop */
         for (let attempt = 0; attempt < 15; attempt++) {
@@ -248,6 +253,6 @@ export const scrollProfileAttributeIntoView = async (
         /* eslint-enable no-await-in-loop */
         await waitForElementToExist(titleEl, timeouts.TEN_SEC);
     } finally {
-        await safeEnableSynchronization();
+        await enableSynchronization();
     }
 };

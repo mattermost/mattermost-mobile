@@ -3,11 +3,16 @@
 /* eslint-disable no-await-in-loop, no-console */
 
 import {execSync} from 'child_process';
-import {existsSync} from 'fs';
+import {existsSync, readFileSync, writeFileSync} from 'fs';
+import {tmpdir} from 'os';
+import path from 'path';
 
 import {System, User} from '@support/server_api';
+import {drainPoolGuardViolations} from '@support/server_api/pool_guard';
+import {applyServerBaseline} from '@support/server_baseline';
+import {serverRole} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
-import {safeEnableSynchronization} from '@support/utils';
+import {disableSynchronization, enableSynchronization} from '@support/utils';
 
 import {logError, logWarn} from '../../provision/log';
 
@@ -23,19 +28,63 @@ function getSimulatorId(): string {
     }
 }
 
-let cachedDataContainer: string | undefined;
-let cachedAppGroupContainer: string | undefined;
-
 function resolveContainerPath(simId: string, kind: string): string | undefined {
     try {
-        const path = execSync(
+        const containerPath = execSync(
             `xcrun simctl get_app_container "${simId}" ${BUNDLE_ID} ${kind} 2>/dev/null`,
             {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
         ).trim();
-        return path || undefined;
+        return containerPath || undefined;
     } catch {
         return undefined;
     }
+}
+
+// Jest resets module state per test file, so cache paths on disk per simulator instead of in a variable or process.env.
+function containerCacheFile(simId: string): string {
+    return path.join(tmpdir(), `mattermost-detox-ios-containers-${simId}.json`);
+}
+
+function readCachedContainerPath(simId: string, kind: string): string | undefined {
+    try {
+        const cached = JSON.parse(readFileSync(containerCacheFile(simId), 'utf8')) as Record<string, string>;
+        const cachedPath = cached[kind];
+        return cachedPath && existsSync(cachedPath) ? cachedPath : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+function getContainerPath(simId: string, kind: string): string | undefined {
+    const cachedPath = readCachedContainerPath(simId, kind);
+    if (cachedPath) {
+        return cachedPath;
+    }
+    const containerPath = resolveContainerPath(simId, kind);
+    if (containerPath) {
+        try {
+            let cached: Record<string, string> = {};
+            try {
+                cached = JSON.parse(readFileSync(containerCacheFile(simId), 'utf8')) as Record<string, string>;
+            } catch {
+                // No cache yet for this simulator.
+            }
+            cached[kind] = containerPath;
+            writeFileSync(containerCacheFile(simId), JSON.stringify(cached));
+        } catch {
+            // Caching is best effort; the resolved path is still usable.
+        }
+    }
+    return containerPath;
+}
+
+function wipeContainerContents(containerPath: string): void {
+    // Preserve containermanagerd's metadata plist; deleting it breaks future
+    // `simctl get_app_container ... group.com.mattermost.rnbeta` lookups in the shard.
+    execSync(
+        `find "${containerPath}" -mindepth 1 -maxdepth 1 ! -name '.com.apple.mobile_container_manager.metadata.plist' -exec rm -rf {} +`,
+        {stdio: 'pipe'},
+    );
 }
 
 function clearIOSAppData(): void {
@@ -46,8 +95,14 @@ function clearIOSAppData(): void {
     }
 
     try {
+        execSync(`xcrun simctl terminate "${simId}" ${BUNDLE_ID} 2>/dev/null || true`, {stdio: 'pipe', timeout: 10_000});
+    } catch {
+        // App might not be running or terminate timed out — fallback below
+    }
+
+    try {
         const appPid = execSync(
-            `xcrun simctl spawn "${simId}" launchctl list 2>/dev/null | grep "${BUNDLE_ID}" | awk '{print $1}' | grep -E '^[0-9]+$' || true`,
+            `xcrun simctl spawn "${simId}" launchctl list 2>/dev/null | grep "${BUNDLE_ID}" | awk '{print $1}' | grep -E '^[0-9]+$' | head -n 1 || true`,
             {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
         ).trim();
 
@@ -60,15 +115,12 @@ function clearIOSAppData(): void {
         // App might not be running — that's fine
     }
 
-    // 2. Find the app's data container and delete its contents.
-    if (!cachedDataContainer) {
-        cachedDataContainer = resolveContainerPath(simId, 'data');
-    }
-    if (cachedDataContainer) {
+    // 2. Find the app's data and App Group containers and delete their contents.
+    const dataContainer = getContainerPath(simId, 'data');
+    if (dataContainer) {
         try {
-            // Remove all contents of Documents, Library, tmp (but keep the container dir)
-            execSync(`find "${cachedDataContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-            console.info(`[clearIOSAppData] Cleared data container: ${cachedDataContainer}`);
+            wipeContainerContents(dataContainer);
+            console.info(`[clearIOSAppData] Cleared data container: ${dataContainer}`);
         } catch {
             console.warn('[clearIOSAppData] data-container wipe failed');
         }
@@ -76,14 +128,12 @@ function clearIOSAppData(): void {
         console.warn('[clearIOSAppData] Could not resolve data container (app may not be installed yet)');
     }
 
-    if (!cachedAppGroupContainer) {
-        cachedAppGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
-    }
-    if (cachedAppGroupContainer) {
-        if (existsSync(cachedAppGroupContainer)) {
+    const appGroupContainer = getContainerPath(simId, 'group.com.mattermost.rnbeta');
+    if (appGroupContainer) {
+        if (existsSync(appGroupContainer)) {
             try {
-                execSync(`find "${cachedAppGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-                console.info(`[clearIOSAppData] Cleared App Group container: ${cachedAppGroupContainer}`);
+                wipeContainerContents(appGroupContainer);
+                console.info(`[clearIOSAppData] Cleared App Group container: ${appGroupContainer}`);
             } catch {
                 console.warn('[clearIOSAppData] App-Group-container wipe failed');
             }
@@ -194,6 +244,14 @@ async function grantAndroidNotificationPermission(): Promise<void> {
     }
 }
 
+// iOS has no shard-level retry (Android re-runs failed spec files in a second
+// attempt), so on CI a failing iOS test is retried once in place. Jest keeps the
+// first attempt's error in the report's retryReasons, and Test System IO stores it
+// as a failed attempt: a test that passes on retry is reported flaky, not clean.
+if (process.env.CI && process.env.IOS === 'true') {
+    jest.retryTimes(Number(process.env.DETOX_TEST_RETRIES ?? 1), {logErrorsBeforeRetry: true});
+}
+
 // ─── Global beforeAll ────────────────────────────────────────────────────────
 // Runs before each test file.
 // Responsibilities: launch app with clean state, admin login, plugin cleanup.
@@ -264,7 +322,7 @@ beforeAll(async () => {
             launchArgs,
         });
 
-        await device.disableSynchronization();
+        await disableSynchronization();
 
         const serverScreenEl = element(by.id('server.screen'));
 
@@ -314,7 +372,7 @@ beforeAll(async () => {
         } finally {
             // Always re-enable synchronization so subsequent test operations
             // (tap, typeText, expect) re-enter the normal synchronized path.
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     }
 
@@ -354,4 +412,17 @@ beforeAll(async () => {
     console.info('✅ App launched');
 
     await loginAdmin();
+
+    // The mutation shard runs specs that change server-wide state; start each one from the baseline.
+    if (serverRole === 'mutation') {
+        await applyServerBaseline(siteOneUrl);
+    }
 }, 360_000);
+
+// API helpers return errors instead of throwing, so a blocked write would otherwise pass unnoticed.
+afterAll(() => {
+    const violations = drainPoolGuardViolations();
+    if (violations.length) {
+        throw new Error(`Server-wide writes from a pool shard (move the spec to detox/e2e/server_mutation_specs.json):\n${violations.join('\n')}`);
+    }
+});

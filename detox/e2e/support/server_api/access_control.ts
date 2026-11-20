@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
+
 import client from './client';
 import {getResponseFromError} from './common';
-import {apiEnsureChannelPermissionPolicyFlags} from './system';
 
 // ****************************************************************
 // Access Control (ABAC)
@@ -52,12 +54,14 @@ export const apiEnableABAC = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {fields} on success or {error, status} on error
  */
 export const apiGetCustomProfileAttributeFields = async (baseUrl: string): Promise<any> => {
-    try {
-        const response = await client.get(`${baseUrl}/api/v4/custom_profile_attributes/fields`);
-        return {fields: response.data ?? []};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.get(`${baseUrl}/api/v4/custom_profile_attributes/fields`);
+            return {fields: response.data ?? []};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiGetCustomProfileAttributeFields', budgetMs: timeouts.ONE_MIN});
 };
 
 /**
@@ -67,33 +71,14 @@ export const apiGetCustomProfileAttributeFields = async (baseUrl: string): Promi
  * @return {Object} returns {} on success or {error, status} on error
  */
 export const apiDeleteCustomProfileAttributeField = async (baseUrl: string, fieldId: string): Promise<any> => {
-    try {
-        await client.delete(`${baseUrl}/api/v4/custom_profile_attributes/fields/${fieldId}`);
-        return {};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Delete a custom profile attribute field by its unique name.
- * Useful for cleanup when a create response is lost before the field ID is recorded.
- * @param {string} baseUrl - the base server URL
- * @param {string} name - field name to delete
- * @return {Object} returns {} on success or when absent, or {error, status} on error
- */
-export const apiDeleteCustomProfileAttributeFieldByName = async (baseUrl: string, name: string): Promise<any> => {
-    const {fields, error, status} = await apiGetCustomProfileAttributeFields(baseUrl);
-    if (error) {
-        return {error, status};
-    }
-
-    const field = fields.find((candidate: any) => candidate.name === name);
-    if (!field) {
-        return {};
-    }
-
-    return apiDeleteCustomProfileAttributeField(baseUrl, field.id);
+    return withTransportRetry(async () => {
+        try {
+            await client.delete(`${baseUrl}/api/v4/custom_profile_attributes/fields/${fieldId}`);
+            return {};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiDeleteCustomProfileAttributeField', budgetMs: timeouts.ONE_MIN});
 };
 
 /**
@@ -169,15 +154,17 @@ export const apiSetUserPropertyValues = async (
     userId: string,
     values: Record<string, string>,
 ): Promise<any> => {
-    try {
-        const response = await client.patch(
-            `${baseUrl}/api/v4/users/${userId}/custom_profile_attributes`,
-            values,
-        );
-        return {status: response.status};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.patch(
+                `${baseUrl}/api/v4/users/${userId}/custom_profile_attributes`,
+                values,
+            );
+            return {status: response.status};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiSetUserPropertyValues', budgetMs: timeouts.ONE_MIN});
 };
 
 // ------------------------------------------------------------
@@ -220,71 +207,31 @@ export const apiCreatePermissionPolicy = async (
     }
 };
 
-const isChannelPermissionPoliciesDisabled = (result: {error?: {id?: string; status_code?: number}; status?: number}) => {
-    return result.status === 501 ||
-        result.error?.status_code === 501 ||
-        result.error?.id === 'api.access_control_policy.channel_permission_policies.feature_disabled';
-};
-
-const putChannelPermissionPolicy = async (
-    baseUrl: string,
-    channelId: string,
-    rules: Array<{actions: string[]; expression: string}>,
-): Promise<any> => {
-    try {
-        const response = await client.put(
-            `${baseUrl}/api/v4/access_control_policies`,
-            {
-                id: channelId,
-                type: 'channel',
-                version: 'v0.4',
-                revision: 1,
-                rules: rules.map((rule, index) => ({
-                    ...rule,
-                    name: `E2E channel permission rule ${index + 1}`,
-                    role: 'channel_user',
-                })),
-            },
-        );
-        return {policy: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
 /**
- * Create a permission policy scoped to one channel.
- * Channel policies are keyed by the channel ID, and v0.4 permission rules
- * require a unique name and channel role.
- * Re-enables ChannelPermissionPolicies immediately before the write so a
- * shared-server FeatureFlags patch during the suite's 30s attribute wait
- * cannot leave the flag off.
+ * Create a channel access policy whose rules gate permission actions in that channel only; channel
+ * membership is unaffected. The policy id is the channel id, so delete it with apiDeletePermissionPolicy.
+ * Requires admin session and the ChannelPermissionPolicies feature flag.
  * @param {string} baseUrl - the base server URL
  * @param {string} channelId - the channel the policy applies to
- * @param {Array<{actions: string[]; expression: string}>} rules - permission rules to enforce in the channel
+ * @param {Array<{name: string; role: string; actions: string[]; expression: string}>} rules - v0.4 rules; each needs a unique name and a channel role such as 'channel_user'
  * @return {Object} returns {policy} on success or {error, status} on error
  */
 export const apiCreateChannelPermissionPolicy = async (
     baseUrl: string,
     channelId: string,
-    rules: Array<{actions: string[]; expression: string}>,
+    rules: Array<{name: string; role: string; actions: string[]; expression: string}>,
 ): Promise<any> => {
-    const {error: flagsError, status: flagsStatus} = await apiEnsureChannelPermissionPolicyFlags(baseUrl);
-    if (flagsError) {
-        return {error: flagsError, status: flagsStatus};
-    }
-
-    const created = await putChannelPermissionPolicy(baseUrl, channelId, rules);
-    if (!isChannelPermissionPoliciesDisabled(created)) {
-        return created;
-    }
-
-    const {error: retryFlagsError, status: retryFlagsStatus} = await apiEnsureChannelPermissionPolicyFlags(baseUrl);
-    if (retryFlagsError) {
-        return {error: retryFlagsError, status: retryFlagsStatus};
-    }
-
-    return putChannelPermissionPolicy(baseUrl, channelId, rules);
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(
+                `${baseUrl}/api/v4/access_control_policies`,
+                {id: channelId, type: 'channel', version: 'v0.4', rules},
+            );
+            return {policy: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiCreateChannelPermissionPolicy', budgetMs: timeouts.ONE_MIN});
 };
 
 /**
@@ -295,12 +242,47 @@ export const apiCreateChannelPermissionPolicy = async (
  * @return {Object} returns {} on success or {error, status} on error
  */
 export const apiDeletePermissionPolicy = async (baseUrl: string, policyId: string): Promise<any> => {
-    try {
-        await client.delete(`${baseUrl}/api/v4/access_control_policies/${policyId}`);
-        return {};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            await client.delete(`${baseUrl}/api/v4/access_control_policies/${policyId}`);
+            return {};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiDeletePermissionPolicy', budgetMs: timeouts.ONE_MIN});
+};
+
+// ------------------------------------------------------------
+// Channel (Membership) Policies
+// Controls which users can access / remain members of a channel
+// based on their attributes (CEL expression evaluated per user).
+// ------------------------------------------------------------
+
+/**
+ * Activate or deactivate an access control policy.
+ * A policy must be active to be enforced by the server.
+ * Uses PUT /api/v4/access_control_policies/activate with entries array.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} policyId - the policy ID
+ * @param {boolean} [active] - true to activate (default), false to deactivate
+ * @return {Object} returns {} on success or {error, status} on error
+ */
+export const apiSetPolicyActive = async (
+    baseUrl: string,
+    policyId: string,
+    active = true,
+): Promise<any> => {
+    return withTransportRetry(async () => {
+        try {
+            await client.put(
+                `${baseUrl}/api/v4/access_control_policies/activate`,
+                {entries: [{id: policyId, active}]},
+            );
+            return {};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiSetPolicyActive', budgetMs: timeouts.ONE_MIN});
 };
 
 export const AccessControl = {
@@ -309,11 +291,11 @@ export const AccessControl = {
     apiGetOrCreateCustomProfileAttributeField,
     apiCreateCustomProfileAttributeField,
     apiDeleteCustomProfileAttributeField,
-    apiDeleteCustomProfileAttributeFieldByName,
     apiSetUserPropertyValues,
     apiCreatePermissionPolicy,
     apiCreateChannelPermissionPolicy,
     apiDeletePermissionPolicy,
+    apiSetPolicyActive,
 };
 
 export default AccessControl;

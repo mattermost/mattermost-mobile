@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, renderHook, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, render, renderHook, waitFor} from '@testing-library/react-native';
 import {Alert, AppState} from 'react-native';
 import Permissions from 'react-native-permissions';
 import {of as of$} from 'rxjs';
 
 import {initializeVoiceTrack, openOutgoingCallScreen} from '@calls/actions/calls';
-import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
+import {leaveAndJoinWithAlert, showLimitRestrictedAlert, startPhoneCall} from '@calls/alerts';
 import {observeIsCallLimitRestricted} from '@calls/observers';
 import {
     cancelOutgoingCall,
     getCurrentCall,
     getCallsConfig,
+    isPhoneDialingAvailable,
     setMicPermissionsGranted,
     useCallsState,
     useChannelsWithCalls,
@@ -30,10 +31,12 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {navigateToScreen} from '@screens/navigation';
+import {bottomSheet, navigateToScreen} from '@screens/navigation';
 import {openUserProfile} from '@utils/navigation';
 
 import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus, useNavigationHeaderCallButtonForDM} from './hooks';
+
+import type {ReactElement} from 'react';
 
 jest.mock('react-intl', () => ({
     useIntl: jest.fn().mockReturnValue({
@@ -62,6 +65,7 @@ jest.mock('@calls/actions/calls', () => ({
 jest.mock('@calls/alerts', () => ({
     leaveAndJoinWithAlert: jest.fn(),
     showLimitRestrictedAlert: jest.fn(),
+    startPhoneCall: jest.fn(),
 }));
 
 jest.mock('@calls/observers', () => ({
@@ -72,6 +76,7 @@ jest.mock('@calls/state', () => ({
     cancelOutgoingCall: jest.fn(),
     getCurrentCall: jest.fn(),
     getCallsConfig: jest.fn(),
+    isPhoneDialingAvailable: jest.fn(),
     setMicPermissionsGranted: jest.fn(),
     useCallsState: jest.fn(),
     useChannelsWithCalls: jest.fn(),
@@ -93,6 +98,8 @@ jest.mock('@queries/servers/user', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
+    bottomSheet: jest.fn(),
+    dismissBottomSheet: jest.fn(),
     navigateToScreen: jest.fn(),
 }));
 jest.mock('@utils/navigation');
@@ -444,6 +451,46 @@ describe('Calls Hooks', () => {
 
             expect(openOutgoingCallScreen).not.toHaveBeenCalled();
             expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL);
+        });
+
+        describe('with phone numbers', () => {
+            const phones = [{label: 'Mobile', number: '+15551234567'}];
+
+            const openCallOptions = async () => {
+                const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL, 'user2', phones));
+                await act(async () => {
+                    result.current?.onPress();
+                });
+                return render(jest.mocked(bottomSheet).mock.calls[0][0]() as ReactElement);
+            };
+
+            beforeEach(() => {
+                jest.mocked(isPhoneDialingAvailable).mockReturnValue(true);
+            });
+
+            it('should offer the DM user\'s numbers next to a Mattermost call, and phone the chosen number', async () => {
+                const {getByTestId} = await openCallOptions();
+
+                fireEvent.press(getByTestId('user_call_options.phone.+15551234567'));
+
+                await waitFor(() => {
+                    expect(startPhoneCall).toHaveBeenCalledWith(expect.anything(), 'server1', {
+                        number: '+15551234567',
+                        targetUserId: 'user2',
+                        displayLabel: 'Mobile',
+                    });
+                });
+            });
+
+            it('should start a Mattermost call from the call options', async () => {
+                const {getByTestId} = await openCallOptions();
+
+                fireEvent.press(getByTestId('user_call_options.start_call'));
+
+                await waitFor(() => {
+                    expect(leaveAndJoinWithAlert).toHaveBeenCalledWith(expect.anything(), 'server1', channelId);
+                });
+            });
         });
 
         it('should navigate to the call screen instead of joining when already in this channel call', async () => {

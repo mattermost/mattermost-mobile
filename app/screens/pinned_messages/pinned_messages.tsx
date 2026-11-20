@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
+import {useClearViewableItemsOnUnmount} from '@hooks/in_viewport';
 import {navigateBack} from '@screens/navigation';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {emitPostsInViewport} from '@utils/post_list/viewport';
@@ -65,6 +66,7 @@ function SavedMessages({
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
+    useClearViewableItemsOnUnmount(Screens.PINNED_MESSAGES);
     const serverUrl = useServerUrl();
 
     const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false), [currentTimezone, posts]);

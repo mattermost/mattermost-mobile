@@ -8,11 +8,13 @@ import {View, Text} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import DateTimeSelector from '@components/date_time_selector';
-import FormattedDate from '@components/formatted_date';
+import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
+import CheckboxGroupSetting from '@components/settings/checkbox_group_setting';
+import CheckboxMatrixSetting from '@components/settings/checkbox_matrix_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
 import {Screens, View as ViewConstants} from '@constants';
@@ -27,8 +29,11 @@ import {typography} from '@utils/typography';
 
 import AppsFormFileField from '../apps_form_file_field';
 
+import AppsFormActionButton from './apps_form_action_button';
+
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
+const DATE_DISPLAY_FORMAT: FormattedDateFormat = {dateStyle: 'medium'};
 
 export type Props = {
     field: AppField;
@@ -138,6 +143,10 @@ const AppsFormFieldComponent = React.memo(({
     const displayName = field.modal_label || field.label || '';
 
     const handleChange = useCallback((newValue: string | boolean) => {
+        onChange(name, newValue);
+    }, [name, onChange]);
+
+    const handleArrayChange = useCallback((newValue: string[]) => {
         onChange(name, newValue);
     }, [name, onChange]);
 
@@ -287,6 +296,7 @@ const AppsFormFieldComponent = React.memo(({
                     disabled={field.readonly}
                     testID={testID}
                     location={Screens.APPS_FORM}
+                    labelPosition={field.label_position}
                 />
             );
         }
@@ -298,8 +308,48 @@ const AppsFormFieldComponent = React.memo(({
                     errorText={errorText}
                     options={field.options?.map(appSelectOptionToDialogOption)}
                     onChange={handleChange}
+                    optional={!field.is_required}
                     testID={testID}
                     value={value as string}
+                    location={Screens.APPS_FORM}
+                    labelPosition={field.label_position}
+                />
+            );
+        }
+        case AppFieldTypes.CHECKBOX_GROUP: {
+            return (
+                <CheckboxGroupSetting
+                    label={displayName}
+                    helpText={field.description}
+                    errorText={errorText}
+                    options={field.options?.map(appSelectOptionToDialogOption)}
+                    onChange={handleArrayChange}
+                    testID={testID}
+                    value={Array.isArray(value) ? value as string[] : []}
+                    labelPosition={field.label_position}
+                    optional={!field.is_required}
+                    disabled={field.readonly}
+                    location={Screens.APPS_FORM}
+                />
+            );
+        }
+        case AppFieldTypes.CHECKBOX_MATRIX: {
+            if (!field.matrix_config) {
+                return null;
+            }
+
+            return (
+                <CheckboxMatrixSetting
+                    id={name}
+                    label={displayName}
+                    helpText={field.description}
+                    errorText={errorText}
+                    matrixConfig={field.matrix_config}
+                    onChange={handleArrayChange}
+                    value={Array.isArray(value) ? value as string[] : []}
+                    optional={!field.is_required}
+                    disabled={field.readonly}
+                    testID={testID}
                     location={Screens.APPS_FORM}
                 />
             );
@@ -321,6 +371,14 @@ const AppsFormFieldComponent = React.memo(({
                         theme={theme}
                     />
                 </View>
+            );
+        }
+        case AppFieldTypes.ACTION_BUTTON: {
+            return (
+                <AppsFormActionButton
+                    field={field}
+                    testID={testID}
+                />
             );
         }
         case AppFieldTypes.FILE: {
@@ -363,14 +421,16 @@ const AppsFormFieldComponent = React.memo(({
                                 {field.type === AppFieldTypes.DATE ? (
                                     <FormattedDate
                                         value={selectedDate.toDate()}
-                                        format={{dateStyle: 'medium'}}
+                                        format={DATE_DISPLAY_FORMAT}
+                                        timezone={displayTimezone || undefined}
                                         style={dateTimeStyles.dateTimeText}
                                     />
                                 ) : (
                                     <Text style={dateTimeStyles.dateTimeText}>
                                         <FormattedDate
                                             value={selectedDate.toDate()}
-                                            format={{dateStyle: 'medium'}}
+                                            format={DATE_DISPLAY_FORMAT}
+                                            timezone={displayTimezone || undefined}
                                         />
                                         {` ${intl.formatMessage({id: 'date_time_selector.at', defaultMessage: 'at'})} `}
                                         <FormattedTime

@@ -5,6 +5,8 @@ const path = require('path');
 // (`node split-tests.js | tee output.json`).
 const logDiag = (msg) => console.error(msg);
 
+const DEFAULT_MUTATION_MANIFEST = 'detox/e2e/server_mutation_specs.json';
+
 class DeviceInfo {
   constructor(deviceName, deviceOsVersion) {
     this.deviceName = deviceName;
@@ -13,11 +15,14 @@ class DeviceInfo {
 }
 
 class SpecGroup {
-  constructor(runId, specs, deviceInfo) {
+  // role: 'pool' shares the parallel test servers; 'mutation' owns one server target.
+  constructor(runId, specs, deviceInfo, {role = 'pool', target = 'A'} = {}) {
     this.runId = runId;
     this.specs = specs;
     this.deviceName = deviceInfo.deviceName;
     this.deviceOsVersion = deviceInfo.deviceOsVersion;
+    this.role = role;
+    this.target = target;
   }
 }
 
@@ -113,15 +118,80 @@ function isMmBlocksSpec(filePath) {
   return path.basename(filePath).includes('mm_blocks_');
 }
 
+/**
+ * Load the mutation manifest. Missing: nothing is isolated (warned). Malformed: throws,
+ * because a silently dropped entry would run a mutating spec on a pool server.
+ */
+function loadMutationManifest(filePath) {
+  const resolved = path.resolve(process.cwd(), filePath);
+  if (!fs.existsSync(resolved)) {
+    logDiag(`Warning: mutation manifest ${filePath} not found; no specs are isolated`);
+    return [];
+  }
+  const raw = JSON.parse(fs.readFileSync(resolved, 'utf8'));
+  if (!raw || !Array.isArray(raw.mutation)) {
+    throw new Error(`${filePath}: expected a "mutation" array`);
+  }
+  raw.mutation.forEach((entry, i) => {
+    const nonEmpty = (v) => typeof v === 'string' && v.length > 0;
+    const ok = Boolean(entry) && nonEmpty(entry.spec) && nonEmpty(entry.target) &&
+      (entry.iosTarget === undefined || nonEmpty(entry.iosTarget));
+    if (!ok) {
+      throw new Error(`${filePath}: mutation[${i}] needs non-empty "spec" and "target" strings`);
+    }
+  });
+  return raw.mutation;
+}
+
+/** MUTATION_TARGETS is a comma list, e.g. "B,site3"; empty means single-server. */
+function parseTargets(value) {
+  return String(value || '').split(',').map((t) => t.trim()).filter(Boolean);
+}
+
+/**
+ * Map a manifest target onto a target this run has a server for. A site3 spec may fall back
+ * to the isolated B; nothing moves onto the shared site3. No targets at all means server A,
+ * which planMutation rejects when any mutation spec is selected.
+ */
+function resolveMutationTarget(wanted, available) {
+  if (available.length === 0) {
+    return 'A';
+  }
+  if (available.includes(wanted)) {
+    return wanted;
+  }
+  if (wanted === 'site3' && available.includes('B')) {
+    return 'B';
+  }
+  throw new Error(`mutation target ${wanted} is not available (have: ${available.join(', ')})`);
+}
+
 
 class Specs {
-  constructor(searchPath, parallelism, deviceInfo, durations = {}) {
+  constructor(searchPath, parallelism, deviceInfo, durations = {}, mutation = {}) {
     this.searchPath = searchPath;
     this.parallelism = parallelism;
     this.rawFiles = [];
     this.groupedFiles = [];
     this.deviceInfo = deviceInfo;
     this.durations = durations;
+    this.mutation = {
+      entries: mutation.entries || [],
+      targets: mutation.targets || [],
+      platform: mutation.platform || '',
+    };
+  }
+
+  /**
+   * Use exactly these spec files (a re-run of failed specs) instead of walking searchPath.
+   * Only existing *.e2e.ts files under searchPath are kept, so a stale or crafted path runs nothing.
+   */
+  useFiles(files) {
+    const root = path.resolve(this.searchPath);
+    this.rawFiles = [...new Set(files)].filter((file) => {
+      const full = path.resolve(file);
+      return /\.e2e\.ts$/.test(full) && full.startsWith(root + path.sep) && fs.existsSync(full);
+    }).map(toRepoRelative);
   }
 
   findFiles() {
@@ -155,22 +225,81 @@ class Specs {
   }
 
   /**
-   * Split the discovered specs into one group per shard.
-   *
+   * Pool shards first (mm_blocks is runId 1 when present), then one mutation shard per
+   * target. Mutation shards count toward PARALLELISM; the pool keeps at least one shard.
+   */
+  generateSplits() {
+    const mutationGroups = this.planMutation();
+    const mutationFiles = new Set(mutationGroups.flatMap((g) => g.files));
+    const poolFiles = this.rawFiles.filter((f) => !mutationFiles.has(f));
+
+    const parallelism = Number.isFinite(this.parallelism) && this.parallelism >= 1
+      ? Math.floor(this.parallelism)
+      : 1;
+    const poolParallelism = Math.max(1, parallelism - mutationGroups.length);
+    const nextRunNo = this.generatePoolSplits(poolFiles, poolParallelism);
+
+    mutationGroups.forEach((group, i) => {
+      // One shard per target: specs on the same server must not run concurrently.
+      const runId = (nextRunNo + i).toString();
+      this.groupedFiles.push(new SpecGroup(runId, group.files.join(' '), this.deviceInfo, {role: 'mutation', target: group.target}));
+      logDiag(`split-tests: mutation shard ${runId} on target ${group.target}: ${group.files.length} spec(s)`);
+    });
+  }
+
+  /**
+   * Group manifest specs by the server they must run on. Specs not found in the search
+   * path are skipped; the rest are returned as {target, files} sorted for determinism.
+   */
+  planMutation() {
+    const available = this.mutation.targets;
+    const foundByNormalized = new Map(this.rawFiles.map((f) => [path.normalize(f), f]));
+    const byTarget = new Map();
+
+    for (const entry of this.mutation.entries) {
+      const file = foundByNormalized.get(path.normalize(entry.spec));
+      if (!file) {
+        logDiag(`Warning: mutation spec not found in search path, ignored: ${entry.spec}`);
+        continue;
+      }
+      const wanted = this.mutation.platform === 'ios' && entry.iosTarget ? entry.iosTarget : entry.target;
+      const target = resolveMutationTarget(wanted, available);
+      if (available.length > 0 && target !== wanted) {
+        logDiag(`split-tests: ${file} wants target ${wanted}, not available; running on ${target}`);
+      }
+      if (!byTarget.has(target)) {
+        byTarget.set(target, new Set());
+      }
+      byTarget.get(target).add(file);
+    }
+
+    const total = [...byTarget.values()].reduce((n, set) => n + set.size, 0);
+    if (total > 0 && available.length === 0) {
+      throw new Error(`${total} server mutation spec(s) selected but there is no second test server; they would change state on the pool server`);
+    }
+
+    return [...byTarget.keys()].sort().map((target) => ({
+      target,
+      files: [...byTarget.get(target)].sort(),
+    }));
+  }
+
+  /**
+   * Split pool specs across `parallelism` shards. Returns the next free runId.
    * mm_blocks_* specs get their own shard: they need a public Cloudflare tunnel, and a
    * tunnel setup failure stalls the whole shard, so isolating them keeps unrelated specs
    * from being skipped alongside them. That isolation is a correctness constraint, so it
    * is applied before any duration packing — the remaining specs are then packed by
    * recorded duration across the shards that are left.
    */
-  generateSplits() {
-    let mmBlocksFiles = this.rawFiles.filter(isMmBlocksSpec);
-    let otherFiles = this.rawFiles.filter((f) => !isMmBlocksSpec(f));
+  generatePoolSplits(poolFiles, parallelism) {
+    let mmBlocksFiles = poolFiles.filter(isMmBlocksSpec);
+    let otherFiles = poolFiles.filter((f) => !isMmBlocksSpec(f));
 
     // Isolating mm_blocks costs a whole shard, so it needs parallelism >= 2 once there
     // are other specs to separate it from. At parallelism=1 merge instead, otherwise we
     // emit two matrix jobs for a one-job configuration.
-    if (mmBlocksFiles.length > 0 && otherFiles.length > 0 && this.parallelism < 2) {
+    if (mmBlocksFiles.length > 0 && otherFiles.length > 0 && parallelism < 2) {
       otherFiles = [...mmBlocksFiles, ...otherFiles];
       mmBlocksFiles = [];
     }
@@ -185,11 +314,11 @@ class Specs {
 
     const restParallelism = Math.max(
       1,
-      this.parallelism - (mmBlocksFiles.length > 0 ? 1 : 0),
+      parallelism - (mmBlocksFiles.length > 0 ? 1 : 0),
     );
 
     if (otherFiles.length === 0) {
-      return;
+      return runNo;
     }
 
     const packed = packByDuration(otherFiles, restParallelism, this.durations);
@@ -203,11 +332,11 @@ class Specs {
         this.groupedFiles.push(new SpecGroup(runNo.toString(), [...bin.files].sort().join(' '), this.deviceInfo));
         runNo += 1;
       }
-      return;
+      return runNo;
     }
 
     logDiag(`split-tests: no duration history — even split of ${otherFiles.length} spec(s) across ${restParallelism} shard(s)`);
-    this.generateEvenSplits(otherFiles, restParallelism, runNo);
+    return this.generateEvenSplits(otherFiles, restParallelism, runNo);
   }
 
   /** Original alphabetical equal-count split; the fallback when no timings exist. */
@@ -228,6 +357,7 @@ class Specs {
         remainder -= 1;
       }
     }
+    return runNo;
   }
 
   dumpSplits() {
@@ -246,9 +376,22 @@ function main() {
   const deviceOsVersion = process.env.DEVICE_OS_VERSION;
   const deviceInfo = new DeviceInfo(deviceName, deviceOsVersion);
   const durations = loadDurations(process.env.DURATIONS_FILE);
-  const specs = new Specs(searchPath, parallelism, deviceInfo, durations);
+  const mutation = {
+    entries: loadMutationManifest(process.env.MUTATION_MANIFEST || DEFAULT_MUTATION_MANIFEST),
+    targets: parseTargets(process.env.MUTATION_TARGETS),
+    platform: (process.env.PLATFORM || '').trim().toLowerCase(),
+  };
+  const specs = new Specs(searchPath, parallelism, deviceInfo, durations, mutation);
 
-  specs.findFiles();
+  const specFiles = (process.env.SPEC_FILES || '').split(/\s+/).filter(Boolean);
+  if (specFiles.length) {
+    specs.useFiles(specFiles);
+    if (!specs.rawFiles.length) {
+      throw new Error(`none of SPEC_FILES is a spec under ${searchPath}: ${specFiles.join(' ')}`);
+    }
+  } else {
+    specs.findFiles();
+  }
   if (specs.rawFiles.length < parallelism) {
     console.error(
       `Warning: ${specs.rawFiles.length} spec(s) < parallelism ${parallelism}; some shards will be empty`,
@@ -259,7 +402,21 @@ function main() {
 }
 
 if (require.main === module) {
-  main();
+  try {
+    main();
+  } catch (err) {
+    console.error(`::error::${err.message}`);
+    process.exit(1);
+  }
 }
 
-module.exports = {Specs, DeviceInfo, SpecGroup, loadDurations, packByDuration};
+module.exports = {
+  Specs,
+  DeviceInfo,
+  SpecGroup,
+  loadDurations,
+  packByDuration,
+  loadMutationManifest,
+  parseTargets,
+  resolveMutationTarget,
+};

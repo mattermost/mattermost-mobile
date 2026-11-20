@@ -10,9 +10,9 @@
 import {
     Channel,
     Setup,
-    System,
     Team,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -70,8 +70,8 @@ describe('Search - Cross Team Search', () => {
         }
         townSquareChannel = townSquareChannelResult;
 
-        // # Enable cross-team search so the "All teams" option appears in the team picker.
-        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {EnableCrossTeamSearch: true}});
+        // # Assert cross-team search ("All teams" option appears in the team picker).
+        await assertServerBaseline(siteOneUrl, ['ServiceSettings.EnableCrossTeamSearch']);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

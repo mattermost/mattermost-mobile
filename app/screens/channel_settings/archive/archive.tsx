@@ -18,6 +18,7 @@ type Props = {
     canUnarchive: boolean;
     canViewArchivedChannels: boolean;
     channelId: string;
+    disabled?: boolean;
     displayName: string;
     type?: ChannelType;
 }
@@ -71,7 +72,7 @@ const messages = defineMessages({
 
 const Archive = ({
     canArchive, canUnarchive, canViewArchivedChannels,
-    channelId, displayName, type,
+    channelId, disabled, displayName, type,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -151,6 +152,7 @@ const Archive = ({
         return (
             <OptionItem
                 action={onUnarchive}
+                disabled={disabled}
                 label={intl.formatMessage({id: 'channel_info.unarchive', defaultMessage: 'Unarchive Channel'})}
                 icon='archive-arrow-up-outline'
                 destructive={true}
@@ -163,6 +165,7 @@ const Archive = ({
     return (
         <OptionItem
             action={onArchive}
+            disabled={disabled}
             label={intl.formatMessage({id: 'channel_info.archive', defaultMessage: 'Archive Channel'})}
             icon='archive-outline'
             destructive={true}

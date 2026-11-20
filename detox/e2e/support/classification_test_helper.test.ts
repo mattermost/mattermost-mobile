@@ -30,7 +30,7 @@ describe('enableClassificationMarkings', () => {
 
     it('should not patch server config when the client config already reports the flag on', async () => {
         const flagReads = scriptFlagReads([true]);
-        const patch = mock.method(System, 'apiPatchConfig', async () => PATCH_OK);
+        const patch = mock.method(System, 'apiPatchFeatureFlags', async () => PATCH_OK);
 
         await enableClassificationMarkings(BASE_URL);
 
@@ -46,7 +46,7 @@ describe('enableClassificationMarkings', () => {
 
     it('should succeed when the PATCH reply is dropped but the flag reads true afterwards', async () => {
         const flagReads = scriptFlagReads([false, true]);
-        const patch = mock.method(System, 'apiPatchConfig', async () => DROPPED_RESPONSE);
+        const patch = mock.method(System, 'apiPatchFeatureFlags', async () => DROPPED_RESPONSE);
 
         await enableClassificationMarkings(BASE_URL);
 
@@ -59,7 +59,7 @@ describe('enableClassificationMarkings', () => {
 
     it('should throw once, without re-patching, when the PATCH reply is dropped and the flag stays off', async () => {
         scriptFlagReads([false, false]);
-        const patch = mock.method(System, 'apiPatchConfig', async () => DROPPED_RESPONSE);
+        const patch = mock.method(System, 'apiPatchFeatureFlags', async () => DROPPED_RESPONSE);
 
         await assert.rejects(
             () => enableClassificationMarkings(BASE_URL),
@@ -76,18 +76,19 @@ describe('enableClassificationMarkings', () => {
 
     it('should return after the PATCH succeeds and the client config picks the flag up', async () => {
         const flagReads = scriptFlagReads([false, true]);
-        const patch = mock.method(System, 'apiPatchConfig', async () => PATCH_OK);
+        const patch = mock.method(System, 'apiPatchFeatureFlags', async () => PATCH_OK);
 
         await enableClassificationMarkings(BASE_URL);
 
         assert.equal(patch.mock.callCount(), 1);
+        assert.deepEqual(patch.mock.calls[0]?.arguments, [BASE_URL, {ClassificationMarkings: true}]);
         assert.equal(flagReads.mock.callCount(), 2);
     });
 
     it('should re-patch when the PATCH succeeds but the client config does not pick the flag up', async () => {
         // pre-check false; attempt 1: patch ok, flag never propagates; attempt 2: patch ok, flag propagates.
         const flagReads = scriptFlagReads([false, false, true]);
-        const patch = mock.method(System, 'apiPatchConfig', async () => PATCH_OK);
+        const patch = mock.method(System, 'apiPatchFeatureFlags', async () => PATCH_OK);
         mock.method(System, 'apiGetConfig', async () => ({config: {FeatureFlags: {ClassificationMarkings: true}}}));
         mock.method(System, 'apiGetClientConfigOld', async () => ({config: {[FLAG_KEY]: 'false'}}));
         mock.method(console, 'warn', () => undefined);

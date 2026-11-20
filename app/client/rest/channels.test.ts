@@ -38,11 +38,18 @@ describe('ClientChannels', () => {
     test('createChannel', async () => {
         const channel = {id: 'channel1', name: 'testchannel'} as Channel;
         const expectedUrl = client.getChannelsRoute();
-        const expectedOptions = {method: 'post', body: channel};
 
+        // No property_values key for none or an empty list. LastCalledWith so an earlier
+        // call cannot satisfy a later check.
         await client.createChannel(channel);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'post', body: channel});
 
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        await client.createChannel(channel, []);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'post', body: channel});
+
+        const propertyValues = [{field_id: 'field1', value: 'value1'}];
+        await client.createChannel(channel, propertyValues);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'post', body: {...channel, property_values: propertyValues}});
     });
 
     test('createDirectChannel', async () => {

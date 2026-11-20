@@ -15,7 +15,6 @@ import {
     getRequiredRedactionEpoch,
     invalidateChannelRedaction,
     invalidateRedactionGlobally,
-    isRedactionEnforced,
     observeRequiredRedactionEpoch,
 } from './redaction';
 
@@ -122,29 +121,6 @@ describe('redaction epoch state', () => {
 
         expect(await getRequiredRedactionEpoch(operator.database)).toBe(41);
         expect(await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy)).toBe(42);
-    });
-});
-
-describe('isRedactionEnforced', () => {
-    const storeConfigValues = async (values: Record<string, string>) => {
-        await operator.handleConfigs({
-            configs: Object.entries(values).map(([id, value]) => ({id, value})),
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
-    };
-
-    it('should require both the feature flag and the config setting', async () => {
-        expect(await isRedactionEnforced(operator.database)).toBe(false);
-
-        await storeConfigValues({FeatureFlagPermissionPolicies: 'true'});
-        expect(await isRedactionEnforced(operator.database)).toBe(false);
-
-        await storeConfigValues({EnableAttributeBasedAccessControl: 'true'});
-        expect(await isRedactionEnforced(operator.database)).toBe(true);
-
-        await storeConfigValues({FeatureFlagPermissionPolicies: 'false'});
-        expect(await isRedactionEnforced(operator.database)).toBe(false);
     });
 });
 

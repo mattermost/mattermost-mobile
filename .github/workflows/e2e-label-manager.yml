@@ -48,8 +48,8 @@
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
-# addLabels / removeLabel / run cancellation would all 403. Mandatory E2E for fork
-# PRs is enforced separately.
+# addLabels / removeLabel / run cancellation would all 403. Fork PRs are handled by
+# e2e-fork-policy.yml.
 #
 # Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
 # Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
@@ -65,8 +65,11 @@ on:
       - labeled
       - unlabeled
 
+# A push supersedes only an older push, and a label event only an older event for the same label. One group per PR
+# let the labels bots set right after a push cancel that push's run, so an E2E/Override PR never got its statuses
+# back on the new commit and its required checks waited forever.
 concurrency:
-  group: e2e-label-manager-${{ github.event.pull_request.number }}
+  group: e2e-label-manager-${{ github.event.pull_request.number }}-${{ github.event.label.name && format('label-{0}', github.event.label.name) || format('action-{0}', github.event.action) }}
   cancel-in-progress: true
 
 jobs:

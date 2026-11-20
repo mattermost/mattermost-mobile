@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {EventOnCandidate, EventOnConnectionStateChange, RTCIceCandidate} from 'react-native-webrtc';
-import RTCTrackEvent from 'react-native-webrtc/lib/typescript/RTCTrackEvent';
+import {EventOnCandidate, EventOnConnectionStateChange, RTCIceCandidate} from '@livekit/react-native-webrtc';
+import RTCTrackEvent from '@livekit/react-native-webrtc/lib/typescript/RTCTrackEvent';
 
 // Only adding the types that are not included in the imported module.
-declare module 'react-native-webrtc' {
+declare module '@livekit/react-native-webrtc' {
     export type RTCIceCredentialType = 'password';
 
     export interface RTCIceServer {

@@ -10,8 +10,8 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -30,7 +30,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
 
 describe('Search - Saved Messages', () => {
@@ -40,8 +40,6 @@ describe('Search - Saved Messages', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
-    let previousCollapsedThreads: string | undefined;
-    let previousThreadAutoFollow: boolean | undefined;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
@@ -49,16 +47,11 @@ describe('Search - Saved Messages', () => {
         testTeam = team;
         testUser = user;
 
-        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        previousCollapsedThreads = originalConfig?.ServiceSettings?.CollapsedThreads;
-        previousThreadAutoFollow = originalConfig?.ServiceSettings?.ThreadAutoFollow;
-
-        await System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'always_on',
-                ThreadAutoFollow: true,
-            },
-        });
+        // # Assert server baseline (CRT always_on, ThreadAutoFollow) for thread UI.
+        await assertServerBaseline(siteOneUrl, [
+            'ServiceSettings.CollapsedThreads',
+            'ServiceSettings.ThreadAutoFollow',
+        ]);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -71,16 +64,6 @@ describe('Search - Saved Messages', () => {
     });
 
     afterAll(async () => {
-        // # Restore the thread settings this suite changed
-        if (previousCollapsedThreads !== undefined || previousThreadAutoFollow !== undefined) {
-            await System.apiUpdateConfig(siteOneUrl, {
-                ServiceSettings: {
-                    CollapsedThreads: previousCollapsedThreads,
-                    ThreadAutoFollow: previousThreadAutoFollow,
-                },
-            });
-        }
-
         // # Log out
         await HomeScreen.logout();
     });
@@ -222,11 +205,11 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // # Open post options for saved message and tap on unsave option
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
         await PostOptionsScreen.unsavePostOption.tap();
 

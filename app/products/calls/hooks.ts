@@ -9,11 +9,13 @@ import {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, w
 
 import {initializeVoiceTrack, openOutgoingCallScreen} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
+import {showUserCallOptions} from '@calls/components/user_call_options';
 import {observeIsCallLimitRestricted, type LimitRestrictedInfo} from '@calls/observers';
 import {
     cancelOutgoingCall,
     getCallsConfig,
     getCurrentCall,
+    isPhoneDialingAvailable,
     setMicPermissionsGranted,
     useCallsState,
     useChannelsWithCalls,
@@ -22,7 +24,7 @@ import {
     useIncomingCalls,
 } from '@calls/state';
 import {type CallSession} from '@calls/types/calls';
-import {errorAlert, isHostControlsAllowed} from '@calls/utils';
+import {errorAlert, isHostControlsAllowed, NO_PHONES} from '@calls/utils';
 import {Screens} from '@constants';
 import {
     CALL_ERROR_BAR_HEIGHT,
@@ -302,7 +304,12 @@ export const useCallLimitRestrictedInfo = (serverUrl: string, channelId: string)
 /**
  * Hook to display the call button in the navigation header for DM channels only.
  */
-export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], channelType: Channel['type']): NavigationButtonProps | undefined => {
+export const useNavigationHeaderCallButtonForDM = (
+    channelId: Channel['id'],
+    channelType: Channel['type'],
+    dmPhoneUserId?: string,
+    dmUserPhones = NO_PHONES,
+): NavigationButtonProps | undefined => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const channelsWithCalls = useChannelsWithCalls(serverUrl);
@@ -337,7 +344,7 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
     }, [intl, serverUrl, channelId]);
     const [tryJoinOrStart, , isLoadingTryCallsFunction] = useTryCallsFunction(joinOrStart);
 
-    const handleOnPress = useCallback(async () => {
+    const startDMCall = useCallback(async () => {
         if (alreadyInCall) {
             navigateToScreen(Screens.CALL);
             return;
@@ -362,6 +369,15 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
             await cancelOutgoingCall(serverUrl, channelId);
         }
     }, [alreadyInCall, limitRestrictedInfo, intl, isCallInChannel, currentCall, serverUrl, channelId, tryJoinOrStart]);
+
+    const handleOnPress = useCallback(async () => {
+        if (dmPhoneUserId && dmUserPhones.length && !isCallInChannel && isPhoneDialingAvailable(serverUrl)) {
+            showUserCallOptions(intl, serverUrl, dmPhoneUserId, dmUserPhones, startDMCall);
+            return;
+        }
+
+        await startDMCall();
+    }, [dmPhoneUserId, dmUserPhones, isCallInChannel, serverUrl, intl, startDMCall]);
 
     const onPress = usePreventDoubleTap(handleOnPress);
 
