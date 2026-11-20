@@ -322,4 +322,30 @@ describe('Markdown', () => {
             expect(screen.getByText('Call 555-123-4567')).toBeVisible();
         });
     });
+
+    describe('link scheme allowlist', () => {
+        it('should render unknown-scheme tokens as plain text, not links', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='Digest sha256:abc123 and image nginx:latest'
+                />,
+            );
+
+            expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
+            expect(screen.getByText(/sha256:abc123/)).toBeVisible();
+        });
+
+        it('should keep allowed schemes as links', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='[site](https://example.com) and [mail](mailto:a@example.com)'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links.map((l) => l.props.href)).toEqual(['https://example.com', 'mailto:a@example.com']);
+        });
+    });
 });

@@ -198,10 +198,17 @@ export function cleanUpUrlable(input: string) {
     return cleaned;
 }
 
+const AUTOLINKED_URL_SCHEMES = new Set(['http', 'https', 'ftp', 'mailto', 'tel', 'mattermost']);
+
 export function getScheme(url: string) {
     const match = (/([a-z0-9+.-]+):/i).exec(url);
 
     return match && match[1];
+}
+
+export function isValidAutoLink(url: string): boolean {
+    const scheme = getScheme(url);
+    return scheme ? AUTOLINKED_URL_SCHEMES.has(scheme.toLowerCase()) : false;
 }
 
 export function getYouTubeVideoId(link?: string) {
