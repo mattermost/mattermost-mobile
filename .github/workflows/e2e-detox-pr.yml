@@ -39,24 +39,24 @@ on:
           - android
           - both
       ANDROID_SITE_1_URL:
-        description: "URL of Android test server A (provisioned by Matterwick)"
-        required: true
+        description: "URL of Android test server A (provisioned by Matterwick); not used with e2e-test-stack"
+        required: false
         type: string
       ANDROID_SITE_2_URL:
-        description: "URL of Android test server B (provisioned by Matterwick)"
-        required: true
+        description: "URL of Android test server B (provisioned by Matterwick); not used with e2e-test-stack"
+        required: false
         type: string
       IOS_SITE_1_URL:
-        description: "URL of iOS test server A (provisioned by Matterwick)"
-        required: true
+        description: "URL of iOS test server A (provisioned by Matterwick); not used with e2e-test-stack"
+        required: false
         type: string
       IOS_SITE_2_URL:
-        description: "URL of iOS test server B (provisioned by Matterwick)"
-        required: true
+        description: "URL of iOS test server B (provisioned by Matterwick); not used with e2e-test-stack"
+        required: false
         type: string
       SITE_3_URL:
-        description: "URL of the shared fifth Mattermost test server"
-        required: true
+        description: "URL of the shared fifth Mattermost test server; not used with e2e-test-stack"
+        required: false
         type: string
       pr_number:
         description: "PR number to remove E2E label from after tests complete"
@@ -70,6 +70,47 @@ on:
       version_name:
         description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
         required: false
+        type: string
+      USE_E2E_TEST_STACK:
+        description: "Detox servers: variable follows vars.USE_E2E_TEST_STACK (unset is Matterwick's); true uses e2e-test-stack, false Matterwick's"
+        required: false
+        default: "variable"
+        type: choice
+        options:
+          - variable
+          - "true"
+          - "false"
+      E2E_TEST_STACK_ACCOUNT:
+        description: "e2e-test-stack only: the AWS account of its control plane; variable follows vars.E2E_TEST_STACK_ACCOUNT (unset is prod)"
+        required: false
+        default: "variable"
+        type: choice
+        options:
+          - variable
+          - prod
+          - dev
+      E2E_TEST_STACK_CHANNEL:
+        description: "e2e-test-stack only: the control plane channel; variable follows vars.E2E_TEST_STACK_CHANNEL (unset is v1)"
+        required: false
+        default: "variable"
+        type: choice
+        options:
+          - variable
+          - v1
+          - edge
+      E2E_TEST_STACK_SERVER:
+        description: "e2e-test-stack only: the server under test, the master build, the latest stable release or the newest ESR"
+        required: false
+        default: "master"
+        type: choice
+        options:
+          - master
+          - latest
+          - esr
+      E2E_TEST_STACK_TOOLKIT_REF:
+        description: "e2e-test-stack only: the mattermost-test-automation-toolkit ref whose e2e-test-stack action runs, main or a full commit on its main; empty follows vars.E2E_TEST_STACK_TOOLKIT_REF, then the pinned commit"
+        required: false
+        default: ""
         type: string
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
@@ -293,7 +334,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    needs: resolve-e2e-policy
+    needs: [resolve-e2e-policy, resolve-e2e-test-stack]
     if: needs.resolve-e2e-policy.outputs.e2e_override != 'true' && needs.resolve-e2e-policy.outputs.trusted == 'true'
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
@@ -343,6 +384,8 @@ jobs:
       - id: id
         env:
           PLATFORM: ${{ inputs.PLATFORM }}
+          # Without Matterwick's servers only the Detox iOS and Android lanes run, on e2e-test-stack.
+          MATTERWICK: ${{ needs.resolve-e2e-test-stack.outputs.matterwick }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           MM_SHA: ${{ inputs.MOBILE_VERSION }}
           PR_NUMBER: ${{ inputs.pr_number }}
@@ -370,7 +413,8 @@ jobs:
           JOB_CONFIGS=$(node -e '
             const {buildTsioJobConfigMap, jobKeysForPlatform} = require("./detox/utils/build-tsio-job-config.js");
             const base = JSON.parse(process.env.BASE);
-            const keys = jobKeysForPlatform(process.env.PLATFORM);
+            const keys = jobKeysForPlatform(process.env.PLATFORM)
+              .filter((key) => process.env.MATTERWICK === "true" || key === "detox-ios" || key === "detox-android");
             process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys)));
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
@@ -414,11 +458,143 @@ jobs:
               -f target_url="$TARGET_URL"
           done
 
+  # Whether this run's Detox uses e2e-test-stack: USE_E2E_TEST_STACK, or with "variable" (and a dispatch that does not
+  # name it, as Matterwick's) vars.USE_E2E_TEST_STACK, where only "true" turns it on. The account and channel follow
+  # the same rule: the input, or with "variable" vars.E2E_TEST_STACK_ACCOUNT (prod or dev; unset is prod) and
+  # vars.E2E_TEST_STACK_CHANNEL (v1 or edge; unset is v1). With it, the Detox iOS and Android
+  # lanes each get their own batch in e2e-detox.yml. iPad and Maestro stay on Matterwick's servers, and run only when
+  # the dispatch gives them (matterwick); without them they are skipped and post no status. A Detox lane on
+  # e2e-test-stack destroys its servers, so e2e-flake-verify.yml cannot re-run it.
+  resolve-e2e-test-stack:
+    name: Resolve e2e-test-stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      use: ${{ steps.use.outputs.use }}
+      matterwick: ${{ steps.use.outputs.matterwick }}
+    steps:
+      - name: e2e-test-stack/use
+        id: use
+        env:
+          INPUT: ${{ inputs.USE_E2E_TEST_STACK }}
+          VARIABLE: ${{ vars.USE_E2E_TEST_STACK }}
+          ANDROID_SITE_1_URL: ${{ inputs.ANDROID_SITE_1_URL }}
+          ANDROID_SITE_2_URL: ${{ inputs.ANDROID_SITE_2_URL }}
+          IOS_SITE_1_URL: ${{ inputs.IOS_SITE_1_URL }}
+          IOS_SITE_2_URL: ${{ inputs.IOS_SITE_2_URL }}
+          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+        run: |
+          set -euo pipefail
+          case "$INPUT" in
+            true | false) use=$INPUT ;;
+            "" | variable) if [ "$VARIABLE" = true ]; then use=true; else use=false; fi ;;
+            *) echo "::error::USE_E2E_TEST_STACK must be variable, true or false"; exit 1 ;;
+          esac
+          # Matterwick's servers: always without e2e-test-stack, and with it when the dispatch gives any of the five
+          # (resolve-server-topology then requires all five, and fails on a missing one).
+          matterwick=true
+          if [ "$use" = true ]; then
+            matterwick=false
+            for name in ANDROID_SITE_1_URL ANDROID_SITE_2_URL IOS_SITE_1_URL IOS_SITE_2_URL SITE_3_URL; do
+              [ -z "${!name}" ] || matterwick=true
+            done
+          fi
+          {
+            echo "use=$use"
+            echo "matterwick=$matterwick"
+          } >> "$GITHUB_OUTPUT"
+          echo "e2e-test-stack: $use; Matterwick's servers: $matterwick"
+          if [ "$use" = true ] && [ "$matterwick" = false ]; then
+            echo "Detox iOS and Android on e2e-test-stack; iPad and Maestro skipped: the dispatch gives no Matterwick servers" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # e2e-test-stack only: the account, channel and toolkit ref (each the input, else its repository variable, else
+  # prod, v1 and the pinned commit) and the server image both Detox platforms' batches run, resolved once. Apart from
+  # resolve-e2e-test-stack, so a bad setting or a failed lookup stops only the Detox lanes, iPad with them as it runs
+  # inside run-detox-ios; triage still settles their statuses.
+  resolve-e2e-test-stack-settings:
+    name: Resolve e2e-test-stack settings
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: [resolve-e2e-policy, resolve-e2e-test-stack]
+    if: >-
+      needs.resolve-e2e-test-stack.outputs.use == 'true'
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
+    permissions:
+      contents: read
+    outputs:
+      account: ${{ steps.settings.outputs.account }}
+      channel: ${{ steps.settings.outputs.channel }}
+      toolkit-ref: ${{ steps.toolkit.outputs.sha }}
+      server-image: ${{ steps.image.outputs.server-image }}
+    steps:
+      - name: e2e-test-stack/settings
+        id: settings
+        env:
+          ACCOUNT_INPUT: ${{ inputs.E2E_TEST_STACK_ACCOUNT }}
+          ACCOUNT_VARIABLE: ${{ vars.E2E_TEST_STACK_ACCOUNT }}
+          CHANNEL_INPUT: ${{ inputs.E2E_TEST_STACK_CHANNEL }}
+          CHANNEL_VARIABLE: ${{ vars.E2E_TEST_STACK_CHANNEL }}
+        run: |
+          set -euo pipefail
+          account=$ACCOUNT_INPUT
+          case "$account" in "" | variable) account=${ACCOUNT_VARIABLE:-prod} ;; esac
+          channel=$CHANNEL_INPUT
+          case "$channel" in "" | variable) channel=${CHANNEL_VARIABLE:-v1} ;; esac
+          case "$account" in
+            prod | dev) ;;
+            *) echo "::error::E2E_TEST_STACK_ACCOUNT (or vars.E2E_TEST_STACK_ACCOUNT) must be prod or dev"; exit 1 ;;
+          esac
+          case "$channel" in
+            v1 | edge) ;;
+            *) echo "::error::E2E_TEST_STACK_CHANNEL (or vars.E2E_TEST_STACK_CHANNEL) must be v1 or edge"; exit 1 ;;
+          esac
+          {
+            echo "account=$account"
+            echo "channel=$channel"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: e2e-test-stack/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      - name: e2e-test-stack/checkout-toolkit-action
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          sparse-checkout: .github/actions/e2e-test-stack-toolkit
+          persist-credentials: false
+
+      # Resolved to one commit here, so every job of the run uses the same toolkit code; each checks it again.
+      - name: e2e-test-stack/toolkit
+        id: toolkit
+        uses: ./.github/actions/e2e-test-stack-toolkit
+        with:
+          ref: ${{ inputs.E2E_TEST_STACK_TOOLKIT_REF || vars.E2E_TEST_STACK_TOOLKIT_REF }}
+
+      - name: e2e-test-stack/server-image
+        id: image
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
+        with:
+          operation: server-image
+          server: ${{ inputs.E2E_TEST_STACK_SERVER || 'master' }}
+
+      - name: e2e-test-stack/summary
+        env:
+          ACCOUNT: ${{ steps.settings.outputs.account }}
+          CHANNEL: ${{ steps.settings.outputs.channel }}
+          TOOLKIT_REF: ${{ steps.toolkit.outputs.sha }}
+          IMAGE: ${{ steps.image.outputs.server-image }}
+        run: echo "Detox on e2e-test-stack, account \`${ACCOUNT}\`, channel \`${CHANNEL}\`, toolkit \`${TOOLKIT_REF}\`, server \`${IMAGE}\`" >> "$GITHUB_STEP_SUMMARY"
+
   resolve-server-topology:
     name: Resolve test server topology
     runs-on: ubuntu-24.04
-    needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    needs: [resolve-e2e-policy, resolve-e2e-test-stack]
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true' && needs.resolve-e2e-test-stack.outputs.matterwick == 'true'
     outputs:
       android-site-1-url: ${{ steps.topology.outputs.android-site-1-url }}
       android-site-2-url: ${{ steps.topology.outputs.android-site-2-url }}
@@ -666,11 +842,13 @@ jobs:
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+      && needs.resolve-e2e-test-stack.outputs.matterwick == 'true'
     # Runner image is not in the git tree — bump CACHE_VERSION in
     # compute-e2e-build-fingerprint/action.yml when changing this label.
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
+      - resolve-e2e-test-stack
       - compute-build-fingerprints
     permissions:
       contents: read
@@ -747,10 +925,12 @@ jobs:
     name: Provision test servers
     needs:
       - resolve-e2e-policy
+      - resolve-e2e-test-stack
       - resolve-server-topology
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && needs.resolve-e2e-policy.outputs.trusted == 'true'
+      && needs.resolve-e2e-test-stack.outputs.matterwick == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
@@ -796,10 +976,13 @@ jobs:
 
   # iOS and Android Detox jobs are separate so each platform starts as soon as its
   # own build finishes — Android does not wait for build-ios-simulator.
+  # Matterwick's URLs only once provisioned: without e2e-test-stack they are required, and with it only iPad runs on them.
   run-detox-ios:
     name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
+      - resolve-e2e-test-stack
+      - resolve-e2e-test-stack-settings
       - calculate-tsio-identity
       - build-ios-simulator
       - provision-servers
@@ -817,26 +1000,35 @@ jobs:
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
-      needs.provision-servers.result == 'success' &&
+      needs.resolve-e2e-test-stack.result == 'success' &&
+      ((needs.resolve-e2e-test-stack.outputs.use != 'true' && needs.provision-servers.result == 'success') ||
+        (needs.resolve-e2e-test-stack.outputs.use == 'true' && needs.resolve-e2e-test-stack-settings.result == 'success')) &&
       (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
     uses: ./.github/workflows/e2e-detox.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: ios
-      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
-      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
-      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
-      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
-      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+      ANDROID_SITE_1_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.android-site-1-url || '' }}
+      ANDROID_SITE_2_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.android-site-2-url || '' }}
+      IOS_SITE_1_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.ios-site-1-url || '' }}
+      IOS_SITE_2_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.ios-site-2-url || '' }}
+      SITE_3_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.site-3-url || '' }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      e2e_test_stack: ${{ needs.resolve-e2e-test-stack.outputs.use == 'true' }}
+      e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
+      e2e_test_stack_toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
+      e2e_test_stack_server_image: ${{ needs.resolve-e2e-test-stack-settings.outputs.server-image }}
     secrets: inherit
 
   run-detox-android:
     name: Detox Android E2E
     needs:
       - resolve-e2e-policy
+      - resolve-e2e-test-stack
+      - resolve-e2e-test-stack-settings
       - calculate-tsio-identity
       - build-android-apk
       - provision-servers
@@ -854,28 +1046,36 @@ jobs:
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
-      needs.provision-servers.result == 'success' &&
+      needs.resolve-e2e-test-stack.result == 'success' &&
+      ((needs.resolve-e2e-test-stack.outputs.use != 'true' && needs.provision-servers.result == 'success') ||
+        (needs.resolve-e2e-test-stack.outputs.use == 'true' && needs.resolve-e2e-test-stack-settings.result == 'success')) &&
       (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
     uses: ./.github/workflows/e2e-detox.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: android
-      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
-      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
-      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
-      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
-      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+      ANDROID_SITE_1_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.android-site-1-url || '' }}
+      ANDROID_SITE_2_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.android-site-2-url || '' }}
+      IOS_SITE_1_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.ios-site-1-url || '' }}
+      IOS_SITE_2_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.ios-site-2-url || '' }}
+      SITE_3_URL: ${{ needs.provision-servers.result == 'success' && needs.resolve-server-topology.outputs.site-3-url || '' }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      e2e_test_stack: ${{ needs.resolve-e2e-test-stack.outputs.use == 'true' }}
+      e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
+      e2e_test_stack_toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
+      e2e_test_stack_server_image: ${{ needs.resolve-e2e-test-stack-settings.outputs.server-image }}
     secrets: inherit
 
   validate-maestro-flow-headers:
     name: Validate Maestro flow headers
-    needs: resolve-e2e-policy
+    needs: [resolve-e2e-policy, resolve-e2e-test-stack]
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && needs.resolve-e2e-policy.outputs.trusted == 'true'
+      && needs.resolve-e2e-test-stack.outputs.matterwick == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
@@ -1164,6 +1364,8 @@ jobs:
     name: Re-run failed Detox specs
     needs:
       - resolve-e2e-policy
+      - resolve-e2e-test-stack
+      - resolve-e2e-test-stack-settings
       - calculate-tsio-identity
       - resolve-server-topology
       - plan-rerun
@@ -1191,12 +1393,17 @@ jobs:
       artifact_run_id: ${{ github.run_id }}
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
       rerun-specs: ${{ needs.plan-rerun.outputs.detox-specs }}
+      e2e_test_stack: ${{ needs.resolve-e2e-test-stack.outputs.use == 'true' }}
+      e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
+      e2e_test_stack_toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
     secrets: inherit
 
   rerun-maestro:
     name: Re-run failed Maestro flows
     needs:
       - resolve-e2e-policy
+      - resolve-e2e-test-stack
       - calculate-tsio-identity
       - resolve-server-topology
       - plan-rerun
@@ -1210,7 +1417,8 @@ jobs:
       !cancelled() &&
       needs.plan-rerun.result == 'success' &&
       needs.plan-rerun.outputs.maestro-flows != '' &&
-      needs.plan-rerun.outputs.maestro-flows != '{}'
+      needs.plan-rerun.outputs.maestro-flows != '{}' &&
+      needs.resolve-e2e-test-stack.outputs.matterwick == 'true'
     uses: ./.github/workflows/e2e-maestro-pr.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -1330,7 +1538,8 @@ jobs:
        !contains(fromJSON('["success", "skipped"]'), needs.build-ios-simulator.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk-maestro.result) ||
-       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result))
+       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.resolve-e2e-test-stack-settings.result))
     # A failed build or server leaves its lanes "skipped", which reads as not requested, and the lanes pending with no
     # verdict (PR 10306, run 42193427343: npm ci refused a package.json the lock file did not match). Triage judges such
     # a lane from the run's jobs: the change's (a build or install it broke) or the machine's, re-run.
@@ -1341,6 +1550,7 @@ jobs:
       - build-android-apk
       - build-android-apk-maestro
       - provision-servers
+      - resolve-e2e-test-stack-settings
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios
@@ -1435,3 +1645,128 @@ jobs:
             --sha="$SHA" \
             --run-id="$GITHUB_RUN_ID" \
             --lanes="$LANES"
+
+  # e2e-test-stack only: whether each Detox platform's batch is kept for e2e-tests-rerun.yml, which re-runs all of a PR
+  # run's failed jobs (this one and the destroy jobs with them) when triage marks any lane red only on infrastructure.
+  # Triage marks it with an artifact, e2e-triage-rerun-attempt-<attempt>-of-<max>-[job-<id>-]<lane>, in the attempt
+  # that asks; a failed Detox lane's batch is kept when any lane, of any framework, has one.
+  # Any other batch is destroyed: a passed or cancelled lane, a test failure, or a run with no re-run (MAIN).
+  e2e-test-stack-keep:
+    name: Keep e2e-test-stack batches for a re-run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs:
+      - resolve-e2e-test-stack
+      - run-detox-ios
+      - run-detox-android
+      - rerun-detox
+      - tsio-triage
+    if: always() && needs.resolve-e2e-test-stack.outputs.use == 'true'
+    permissions:
+      actions: read
+    outputs:
+      keep-ios: ${{ steps.keep.outputs.keep-ios }}
+      keep-android: ${{ steps.keep.outputs.keep-android }}
+    steps:
+      - name: e2e-test-stack/keep
+        id: keep
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          ATTEMPT: ${{ github.run_attempt }}
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
+          IOS: ${{ needs.run-detox-ios.result }}
+          ANDROID: ${{ needs.run-detox-android.result }}
+        run: |
+          set -euo pipefail
+          names=""
+          failed() { [ "$1" != success ] && [ "$1" != skipped ]; }
+          if [ "$RUN_TYPE" = PR ] && { failed "$IOS" || failed "$ANDROID"; }; then
+            for attempt in 1 2 3; do
+              if names=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/artifacts?per_page=100" \
+                --jq '.artifacts[].name' 2>&1); then
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "::warning::this run's artifacts could not be listed, so no batch is kept: ${names}"
+                names=""
+                break
+              fi
+              sleep $((attempt * 10))
+            done
+          fi
+          # The listener re-runs every failed job once any lane asks, so any marker keeps every failed lane's batch.
+          marked=false
+          if grep -Eq "^e2e-triage-rerun-attempt-${ATTEMPT}-of-[0-9]+-" <<< "$names"; then
+            marked=true
+          fi
+          for lane in ios android; do
+            result=$IOS
+            [ "$lane" = android ] && result=$ANDROID
+            keep=false
+            if failed "$result" && [ "$marked" = true ]; then
+              keep=true
+            fi
+            echo "keep-${lane}=${keep}" >> "$GITHUB_OUTPUT"
+            echo "detox-${lane}: ${result}, kept for a re-run: ${keep}"
+          done
+
+  # e2e-test-stack only: destroys this Detox platform's batch once the run is done with it, after any re-run of failed
+  # specs, unless e2e-test-stack-keep keeps it for a re-run of the failed jobs. A cancelled run destroys it. A kept
+  # batch that e2e-tests-rerun.yml then does not re-run, and one whose create response PR code replaced, lives until
+  # its TTL: the TTL, not this job, bounds a batch's life.
+  e2e-test-stack-destroy-ios:
+    name: Destroy the e2e-test-stack iOS batch
+    needs:
+      - resolve-e2e-test-stack
+      - resolve-e2e-test-stack-settings
+      - e2e-test-stack-keep
+      - run-detox-ios
+    if: >-
+      always() &&
+      needs.resolve-e2e-test-stack.outputs.use == 'true' &&
+      needs.run-detox-ios.result != 'skipped' &&
+      (cancelled() || needs.e2e-test-stack-keep.outputs.keep-ios != 'true')
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-destroy.yml
+    with:
+      batch: ios
+      account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
+      channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
+      toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
+      lifecycle: true
+    secrets:
+      E2E_STACK_PRIVATE_KEY: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+
+  # e2e-test-stack only: destroys this Detox platform's batch once the run is done with it, after any re-run of failed
+  # specs, unless e2e-test-stack-keep keeps it for a re-run of the failed jobs. A cancelled run destroys it. A kept
+  # batch that e2e-tests-rerun.yml then does not re-run, and one whose create response PR code replaced, lives until
+  # its TTL: the TTL, not this job, bounds a batch's life.
+  e2e-test-stack-destroy-android:
+    name: Destroy the e2e-test-stack Android batch
+    needs:
+      - resolve-e2e-test-stack
+      - resolve-e2e-test-stack-settings
+      - e2e-test-stack-keep
+      - run-detox-android
+    if: >-
+      always() &&
+      needs.resolve-e2e-test-stack.outputs.use == 'true' &&
+      needs.run-detox-android.result != 'skipped' &&
+      (cancelled() || needs.e2e-test-stack-keep.outputs.keep-android != 'true')
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-destroy.yml
+    with:
+      batch: android
+      account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
+      channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
+      toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
+      lifecycle: true
+    secrets:
+      E2E_STACK_PRIVATE_KEY: ${{ secrets.E2E_STACK_PRIVATE_KEY }}

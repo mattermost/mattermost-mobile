@@ -30,7 +30,34 @@ on:
         required: false
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
         required: false
+      # e2e-test-stack only: opens the secrets the control plane seals to this repository.
+      E2E_STACK_PRIVATE_KEY:
+        required: false
     inputs:
+      e2e_test_stack:
+        description: "Run on e2e-test-stack servers (one batch for this platform: a server per shard, then the shared SITE_2 and SITE_3) instead of the MM_TEST_SERVER_URL servers"
+        type: boolean
+        default: false
+      e2e_test_stack_rerun:
+        description: "e2e-test-stack only: a re-run of failed specs, on the batch the run's first pass created"
+        type: boolean
+        default: false
+      e2e_test_stack_account:
+        description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
+        type: string
+        default: ""
+      e2e_test_stack_channel:
+        description: "e2e-test-stack only: the control plane channel, v1 or edge"
+        type: string
+        default: "v1"
+      e2e_test_stack_toolkit_ref:
+        description: "e2e-test-stack only: the mattermost-test-automation-toolkit ref whose e2e-test-stack action runs"
+        type: string
+        default: ""
+      e2e_test_stack_server_image:
+        description: "e2e-test-stack only: the Mattermost server image, by tag"
+        type: string
+        default: ""
       MM_TEST_SERVER_URL:
         description: "The test server URL (SITE_1)"
         required: false
@@ -205,6 +232,8 @@ jobs:
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       shard_count: ${{ steps.generate-specs.outputs.shard_count }}
+      stack-count: ${{ steps.stack-plan.outputs.count }}
+      stack-slices: ${{ steps.stack-plan.outputs.slices }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
@@ -251,7 +280,14 @@ jobs:
         env:
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
           SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+          E2E_TEST_STACK: ${{ inputs.e2e_test_stack }}
         run: |
+          # On e2e-test-stack every shard has its own server, so mutation specs go to target B, their own server.
+          if [ "$E2E_TEST_STACK" = true ]; then
+            echo "targets=B" >> "$GITHUB_OUTPUT"
+            echo "Mutation targets: B (e2e-test-stack: a server per shard)"
+            exit 0
+          fi
           # No targets without a distinct second server; split-tests then fails only if a mutation spec is selected.
           TARGETS=""
           if [ -n "$SERVER_B" ] && [ "$SERVER_B" != "$SERVER_A" ]; then
@@ -273,6 +309,81 @@ jobs:
           platform: android
           mutation_targets: ${{ steps.mutation-targets.outputs.targets }}
 
+      # e2e-test-stack only, before any server is created: code under test from before e2e-test-stack provisioning
+      # would download the plugins the server image carries instead of enabling them.
+      - name: ci/e2e-test-stack-check-provision-code
+        if: inputs.e2e_test_stack && !inputs.e2e_test_stack_rerun
+        run: |
+          if ! grep -rqE '^export function isE2eTestStack\(' detox/provision; then
+            echo "::error::the code under test predates e2e-test-stack provisioning; merge main into it"
+            exit 1
+          fi
+
+      - name: ci/e2e-test-stack-count
+        if: inputs.e2e_test_stack && !inputs.e2e_test_stack_rerun
+        id: stack-plan
+        env:
+          SPECS: ${{ steps.generate-specs.outputs.specs }}
+          SHARDS: ${{ steps.generate-specs.outputs.shard_count }}
+        run: |
+          set -euo pipefail
+          if ! jq -e '(.include | length > 0) and all(.include[]; (.runId | tostring | test("^[1-9][0-9]{0,3}$")))' <<< "$SPECS" > /dev/null; then
+            echo "::error::the spec split gave no shards, or a shard without a run id"
+            exit 1
+          fi
+          # A server of its own for each shard up to the highest run id but the site3 mutation shard's, which runs on
+          # the shared SITE_3; at least 2, as a re-run of failed specs reuses the batch with a pool and a B shard.
+          own=$(jq '[.include[] | select((.role == "mutation" and .target == "site3") | not) | .runId | tonumber] | max // 0' <<< "$SPECS")
+          own=$(( own > 2 ? own : 2 ))
+          count=$((own + 2))
+          # The servers dealt round-robin into at most 8 provisioning jobs.
+          slices=$(jq -nc --argjson n "$count" '[range($n)] | group_by(. % 8) | map(map(tostring) | join(","))')
+          {
+            echo "count=${count}"
+            echo "slices=${slices}"
+          } >> "$GITHUB_OUTPUT"
+          echo "${SHARDS} shards: ${own} servers of their own plus the shared SITE_2 and SITE_3"
+
+  # e2e-test-stack only, on the run's first pass: this platform's batch, a server per shard and then the shared
+  # SITE_2 and SITE_3, counted in generate-specs. A re-run of failed specs (e2e_test_stack_rerun) uses the batch the
+  # first pass created; e2e-detox-pr.yml destroys it once the run is done with it.
+  e2e-test-stack-create:
+    if: inputs.e2e_test_stack && !inputs.e2e_test_stack_rerun
+    needs: generate-specs
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-create.yml
+    with:
+      batch: android
+      account: ${{ inputs.e2e_test_stack_account }}
+      channel: ${{ inputs.e2e_test_stack_channel }}
+      toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
+      server_image: ${{ inputs.e2e_test_stack_server_image }}
+      count: ${{ needs.generate-specs.outputs.stack-count }}
+      license: enterprise-advanced
+      shared_admin_password: true
+    secrets:
+      E2E_STACK_PRIVATE_KEY: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+
+  # Every server of this platform's batch, provisioned once before the shards start, with the demo plugin as
+  # Matterwick's pool, mutation and site 2 servers have; the shared SITE_3 without.
+  e2e-test-stack-provision:
+    if: inputs.e2e_test_stack && !inputs.e2e_test_stack_rerun
+    needs: [generate-specs, e2e-test-stack-create]
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/e2e-test-stack-provision.yml
+    with:
+      batch: android
+      slices: ${{ needs.generate-specs.outputs.stack-slices }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
+    secrets:
+      E2E_STACK_PRIVATE_KEY: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+
   e2e-android:
     name: ${{ matrix.role == 'mutation' && 'mutation-' || '' }}machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
@@ -283,6 +394,12 @@ jobs:
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     needs:
       - generate-specs
+      - e2e-test-stack-provision
+    # Today's servers: once the specs are split. e2e-test-stack: once this platform's batch is ready (a re-run uses
+    # the first pass's).
+    if: >-
+      !cancelled() && needs.generate-specs.result == 'success' &&
+      (!inputs.e2e_test_stack || inputs.e2e_test_stack_rerun || needs.e2e-test-stack-provision.result == 'success')
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
@@ -295,6 +412,7 @@ jobs:
       # Pool shards pair server A with the other platform's A; mutation shards own server B alone.
       # SITE_3 is also every pool shard's read-only third server, so site3 mutations must not touch login.
       - name: Assign test sites by shard role
+        if: ${{ !inputs.e2e_test_stack }}
         env:
           ROLE: ${{ matrix.role }}
           TARGET: ${{ matrix.target }}
@@ -360,6 +478,30 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
+      # This repository's e2e-test-stack actions at this workflow's own commit, as the code under test may predate them.
+      - name: ci/e2e-test-stack-actions
+        if: inputs.e2e_test_stack
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          path: .e2e-test-stack-actions
+          sparse-checkout: |
+            .github/actions/e2e-test-stack-sites
+            .github/actions/e2e-test-stack-toolkit
+          persist-credentials: false
+
+      # e2e-test-stack only: the shard's own server as SITE_1 and the batch's shared SITE_2 and SITE_3, with its admin.
+      # prepare-node-deps then switches from the action's Node 26 to the version the specs use.
+      - name: ci/e2e-test-stack-sites
+        if: inputs.e2e_test_stack
+        uses: ./.e2e-test-stack-actions/.github/actions/e2e-test-stack-sites
+        with:
+          batch: android
+          shard: ${{ matrix.runId }}
+          role: ${{ matrix.role }}
+          target: ${{ matrix.target }}
+          private-key: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+          toolkit-ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps

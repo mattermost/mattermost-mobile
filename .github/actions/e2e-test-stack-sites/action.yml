@@ -1,0 +1,150 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+name: E2E test stack sites
+description: >-
+  Points a Detox shard at its e2e-test-stack servers as Matterwick's are assigned: SITE_1 is the shard's own server,
+  or the shared SITE_3 for a site3 mutation shard; SITE_2 is the batch's shared second-to-last server; SITE_3, for a
+  pool shard only, the shared last one; ADMIN_* is the batch's one admin. Reads this run's create response for the
+  batch, from whichever attempt created it, and accepts only this run's batch. Writes the sites, the admin,
+  E2E_SERVER_ROLE and E2E_POOL_GUARD to GITHUB_ENV. Leaves Node 26 set up. Needs this repository's actions checked
+  out under .e2e-test-stack-actions.
+
+inputs:
+  batch:
+    description: The batch create named (ios or android)
+    required: true
+  shard:
+    description: The shard's 1-based run id; its own server is index shard - 1
+    required: true
+  role:
+    description: The shard's role, pool or mutation
+    required: true
+  target:
+    description: A mutation shard's server target, B (its own server) or site3 (the shared SITE_3)
+    required: false
+    default: ""
+  toolkit-ref:
+    description: The mattermost-test-automation-toolkit ref whose e2e-test-stack action runs (main or a commit on its main); empty is the pinned commit
+    required: false
+    default: ""
+  private-key:
+    description: The repository's X25519 private key, which opens the secrets sealed to it
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: setup-node
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: "26"
+        package-manager-cache: false
+
+    # The commit the run's settings checked; a shard holds no AWS role. Loaded beside this action.
+    - name: toolkit
+      uses: ./.e2e-test-stack-actions/.github/actions/e2e-test-stack-toolkit
+      with:
+        ref: ${{ inputs.toolkit-ref }}
+        check: "false"
+
+    - name: find-create-response
+      id: response
+      uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
+      with:
+        operation: earlier-response
+        artifact-name: e2e-test-stack-create-${{ inputs.batch }}
+        response-path: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
+
+    # The batch is a server per shard, then the shared SITE_2 and SITE_3: the last two.
+    - name: indexes
+      id: indexes
+      shell: bash
+      env:
+        FOUND: ${{ steps.response.outputs.found }}
+        BATCH: ${{ inputs.batch }}
+        SHARD: ${{ inputs.shard }}
+        ROLE: ${{ inputs.role }}
+        TARGET: ${{ inputs.target }}
+        RESPONSE: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
+      run: |
+        set -euo pipefail
+        if [ "$FOUND" != true ]; then
+          echo "::error::this run has no create response for the ${BATCH} batch"
+          exit 1
+        fi
+        if ! [[ "$SHARD" =~ ^[1-9][0-9]*$ ]]; then
+          echo "::error::shard must be a positive integer"
+          exit 1
+        fi
+        count=$(jq -r '.batch.instances | length' "$RESPONSE")
+        if [ "$count" -lt 3 ]; then
+          echo "::error::a batch of ${count} has no shared servers"
+          exit 1
+        fi
+        case "${ROLE}:${TARGET}" in
+          pool:A | mutation:B | mutation:site3) ;;
+          *) echo "::error::unknown shard role and target '${ROLE}:${TARGET}': pool:A, mutation:B or mutation:site3"; exit 1 ;;
+        esac
+        if [ "$ROLE" = mutation ] && [ "$TARGET" = site3 ]; then
+          # As on Matterwick's servers, the site3 mutation specs run on the shared SITE_3.
+          server=$((count - 1))
+        else
+          server=$((SHARD - 1))
+          if [ "$server" -ge $((count - 2)) ]; then
+            echo "::error::shard ${SHARD} has no server of its own in a batch of ${count}"
+            exit 1
+          fi
+        fi
+        {
+          echo "server=$server"
+          echo "site2=$((count - 2))"
+          echo "site3=$((count - 1))"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: open
+      id: open
+      uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
+      with:
+        operation: open
+        private-key: ${{ inputs.private-key }}
+        create-response: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
+        expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
+        index: ${{ steps.indexes.outputs.server }}
+
+    # One admin across the batch, so ADMIN_* is one set as the specs expect.
+    - name: assign-sites
+      shell: bash
+      env:
+        ROLE: ${{ inputs.role }}
+        INSTANCES: ${{ steps.open.outputs.instances }}
+        SERVER: ${{ steps.indexes.outputs.server }}
+        SITE2: ${{ steps.indexes.outputs.site2 }}
+        SITE3: ${{ steps.indexes.outputs.site3 }}
+        SITE_URL: ${{ steps.open.outputs.site-url }}
+        STACK_ADMIN_USERNAME: ${{ steps.open.outputs.admin-username }}
+        STACK_ADMIN_PASSWORD: ${{ steps.open.outputs.admin-password }}
+      run: |
+        set -euo pipefail
+        # As Matterwick's servers: a mutation shard gets no SITE_3.
+        GUARD=enforce
+        [ "$ROLE" = pool ] || GUARD=off
+        site2=$(jq -r --argjson i "$SITE2" '.[$i].site_url // ""' <<< "$INSTANCES")
+        site3=$(jq -r --argjson i "$SITE3" '.[$i].site_url // ""' <<< "$INSTANCES")
+        email=$(jq -r --argjson i "$SERVER" '.[$i].admin_email // ""' <<< "$INSTANCES")
+        if [ -z "$SITE_URL" ] || [ -z "$site2" ] || [ -z "$site3" ]; then
+          echo "::error::the batch has no site for this shard or its shared servers"
+          exit 1
+        fi
+        {
+          echo "SITE_1_URL=$SITE_URL"
+          echo "SITE_2_URL=$site2"
+          if [ "$ROLE" = pool ]; then echo "SITE_3_URL=$site3"; else echo "SITE_3_URL="; fi
+          echo "ADMIN_USERNAME=$STACK_ADMIN_USERNAME"
+          echo "ADMIN_PASSWORD=$STACK_ADMIN_PASSWORD"
+          echo "ADMIN_EMAIL=$email"
+          echo "E2E_SERVER_ROLE=$ROLE"
+          echo "E2E_POOL_GUARD=$GUARD"
+        } >> "$GITHUB_ENV"
+        site3_label="server $SITE3"
+        [ "$ROLE" = pool ] || site3_label=unset
+        echo "role=$ROLE: SITE_1=server $SERVER, SITE_2=server $SITE2, SITE_3=${site3_label}, pool_guard=$GUARD"
