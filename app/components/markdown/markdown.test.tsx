@@ -362,7 +362,9 @@ describe('Markdown', () => {
             expect(links.map((l) => l.props.href)).toEqual(['https://example.com', 'mailto:a@example.com']);
         });
 
-        it('should allow custom URL schemes when provided', () => {
+        it('should allow custom URL schemes when passed as prop', () => {
+            // This tests the unenhanced Markdown component with customUrlSchemes passed directly.
+            // The enhanced component (in index.ts) wires these from server config via observeConfigValue.
             renderWithIntl(
                 <Markdown
                     {...baseProps}
@@ -374,22 +376,6 @@ describe('Markdown', () => {
             const links = screen.getAllByTestId('markdown_link');
             expect(links).toHaveLength(1);
             expect(links[0].props.href).toBe('custom:action');
-        });
-    });
-
-    describe('link scheme allowlist with server config', () => {
-        it('should use server-configured CustomUrlSchemes', () => {
-            renderWithIntl(
-                <Markdown
-                    {...baseProps}
-                    customUrlSchemes={['server-custom']}
-                    value='[link](server-custom:action)'
-                />,
-            );
-
-            const links = screen.getAllByTestId('markdown_link');
-            expect(links).toHaveLength(1);
-            expect(links[0].props.href).toBe('server-custom:action');
         });
     });
 });

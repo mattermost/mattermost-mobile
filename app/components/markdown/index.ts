@@ -3,6 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
+import {map} from 'rxjs/operators';
 
 import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue} from '@queries/servers/system';
 
@@ -23,7 +24,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         maxNodes,
         minimumHashtagLength,
         customUrlSchemes: customUrlSchemesValue.pipe(
-            (schemes) => (schemes ? schemes.split(',').map((s) => s.trim()) : []),
+            map((schemes) => (schemes ? schemes.split(',').map((s) => s.trim()).filter(Boolean) : [])),
         ),
     };
 });
