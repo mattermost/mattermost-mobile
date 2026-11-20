@@ -146,34 +146,20 @@ const CreateOrEditChannel = ({
         return true;
     }, [channel, displayName, intl]);
 
-    // attributeFields is a live subscription: an administrator can remove a field
-    // or an option while this screen is open. Without this, a draft pick that
-    // stopped existing between the tap and Create would still be sent, for the
-    // server to reject with nothing on screen to explain why.
+    // Fields or options can be removed while this screen is open; drop stale picks or the server rejects Create.
     useEffect(() => {
         setAttributeValues((current) => pruneStaleAttributeValues(attributeFields, current));
     }, [attributeFields]);
 
-    // Also derive the pruned values synchronously. A sheet opened before an option
-    // update can submit its stale selection after the effect above has run; this
-    // keeps rendering, validation, and the create payload on the latest fields.
+    // Also pruned synchronously: a sheet opened before an option update can submit a stale pick after the effect runs.
     const validAttributeValues = useMemo(
         () => pruneStaleAttributeValues(attributeFields, attributeValues),
         [attributeFields, attributeValues],
     );
 
-    // Required attributes gate Create only: editing gains no attribute gate, both
-    // because there is no attribute editing on this screen in edit mode and
-    // because a channel that already exists cannot regress into "incomplete".
-    // Only fields still marked required count: with the required flag off the
-    // form can offer classification as optional, and an empty optional field must
-    // not block Create.
     const allRequiredAttributesSet = editing || attributeFields.every((field) => !isPropertyFieldRequired(field) || isPropertyValueSet(validAttributeValues[field.id]));
 
-    // attributesBlocked means some required attribute the caller could otherwise
-    // satisfy has no mobile editor at all — nothing typed here could ever fix
-    // that, so Create stays disabled rather than round-tripping into a server
-    // rejection with no way to resolve it on screen.
+    // attributesBlocked: a required attribute has no mobile editor, so nothing here could satisfy the server.
     const canSubmitAttributes = editing || !attributesBlocked;
 
     const onAttributeValueChange = useCallback((fieldId: string, value: ChannelAttributeValueInput) => {
@@ -197,8 +183,7 @@ const CreateOrEditChannel = ({
             return;
         }
 
-        // The header button can still hold this callback from before a field
-        // update made a draft value stale, so the gate is checked again here.
+        // The header button may hold a stale callback, so re-check the gate.
         if (!allRequiredAttributesSet || !canSubmitAttributes) {
             dispatch({
                 type: RequestActions.FAILURE,
@@ -286,8 +271,6 @@ const CreateOrEditChannel = ({
 
     useAndroidHardwareBackHandler(Screens.CREATE_OR_EDIT_CHANNEL, close);
 
-    // A save error takes priority: it is the outcome of something the user just
-    // did, where the unsupported-attribute notice is standing background context.
     const displayError = appState.error || (canSubmitAttributes ? '' : formatMessage(messages.unsupportedRequiredAttribute));
 
     return (

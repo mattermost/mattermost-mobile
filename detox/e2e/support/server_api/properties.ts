@@ -71,9 +71,7 @@ export const apiCreatePropertyField = async (baseUrl: string, groupName: string,
 };
 
 /**
- * Patch a property field. `attrs` is merged into the field's existing attrs
- * rather than replacing them (server-side PropertyField.Patch with
- * mergeAttrs=true), so only the given keys change.
+ * Patch a property field. `attrs` merges into the existing attrs; only the given keys change.
  */
 export const apiPatchPropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string, patch: {attrs?: Record<string, unknown>}) => {
     try {
@@ -370,13 +368,10 @@ type ChannelAttributeFieldOptions = {
     actions?: string[];
     required?: boolean;
 
-    // Governs which value moves the server will accept once a value is set. Omitted
-    // means 'any'; a directional policy also refuses a clear.
+    // Omitted means 'any'. A directional policy also refuses a clear.
     changePolicy?: 'any' | 'raise_only' | 'lower_only' | 'never';
 
-    // The channel field's permission tier. Defaults to 'admin', which is what the
-    // System Console writes; 'sysadmin' is how a tier the caller cannot satisfy is
-    // set up, and 'none' makes the field permanently read-only.
+    // Defaults to 'admin', as the System Console writes. 'none' makes the field read-only.
     permissionValues?: 'none' | 'sysadmin' | 'admin' | 'member';
 };
 
@@ -490,13 +485,8 @@ export const apiSetupChannelAttributeField = async (
 };
 
 /**
- * Marks an existing channel attribute field required (or not) after the fact.
- *
- * The server enforces required attributes at channel-creation time for whoever
- * can set them, so a test that wants both "required" and "channel already
- * exists with no value" has to create the channel first, while the field is
- * still optional, and only then flip it required — exactly the real-world
- * sequence an admin making an existing field mandatory would produce.
+ * Mark a channel attribute field required (or not). Required fields block channel creation,
+ * so tests create the channel first and flip the field afterward.
  */
 export const apiSetChannelAttributeFieldRequired = async (baseUrl: string, fieldId: string, required: boolean) => {
     const result = await apiPatchPropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, fieldId, {attrs: {required}});
@@ -526,9 +516,6 @@ export const apiSetChannelAttributeValue = async (
 
 /**
  * The value the server holds for one channel attribute, or undefined when unset.
- *
- * This is what proves an edit made in the app actually reached the server, rather
- * than only having repainted the row.
  */
 export const apiGetChannelAttributeValue = async (
     baseUrl: string,

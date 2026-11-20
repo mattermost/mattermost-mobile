@@ -265,9 +265,7 @@ describe('observeResolvedChannelAttributes re-emission', () => {
         {id: 'level-secret', name: 'Secret', color: '#FF0000', rank: 2},
     ];
 
-    // Collects everything the observable emits while `mutate` runs, so a change
-    // the comparator wrongly swallows shows up as a missing emission rather than
-    // as a stale value nobody asserted on.
+    // Records every emission, so a change the comparator swallows shows up as a missing one.
     const emissionsWhile = async (mutate: () => Promise<void>) => {
         const emissions: ResolvedChannelAttribute[][] = [];
         const subscription = observeResolvedChannelAttributes(database, channelId).subscribe((resolved) => {
@@ -323,10 +321,8 @@ describe('observeResolvedChannelAttributes re-emission', () => {
     });
 
     it('should re-emit when an option rename collides under naive \':\'/\',\' joining but is a real change', async () => {
-        // Two options naively joined as "id:rank:color:name" and comma-joined would
-        // read "a:1:red:x,b:2:blue:y". Renaming the single remaining option to
-        // "x,b:2:blue:y" reproduces that exact string, so a signature built with
-        // ':'/',' would treat this as no change at all.
+        // Renaming the remaining option to "x,b:2:blue:y" yields the same string a naive
+        // ':'/','-joined signature gives for options a and b, so it would see no change.
         await seedFields([channelField({options: [
             {id: 'a', name: 'x', color: 'red', rank: 1},
             {id: 'b', name: 'y', color: 'blue', rank: 2},
@@ -344,10 +340,7 @@ describe('observeResolvedChannelAttributes re-emission', () => {
     });
 
     it('should re-emit when the stored option id changes to another with the same rendered name and colour', async () => {
-        // Two options that render identically: same name, same colour, different
-        // id. Without rawValue in the signature, moving the stored value from one
-        // to the other produced an emission this treated as unchanged, since
-        // displayValue and option.color came out the same either way.
+        // Both options render the same; only rawValue in the signature catches the switch.
         await seedFields([channelField({options: [
             {id: 'a', name: 'Dup', color: '#123456', rank: 1},
             {id: 'b', name: 'Dup', color: '#123456', rank: 2},

@@ -121,10 +121,7 @@ describe('setChannelAttributeValue', () => {
 
         await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', '');
 
-        // The row stays, carrying nothing. It is read back as undefined rather
-        // than null because the column is JSON-decoded on read, which is why the
-        // assertion is about what the surfaces ask — isPropertyValueSet — and not
-        // about which flavour of empty landed in the column.
+        // The empty row is JSON-decoded to undefined, so assert via isPropertyValueSet.
         const stored = await storedValues(database, channelId);
         expect(stored).toHaveLength(1);
         expect(isPropertyValueSet(stored[0].value)).toBe(false);

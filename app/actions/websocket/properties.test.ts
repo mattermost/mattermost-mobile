@@ -377,19 +377,11 @@ describe('handlePropertyValuesUpdated', () => {
             await setAccessControlGroupId(serverUrl, ownedGroupId);
         });
 
-        // An empty-target event carries no group identity: the exact same shape is
-        // sent for "all access_control values cleared" and for "all managed
-        // channel categories values cleared" on this channel. Pruning locally here
-        // would apply someone else's clear to our data whenever the two happen to
-        // race, so the handler defers to a forced, group-scoped REST
-        // reconciliation instead of deleting anything itself.
         it('should trigger a forced, group-scoped reconciliation instead of pruning locally when a target is cleared', async () => {
             await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
 
             expect(mockedFetchChannelAttributeValues).toHaveBeenCalledWith(serverUrl, channelId, true);
 
-            // Nothing was deleted synchronously by the handler itself — the
-            // reconciliation (mocked here) owns that decision.
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });

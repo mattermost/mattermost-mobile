@@ -306,10 +306,6 @@ describe('observeCreatableChannelAttributeFields', () => {
         expect(emissions[emissions.length - 1]).toHaveLength(0);
     });
 
-    // WatermelonDB updates a record in place and re-emits the same model
-    // instance, so a comparator that misses one of the keys the form actually
-    // renders would silently swallow a live edit to that key. One test per
-    // signature key that isn't already covered by the filtering tests above.
     describe('re-emission on an in-place field edit', () => {
         const emissionsWhile = async (mutate: () => Promise<void>) => {
             const emissions: ChannelAttributeField[][] = [];
@@ -325,11 +321,8 @@ describe('observeCreatableChannelAttributeFields', () => {
         };
 
         it('should re-emit when the field is renamed', async () => {
-            // update_at moves alongside name here because that is what a real
-            // server-side edit does — observeChannelAttributeFields itself only
-            // tracks update_at/delete_at/attrs/permission_values (name is not a
-            // watched column), so a rename that somehow left update_at behind
-            // would not reach this observable at all regardless of the signature.
+            // update_at moves too, as in a real server edit: the observable does not watch
+            // the name column, so a rename alone would never reach it.
             await seedUser('system_user');
             await seedFields([makeField({id: 'f1', name: 'original'})]);
 
