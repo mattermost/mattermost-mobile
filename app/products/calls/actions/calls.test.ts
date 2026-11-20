@@ -683,7 +683,7 @@ describe('Actions.Calls', () => {
         renderHook(() => useCurrentCall());
         addFakeCall('server1', 'channel-id');
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            await CallsActions.joinCall('server1', {type: 'channel', channelID: 'channel-id'}, 'myUserId', true, createIntl({locale: 'en', messages: {}}));
             newCurrentCall('server1', 'channel-id', 'myUserId', CallsTransport.Rtcd);
         });
 
