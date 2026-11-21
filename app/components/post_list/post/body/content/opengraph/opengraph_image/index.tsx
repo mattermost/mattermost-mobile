@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {type ImageSource} from 'expo-image';
-import React, {useMemo, useRef} from 'react';
+import React, {useMemo} from 'react';
 import {TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -15,6 +15,7 @@ import {openGalleryAtIndex} from '@utils/gallery';
 import {isTablet} from '@utils/helpers';
 import {calculateDimensions} from '@utils/images';
 import {type BestImage, getNearestPoint} from '@utils/opengraph';
+import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
@@ -58,10 +59,6 @@ const getViewPostWidth = (isReplyPost: boolean, deviceHeight: number, deviceWidt
 };
 
 const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraphImages, postId, theme}: OpengraphImageProps) => {
-    const fileId = useRef<string | null>(null);
-    if (fileId.current === null) {
-        fileId.current = `uid-opengraph-image-${postId}`;
-    }
     const dimensions = useWindowDimensions();
     const style = getStyleSheet(theme);
     const galleryIdentifier = `${postId}-OpenGraphImage-${location}`;
@@ -72,6 +69,10 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
     }), [layoutWidth, isReplyPost, dimensions.height, dimensions.width]);
     const bestImage = getNearestPoint(bestDimensions, openGraphImages, 'width', 'height');
     const imageUrl = (bestImage.secure_url || bestImage.url)!;
+
+    // Key the on-disk image cache by the image URL, not the post id: a post's preview image can
+    // change (edited link, refreshed OpenGraph data) and a post-scoped key would keep serving the old image.
+    const fileId = useMemo(() => `uid-opengraph-image-${urlSafeBase64Encode(imageUrl)}`, [imageUrl]);
     const imagesMetadata = metadata?.images;
 
     let ogImage = secureGetFromRecord(imagesMetadata, imageUrl);
@@ -93,7 +94,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
 
     const onPress = () => {
         const item: GalleryItemType = {
-            id: fileId.current!,
+            id: fileId,
             postId,
             uri: imageUrl,
             width: imageDimensions.width,
@@ -102,7 +103,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
             mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',
             lastPictureUpdate: 0,
-            cacheKey: fileId.current!,
+            cacheKey: fileId,
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
     };
@@ -123,14 +124,14 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View style={[styles, style.imageContainer, dimensionsStyle]}>
                 <TouchableWithoutFeedback onPress={onGestureEvent}>
-                    <Animated.View testID={`OpenGraphImage-${fileId.current}`}>
+                    <Animated.View testID={`OpenGraphImage-${fileId}`}>
                         <ExpoImage
-                            id={fileId.current}
+                            id={fileId}
                             style={[style.image, dimensionsStyle]}
                             source={source}
                             contentFit='contain'
                             ref={ref}
-                            nativeID={`OpenGraphImage-${fileId.current}`}
+                            nativeID={`OpenGraphImage-${fileId}`}
                         />
                     </Animated.View>
                 </TouchableWithoutFeedback>
