@@ -288,8 +288,8 @@ jobs:
           # Called: the caller's account, which must match the recorded one. By hand: the recorded one.
           account: ${{ inputs.account }}
           account-file: ${{ runner.temp }}/create/e2e-test-stack-account
-          role-arn-prod: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_PROD }}
-          role-arn-dev: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_DEV }}
+          role-arn-prod: ${{ vars.E2E_TEST_STACK_ROLE_ARN_PROD }}
+          role-arn-dev: ${{ vars.E2E_TEST_STACK_ROLE_ARN_DEV }}
 
       - name: ci/configure-aws-credentials
         if: steps.source.outputs.artifact != ''
@@ -401,8 +401,8 @@ jobs:
           # Called: the caller's account, which must match the recorded one. By hand: the recorded one.
           account: ${{ inputs.account }}
           account-file: ${{ runner.temp }}/create/e2e-test-stack-account
-          role-arn-prod: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_PROD }}
-          role-arn-dev: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_DEV }}
+          role-arn-prod: ${{ vars.E2E_TEST_STACK_ROLE_ARN_PROD }}
+          role-arn-dev: ${{ vars.E2E_TEST_STACK_ROLE_ARN_DEV }}
 
       - name: ci/configure-aws-credentials
         if: steps.response.outputs.found == 'true'
@@ -701,8 +701,8 @@ jobs:
           # Called: the caller's account, which must match the recorded one. By hand: the recorded one.
           account: ${{ inputs.account }}
           account-file: ${{ runner.temp }}/create/e2e-test-stack-account
-          role-arn-prod: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_PROD }}
-          role-arn-dev: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_DEV }}
+          role-arn-prod: ${{ vars.E2E_TEST_STACK_ROLE_ARN_PROD }}
+          role-arn-dev: ${{ vars.E2E_TEST_STACK_ROLE_ARN_DEV }}
 
       - name: ci/configure-aws-credentials
         if: steps.pick.outputs.use == 'true'

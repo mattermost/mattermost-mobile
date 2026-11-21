@@ -10,7 +10,7 @@ name: E2E Test Stack - Create
 # their servers' credentials. A run creates one batch per Detox platform, named by
 # the batch input (ios, android).
 #
-# It runs as the account input's CI role, MM_E2E_TEST_STACK_AWS_ROLE_ARN_PROD or
+# It runs as the account input's CI role, E2E_TEST_STACK_ROLE_ARN_PROD or
 # _DEV, which trusts only jobs in this file and e2e-test-stack-destroy.yml, on
 # main and release-*.*. A called workflow's jobs carry its file as
 # job_workflow_ref and the caller's branch as subject, so the role trusts them.
@@ -215,8 +215,8 @@ jobs:
           operation: role
           account: ${{ inputs.account }}
           account-file: ${{ runner.temp }}/earlier/e2e-test-stack-account
-          role-arn-prod: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_PROD }}
-          role-arn-dev: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN_DEV }}
+          role-arn-prod: ${{ vars.E2E_TEST_STACK_ROLE_ARN_PROD }}
+          role-arn-dev: ${{ vars.E2E_TEST_STACK_ROLE_ARN_DEV }}
 
       - name: ci/record-account
         env:

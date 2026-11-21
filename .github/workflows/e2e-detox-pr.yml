@@ -71,8 +71,8 @@ on:
         description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
         required: false
         type: string
-      USE_E2E_TEST_STACK:
-        description: "Detox servers: variable follows vars.USE_E2E_TEST_STACK (unset is Matterwick's); true uses e2e-test-stack, false Matterwick's"
+      E2E_TEST_STACK_ENABLED:
+        description: "Detox servers: variable follows vars.E2E_TEST_STACK_ENABLED (unset is Matterwick's); true uses e2e-test-stack, false Matterwick's"
         required: false
         default: "variable"
         type: choice
@@ -463,8 +463,8 @@ jobs:
               -f target_url="$TARGET_URL"
           done
 
-  # Whether this run's Detox uses e2e-test-stack: USE_E2E_TEST_STACK, or with "variable" (and a dispatch that does not
-  # name it, as Matterwick's) vars.USE_E2E_TEST_STACK, where only "true" turns it on. The account and channel follow
+  # Whether this run's Detox uses e2e-test-stack: E2E_TEST_STACK_ENABLED, or with "variable" (and a dispatch that does not
+  # name it, as Matterwick's) vars.E2E_TEST_STACK_ENABLED, where only "true" turns it on. The account and channel follow
   # the same rule: the input, or with "variable" vars.E2E_TEST_STACK_ACCOUNT (prod or dev; unset is prod) and
   # vars.E2E_TEST_STACK_CHANNEL (v1 or edge; unset is v1). With it, the Detox iOS and Android
   # lanes each get their own batch in e2e-detox.yml. iPad and Maestro stay on Matterwick's servers, and run only when
@@ -482,8 +482,8 @@ jobs:
       - name: e2e-test-stack/use
         id: use
         env:
-          INPUT: ${{ inputs.USE_E2E_TEST_STACK }}
-          VARIABLE: ${{ vars.USE_E2E_TEST_STACK }}
+          INPUT: ${{ inputs.E2E_TEST_STACK_ENABLED }}
+          VARIABLE: ${{ vars.E2E_TEST_STACK_ENABLED }}
           ANDROID_SITE_1_URL: ${{ inputs.ANDROID_SITE_1_URL }}
           ANDROID_SITE_2_URL: ${{ inputs.ANDROID_SITE_2_URL }}
           IOS_SITE_1_URL: ${{ inputs.IOS_SITE_1_URL }}
@@ -494,7 +494,7 @@ jobs:
           case "$INPUT" in
             true | false) use=$INPUT ;;
             "" | variable) if [ "$VARIABLE" = true ]; then use=true; else use=false; fi ;;
-            *) echo "::error::USE_E2E_TEST_STACK must be variable, true or false"; exit 1 ;;
+            *) echo "::error::E2E_TEST_STACK_ENABLED must be variable, true or false"; exit 1 ;;
           esac
           # Matterwick's servers: always without e2e-test-stack, and with it when the dispatch gives any of the five.
           # resolve-server-topology then requires all five and fails on a missing one; tsio-triage settles the lanes.
