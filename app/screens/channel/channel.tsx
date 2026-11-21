@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {DeviceEventEmitter, type LayoutChangeEvent, Platform, StyleSheet} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
@@ -101,7 +101,7 @@ const Channel = ({
         return () => listener.remove();
     }, [serverUrl, channelId]);
 
-    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
+    const marginTop = defaultHeight + ((isTablet || Platform.OS === 'android') ? 0 : -insets.top);
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank
