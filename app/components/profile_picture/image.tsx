@@ -12,7 +12,7 @@ import {ExpoImageAnimated} from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {blendColors, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getLastPictureUpdate} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -43,10 +43,10 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     const lastPictureUpdateAt = author ? getLastPictureUpdate(author) : 0;
     const fIStyle = useMemo(() => ({
         borderRadius: size / 2,
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.08),
         height: size,
         width: size,
-    }), [size, theme.centerChannelBg]);
+    }), [size, theme.centerChannelBg, theme.centerChannelColor]);
 
     const imgSource = useMemo(() => {
         if (!author || typeof source === 'string') {
