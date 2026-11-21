@@ -6,6 +6,7 @@ import {DeviceEventEmitter, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events, Screens} from '@constants';
+import {useGallery} from '@context/gallery';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useWindowDimensions} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
@@ -39,11 +40,15 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Ga
         } else {
             EphemeralStore.clearCurrentFileViewerPostId();
         }
-        return () => EphemeralStore.setCurrentFileViewerPostId(previousPostId);
+        return () => {
+            gallery.resetSharedValues();
+            EphemeralStore.setCurrentFileViewerPostId(previousPostId);
+        };
     });
 
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls(bottomInset);
     const galleryRef = useRef<GalleryRef>(null);
+    const gallery = useGallery(galleryIdentifier);
 
     const containerStyle = dim;
 
