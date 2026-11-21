@@ -14,7 +14,7 @@ React Native 0.83.9 with **New Architecture enabled** (RCT_NEW_ARCH_ENABLED=1).
 ### Implementing Multi-Phase Features
 When implementing complex features with multiple phases:
 
-1. **Use subagents for each phase**: Launch a subagent (Task tool with `subagent_type: general-purpose`) to implement each phase independently
+1. **Use subagents for each phase**: Launch a subagent (Agent tool with `subagent_type: general-purpose`) to implement each phase independently
 2. **Test after each phase**: Use a subagent to test the feature with mobile MCP after implementation
 3. **Commit after each phase**: Create a commit for each completed and tested phase
 4. **Never commit planning files**: Keep `.md` planning files (like `PLAN.md`) out of commits
@@ -159,7 +159,7 @@ Located at `libraries/@mattermost/`:
 **Testing guide:** See [docs/testing_guide.md](docs/testing_guide.md) for how to add and structure unit tests.
 
 ### Test Organization
-- **Jest coverage excludes** `/components/` and `/screens/` directories
+- **Jest coverage excludes** `/components/`, `/screens/`, and `/routes/` directories
 - Mock database manager at `app/database/manager/__mocks__/index.ts`
 - **E2E tests** in separate `detox/` package (not in main package.json)
 - Add mocks to central `setup.ts` file, not individual test files
@@ -360,7 +360,7 @@ When adding custom post types (e.g., for new products):
 3. Use the globally-available `Post` type (defined in `types/api/posts.d.ts`) - no import needed
 
 ### Platform-Specific
-- iOS: Opt out of iOS 18+ features (liquid glass) until UI is properly addressed
+- iOS: The app opts out of the iOS 26 Liquid Glass design (`UIDesignRequiresCompatibility` in `ios/Mattermost/Info.plist`); keep the opt-out until the UI is updated for it
 - Android: minSdk is 30 (Android 11), so every supported version lays out edge-to-edge. Still test across API levels (30, 34, 35, 36) to verify inset behavior.
 - Use `Set` instead of `Array` for exception lists (faster, ensures uniqueness)
 
