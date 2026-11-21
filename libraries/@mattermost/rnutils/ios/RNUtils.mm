@@ -92,6 +92,20 @@ RCT_REMAP_METHOD(lockPortrait, portrait) {
     [wrapper lockOrientation];
 }
 
+RCT_EXPORT_METHOD(getOutOfOfficeSettings:(NSString *)serverUrl
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    resolve([wrapper getOutOfOfficeSettings:serverUrl]);
+}
+
+RCT_EXPORT_METHOD(setOutOfOfficeSettings:(NSString *)serverUrl
+                  settings:(NSString *)settings
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    [wrapper setOutOfOfficeSettings:serverUrl settings:settings];
+    resolve(nil);
+}
+
 RCT_EXPORT_METHOD(getDeliveredNotifications:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject) {
     [self getNotifications:resolve];

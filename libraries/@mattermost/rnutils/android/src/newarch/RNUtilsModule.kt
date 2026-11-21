@@ -53,6 +53,14 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
         return implementation.deleteEntitiesFile()
     }
 
+    override fun getOutOfOfficeSettings(serverUrl: String, promise: Promise?) {
+        implementation.getOutOfOfficeSettings(serverUrl, promise)
+    }
+
+    override fun setOutOfOfficeSettings(serverUrl: String, settings: String, promise: Promise?) {
+        implementation.setOutOfOfficeSettings(serverUrl, settings, promise)
+    }
+
     override fun getDeliveredNotifications(promise: Promise?) {
         implementation.getDeliveredNotifications(promise)
     }

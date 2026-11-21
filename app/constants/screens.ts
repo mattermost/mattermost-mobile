@@ -74,6 +74,7 @@ const SETTINGS_DISPLAY_THEME = 'settings_display_theme';
 const SETTINGS_DISPLAY_TIMEZONE = 'settings_display_timezone';
 const SETTINGS_DISPLAY_TIMEZONE_SELECT = 'settings_display_timezone_select';
 const SETTINGS_NOTIFICATION = 'settings_notification';
+const SETTINGS_OUT_OF_OFFICE = 'settings_out_of_office';
 const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'settings_notification_auto_responder';
 const SETTINGS_NOTIFICATION_EMAIL = 'settings_notification_email';
 const SETTINGS_NOTIFICATION_MENTION = 'settings_notification_mention';
@@ -162,6 +163,7 @@ export default {
     SETTINGS_DISPLAY_TIMEZONE_SELECT,
     SETTINGS_NOTIFICATION,
     SETTINGS_NOTIFICATION_AUTO_RESPONDER,
+    SETTINGS_OUT_OF_OFFICE,
     SETTINGS_NOTIFICATION_EMAIL,
     SETTINGS_NOTIFICATION_MENTION,
     SETTINGS_NOTIFICATION_PUSH,

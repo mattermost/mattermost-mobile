@@ -10,6 +10,7 @@ import com.mattermost.helpers.Network
 import com.mattermost.helpers.PushNotificationDataHelper
 import com.mattermost.helpers.database_extension.getServerUrlForIdentifier
 import com.mattermost.rnutils.helpers.NotificationHelper
+import com.mattermost.rnutils.helpers.OutOfOffice
 import com.mattermost.turbolog.TurboLog
 import com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME
 import com.wix.reactnativenotifications.core.AppLaunchHelper
@@ -104,6 +105,7 @@ class CustomPushNotification(
         val currentActivityName = mAppLifecycleFacade.runningReactContext?.currentActivity?.componentName?.className ?: ""
         val isAppVisible = mAppLifecycleFacade.isAppVisible()
         val isMainActivity = currentActivityName.contains("MainActivity")
+        val suppressNotification = OutOfOffice.shouldSuppress(mContext, serverUrl, bundle)
         TurboLog.i("CustomPushNotification", currentActivityName)
 
         when (type) {
@@ -118,15 +120,21 @@ class CustomPushNotification(
                             }
                         }
 
-                        NotificationHelper.addNotificationToPreferences(mContext, notificationId, bundle)
+                        if (!suppressNotification) {
+                            NotificationHelper.addNotificationToPreferences(mContext, notificationId, bundle)
+                        } else {
+                            false
+                        }
                     } ?: true
                     
-                    buildNotification(notificationId, createSummary)
+                    if (!suppressNotification) {
+                        buildNotification(notificationId, createSummary)
+                    }
                 }
             }
             CustomPushNotificationHelper.PUSH_TYPE_SESSION -> {
                 val message = bundle.getString("message") ?: bundle.getString("body")
-                if (!message.isNullOrEmpty() && (!isAppVisible || !isMainActivity)) {
+                if (!suppressNotification && !message.isNullOrEmpty() && (!isAppVisible || !isMainActivity)) {
                     buildNotification(notificationId, false)
                 }
             }
