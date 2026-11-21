@@ -1,5 +1,6 @@
 package com.mattermost.rnbeta
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
@@ -12,6 +13,9 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.mattermost.hardware.keyboard.MattermostHardwareKeyboardImpl
 import com.mattermost.rnutils.helpers.FoldableObserver
 import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory;
+import com.wix.reactnativenotifications.core.AppLifecycleFacadeHolder
+import com.wix.reactnativenotifications.core.NotificationIntentAdapter
+import com.wix.reactnativenotifications.core.notification.PushNotification
 import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
@@ -42,6 +46,18 @@ class MainActivity : ReactActivity() {
         lastOrientation = this.resources.configuration.orientation
         foldableObserver.onCreate()
         WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        // When the process was killed but the task survived, Android recreates this activity with its
+        // previous intent and delivers the notification tap here. React is not ready yet, so the
+        // notifications module never sees it; hand it over so it becomes the initial notification.
+        if (NotificationIntentAdapter.canHandleIntent(intent) && !AppLifecycleFacadeHolder.get().isReactInitialized()) {
+            val data = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent)
+            PushNotification.get(applicationContext, data)?.onOpened()
+        }
     }
 
     override fun onStart() {
