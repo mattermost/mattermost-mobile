@@ -1,5 +1,6 @@
 # Detox E2E test runs — reusable workflow only.
-# Called from e2e-detox-pr.yml after shared builds and server provisioning complete.
+# Called from e2e-detox-pr.yml after shared builds and server provisioning complete, or with e2e_test_stack, where
+# each Detox platform template creates and provisions its own batch.
 # App artifacts (ios-build-simulator-*, android-build-files-*) are uploaded by
 # the parent workflow; templates download them via artifact_run_id.
 name: Detox E2E
@@ -10,25 +11,52 @@ on:
       MOBILE_VERSION:
         required: true
         type: string
+      # e2e-test-stack: each Detox platform gets its own batch, a server per shard, instead of the *_SITE_*_URL
+      # servers. A re-run of failed specs uses the batch the first pass created. iPad stays on the URL servers.
+      e2e_test_stack:
+        required: false
+        type: boolean
+        default: false
+      e2e_test_stack_account:
+        required: false
+        type: string
+        default: ""
+      e2e_test_stack_channel:
+        required: false
+        type: string
+        default: "v1"
+      e2e_test_stack_toolkit_ref:
+        required: false
+        type: string
+        default: ""
+      e2e_test_stack_server_image:
+        required: false
+        type: string
+        default: ""
       PLATFORM:
         required: false
         type: string
         default: "both"
       ANDROID_SITE_1_URL:
-        required: true
+        required: false
         type: string
+        default: ""
       ANDROID_SITE_2_URL:
-        required: true
+        required: false
         type: string
+        default: ""
       IOS_SITE_1_URL:
-        required: true
+        required: false
         type: string
+        default: ""
       IOS_SITE_2_URL:
-        required: true
+        required: false
         type: string
+        default: ""
       SITE_3_URL:
-        required: true
+        required: false
         type: string
+        default: ""
       run_type:
         required: false
         type: string
@@ -95,6 +123,12 @@ jobs:
       results-artifact: ${{ inputs.rerun-specs != '{}' && format('e2e-rerun-results-detox-ios-a{0}', github.run_attempt) || '' }}
       # The failed specs of a re-run run one after another on one fresh device (mutation specs on their own).
       parallelism: ${{ inputs.rerun-specs != '{}' && '1' || '32' }}
+      e2e_test_stack: ${{ inputs.e2e_test_stack }}
+      e2e_test_stack_rerun: ${{ inputs.e2e_test_stack && inputs.rerun-specs != '{}' }}
+      e2e_test_stack_account: ${{ inputs.e2e_test_stack_account }}
+      e2e_test_stack_channel: ${{ inputs.e2e_test_stack_channel }}
+      e2e_test_stack_toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
+      e2e_test_stack_server_image: ${{ inputs.e2e_test_stack_server_image }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -108,6 +142,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ inputs.e2e_test_stack && secrets.E2E_TEST_STACK_CREDENTIALS_KEY || '' }}
 
   run-android-tests:
     if: (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (inputs.rerun-specs == '{}' || fromJSON(inputs.rerun-specs)['detox-android'] != null)
@@ -132,6 +167,12 @@ jobs:
       parallelism: ${{ inputs.rerun-specs != '{}' && '1' || '32' }}
       max_attempts: ${{ inputs.max-attempts }}
       report-suffix: ${{ inputs.results-suffix }}
+      e2e_test_stack: ${{ inputs.e2e_test_stack }}
+      e2e_test_stack_rerun: ${{ inputs.e2e_test_stack && inputs.rerun-specs != '{}' }}
+      e2e_test_stack_account: ${{ inputs.e2e_test_stack_account }}
+      e2e_test_stack_channel: ${{ inputs.e2e_test_stack_channel }}
+      e2e_test_stack_toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
+      e2e_test_stack_server_image: ${{ inputs.e2e_test_stack_server_image }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -145,9 +186,11 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ inputs.e2e_test_stack && secrets.E2E_TEST_STACK_CREDENTIALS_KEY || '' }}
 
   run-ios-ipad-tests:
-    if: (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (inputs.rerun-specs == '{}' || fromJSON(inputs.rerun-specs)['detox-ipad'] != null)
+    # iPad stays on the URL servers; with e2e-test-stack it runs only when they are given.
+    if: (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (inputs.rerun-specs == '{}' || fromJSON(inputs.rerun-specs)['detox-ipad'] != null) && (!inputs.e2e_test_stack || inputs.IOS_SITE_1_URL != '')
     name: iOS iPad
     uses: ./.github/workflows/e2e-ios-template.yml
     with:

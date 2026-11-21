@@ -309,6 +309,57 @@ async function installAgentsPluginFromMarketplace(client: MattermostClient, toke
     return true;
 }
 
+/**
+ * For e2e-test-stack servers, whose image carries the plugin: enables it when inactive and waits for it to run. It is
+ * never installed or downloaded, so a plugin missing from the server, failed, or not running in time fails provisioning.
+ */
+export async function ensurePrepackagedPlugin(
+    client: MattermostClient,
+    token: string,
+    pluginId: string,
+    {waitMs = 60000, pollMs = 3000}: {waitMs?: number; pollMs?: number} = {},
+): Promise<void> {
+    const pluginsRes = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
+    if (pluginsRes.status >= 400) {
+        throw new Error(`Could not list plugins (HTTP ${pluginsRes.status}): ${(pluginsRes.data as ApiErrorBody).message || ''}`);
+    }
+    const isActive = pluginsRes.data?.active?.some((plugin) => plugin.id === pluginId) ?? false;
+    const isInactive = pluginsRes.data?.inactive?.some((plugin) => plugin.id === pluginId) ?? false;
+    if (!isActive && !isInactive) {
+        throw new Error(`Plugin ${pluginId} is not on the server; e2e-test-stack servers carry it prepackaged.`);
+    }
+
+    if (isInactive) {
+        logInfo(`Plugin ${pluginId} is prepackaged but inactive, enabling...`);
+        const enableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token).catch((err: unknown) => ({
+            data: {message: err instanceof Error ? err.message : String(err)} as ApiErrorBody,
+            status: 0,
+            headers: {},
+        }));
+        if (enableRes.status === 0 || enableRes.status >= 400) {
+            throw new Error(`Could not enable prepackaged plugin ${pluginId} (HTTP ${enableRes.status}): ${enableRes.data.message || JSON.stringify(enableRes.data)}`);
+        }
+    }
+
+    const deadline = Date.now() + waitMs;
+    /* eslint-disable no-await-in-loop -- poll the plugin's state until it runs */
+    for (;;) {
+        const status = await getPluginStatus(client, token, pluginId);
+        if (status?.state === PLUGIN_STATE_RUNNING) {
+            logInfo(`Plugin ${pluginId} is running (${status.version}).`);
+            return;
+        }
+        if (status?.state === PLUGIN_STATE_FAILED) {
+            throw new Error(`Plugin ${pluginId} is prepackaged but failed: ${status.error || 'unknown error'}`);
+        }
+        if (Date.now() >= deadline) {
+            throw new Error(`Plugin ${pluginId} is prepackaged but not running after ${Math.round(waitMs / 1000)}s (state ${status?.state ?? 'unknown'}).`);
+        }
+        await sleep(pollMs);
+    }
+    /* eslint-enable no-await-in-loop */
+}
+
 export async function ensureAgentsPlugin(client: MattermostClient, token: string): Promise<boolean> {
     const pluginsRes = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
     const status = await getPluginStatus(client, token, AGENTS_PLUGIN_ID);

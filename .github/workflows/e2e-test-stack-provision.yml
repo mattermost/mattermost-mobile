@@ -1,0 +1,169 @@
+---
+name: E2E Test Stack - Provision
+
+# Provisions every server of a batch this run created (license and plugins, as provision-e2e-servers does for
+# Matterwick's servers), one job per slice of the servers, which the template's generate-specs deals into at
+# most 8. Every server but the last, the shared SITE_3, gets the demo plugin. It reads the create response,
+# e2e-test-stack-create-<batch>, and accepts only this run's batch.
+
+on:
+  workflow_call:
+    inputs:
+      batch:
+        description: "The batch create named: e2e-test-stack-create-<batch> is its create response"
+        type: string
+        required: true
+      slices:
+        description: "JSON array of comma-separated server indexes, one string per provisioning job"
+        type: string
+        required: true
+      toolkit_ref:
+        description: "The mattermost-test-automation-toolkit ref whose e2e-test-stack action runs: main or a full commit on its main; empty is the pinned commit"
+        type: string
+        default: ""
+      MOBILE_VERSION:
+        description: "The mobile ref whose provisioning code runs"
+        type: string
+        required: true
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY:
+        description: "The repository's credentials key, which opens the batch's sealed server credentials"
+        required: true
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  TOOLKIT_REF: ${{ inputs.toolkit_ref }}
+
+jobs:
+  provision:
+    name: provision (servers ${{ matrix.slice }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        slice: ${{ fromJSON(inputs.slices) }}
+    steps:
+      # Only what provisioning reads: .nvmrc (a root file, always included), detox and the provisioning action.
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          sparse-checkout: |
+            detox
+            .github/actions/provision-e2e-servers
+          persist-credentials: false
+
+      # The action runs on Node 26.
+      - name: ci/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      # This repository's toolkit action at this workflow's own commit, as the code under test may predate it.
+      - name: ci/checkout-toolkit-action
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          path: .e2e-test-stack-actions
+          sparse-checkout: .github/actions/e2e-test-stack-toolkit
+          persist-credentials: false
+
+      # The e2e-test-stack action at the commit the run's settings checked; this job holds no AWS role.
+      - name: ci/toolkit
+        uses: ./.e2e-test-stack-actions/.github/actions/e2e-test-stack-toolkit
+        with:
+          ref: ${{ env.TOOLKIT_REF }}
+          check: "false"
+
+      - name: ci/find-create-response
+        id: response
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
+        with:
+          operation: earlier-response
+          artifact-name: e2e-test-stack-create-${{ inputs.batch }}
+          response-path: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
+
+      - name: ci/first-index
+        id: first
+        env:
+          FOUND: ${{ steps.response.outputs.found }}
+          BATCH: ${{ inputs.batch }}
+          SLICE: ${{ matrix.slice }}
+        run: |
+          set -euo pipefail
+          if [ "$FOUND" != true ]; then
+            echo "::error::this run has no create response for the ${BATCH} batch"
+            exit 1
+          fi
+          if ! [[ "$SLICE" =~ ^[0-9]+(,[0-9]+)*$ ]]; then
+            echo "::error::a slice must be comma-separated server indexes"
+            exit 1
+          fi
+          echo "index=${SLICE%%,*}" >> "$GITHUB_OUTPUT"
+
+      # The batch shares one admin, so opening any server gives the credentials for the slice.
+      - name: ci/open
+        id: open
+        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
+        with:
+          operation: open
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          create-response: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
+          expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
+          index: ${{ steps.first.outputs.index }}
+
+      - name: ci/sites
+        id: sites
+        env:
+          SLICE: ${{ matrix.slice }}
+          INSTANCES: ${{ steps.open.outputs.instances }}
+        run: |
+          set -euo pipefail
+          count=$(jq 'length' <<< "$INSTANCES")
+          urls="" demo=""
+          IFS=, read -ra indexes <<< "$SLICE"
+          for index in "${indexes[@]}"; do
+            url=$(jq -r --argjson i "$index" '.[$i].site_url // ""' <<< "$INSTANCES")
+            state=$(jq -r --argjson i "$index" '.[$i].state // ""' <<< "$INSTANCES")
+            if [ -z "$url" ] || [ "$state" != ready ]; then
+              echo "::error::server ${index} of the batch of ${count} is not ready (state '${state}')"
+              exit 1
+            fi
+            urls+="${url}"$'\n'
+            # The last server is the shared SITE_3, which Matterwick's runs keep without the demo plugin.
+            if [ "$index" -ne $((count - 1)) ]; then
+              demo+="${url}"$'\n'
+            fi
+          done
+          delimiter="EOF_$(openssl rand -hex 16)"
+          {
+            echo "urls<<${delimiter}"
+            printf '%s' "$urls"
+            echo "${delimiter}"
+            echo "demo<<${delimiter}"
+            printf '%s' "$demo"
+            echo "${delimiter}"
+          } >> "$GITHUB_OUTPUT"
+
+      # Provisioning runs on the Node version the specs use.
+      - name: ci/setup-node-specs
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: detox/package-lock.json
+
+      - name: ci/provision
+        uses: ./.github/actions/provision-e2e-servers
+        env:
+          ADMIN_USERNAME: ${{ steps.open.outputs.admin-username }}
+          ADMIN_PASSWORD: ${{ steps.open.outputs.admin-password }}
+          # The servers carry the prepackaged plugins; provisioning enables them rather than download them.
+          E2E_SERVER_SOURCE: e2e-test-stack
+        with:
+          server-urls: ${{ steps.sites.outputs.urls }}
+          demo-plugin-server-urls: ${{ steps.sites.outputs.demo }}
