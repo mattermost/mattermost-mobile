@@ -689,6 +689,7 @@ jest.mock('@mattermost/react-native-network-client', () => ({
     RetryTypes: {
         EXPONENTIAL_RETRY: 'exponential',
     },
+    setSessionAttributesServerValues: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);

@@ -6,6 +6,7 @@ import {
     removeSessionAttributesServer,
     setSessionAttributesEnabled,
     setSessionAttributesManifest,
+    setSessionAttributesServerValues,
     setSessionAttributesStableValues,
     upsertSessionAttributesField,
 } from '@mattermost/react-native-network-client';
@@ -17,7 +18,7 @@ import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 
 import {fetchSessionAttributesManifest} from '@actions/remote/session_attributes';
 import {License} from '@constants';
-import {SESSION_ATTRIBUTES_SSID_FIELD} from '@constants/session_attributes';
+import {SESSION_ATTRIBUTES_BIOMETRIC_AUTHENTICATED_FIELD, SESSION_ATTRIBUTES_SSID_FIELD} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
 import {getConfigBooleanValue, getLicense} from '@queries/servers/system';
@@ -123,6 +124,17 @@ export class SessionAttributesManagerSingleton {
 
     removeManifestField = (serverUrl: string, name: string) => {
         removeSessionAttributesField(serverUrl, name);
+    };
+
+    /**
+     * Kept natively apart from the manifest, so a manifest refresh or disable does not lose it.
+     */
+    setBiometricAuthenticated = (serverUrl: string, authenticated: boolean) => {
+        setSessionAttributesServerValues(serverUrl, {[SESSION_ATTRIBUTES_BIOMETRIC_AUTHENTICATED_FIELD]: String(authenticated)});
+    };
+
+    clearServerValues = (serverUrl: string) => {
+        setSessionAttributesServerValues(serverUrl, {});
     };
 
     /**
