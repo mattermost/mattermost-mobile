@@ -60,7 +60,7 @@
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#81b5d27509652bae50b4b510ede777dd3bd923cf",
     "deep-equal": "2.2.3",
     "emoji-regex": "10.6.0",
-    "expo": "55.0.23",
+    "expo": "56.0.0",
     "expo-application": "55.0.14",
     "expo-crypto": "55.0.14",
     "expo-device": "55.0.16",
