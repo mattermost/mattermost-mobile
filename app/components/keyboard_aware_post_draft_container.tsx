@@ -10,6 +10,7 @@ import {scheduleOnUI} from 'react-native-worklets';
 import CustomEmojiPicker from '@components/post_draft/custom_emoji_picker';
 import {Events} from '@constants';
 import {useKeyboardState} from '@context/keyboard_state';
+import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {dismissKeyboard} from '@utils/keyboard';
 
@@ -49,6 +50,8 @@ export const KeyboardAwarePostDraftContainer = ({
         closeInputAccessoryView,
         listRef,
     } = useKeyboardState();
+    const theme = useTheme();
+    const inputBackgroundStyle = {backgroundColor: theme.centerChannelBg};
 
     const inputContainerAnimatedStyle = useAnimatedStyle(
         () => {
@@ -176,9 +179,13 @@ export const KeyboardAwarePostDraftContainer = ({
                     style={[
                         inputContainerAnimatedStyle,
                         styles.inputContainer,
+                        inputBackgroundStyle,
                     ]}
                 >
-                    <View onLayout={onLayout}>
+                    <View
+                        onLayout={onLayout}
+                        style={inputBackgroundStyle}
+                    >
                         {children}
                     </View>
                 </Animated.View>
