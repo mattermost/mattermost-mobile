@@ -1,0 +1,31 @@
+diff --git a/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp b/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp
+index 3ee855c..3ea16f9 100644
+--- a/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp
++++ b/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp
+@@ -1,3 +1,6 @@
++#include <cerrno>
++#include <climits>
++#include <cstdlib>
+ #include <reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.h>
+ #include <reanimated/NativeModules/ReanimatedModuleProxy.h>
+ 
+@@ -778,11 +781,14 @@ void LayoutAnimationsProxy_Legacy::transferConfigFromNativeID(const std::string
+   if (nativeIdString.empty()) {
+     return;
+   }
+-  try {
+-    auto nativeId = stoi(nativeIdString);
+-    layoutAnimationsManager_->transferConfigFromNativeID(nativeId, tag);
+-  } catch (std::invalid_argument) {
+-  } catch (std::out_of_range) {}
++  // Parse without exceptions: non-numeric nativeIDs are expected and must not throw.
++  char *end = nullptr;
++  errno = 0;
++  const long parsed = strtol(nativeIdString.c_str(), &end, 10);
++  if (end == nativeIdString.c_str() || errno == ERANGE || parsed > INT_MAX || parsed < INT_MIN) {
++    return;
++  }
++  layoutAnimationsManager_->transferConfigFromNativeID(static_cast<int>(parsed), tag);
+ }
+ 
+ // When entering animations start, we temporarily set opacity to 0
