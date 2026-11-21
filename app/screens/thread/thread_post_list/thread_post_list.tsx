@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, Platform, StyleSheet, View} from 'react-native';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -33,7 +33,7 @@ type Props = {
 const styles = StyleSheet.create({
     container: {marginTop: 10},
     flex: {flex: 1},
-    footer: {height: 20},
+    footer: {height: Platform.select({android: 100, default: 20})},
 });
 
 const ThreadPostList = ({
