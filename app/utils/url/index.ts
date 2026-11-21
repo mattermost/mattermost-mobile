@@ -198,10 +198,30 @@ export function cleanUpUrlable(input: string) {
     return cleaned;
 }
 
+const AUTOLINKED_URL_SCHEMES = new Set(['http', 'https', 'ftp', 'mailto', 'tel', 'mattermost']);
+
 export function getScheme(url: string) {
     const match = (/([a-z0-9+.-]+):/i).exec(url);
 
     return match && match[1];
+}
+
+export function isValidAutoLink(url: string, customSchemes?: string[]): boolean {
+    const scheme = getScheme(url);
+    if (!scheme) {
+        return false;
+    }
+
+    const schemeLower = scheme.toLowerCase();
+    if (AUTOLINKED_URL_SCHEMES.has(schemeLower)) {
+        return true;
+    }
+
+    if (customSchemes) {
+        return customSchemes.some((s) => s.toLowerCase() === schemeLower);
+    }
+
+    return false;
 }
 
 export function getYouTubeVideoId(link?: string) {
