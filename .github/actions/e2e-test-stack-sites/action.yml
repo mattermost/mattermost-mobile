@@ -27,8 +27,8 @@ inputs:
     description: The mattermost-test-automation-toolkit ref whose e2e-test-stack action runs (main or a commit on its main); empty is the pinned commit
     required: false
     default: ""
-  private-key:
-    description: The repository's X25519 private key, which opens the secrets sealed to it
+  credentials-key:
+    description: The repository's credentials key, which opens the batch's sealed server credentials
     required: true
 
 runs:
@@ -106,7 +106,7 @@ runs:
       uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
       with:
         operation: open
-        private-key: ${{ inputs.private-key }}
+        private-key: ${{ inputs.credentials-key }}
         create-response: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
         expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
         index: ${{ steps.indexes.outputs.server }}

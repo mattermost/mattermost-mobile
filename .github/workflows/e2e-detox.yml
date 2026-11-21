@@ -142,7 +142,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
-      E2E_STACK_PRIVATE_KEY: ${{ inputs.e2e_test_stack && secrets.E2E_STACK_PRIVATE_KEY || '' }}
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ inputs.e2e_test_stack && secrets.E2E_TEST_STACK_CREDENTIALS_KEY || '' }}
 
   run-android-tests:
     if: (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (inputs.rerun-specs == '{}' || fromJSON(inputs.rerun-specs)['detox-android'] != null)
@@ -186,7 +186,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
-      E2E_STACK_PRIVATE_KEY: ${{ inputs.e2e_test_stack && secrets.E2E_STACK_PRIVATE_KEY || '' }}
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ inputs.e2e_test_stack && secrets.E2E_TEST_STACK_CREDENTIALS_KEY || '' }}
 
   run-ios-ipad-tests:
     # iPad stays on the URL servers; with e2e-test-stack it runs only when they are given.

@@ -3,16 +3,18 @@ name: E2E Test Stack - Create
 
 # Creates a batch of e2e-test-stack servers for a Detox platform run, and fetches
 # it by batch id and token to check every server came up. Uploads the create
-# response as e2e-test-stack-create-<batch>, whose secrets are sealed to this
-# repository's key: the run's shards open their servers' credentials from it, and
-# e2e-test-stack-destroy.yml destroys the batch with it. A run creates one batch
-# per Detox platform, named by the batch input (ios, android).
+# response, whose secrets are sealed to this repository's key, twice: as
+# e2e-test-stack-create-response-<batch>-<attempt>, from which
+# e2e-test-stack-destroy.yml destroys each attempt's batch, and as
+# e2e-test-stack-create-<batch>, the newest, from which the run's shards open
+# their servers' credentials. A run creates one batch per Detox platform, named by
+# the batch input (ios, android).
 #
 # It runs as the account input's CI role, MM_E2E_TEST_STACK_AWS_ROLE_ARN_PROD or
 # _DEV, which trusts only jobs in this file and e2e-test-stack-destroy.yml, on
 # main and release-*.*. A called workflow's jobs carry its file as
 # job_workflow_ref and the caller's branch as subject, so the role trusts them.
-# The create response artifact also holds the account, as
+# Both create response artifacts also hold the account, as
 # e2e-test-stack-account, which destroy reads.
 
 on:
@@ -108,8 +110,8 @@ on:
         description: "The licence SKU the batch was created with; empty when unlicensed"
         value: ${{ jobs.create.outputs.license }}
     secrets:
-      E2E_STACK_PRIVATE_KEY:
-        description: "The repository's X25519 private key, which opens the secrets sealed to it"
+      E2E_TEST_STACK_CREDENTIALS_KEY:
+        description: "The repository's credentials key, which opens the batch's sealed server credentials"
         required: true
 
 # actions: read to find an earlier attempt's create response in this run.
@@ -235,7 +237,7 @@ jobs:
           operation: destroy
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ env.CHANNEL }}
-          private-key: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/earlier/${{ env.RESPONSE_FILE }}
           expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
 
@@ -256,7 +258,7 @@ jobs:
           operation: create
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ env.CHANNEL }}
-          private-key: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           # The run id, unique across this repository's workflows; run numbers count per workflow.
           instance-key: mobile-${{ github.run_id }}-${{ inputs.batch }}-${{ github.run_attempt }}
           server-image: ${{ inputs.server_image }}
@@ -271,7 +273,8 @@ jobs:
           shared-admin-password: ${{ inputs.shared_admin_password }}
           response-path: ${{ runner.temp }}/${{ env.RESPONSE_FILE }}
 
-      # This attempt's own response, which destroy reads: every attempt's batch is destroyed from its own.
+      # This attempt's own response, from which destroy destroys this attempt's batch (or from the newest, if this is
+      # missing).
       - name: ci/upload-attempt-response
         if: always() && steps.create.outputs.response-path != ''
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -282,8 +285,9 @@ jobs:
             ${{ runner.temp }}/e2e-test-stack-account
           if-no-files-found: error
 
-      # The newest response, which the shards, provisioning and a re-run's create read. Its secrets are sealed to this
-      # repository's key, so it is safe to upload from a public repository.
+      # The newest response, which the shards, provisioning and a re-run's create read, and destroy when this attempt's
+      # own is missing. Its secrets are sealed to this repository's key, so it is safe to upload from a public
+      # repository.
       - name: ci/upload-create-response
         if: always() && steps.create.outputs.response-path != ''
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -304,7 +308,7 @@ jobs:
           operation: fetch
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ env.CHANNEL }}
-          private-key: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           batch-id: ${{ steps.create.outputs.batch-id }}
           batch-token: ${{ steps.create.outputs.batch-token }}
 

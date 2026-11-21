@@ -26,8 +26,8 @@ on:
         type: string
         required: true
     secrets:
-      E2E_STACK_PRIVATE_KEY:
-        description: "The repository's X25519 private key, which opens the secrets sealed to it"
+      E2E_TEST_STACK_CREDENTIALS_KEY:
+        description: "The repository's credentials key, which opens the batch's sealed server credentials"
         required: true
 
 permissions:
@@ -111,7 +111,7 @@ jobs:
         uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
         with:
           operation: open
-          private-key: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
           expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
           index: ${{ steps.first.outputs.index }}

@@ -30,8 +30,8 @@ on:
         required: false
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
         required: false
-      # e2e-test-stack only: opens the secrets the control plane seals to this repository.
-      E2E_STACK_PRIVATE_KEY:
+      # e2e-test-stack only: the repository's credentials key, which opens the batch's sealed server credentials.
+      E2E_TEST_STACK_CREDENTIALS_KEY:
         required: false
     inputs:
       e2e_test_stack:
@@ -364,8 +364,10 @@ jobs:
       count: ${{ needs.generate-specs.outputs.stack-count }}
       license: enterprise-advanced
       shared_admin_password: true
+      # The batch's lifetime from create: the first pass and any re-run must end within it.
+      ttl: 2h
     secrets:
-      E2E_STACK_PRIVATE_KEY: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   # Every server of this platform's batch, provisioned once before the shards start, with the demo plugin as
   # Matterwick's pool, mutation and site 2 servers have; the shared SITE_3 without.
@@ -382,7 +384,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
     secrets:
-      E2E_STACK_PRIVATE_KEY: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   e2e-android:
     name: ${{ matrix.role == 'mutation' && 'mutation-' || '' }}machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
@@ -500,7 +502,7 @@ jobs:
           shard: ${{ matrix.runId }}
           role: ${{ matrix.role }}
           target: ${{ matrix.target }}
-          private-key: ${{ secrets.E2E_STACK_PRIVATE_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           toolkit-ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
 
       - name: ci/prepare-node-deps
