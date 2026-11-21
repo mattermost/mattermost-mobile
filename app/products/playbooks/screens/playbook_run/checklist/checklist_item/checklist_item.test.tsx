@@ -3,6 +3,7 @@
 
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
+import {Alert} from 'react-native';
 
 import {handleCallsSlashCommand} from '@calls/actions';
 import BaseChip from '@components/chips/base_chip';
@@ -345,7 +346,7 @@ describe('ChecklistItem', () => {
         expect(chip.props.prefix.props.name).toBe('slash-forward');
         expect(chip.props.prefix.props.style).toBeDefined();
 
-        let resolve: (value: {data: boolean}) => void;
+        let resolve: (value: {data: true; command: string}) => void;
         jest.mocked(runChecklistItem).mockImplementationOnce(() => new Promise((r) => {
             resolve = r;
         }));
@@ -358,11 +359,11 @@ describe('ChecklistItem', () => {
             expect(chip.props.prefix.type.displayName).toBe('ActivityIndicator');
             expect(chip.props.prefix.props.size).toBe('small');
             expect(chip.props.prefix.props.color).toBe(Preferences.THEMES.denim.centerChannelColor);
-            expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);
+            expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber, item.id, item.command);
         });
 
         act(() => {
-            resolve({data: true});
+            resolve({data: true, command: item.command ?? ''});
         });
 
         await waitFor(() => {
@@ -381,7 +382,8 @@ describe('ChecklistItem', () => {
         const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
         const chip = getByTestId('base-chip-component');
-        jest.mocked(runChecklistItem).mockResolvedValueOnce({data: true});
+        const verifiedCommand = '/call join verified';
+        jest.mocked(runChecklistItem).mockResolvedValueOnce({data: true, command: verifiedCommand});
         jest.mocked(handleCallsSlashCommand).mockResolvedValueOnce({handled: true});
 
         act(() => {
@@ -389,9 +391,38 @@ describe('ChecklistItem', () => {
         });
 
         await waitFor(() => {
-            expect(runChecklistItem).toHaveBeenCalled();
-            expect(handleCallsSlashCommand).toHaveBeenCalledWith(item.command, serverUrl, props.channelId, props.channelType, '', props.currentUserId, expect.anything());
+            expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber, item.id, item.command);
+            expect(handleCallsSlashCommand).toHaveBeenCalledWith(verifiedCommand, serverUrl, props.channelId, props.channelType, '', props.currentUserId, expect.anything());
         });
+    });
+
+    it('alerts and does not leave the run when the task changed', async () => {
+        const props = getBaseProps();
+        const item = TestHelper.fakePlaybookChecklistItemModel({});
+        item.command = '/echo Hello';
+        item.dueDate = 0;
+        props.item = item;
+
+        const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+        const chip = getByTestId('base-chip-component');
+        jest.mocked(runChecklistItem).mockResolvedValueOnce({outdated: true});
+        jest.mocked(Alert.alert).mockClear();
+
+        act(() => {
+            chip.props.onPress();
+        });
+
+        await waitFor(() => {
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Task changed',
+                'This task was updated on the server. Review the latest version before running it again.',
+                [{text: 'OK'}],
+            );
+        });
+        expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
+        expect(dismissAllRoutesAndPopToScreen).not.toHaveBeenCalled();
+        expect(handleCallsSlashCommand).not.toHaveBeenCalled();
+        expect(getByTestId('base-chip-component').props.prefix.props.name).toBe('slash-forward');
     });
 
     it('shows snackbar when checklist item command fails to execute', async () => {
@@ -463,7 +494,7 @@ describe('ChecklistItem', () => {
         });
 
         await waitFor(() => {
-            expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);
+            expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber, props.item.id, props.item.command ?? '');
         });
     });
 

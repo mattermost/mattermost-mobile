@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {View, Text, ActivityIndicator} from 'react-native';
+import {defineMessages, useIntl} from 'react-intl';
+import {Alert, View, Text, ActivityIndicator} from 'react-native';
 
 import {handleCallsSlashCommand} from '@calls/actions';
 import BaseChip from '@components/chips/base_chip';
@@ -88,6 +88,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         marginLeft: 2,
     },
 }));
+
+const messages = defineMessages({
+    taskChangedTitle: {
+        id: 'playbooks.checklist_item.task_changed_title',
+        defaultMessage: 'Task changed',
+    },
+    taskChangedMessage: {
+        id: 'playbooks.checklist_item.task_changed_message',
+        defaultMessage: 'This task was updated on the server. Review the latest version before running it again.',
+    },
+    taskChangedOk: {
+        id: 'playbooks.checklist_item.task_changed_ok',
+        defaultMessage: 'OK',
+    },
+});
 
 type Props = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
@@ -184,18 +199,34 @@ const ChecklistItem = ({
             return;
         }
         setIsExecuting(true);
-        const res = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
-        if (res.error) {
+        const res = await runChecklistItem(
+            serverUrl,
+            playbookRunId,
+            checklistNumber,
+            itemNumber,
+            item.id,
+            item.command ?? '',
+        );
+        if ('error' in res) {
             showPlaybookErrorSnackbar();
+            setIsExecuting(false);
+            return;
+        }
+        if ('outdated' in res) {
+            Alert.alert(
+                intl.formatMessage(messages.taskChangedTitle),
+                intl.formatMessage(messages.taskChangedMessage),
+                [{text: intl.formatMessage(messages.taskChangedOk)}],
+            );
             setIsExecuting(false);
             return;
         }
 
         dismissAllRoutesAndPopToScreen(isTable ? Screens.HOME : Screens.CHANNEL);
-        if (item.command?.startsWith('/call')) {
-            await handleCallsSlashCommand(item.command, serverUrl, channelId, channelType, '', currentUserId, intl);
+        if (res.command.startsWith('/call')) {
+            await handleCallsSlashCommand(res.command, serverUrl, channelId, channelType, '', currentUserId, intl);
         }
-    }, [channelId, channelType, checklistNumber, currentUserId, intl, isExecuting, isTable, item.command, itemNumber, playbookRunId, serverUrl]);
+    }, [channelId, channelType, checklistNumber, currentUserId, intl, isExecuting, isTable, item.command, item.id, itemNumber, playbookRunId, serverUrl]);
 
     const toggleChecked = useCallback(async () => {
         if (isChecking) {
