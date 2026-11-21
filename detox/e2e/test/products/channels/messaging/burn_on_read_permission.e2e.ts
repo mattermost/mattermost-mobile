@@ -17,6 +17,7 @@ import {
 } from '@support/abac_test_helper';
 import {
     AccessControl,
+    Channel,
     Setup,
     System,
     Team,
@@ -49,6 +50,7 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
     const channelsCategory = 'channels';
 
     let testChannel: any;
+    let controlChannel: any;
     let testTeam: any;
     let deniedUser: any;
     let allowedUser: any;
@@ -75,9 +77,14 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
         testTeam = team;
 
         testChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-bor');
+        controlChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-bor-control');
 
         // # Create the denied and allowed users and add them to team + channel
         deniedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'denied');
+        const controlMembership = await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, controlChannel.id);
+        if (controlMembership.error) {
+            throw new Error(`Failed to add the denied user to the control channel: ${JSON.stringify(controlMembership.error)}`);
+        }
         allowedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'allowed');
 
         // # In this channel only, Engineering may compose burn-on-read posts and Sales may not
@@ -151,14 +158,23 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             withTimeout(timeouts.ONE_MIN);
     });
 
-    it('MM-70693_2 - should withhold the control for a denied user and show it without reopening the channel once their attribute satisfies the policy', async () => {
+    it('MM-70693_2 - should scope the denied control to the policy channel and show it there after a live attribute change', async () => {
         // # Start from a server-side deny. A first attempt has it from beforeAll; an in-place retry
         // follows an attempt that granted the user and only restored the attribute at the end.
         await convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Sales', testChannel.id, BOR_ACTION, false);
 
-        // # Log in as the denied user and open the channel
+        // # Log in as the denied user
         await LoginScreen.login(deniedUser);
         await ChannelListScreen.toBeVisible();
+
+        // * The control remains available in a channel without the policy
+        await ChannelScreen.open(channelsCategory, controlChannel.name);
+        await waitFor(ChannelScreen.borAction).
+            toExist().
+            withTimeout(timeouts.ONE_MIN);
+        await ChannelScreen.back();
+
+        // # Open the channel governed by the policy
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await waitFor(ChannelScreen.attachmentAction).
             toExist().

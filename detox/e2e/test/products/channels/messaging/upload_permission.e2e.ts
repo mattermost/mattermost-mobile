@@ -17,6 +17,7 @@ import {
 } from '@support/abac_test_helper';
 import {
     AccessControl,
+    Channel,
     Setup,
     System,
     Team,
@@ -44,6 +45,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
     const channelsCategory = 'channels';
 
     let testChannel: any;
+    let controlChannel: any;
     let testTeam: any;
     let deniedUser: any;
     let allowedUser: any;
@@ -69,9 +71,14 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         testTeam = team;
 
         testChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-upload');
+        controlChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-upload-control');
 
         // # Create the denied and allowed users and add them to team + channel
         deniedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'denied');
+        const controlMembership = await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, controlChannel.id);
+        if (controlMembership.error) {
+            throw new Error(`Failed to add the denied user to the control channel: ${JSON.stringify(controlMembership.error)}`);
+        }
         allowedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'allowed');
 
         // # In this channel only, Engineering can upload files and Sales cannot
@@ -120,7 +127,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         }
     });
 
-    it('MM-68219_3 - should disable the attachment button when the policy denies uploads in the channel', async () => {
+    it('MM-68219_3 - should disable the attachment button only in the channel where the policy denies uploads', async () => {
         // # Log in as the denied user (Department: Sales) and open the channel
         await LoginScreen.login(deniedUser);
         await ChannelListScreen.toBeVisible();
@@ -131,6 +138,14 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.attachmentAction).not.toExist();
+
+        // * The same user can still upload in a channel without the policy
+        await ChannelScreen.back();
+        await ChannelScreen.open(channelsCategory, controlChannel.name);
+        await waitFor(ChannelScreen.attachmentAction).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
+        await expect(ChannelScreen.attachmentActionDisabled).not.toExist();
 
         await ChannelScreen.back();
         await HomeScreen.logout();
