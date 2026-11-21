@@ -106,7 +106,7 @@ runs:
       uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
       with:
         operation: open
-        private-key: ${{ inputs.credentials-key }}
+        credentials-key: ${{ inputs.credentials-key }}
         create-response: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
         expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
         index: ${{ steps.indexes.outputs.server }}

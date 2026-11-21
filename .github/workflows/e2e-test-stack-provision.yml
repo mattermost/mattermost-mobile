@@ -111,7 +111,7 @@ jobs:
         uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
         with:
           operation: open
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/e2e-test-stack/e2e-test-stack-create.json
           expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
           index: ${{ steps.first.outputs.index }}

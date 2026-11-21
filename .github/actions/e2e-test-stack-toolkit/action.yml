@@ -33,7 +33,7 @@ runs:
         REF: ${{ inputs.ref }}
         CHECK: ${{ inputs.check }}
         # The toolkit commit this repository pins: toolkit #21.
-        PINNED: a93fbc8c136107e2a7ed1d04d8f04846bea29360
+        PINNED: ca72164582dec6a8dfafcfb8b888f9f96a7751c8
         REPO: mattermost/mattermost-test-automation-toolkit
       run: |
         set -euo pipefail

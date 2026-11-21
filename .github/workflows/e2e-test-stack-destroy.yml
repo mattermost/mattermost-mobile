@@ -308,7 +308,7 @@ jobs:
           operation: fetch
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ inputs.channel }}
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/create/e2e-test-stack-create.json
           expect-batch-prefix: mobile-${{ inputs.run_id || github.run_id }}-${{ inputs.batch }}-
 
@@ -419,7 +419,7 @@ jobs:
           operation: logs
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ inputs.channel }}
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/create/e2e-test-stack-create.json
           expect-batch-prefix: mobile-${{ inputs.run_id || github.run_id }}-${{ inputs.batch }}-
           index: ${{ matrix.index }}
@@ -719,7 +719,7 @@ jobs:
           operation: destroy
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ inputs.channel }}
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/create/e2e-test-stack-create.json
           expect-batch-prefix: mobile-${{ inputs.run_id || github.run_id }}-${{ inputs.batch }}-
           # Each site, mail and SSO host must then get the router's 404 for a server that no longer exists.
@@ -759,7 +759,7 @@ jobs:
           operation: destroy
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ inputs.channel }}
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/create/e2e-test-stack-create.json
           expect-batch-prefix: mobile-${{ inputs.run_id || github.run_id }}-${{ inputs.batch }}-
 

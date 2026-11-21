@@ -237,7 +237,7 @@ jobs:
           operation: destroy
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ env.CHANNEL }}
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           create-response: ${{ runner.temp }}/earlier/${{ env.RESPONSE_FILE }}
           expect-batch-prefix: mobile-${{ github.run_id }}-${{ inputs.batch }}-
 
@@ -258,7 +258,7 @@ jobs:
           operation: create
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ env.CHANNEL }}
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           # The run id, unique across this repository's workflows; run numbers count per workflow.
           instance-key: mobile-${{ github.run_id }}-${{ inputs.batch }}-${{ github.run_attempt }}
           server-image: ${{ inputs.server_image }}
@@ -308,7 +308,7 @@ jobs:
           operation: fetch
           caller-key: ${{ env.CALLER_KEY }}
           channel: ${{ env.CHANNEL }}
-          private-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
           batch-id: ${{ steps.create.outputs.batch-id }}
           batch-token: ${{ steps.create.outputs.batch-token }}
 
