@@ -13,7 +13,7 @@ import type {Client} from '@client/rest';
 
 jest.mock('expo-image', () => ({
     Image: {
-        prefetch: jest.fn(),
+        prefetch: jest.fn().mockResolvedValue(true),
     },
 }));
 
@@ -53,5 +53,23 @@ describe('prefetchCustomEmojiImages', () => {
 
         expect(logDebug).toHaveBeenCalledWith('Prefetching 2 custom emoji images');
         expect(ExpoImage.prefetch).toHaveBeenCalledWith(expectedResults, {cachePolicy: 'disk'});
+    });
+
+    it('should not prefetch when there are no emojis', () => {
+        prefetchCustomEmojiImages(mockClient, []);
+
+        expect(ExpoImage.prefetch).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to plain URLs when source prefetch rejects', async () => {
+        (ExpoImage.prefetch as jest.Mock).mockRejectedValueOnce(new TypeError('prefetchWithSources is not a function'));
+
+        prefetchCustomEmojiImages(mockClient, emojis);
+
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(ExpoImage.prefetch).toHaveBeenCalledTimes(2);
+        expect(ExpoImage.prefetch).toHaveBeenLastCalledWith(['url/emoji1', 'url/emoji2']);
     });
 });
