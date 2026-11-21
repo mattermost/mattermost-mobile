@@ -4,7 +4,7 @@
 import mtz from 'moment-timezone';
 
 export function getFormattedTime(isMilitaryTime: boolean, timezone: UserTimezone | string, value: number | string | Date) {
-    let format = 'H:mm';
+    let format = 'HH:mm';
     if (!isMilitaryTime) {
         const localeFormat = mtz.localeData().longDateFormat('LT');
         format = localeFormat?.includes('A') ? localeFormat : 'h:mm A';
