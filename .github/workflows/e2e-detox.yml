@@ -25,10 +25,6 @@ on:
         required: false
         type: string
         default: "v1"
-      e2e_test_stack_toolkit_ref:
-        required: false
-        type: string
-        default: ""
       e2e_test_stack_server_image:
         required: false
         type: string
@@ -127,7 +123,6 @@ jobs:
       e2e_test_stack_rerun: ${{ inputs.e2e_test_stack && inputs.rerun-specs != '{}' }}
       e2e_test_stack_account: ${{ inputs.e2e_test_stack_account }}
       e2e_test_stack_channel: ${{ inputs.e2e_test_stack_channel }}
-      e2e_test_stack_toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
       e2e_test_stack_server_image: ${{ inputs.e2e_test_stack_server_image }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
@@ -171,7 +166,6 @@ jobs:
       e2e_test_stack_rerun: ${{ inputs.e2e_test_stack && inputs.rerun-specs != '{}' }}
       e2e_test_stack_account: ${{ inputs.e2e_test_stack_account }}
       e2e_test_stack_channel: ${{ inputs.e2e_test_stack_channel }}
-      e2e_test_stack_toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
       e2e_test_stack_server_image: ${{ inputs.e2e_test_stack_server_image }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}

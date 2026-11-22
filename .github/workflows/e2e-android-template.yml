@@ -50,12 +50,8 @@ on:
         description: "e2e-test-stack only: the control plane channel, v1 or edge"
         type: string
         default: "v1"
-      e2e_test_stack_toolkit_ref:
-        description: "e2e-test-stack only: the mattermost-test-automation-toolkit ref whose e2e-test-stack action runs"
-        type: string
-        default: ""
       e2e_test_stack_server_image:
-        description: "e2e-test-stack only: the Mattermost server image, by tag"
+        description: "e2e-test-stack only: the Mattermost server image, master, latest, esr or an image by tag"
         type: string
         default: ""
       MM_TEST_SERVER_URL:
@@ -351,7 +347,6 @@ jobs:
     if: inputs.e2e_test_stack && !inputs.e2e_test_stack_rerun
     needs: generate-specs
     permissions:
-      actions: read
       contents: read
       id-token: write
     uses: ./.github/workflows/e2e-test-stack-create.yml
@@ -359,7 +354,6 @@ jobs:
       batch: android
       account: ${{ inputs.e2e_test_stack_account }}
       channel: ${{ inputs.e2e_test_stack_channel }}
-      toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
       server_image: ${{ inputs.e2e_test_stack_server_image }}
       count: ${{ needs.generate-specs.outputs.stack-count }}
       license: enterprise-advanced
@@ -382,7 +376,6 @@ jobs:
       batch: android
       slices: ${{ needs.generate-specs.outputs.stack-slices }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      toolkit_ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -481,15 +474,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # This repository's e2e-test-stack actions at this workflow's own commit, as the code under test may predate them.
+      # This repository's e2e-test-stack sites action at this workflow's own commit, as the code under test may predate it.
       - name: ci/e2e-test-stack-actions
         if: inputs.e2e_test_stack
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           path: .e2e-test-stack-actions
-          sparse-checkout: |
-            .github/actions/e2e-test-stack-sites
-            .github/actions/e2e-test-stack-toolkit
+          sparse-checkout: .github/actions/e2e-test-stack-sites
           persist-credentials: false
 
       # e2e-test-stack only: the shard's own server as SITE_1 and the batch's shared SITE_2 and SITE_3, with its admin.
@@ -503,7 +494,6 @@ jobs:
           role: ${{ matrix.role }}
           target: ${{ matrix.target }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
-          toolkit-ref: ${{ inputs.e2e_test_stack_toolkit_ref }}
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps

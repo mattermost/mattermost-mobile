@@ -112,11 +112,6 @@ on:
         required: false
         default: ""
         type: string
-      E2E_TEST_STACK_TOOLKIT_REF:
-        description: "e2e-test-stack only: the mattermost-test-automation-toolkit ref whose e2e-test-stack action runs, main or a full commit on its main; empty follows vars.E2E_TEST_STACK_TOOLKIT_REF, then the pinned commit"
-        required: false
-        default: ""
-        type: string
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
 # manage PR labels declare the extra scopes they need.
@@ -514,10 +509,11 @@ jobs:
             echo "Detox iOS and Android on e2e-test-stack; iPad and Maestro skipped: the dispatch gives no Matterwick servers" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  # e2e-test-stack only: the account, channel and toolkit ref (each the input, else its repository variable, else
-  # prod, v1 and the pinned commit) and the server image both Detox platforms' batches run, resolved once. Apart from
-  # resolve-e2e-test-stack, so a bad setting or a failed lookup stops only the Detox lanes, iPad with them as it runs
-  # inside run-detox-ios; triage still settles their statuses.
+  # e2e-test-stack only: the account and channel (each the input, else its repository variable, else prod and v1) and
+  # the server image both Detox platforms' batches run. Each platform's create resolves master, latest or esr on its
+  # own, so the two can differ when an image is published between them; each create's summary names the image its
+  # batch runs. Apart from resolve-e2e-test-stack, so a bad setting stops only the Detox lanes, iPad with them as it
+  # runs inside run-detox-ios; triage still settles their statuses.
   resolve-e2e-test-stack-settings:
     name: Resolve e2e-test-stack settings
     runs-on: ubuntu-24.04
@@ -532,7 +528,6 @@ jobs:
     outputs:
       account: ${{ steps.settings.outputs.account }}
       channel: ${{ steps.settings.outputs.channel }}
-      toolkit-ref: ${{ steps.toolkit.outputs.sha }}
       server-image: ${{ steps.check-image.outputs.image }}
     steps:
       - name: e2e-test-stack/settings
@@ -561,41 +556,23 @@ jobs:
             echo "channel=$channel"
           } >> "$GITHUB_OUTPUT"
 
-      - name: e2e-test-stack/setup-node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "26"
-          package-manager-cache: false
-
-      - name: e2e-test-stack/checkout-toolkit-action
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          sparse-checkout: .github/actions/e2e-test-stack-toolkit
-          persist-credentials: false
-
-      # Resolved to one commit here, so every job of the run uses the same toolkit code; each checks it again.
-      - name: e2e-test-stack/toolkit
-        id: toolkit
-        uses: ./.github/actions/e2e-test-stack-toolkit
-        with:
-          ref: ${{ inputs.E2E_TEST_STACK_TOOLKIT_REF || vars.E2E_TEST_STACK_TOOLKIT_REF }}
-
-      # E2E_TEST_STACK_SERVER_IMAGE when given, else E2E_TEST_STACK_SERVER resolved to a tag.
-      - name: e2e-test-stack/server-image
-        id: image
-        if: inputs.E2E_TEST_STACK_SERVER_IMAGE == ''
-        uses: ./.e2e-test-stack-toolkit/actions/e2e-test-stack
-        with:
-          operation: server-image
-          server: ${{ inputs.E2E_TEST_STACK_SERVER || 'master' }}
-
-      # Only Mattermost's enterprise builds, released or development, by tag.
+      # E2E_TEST_STACK_SERVER_IMAGE when given, only Mattermost's enterprise builds, released or development, by tag;
+      # else E2E_TEST_STACK_SERVER, which create resolves.
       - name: e2e-test-stack/check-image
         id: check-image
         env:
-          IMAGE: ${{ inputs.E2E_TEST_STACK_SERVER_IMAGE || steps.image.outputs.server-image }}
+          IMAGE: ${{ inputs.E2E_TEST_STACK_SERVER_IMAGE }}
+          SERVER: ${{ inputs.E2E_TEST_STACK_SERVER || 'master' }}
         run: |
           set -euo pipefail
+          if [ -z "$IMAGE" ]; then
+            case "$SERVER" in
+              master | latest | esr) ;;
+              *) echo "::error::E2E_TEST_STACK_SERVER must be master, latest or esr"; exit 1 ;;
+            esac
+            echo "image=${SERVER}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           repos='(mattermost|mattermostdevelopment)/mattermost-enterprise(-fips)?-edition'
           if ! [[ "$IMAGE" =~ ^((docker\.io|index\.docker\.io)/)?${repos}:[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
             echo "::error::the server image must be a tag of mattermost/ or mattermostdevelopment/ mattermost-enterprise-edition or mattermost-enterprise-fips-edition, e.g. mattermost/mattermost-enterprise-edition:10.11.3"
@@ -607,9 +584,8 @@ jobs:
         env:
           ACCOUNT: ${{ steps.settings.outputs.account }}
           CHANNEL: ${{ steps.settings.outputs.channel }}
-          TOOLKIT_REF: ${{ steps.toolkit.outputs.sha }}
           IMAGE: ${{ steps.check-image.outputs.image }}
-        run: echo "Detox on e2e-test-stack, account \`${ACCOUNT}\`, channel \`${CHANNEL}\`, toolkit \`${TOOLKIT_REF}\`, server \`${IMAGE}\`" >> "$GITHUB_STEP_SUMMARY"
+        run: echo "Detox on e2e-test-stack, account \`${ACCOUNT}\`, channel \`${CHANNEL}\`, server \`${IMAGE}\` (each platform's create summary names the image it resolved)" >> "$GITHUB_STEP_SUMMARY"
 
   resolve-server-topology:
     name: Resolve test server topology
@@ -1040,7 +1016,6 @@ jobs:
       e2e_test_stack: ${{ needs.resolve-e2e-test-stack.outputs.use == 'true' }}
       e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
-      e2e_test_stack_toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
       e2e_test_stack_server_image: ${{ needs.resolve-e2e-test-stack-settings.outputs.server-image }}
     secrets: inherit
 
@@ -1086,7 +1061,6 @@ jobs:
       e2e_test_stack: ${{ needs.resolve-e2e-test-stack.outputs.use == 'true' }}
       e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
-      e2e_test_stack_toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
       e2e_test_stack_server_image: ${{ needs.resolve-e2e-test-stack-settings.outputs.server-image }}
     secrets: inherit
 
@@ -1417,7 +1391,6 @@ jobs:
       e2e_test_stack: ${{ needs.resolve-e2e-test-stack.outputs.use == 'true' }}
       e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
-      e2e_test_stack_toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
     secrets: inherit
 
   rerun-maestro:
@@ -1759,8 +1732,6 @@ jobs:
       batch: ios
       account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
-      toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
-      lifecycle: true
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -1789,7 +1760,5 @@ jobs:
       batch: android
       account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
-      toolkit_ref: ${{ needs.resolve-e2e-test-stack-settings.outputs.toolkit-ref }}
-      lifecycle: true
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
