@@ -205,7 +205,7 @@ describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.waitForPostText('Tap apply to run the update integration.');
         const {post: updatePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await MmBlocksTestHelper.tapMmBlocksButton('detox_mm_blocks_apply_update');
-        await MmBlocksTestHelper.waitForTextInChannelPost(updatePost.id, 'DETOX_MM_BLOCKS_UPDATED');
+        await MmBlocksTestHelper.waitForTextInChannelPost(updatePost.id, MmBlocksTestHelper.UPDATED_MARKER);
     });
 
     itNeedsStableIngress('MM-T6219_1 - should keep webhook username override after integration update', async () => {
@@ -242,7 +242,7 @@ describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
         const {post: overridePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await MmBlocksTestHelper.expectPostAuthorName(overrideAuthorName, marker, 'channel');
         await MmBlocksTestHelper.tapMmBlocksButton('detox_mm_blocks_apply_update_override');
-        await MmBlocksTestHelper.waitForTextInChannelPost(overridePost.id, 'DETOX_MM_BLOCKS_UPDATED');
+        await MmBlocksTestHelper.waitForTextInChannelPost(overridePost.id, MmBlocksTestHelper.UPDATED_MARKER);
         await MmBlocksTestHelper.expectChannelPostAuthorName(overrideAuthorName, overridePost.id);
     });
 
@@ -452,7 +452,7 @@ describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.waitForPostText(marker);
         await MmBlocksTestHelper.tapMmBlocksButton('detox_mm_blocks_query_btn');
         await MmBlocksTestHelper.openThreadForLastChannelPost(testChannel.id, marker);
-        await MmBlocksTestHelper.waitForTextMatching(/Detox mm_blocks query OK \(cli=from_block&srv=from_action\)/);
+        await MmBlocksTestHelper.waitForTextMatching(MmBlocksTestHelper.reply('query OK (cli=from_block&srv=from_action)'));
         await MmBlocksTestHelper.expectOnlyVisibleToYou();
         await ThreadScreen.back();
     });
@@ -486,7 +486,7 @@ describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.waitForPostText(marker);
         await MmBlocksTestHelper.tapMmBlocksButton('detox_mm_blocks_query_override');
         await MmBlocksTestHelper.openThreadForLastChannelPost(testChannel.id, marker);
-        await MmBlocksTestHelper.waitForTextMatching('Detox mm_blocks query OK (dup=from_block)');
+        await MmBlocksTestHelper.waitForTextMatching(MmBlocksTestHelper.reply('query OK (dup=from_block)'));
         await ThreadScreen.back();
     });
 
@@ -523,7 +523,7 @@ describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.openThreadForLastChannelPost(testChannel.id, marker);
         await MmBlocksTestHelper.tapMmBlocksStaticSelect('detox_mm_blocks_static_select_query');
         await MmBlocksTestHelper.selectStaticOption('North');
-        await MmBlocksTestHelper.waitForTextMatching(/Detox mm_blocks query OK \(cli=from_block&srv=from_action\)/);
+        await MmBlocksTestHelper.waitForTextMatching(MmBlocksTestHelper.reply('query OK (cli=from_block&srv=from_action)'));
         await MmBlocksTestHelper.expectOnlyVisibleToYou();
         await ThreadScreen.back();
     });

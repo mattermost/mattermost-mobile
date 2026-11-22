@@ -185,8 +185,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-ios'] }}
     secrets:
-      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
-      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   # The iPad device, specs and Detox configuration of e2e-detox.yml's run-ios-ipad-tests.
@@ -220,8 +218,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-ipad'] }}
     secrets:
-      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
-      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   detox-android:
@@ -250,8 +246,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-android'] }}
     secrets:
-      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
-      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   maestro-ios:

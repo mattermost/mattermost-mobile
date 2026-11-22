@@ -344,6 +344,8 @@ jobs:
       channel: ${{ inputs.e2e_test_stack_channel }}
       server_image: ${{ inputs.e2e_test_stack_server_image }}
       count: ${{ needs.generate-specs.outputs.stack-count }}
+      # The webhook sidecar the mm_blocks specs call back to, at http://webhook:3000 inside each server.
+      services: ${{ contains(needs.generate-specs.outputs.specs, 'mm_blocks_') && 'webhook' || '' }}
       license: enterprise-advanced
       shared_admin_password: true
       # The batch's lifetime from create: the first pass and any re-run must end within it.
@@ -813,8 +815,18 @@ jobs:
 
           echo "✅ Simulator is healthy and ready"
 
+      # On e2e-test-stack, the batch's webhook sidecar, which the server calls inside the instance. The runner cannot
+      # reach it, so the specs skip their check from the runner; create reports ready only once it is configured.
+      - name: ci/e2e-test-stack-webhook
+        if: contains(matrix.specs, 'mm_blocks_') && inputs.e2e_test_stack
+        run: |
+          {
+            echo "WEBHOOK_BASE_URL=http://webhook:3000"
+            echo "WEBHOOK_SIDECAR=e2e-test-stack"
+          } >> "$GITHUB_ENV"
+
       - name: Start mm_blocks webhook sidecar
-        if: contains(matrix.specs, 'mm_blocks_')
+        if: contains(matrix.specs, 'mm_blocks_') && !inputs.e2e_test_stack
         continue-on-error: true
         env:
           SITE_1_URL: ${{ env.SITE_1_URL }}

@@ -17,6 +17,14 @@ import axios from 'axios';
  * @return {Promise<void>}
  */
 export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
+    // e2e-test-stack runs the sidecar inside each server, where only the server reaches it, and
+    // reports the server ready only once the sidecar is configured: nothing to check from here.
+    if (process.env.WEBHOOK_SIDECAR === 'e2e-test-stack') {
+        if (!baseUrl?.trim()) {
+            throw new Error('WEBHOOK_BASE_URL is empty, but WEBHOOK_SIDECAR is e2e-test-stack; expected http://webhook:3000.');
+        }
+        return;
+    }
     if (!baseUrl?.trim()) {
         throw new Error(
             'WEBHOOK_BASE_URL is empty — Cloudflare quick tunnel did not come up on this shard. ' +

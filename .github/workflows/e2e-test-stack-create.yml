@@ -38,7 +38,7 @@ on:
         type: string
         required: true
       services:
-        description: "Comma-separated optional services: minio or azurite, elasticsearch or opensearch, keycloak, openldap"
+        description: "Comma-separated optional services: minio or azurite, elasticsearch or opensearch, keycloak, openldap, webhook"
         type: string
         default: ""
       ttl:
@@ -60,7 +60,8 @@ on:
       server_env:
         description: "Server settings as a JSON object of strings; the default is mobile's E2E server settings"
         type: string
-        # One setting per line, sorted by name.
+        # One setting per line, sorted by name. The two ConnectedWorkspacesSettings are set at boot: the server starts its
+        # shared-channel service only at startup. Set here, they cannot be switched off through the config API.
         default: |-
           {
             "MM_CONNECTEDWORKSPACESSETTINGS_ENABLEREMOTECLUSTERSERVICE": "true",
