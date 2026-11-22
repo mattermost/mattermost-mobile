@@ -2,7 +2,7 @@
 # See LICENSE.txt for license information.
 name: E2E test stack sites
 description: >-
-  Points a Detox shard at its e2e-test-stack servers as Matterwick's are assigned: SITE_1 is the shard's own server,
+  Points a Detox shard at its e2e-test-stack servers: SITE_1 is the shard's own server,
   or the shared SITE_3 for a site3 mutation shard; SITE_2 is the batch's shared second-to-last server; SITE_3, for a
   pool shard only, the shared last one; ADMIN_* is the batch's one admin. Opens this run's batch with the toolkit's
   open action, which reads its create response from whichever attempt created it and accepts only this run's batch,
@@ -84,7 +84,7 @@ runs:
         site2_index=$((count - 2))
         site3_index=$((count - 1))
         if [ "$ROLE" = mutation ] && [ "$TARGET" = site3 ]; then
-          # As on Matterwick's servers, the site3 mutation specs run on the shared SITE_3.
+          # The site3 mutation specs run on the shared SITE_3.
           server=$site3_index
         else
           server=$((SHARD - 1))
@@ -104,7 +104,11 @@ runs:
           echo "::error::the batch has no site for this shard or its shared servers"
           exit 1
         fi
-        # As Matterwick's servers: a mutation shard gets no SITE_3.
+        if [ -z "$username" ] || [ -z "$password" ]; then
+          echo "::error::the batch has no admin for server ${server}"
+          exit 1
+        fi
+        # A mutation shard gets no SITE_3.
         GUARD=enforce
         [ "$ROLE" = pool ] || GUARD=off
         {

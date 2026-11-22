@@ -17,7 +17,7 @@
 # A failed or cancelled lane keeps its batch, so "Re-run failed jobs" runs its failed jobs again on the same servers;
 # the batch's TTL (2h from create) bounds its life when nobody re-runs it, and after it only "Re-run all jobs" creates
 # a new one. A passed lane's batch is destroyed. The run posts no triage verdict and no channel message; its statuses
-# are not the required e2e-test/* contexts, which only Matterwick's runs (e2e-detox-pr.yml) post.
+# are not the required e2e-test/* contexts.
 name: E2E Tests
 
 on:
@@ -108,7 +108,6 @@ jobs:
     if: needs.setup.outputs.build-ios == 'true'
     permissions:
       contents: read
-      actions: write
     uses: ./.github/workflows/e2e-tests-build.yml
     with:
       target: ios
@@ -126,7 +125,6 @@ jobs:
     if: needs.setup.outputs.build-android-detox == 'true'
     permissions:
       contents: read
-      actions: write
     uses: ./.github/workflows/e2e-tests-build.yml
     with:
       target: android-detox
@@ -146,7 +144,6 @@ jobs:
     if: needs.setup.outputs.build-android-maestro == 'true'
     permissions:
       contents: read
-      actions: write
     uses: ./.github/workflows/e2e-tests-build.yml
     with:
       target: android-maestro
@@ -160,8 +157,9 @@ jobs:
       MM_MOBILE_STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
       MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
-  # The lanes run with run-type NONE: no triage announcement, no spec-duration publish, no Zephyr and no channel
-  # message. Each still uploads its report to TSIO and posts its e2e-test-stack/<lane> status.
+  # The lanes run with run-type NONE: no triage announcement, no spec durations, no Zephyr and no channel message.
+  # They get no AWS keys, so no S3 report: each reports to TSIO and posts its e2e-test-stack/<lane> status. They get
+  # no admin secrets either: each batch has its own admin, which the lane reads from the batch.
   detox-ios:
     name: Detox iOS
     needs: [setup, build-ios]
@@ -179,7 +177,6 @@ jobs:
       run-type: NONE
       tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-ios']) }}
       tsio-shard-name: detox-ios
-      durations_key: detox-ios
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       e2e_test_stack: true
@@ -188,11 +185,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-ios'] }}
     secrets:
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
@@ -215,7 +207,6 @@ jobs:
       run-type: NONE
       tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-ipad']) }}
       tsio-shard-name: detox-ipad
-      durations_key: detox-ipad
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       ios_device_name: "iPad Pro 13-inch (M5)"
@@ -229,11 +220,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-ipad'] }}
     secrets:
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
@@ -256,7 +242,6 @@ jobs:
       run-type: NONE
       tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-android']) }}
       tsio-shard-name: detox-android
-      durations_key: detox-android
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       e2e_test_stack: true
@@ -265,11 +250,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-android'] }}
     secrets:
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
@@ -300,11 +280,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['maestro-ios'] }}
     secrets:
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   maestro-android:
@@ -333,11 +308,6 @@ jobs:
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
       e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['maestro-android'] }}
     secrets:
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   # Each chosen lane's batch is destroyed when the lane passed. A failed or cancelled lane's batch (a timed-out job

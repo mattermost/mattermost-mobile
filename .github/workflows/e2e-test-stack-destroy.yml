@@ -28,7 +28,7 @@ on:
       account:
         description: "AWS account the batch was created in: prod or dev"
         type: string
-        required: true
+        default: "prod"
       channel:
         description: "Control plane channel the batch was created on: v1 or edge"
         type: string

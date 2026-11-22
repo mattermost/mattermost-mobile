@@ -25,9 +25,11 @@ on:
         default: ""
     secrets:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
-        required: false
+        description: "AWS access key for the S3 build cache"
+        required: true
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
-        required: false
+        description: "AWS secret key for the S3 build cache"
+        required: true
       MM_MOBILE_INTUNE_DEPLOY_KEY:
         required: false
       MM_MOBILE_GITHUB_TOKEN:
@@ -43,14 +45,14 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 env:
   # Changing this switches the iOS build path. Bump CACHE_VERSION in
   # .github/actions/compute-e2e-build-fingerprint/action.yml or cached
   # binaries built under the previous INTUNE setting will be served.
   INTUNE_ENABLED: 'false'
-  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  # The S3 build cache.
+  BUILD_CACHE_BUCKET: "mattermost-detox-report"
 
 jobs:
   compute-build-fingerprint:
@@ -115,7 +117,6 @@ jobs:
     needs: compute-build-fingerprint
     permissions:
       contents: read
-      actions: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -134,7 +135,7 @@ jobs:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
           platform: ios
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'Mattermost-simulator-*.app.zip'
           mode: restore
 
@@ -168,6 +169,8 @@ jobs:
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-*.app.zip
+          # A "Re-run all jobs" builds again under the same run id.
+          overwrite: true
 
       - name: Save iOS build to S3
         if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
@@ -180,7 +183,7 @@ jobs:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
           platform: ios
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'Mattermost-simulator-*.app.zip'
           mode: save
 
@@ -192,7 +195,6 @@ jobs:
     needs: compute-build-fingerprint
     permissions:
       contents: read
-      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -216,7 +218,7 @@ jobs:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
           platform: android-detox
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build'
           mode: restore
 
@@ -256,6 +258,8 @@ jobs:
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
+          # A "Re-run all jobs" builds again under the same run id.
+          overwrite: true
 
       - name: Save Android Detox build to S3
         if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
@@ -268,7 +272,7 @@ jobs:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
           platform: android-detox
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build'
           mode: save
 
@@ -280,7 +284,6 @@ jobs:
     needs: compute-build-fingerprint
     permissions:
       contents: read
-      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -304,7 +307,7 @@ jobs:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
           platform: android-maestro
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
           mode: restore
 
@@ -332,6 +335,8 @@ jobs:
         with:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
+          # A "Re-run all jobs" builds again under the same run id.
+          overwrite: true
 
       - name: Save Android Maestro build to S3
         if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
@@ -344,6 +349,6 @@ jobs:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
           platform: android-maestro
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
           mode: save

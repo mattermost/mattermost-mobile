@@ -63,7 +63,7 @@ on:
       e2e_test_stack_account:
         description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
         type: string
-        default: ""
+        default: "prod"
       e2e_test_stack_channel:
         description: "e2e-test-stack only: the control plane channel, v1 or edge"
         type: string
@@ -71,18 +71,19 @@ on:
       e2e_test_stack_server_image:
         description: "e2e-test-stack only: the Mattermost server image, master, latest, esr or an image by tag"
         type: string
-        default: ""
+        default: "master"
       e2e_test_stack_batch:
         description: "e2e-test-stack only: this platform's batch name, which create, provision and the test job use"
         type: string
         default: ""
     secrets:
+      # Not on e2e-test-stack, where the batch has its own admin.
       MM_MOBILE_E2E_ADMIN_EMAIL:
-        required: true
+        required: false
       MM_MOBILE_E2E_ADMIN_USERNAME:
-        required: true
+        required: false
       MM_MOBILE_E2E_ADMIN_PASSWORD:
-        required: true
+        required: false
       MM_MOBILE_E2E_ZEPHYR_API_KEY:
         required: false
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
@@ -167,6 +168,8 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+    outputs:
+      commit-sha: ${{ steps.commit.outputs.sha }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -181,6 +184,11 @@ jobs:
             echo "::error::the code under test predates e2e-test-stack provisioning; merge main into it"
             exit 1
           fi
+
+      # The commit MOBILE_VERSION names, so provisioning runs the code this job checked.
+      - name: ci/commit
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   # e2e-test-stack only: this platform's batch, one server, which SITE_1 is.
   e2e-test-stack-create:
@@ -203,11 +211,11 @@ jobs:
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-  # The batch's one server, provisioned as provision-e2e-servers does Matterwick's (license and plugins). As the last
+  # The batch's one server, provisioned as provision-e2e-servers does (license and plugins). As the last
   # server of its batch it gets no demo plugin, which no Maestro flow uses.
   e2e-test-stack-provision:
     if: inputs.e2e_test_stack
-    needs: e2e-test-stack-create
+    needs: [e2e-test-stack-check, e2e-test-stack-create]
     permissions:
       actions: read
       contents: read
@@ -215,7 +223,7 @@ jobs:
     with:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: '["0"]'
-      mobile_version: ${{ inputs.MOBILE_VERSION }}
+      commit_sha: ${{ needs.e2e-test-stack-check.outputs.commit-sha }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -240,6 +248,15 @@ jobs:
       ERRORS: ${{ steps.summary.outputs.ERRORS }}
       CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
     steps:
+      # Off e2e-test-stack, the admin comes from the MM_MOBILE_E2E_ADMIN_* secrets.
+      - name: ci/check-admin-secrets
+        if: ${{ !inputs.e2e_test_stack }}
+        run: |
+          if [ -z "$ADMIN_USERNAME" ] || [ -z "$ADMIN_PASSWORD" ]; then
+            echo "::error::MM_MOBILE_E2E_ADMIN_USERNAME and MM_MOBILE_E2E_ADMIN_PASSWORD are required off e2e-test-stack"
+            exit 1
+          fi
+
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -871,8 +888,9 @@ jobs:
           BUILD_ID: maestro-ios-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
-        # A re-run of failed flows reports only to the channel message, not over the run's report.
-        if: always() && inputs.results-artifact == ''
+        # A re-run of failed flows reports only to the channel message, not over the run's report. Not on
+        # e2e-test-stack, whose runs report to TSIO only.
+        if: always() && inputs.results-artifact == '' && !inputs.e2e_test_stack
         run: |
           cd detox
           node -e "
@@ -894,10 +912,17 @@ jobs:
         if: always()
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+          E2E_TEST_STACK: ${{ inputs.e2e_test_stack }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           # Point at the HTML report generated above. It's uploaded inside
           # detox/artifacts/maestro-ios/, which lands at the maestro-ios/
           # path segment under the S3 prefix.
+          if [ "$E2E_TEST_STACK" = true ]; then
+            # No S3 report on e2e-test-stack: the run itself.
+            echo "TARGET_URL=${RUN_URL}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-ios-${{ github.run_id }}/maestro-ios/maestro-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Record job cancellation
@@ -965,6 +990,15 @@ jobs:
       PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
       CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
     steps:
+      # Off e2e-test-stack, the admin comes from the MM_MOBILE_E2E_ADMIN_* secrets.
+      - name: ci/check-admin-secrets
+        if: ${{ !inputs.e2e_test_stack }}
+        run: |
+          if [ -z "$ADMIN_USERNAME" ] || [ -z "$ADMIN_PASSWORD" ]; then
+            echo "::error::MM_MOBILE_E2E_ADMIN_USERNAME and MM_MOBILE_E2E_ADMIN_PASSWORD are required off e2e-test-stack"
+            exit 1
+          fi
+
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -1670,8 +1704,9 @@ jobs:
           BUILD_ID: maestro-android-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
-        # A re-run of failed flows reports only to the channel message, not over the run's report.
-        if: always() && inputs.results-artifact == ''
+        # A re-run of failed flows reports only to the channel message, not over the run's report. Not on
+        # e2e-test-stack, whose runs report to TSIO only.
+        if: always() && inputs.results-artifact == '' && !inputs.e2e_test_stack
         run: |
           cd detox
           node -e "
@@ -1693,8 +1728,15 @@ jobs:
         if: always()
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+          E2E_TEST_STACK: ${{ inputs.e2e_test_stack }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           # Point at the HTML report generated above.
+          if [ "$E2E_TEST_STACK" = true ]; then
+            # No S3 report on e2e-test-stack: the run itself.
+            echo "TARGET_URL=${RUN_URL}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-android-${{ github.run_id }}/maestro-android/maestro-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Record shard cancellation

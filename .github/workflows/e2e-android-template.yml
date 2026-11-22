@@ -41,7 +41,7 @@ on:
       e2e_test_stack_account:
         description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
         type: string
-        default: ""
+        default: "prod"
       e2e_test_stack_channel:
         description: "e2e-test-stack only: the control plane channel, v1 or edge"
         type: string
@@ -49,7 +49,7 @@ on:
       e2e_test_stack_server_image:
         description: "e2e-test-stack only: the Mattermost server image, master, latest, esr or an image by tag"
         type: string
-        default: ""
+        default: "master"
       e2e_test_stack_batch:
         description: "e2e-test-stack only: this platform's batch name, which create, provision and the shards use"
         type: string
@@ -362,8 +362,8 @@ jobs:
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-  # Every server of this platform's batch, provisioned once before the shards start, with the demo plugin as
-  # Matterwick's pool, mutation and site 2 servers have; the shared SITE_3 without.
+  # Every server of this platform's batch, provisioned once before the shards start: the demo plugin on the pool,
+  # mutation and site 2 servers, none on the shared SITE_3.
   e2e-test-stack-provision:
     if: inputs.e2e_test_stack
     needs: [generate-specs, e2e-test-stack-create]
@@ -374,7 +374,7 @@ jobs:
     with:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: ${{ needs.generate-specs.outputs.stack-slices }}
-      mobile_version: ${{ inputs.MOBILE_VERSION }}
+      commit_sha: ${{ needs.generate-specs.outputs.mobile_sha }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -1008,6 +1008,7 @@ jobs:
           fi
           exit 0
 
+      # Writes summary.json and the HTML report, then uploads to S3 when it has AWS keys; e2e-test-stack lanes get none.
       - name: Save report Detox Dependencies
         id: report-link
         if: always()
@@ -1052,7 +1053,14 @@ jobs:
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
           REPORT_PATH: ${{ steps.s3.outputs.path }}
+          E2E_TEST_STACK: ${{ inputs.e2e_test_stack }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          if [ "$E2E_TEST_STACK" = true ]; then
+            # No S3 report on e2e-test-stack: the run itself.
+            echo "TARGET_URL=${RUN_URL}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           echo "TARGET_URL=https://${S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/android-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Determine Status

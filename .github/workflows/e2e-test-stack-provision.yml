@@ -1,11 +1,11 @@
 ---
 name: E2E Test Stack - Provision
 
-# Provisions every server of a batch this run created (license and plugins, as provision-e2e-servers does for
-# Matterwick's servers), one job per slice of the servers, which a Detox template's generate-specs deals into at
-# most 8. Every server but the last gets the demo plugin: the last is a Detox batch's shared SITE_3, or a Maestro
-# batch's one server. It opens the batch with the toolkit's
-# open action, which reads this run's create response with no AWS role and accepts only this run's batch.
+# Provisions every server of a batch this run created (license and plugins, as provision-e2e-servers does), one
+# job per slice of the servers, which a Detox template's generate-specs deals into at most 8. Every server but the
+# last gets the demo plugin: the last is a Detox batch's shared SITE_3, or a Maestro batch's one server. It opens the
+# batch with the toolkit's open action, which reads this run's create response with no AWS role and accepts only this
+# run's batch.
 
 on:
   workflow_call:
@@ -18,8 +18,8 @@ on:
         description: "JSON array of comma-separated server indexes, one string per provisioning job"
         type: string
         required: true
-      mobile_version:
-        description: "The mobile ref whose provisioning code runs"
+      commit_sha:
+        description: "The commit whose provisioning code runs, as a full SHA"
         type: string
         required: true
     secrets:
@@ -42,11 +42,21 @@ jobs:
       matrix:
         slice: ${{ fromJSON(inputs.slices) }}
     steps:
+      # A branch or short SHA would let checkout take a moving ref; an empty one, the default branch.
+      - name: ci/check-commit
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          if ! [[ "$COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::commit_sha must be a full 40-character SHA, got '${COMMIT_SHA}'"
+            exit 1
+          fi
+
       # Only what provisioning reads: .nvmrc (a root file, always included), detox and the provisioning action.
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.mobile_version }}
+          ref: ${{ inputs.commit_sha }}
           sparse-checkout: |
             detox
             .github/actions/provision-e2e-servers
@@ -99,7 +109,7 @@ jobs:
               exit 1
             fi
             urls+="${url}"$'\n'
-            # The last server is the shared SITE_3, which Matterwick's runs keep without the demo plugin.
+            # The last server is the shared SITE_3, which keeps no demo plugin.
             if [ "$index" -ne $((count - 1)) ]; then
               demo+="${url}"$'\n'
             fi

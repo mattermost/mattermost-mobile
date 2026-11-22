@@ -3,8 +3,7 @@ name: E2E Tests - Setup
 
 # Setup for e2e-tests-ci.yml: validates its inputs, resolves the e2e-test-stack account, channel and server image,
 # names each chosen lane's batch, builds each lane's TSIO config and posts a pending commit status for each chosen
-# lane. Statuses are under e2e-test-stack/<lane>, apart from the e2e-test/* contexts Matterwick's runs post on the
-# same commit.
+# lane. Statuses are under e2e-test-stack/<lane>, apart from the required e2e-test/* contexts.
 
 on:
   workflow_call:
@@ -24,7 +23,7 @@ on:
       account:
         description: "AWS account of the e2e-test-stack control plane: prod or dev"
         type: string
-        required: true
+        default: "prod"
       channel:
         description: "Control plane channel: v1 or edge"
         type: string
@@ -273,8 +272,7 @@ jobs:
             core.setOutput('branch', process.env.REF_NAME);
 
       # As e2e-detox-pr.yml's calculate-tsio-identity, for the chosen lanes only, with each status context moved from
-      # e2e-test/<lane> to e2e-test-stack/<lane>. The report group is mobile-e2e-test-stack-pr, -main or -release, apart
-      # from the groups the Matterwick pipeline reports to.
+      # e2e-test/<lane> to e2e-test-stack/<lane>. The report group is mobile-e2e-test-stack-pr, -main or -release.
       - name: e2e-tests/tsio
         id: tsio
         env:
