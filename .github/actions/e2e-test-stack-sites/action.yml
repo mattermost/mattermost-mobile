@@ -11,7 +11,7 @@ description: >-
 
 inputs:
   batch:
-    description: The batch create named (ios or android)
+    description: The batch create named, e.g. dt-ios-pr
     required: true
   shard:
     description: The shard's 1-based run id; its own server is index shard - 1

@@ -10,14 +10,14 @@ on:
   workflow_call:
     inputs:
       batch:
-        description: "The batch within the run, as create was given it (ios or android)"
+        description: "The batch within the run, as create was given it, e.g. dt-ios-pr"
         type: string
         required: true
       slices:
         description: "JSON array of comma-separated server indexes, one string per provisioning job"
         type: string
         required: true
-      MOBILE_VERSION:
+      mobile_version:
         description: "The mobile ref whose provisioning code runs"
         type: string
         required: true
@@ -45,7 +45,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ inputs.mobile_version }}
           sparse-checkout: |
             detox
             .github/actions/provision-e2e-servers

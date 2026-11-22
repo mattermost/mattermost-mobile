@@ -54,6 +54,10 @@ on:
         description: "e2e-test-stack only: the Mattermost server image, master, latest, esr or an image by tag"
         type: string
         default: ""
+      e2e_test_stack_batch:
+        description: "e2e-test-stack only: this platform's batch name, which create, provision and the shards use"
+        type: string
+        default: ""
       MM_TEST_SERVER_URL:
         description: "The test server URL (SITE_1)"
         required: false
@@ -340,7 +344,7 @@ jobs:
       id-token: write
     uses: ./.github/workflows/e2e-test-stack-create.yml
     with:
-      batch: ios
+      batch: ${{ inputs.e2e_test_stack_batch }}
       account: ${{ inputs.e2e_test_stack_account }}
       channel: ${{ inputs.e2e_test_stack_channel }}
       server_image: ${{ inputs.e2e_test_stack_server_image }}
@@ -362,9 +366,9 @@ jobs:
       contents: read
     uses: ./.github/workflows/e2e-test-stack-provision.yml
     with:
-      batch: ios
+      batch: ${{ inputs.e2e_test_stack_batch }}
       slices: ${{ needs.generate-specs.outputs.stack-slices }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      mobile_version: ${{ inputs.MOBILE_VERSION }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -462,7 +466,7 @@ jobs:
         if: inputs.e2e_test_stack
         uses: ./.e2e-test-stack-actions/.github/actions/e2e-test-stack-sites
         with:
-          batch: ios
+          batch: ${{ inputs.e2e_test_stack_batch }}
           shard: ${{ matrix.runId }}
           role: ${{ matrix.role }}
           target: ${{ matrix.target }}

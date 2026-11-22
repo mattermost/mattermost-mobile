@@ -29,6 +29,16 @@ on:
         required: false
         type: string
         default: ""
+      e2e_test_stack_batch_ios:
+        description: "e2e-test-stack only: the iOS batch's name"
+        required: false
+        type: string
+        default: ""
+      e2e_test_stack_batch_android:
+        description: "e2e-test-stack only: the Android batch's name"
+        required: false
+        type: string
+        default: ""
       PLATFORM:
         required: false
         type: string
@@ -124,6 +134,7 @@ jobs:
       e2e_test_stack_account: ${{ inputs.e2e_test_stack_account }}
       e2e_test_stack_channel: ${{ inputs.e2e_test_stack_channel }}
       e2e_test_stack_server_image: ${{ inputs.e2e_test_stack_server_image }}
+      e2e_test_stack_batch: ${{ inputs.e2e_test_stack_batch_ios }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -167,6 +178,7 @@ jobs:
       e2e_test_stack_account: ${{ inputs.e2e_test_stack_account }}
       e2e_test_stack_channel: ${{ inputs.e2e_test_stack_channel }}
       e2e_test_stack_server_image: ${{ inputs.e2e_test_stack_server_image }}
+      e2e_test_stack_batch: ${{ inputs.e2e_test_stack_batch_android }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}

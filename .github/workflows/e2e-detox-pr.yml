@@ -71,7 +71,7 @@ on:
         description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
         required: false
         type: string
-      E2E_TEST_STACK_ENABLED:
+      e2e_test_stack_enabled:
         description: "Detox servers: variable follows vars.E2E_TEST_STACK_ENABLED (unset is Matterwick's); true uses e2e-test-stack, false Matterwick's"
         required: false
         default: "variable"
@@ -80,7 +80,7 @@ on:
           - variable
           - "true"
           - "false"
-      E2E_TEST_STACK_ACCOUNT:
+      e2e_test_stack_account:
         description: "e2e-test-stack only: the AWS account of its control plane; variable follows vars.E2E_TEST_STACK_ACCOUNT (unset is prod)"
         required: false
         default: "variable"
@@ -89,7 +89,7 @@ on:
           - variable
           - prod
           - dev
-      E2E_TEST_STACK_CHANNEL:
+      e2e_test_stack_channel:
         description: "e2e-test-stack only: the control plane channel; variable follows vars.E2E_TEST_STACK_CHANNEL (unset is v1)"
         required: false
         default: "variable"
@@ -98,7 +98,7 @@ on:
           - variable
           - v1
           - edge
-      E2E_TEST_STACK_SERVER:
+      e2e_test_stack_server:
         description: "e2e-test-stack only: the server under test, the master build, the latest stable release or the newest ESR"
         required: false
         default: "master"
@@ -107,8 +107,8 @@ on:
           - master
           - latest
           - esr
-      E2E_TEST_STACK_SERVER_IMAGE:
-        description: "e2e-test-stack only: a server image tag that replaces E2E_TEST_STACK_SERVER, from mattermost/ or mattermostdevelopment/ mattermost-enterprise-edition or mattermost-enterprise-fips-edition, e.g. mattermost/mattermost-enterprise-edition:10.11.3"
+      e2e_test_stack_server_image:
+        description: "e2e-test-stack only: a server image tag that replaces e2e_test_stack_server, from mattermost/ or mattermostdevelopment/ mattermost-enterprise-edition or mattermost-enterprise-fips-edition, e.g. mattermost/mattermost-enterprise-edition:10.11.3"
         required: false
         default: ""
         type: string
@@ -458,11 +458,11 @@ jobs:
               -f target_url="$TARGET_URL"
           done
 
-  # Whether this run's Detox uses e2e-test-stack: E2E_TEST_STACK_ENABLED, or with "variable" (and a dispatch that does not
+  # Whether this run's Detox uses e2e-test-stack: e2e_test_stack_enabled, or with "variable" (and a dispatch that does not
   # name it, as Matterwick's) vars.E2E_TEST_STACK_ENABLED, where only "true" turns it on. The account and channel follow
   # the same rule: the input, or with "variable" vars.E2E_TEST_STACK_ACCOUNT (prod or dev; unset is prod) and
-  # vars.E2E_TEST_STACK_CHANNEL (v1 or edge; unset is v1). With it, the Detox iOS and Android
-  # lanes each get their own batch in e2e-detox.yml. iPad and Maestro stay on Matterwick's servers, and run only when
+  # vars.E2E_TEST_STACK_CHANNEL (v1 or edge; unset is v1). With it, the Detox iOS and Android lanes each get their own
+  # batch, named by resolve-e2e-test-stack-settings. iPad and Maestro stay on Matterwick's servers, and run only when
   # the dispatch gives them (matterwick); without them they are skipped and post no status. A Detox lane on
   # e2e-test-stack destroys its servers, so e2e-flake-verify.yml cannot re-run it.
   resolve-e2e-test-stack:
@@ -477,7 +477,7 @@ jobs:
       - name: e2e-test-stack/use
         id: use
         env:
-          INPUT: ${{ inputs.E2E_TEST_STACK_ENABLED }}
+          INPUT: ${{ inputs.e2e_test_stack_enabled }}
           VARIABLE: ${{ vars.E2E_TEST_STACK_ENABLED }}
           ANDROID_SITE_1_URL: ${{ inputs.ANDROID_SITE_1_URL }}
           ANDROID_SITE_2_URL: ${{ inputs.ANDROID_SITE_2_URL }}
@@ -489,7 +489,7 @@ jobs:
           case "$INPUT" in
             true | false) use=$INPUT ;;
             "" | variable) if [ "$VARIABLE" = true ]; then use=true; else use=false; fi ;;
-            *) echo "::error::E2E_TEST_STACK_ENABLED must be variable, true or false"; exit 1 ;;
+            *) echo "::error::e2e_test_stack_enabled must be variable, true or false"; exit 1 ;;
           esac
           # Matterwick's servers: always without e2e-test-stack, and with it when the dispatch gives any of the five.
           # resolve-server-topology then requires all five and fails on a missing one; tsio-triage settles the lanes.
@@ -509,11 +509,11 @@ jobs:
             echo "Detox iOS and Android on e2e-test-stack; iPad and Maestro skipped: the dispatch gives no Matterwick servers" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  # e2e-test-stack only: the account and channel (each the input, else its repository variable, else prod and v1) and
-  # the server image both Detox platforms' batches run. Each platform's create resolves master, latest or esr on its
-  # own, so the two can differ when an image is published between them; each create's summary names the image its
-  # batch runs. Apart from resolve-e2e-test-stack, so a bad setting stops only the Detox lanes, iPad with them as it
-  # runs inside run-detox-ios; triage still settles their statuses.
+  # e2e-test-stack only: the account and channel (each the input, else its repository variable, else prod and v1), the
+  # server image both Detox platforms' batches run, and their batch names. Each platform's create resolves master,
+  # latest or esr on its own, so the two can differ when an image is published between them; each create's summary
+  # names the image its batch runs. Apart from resolve-e2e-test-stack, so a bad setting stops only the Detox lanes, iPad
+  # with them as it runs inside run-detox-ios; triage still settles their statuses.
   resolve-e2e-test-stack-settings:
     name: Resolve e2e-test-stack settings
     runs-on: ubuntu-24.04
@@ -529,13 +529,15 @@ jobs:
       account: ${{ steps.settings.outputs.account }}
       channel: ${{ steps.settings.outputs.channel }}
       server-image: ${{ steps.check-image.outputs.image }}
+      batch-ios: ${{ steps.batch.outputs.ios }}
+      batch-android: ${{ steps.batch.outputs.android }}
     steps:
       - name: e2e-test-stack/settings
         id: settings
         env:
-          ACCOUNT_INPUT: ${{ inputs.E2E_TEST_STACK_ACCOUNT }}
+          ACCOUNT_INPUT: ${{ inputs.e2e_test_stack_account }}
           ACCOUNT_VARIABLE: ${{ vars.E2E_TEST_STACK_ACCOUNT }}
-          CHANNEL_INPUT: ${{ inputs.E2E_TEST_STACK_CHANNEL }}
+          CHANNEL_INPUT: ${{ inputs.e2e_test_stack_channel }}
           CHANNEL_VARIABLE: ${{ vars.E2E_TEST_STACK_CHANNEL }}
         run: |
           set -euo pipefail
@@ -545,30 +547,30 @@ jobs:
           case "$channel" in "" | variable) channel=${CHANNEL_VARIABLE:-v1} ;; esac
           case "$account" in
             prod | dev) ;;
-            *) echo "::error::E2E_TEST_STACK_ACCOUNT (or vars.E2E_TEST_STACK_ACCOUNT) must be prod or dev"; exit 1 ;;
+            *) echo "::error::e2e_test_stack_account (or vars.E2E_TEST_STACK_ACCOUNT) must be prod or dev"; exit 1 ;;
           esac
           case "$channel" in
             v1 | edge) ;;
-            *) echo "::error::E2E_TEST_STACK_CHANNEL (or vars.E2E_TEST_STACK_CHANNEL) must be v1 or edge"; exit 1 ;;
+            *) echo "::error::e2e_test_stack_channel (or vars.E2E_TEST_STACK_CHANNEL) must be v1 or edge"; exit 1 ;;
           esac
           {
             echo "account=$account"
             echo "channel=$channel"
           } >> "$GITHUB_OUTPUT"
 
-      # E2E_TEST_STACK_SERVER_IMAGE when given, only Mattermost's enterprise builds, released or development, by tag;
-      # else E2E_TEST_STACK_SERVER, which create resolves.
+      # e2e_test_stack_server_image when given, only Mattermost's enterprise builds, released or development, by tag;
+      # else e2e_test_stack_server, which create resolves.
       - name: e2e-test-stack/check-image
         id: check-image
         env:
-          IMAGE: ${{ inputs.E2E_TEST_STACK_SERVER_IMAGE }}
-          SERVER: ${{ inputs.E2E_TEST_STACK_SERVER || 'master' }}
+          IMAGE: ${{ inputs.e2e_test_stack_server_image }}
+          SERVER: ${{ inputs.e2e_test_stack_server || 'master' }}
         run: |
           set -euo pipefail
           if [ -z "$IMAGE" ]; then
             case "$SERVER" in
               master | latest | esr) ;;
-              *) echo "::error::E2E_TEST_STACK_SERVER must be master, latest or esr"; exit 1 ;;
+              *) echo "::error::e2e_test_stack_server must be master, latest or esr"; exit 1 ;;
             esac
             echo "image=${SERVER}" >> "$GITHUB_OUTPUT"
             exit 0
@@ -580,12 +582,59 @@ jobs:
           fi
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
+      # Each platform's batch name, dt-ios-<run type> and dt-andr-<run type>, which create, provision, the shards and
+      # destroy all use; the run id in the instance key tells runs apart. The run type is the first that applies:
+      #   main  with run_type MAIN or MASTER
+      #   pr    with pr_number
+      #   rc    on mobile's RC branches, build-release-[android-|ios-|sim-]<build>
+      #   rel   on release-<major>.<minor>, or with run_type RELEASE
+      #   pr    otherwise
+      # The branch is version_name, else the dispatch's ref; an rc run names its RC branch in version_name. run_type
+      # matches in any case.
+      - name: e2e-test-stack/batch
+        id: batch
+        env:
+          RUN_TYPE: ${{ inputs.run_type }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          kind=$(printf '%s' "$RUN_TYPE" | tr '[:lower:]' '[:upper:]')
+          branch=${VERSION_NAME:-$REF_NAME}
+          branch=${branch#refs/heads/}
+          branch=${branch#refs/tags/}
+          if [ "$kind" = MAIN ] || [ "$kind" = MASTER ]; then
+            type="main"
+          elif [ -n "$PR_NUMBER" ]; then
+            type="pr"
+          elif [[ "$branch" =~ ^build-release-((android|ios|sim)-)?[0-9]+$ ]]; then
+            type="rc"
+          elif [[ "$branch" =~ ^release-[0-9]+\.[0-9]+$ ]] || [ "$kind" = RELEASE ]; then
+            type="rel"
+          else
+            type="pr"
+          fi
+          {
+            echo "ios=dt-ios-${type}"
+            echo "android=dt-andr-${type}"
+          } >> "$GITHUB_OUTPUT"
+
       - name: e2e-test-stack/summary
         env:
           ACCOUNT: ${{ steps.settings.outputs.account }}
           CHANNEL: ${{ steps.settings.outputs.channel }}
           IMAGE: ${{ steps.check-image.outputs.image }}
-        run: echo "Detox on e2e-test-stack, account \`${ACCOUNT}\`, channel \`${CHANNEL}\`, server \`${IMAGE}\` (each platform's create summary names the image it resolved)" >> "$GITHUB_STEP_SUMMARY"
+          BATCH_IOS: ${{ steps.batch.outputs.ios }}
+          BATCH_ANDROID: ${{ steps.batch.outputs.android }}
+          PLATFORM: ${{ inputs.PLATFORM }}
+        run: |
+          case "$PLATFORM" in
+            ios) batches="\`${BATCH_IOS}\`" ;;
+            android) batches="\`${BATCH_ANDROID}\`" ;;
+            *) batches="\`${BATCH_IOS}\` and \`${BATCH_ANDROID}\`" ;;
+          esac
+          echo "Detox on e2e-test-stack, account \`${ACCOUNT}\`, channel \`${CHANNEL}\`, server \`${IMAGE}\` (each platform's create summary names the image it resolved), batch ${batches}" >> "$GITHUB_STEP_SUMMARY"
 
   resolve-server-topology:
     name: Resolve test server topology
@@ -1017,6 +1066,8 @@ jobs:
       e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
       e2e_test_stack_server_image: ${{ needs.resolve-e2e-test-stack-settings.outputs.server-image }}
+      e2e_test_stack_batch_ios: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-ios }}
+      e2e_test_stack_batch_android: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-android }}
     secrets: inherit
 
   run-detox-android:
@@ -1062,6 +1113,8 @@ jobs:
       e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
       e2e_test_stack_server_image: ${{ needs.resolve-e2e-test-stack-settings.outputs.server-image }}
+      e2e_test_stack_batch_ios: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-ios }}
+      e2e_test_stack_batch_android: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-android }}
     secrets: inherit
 
   validate-maestro-flow-headers:
@@ -1391,6 +1444,8 @@ jobs:
       e2e_test_stack: ${{ needs.resolve-e2e-test-stack.outputs.use == 'true' }}
       e2e_test_stack_account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       e2e_test_stack_channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
+      e2e_test_stack_batch_ios: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-ios }}
+      e2e_test_stack_batch_android: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-android }}
     secrets: inherit
 
   rerun-maestro:
@@ -1677,7 +1732,7 @@ jobs:
           set -euo pipefail
           names=""
           failed() { [ "$1" != success ] && [ "$1" != skipped ]; }
-          if [ "$RUN_TYPE" = PR ] && { failed "$IOS" || failed "$ANDROID"; }; then
+          if [ "$(printf '%s' "$RUN_TYPE" | tr '[:lower:]' '[:upper:]')" = PR ] && { failed "$IOS" || failed "$ANDROID"; }; then
             for attempt in 1 2 3; do
               if names=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/artifacts?per_page=100" \
                 --jq '.artifacts[].name' 2>&1); then
@@ -1722,6 +1777,7 @@ jobs:
       always() &&
       needs.resolve-e2e-test-stack.outputs.use == 'true' &&
       needs.run-detox-ios.result != 'skipped' &&
+      needs.resolve-e2e-test-stack-settings.result == 'success' &&
       (cancelled() || needs.e2e-test-stack-keep.outputs.keep-ios != 'true')
     permissions:
       actions: read
@@ -1729,7 +1785,7 @@ jobs:
       id-token: write
     uses: ./.github/workflows/e2e-test-stack-destroy.yml
     with:
-      batch: ios
+      batch: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-ios }}
       account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
     secrets:
@@ -1750,6 +1806,7 @@ jobs:
       always() &&
       needs.resolve-e2e-test-stack.outputs.use == 'true' &&
       needs.run-detox-android.result != 'skipped' &&
+      needs.resolve-e2e-test-stack-settings.result == 'success' &&
       (cancelled() || needs.e2e-test-stack-keep.outputs.keep-android != 'true')
     permissions:
       actions: read
@@ -1757,7 +1814,7 @@ jobs:
       id-token: write
     uses: ./.github/workflows/e2e-test-stack-destroy.yml
     with:
-      batch: android
+      batch: ${{ needs.resolve-e2e-test-stack-settings.outputs.batch-android }}
       account: ${{ needs.resolve-e2e-test-stack-settings.outputs.account }}
       channel: ${{ needs.resolve-e2e-test-stack-settings.outputs.channel }}
     secrets:

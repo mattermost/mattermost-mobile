@@ -7,7 +7,7 @@ name: E2E Test Stack - Create
 # provisioning and shards open their servers from it with the open action;
 # e2e-test-stack-destroy.yml collects the logs and destroys every attempt's
 # batch of the run. A run creates one batch per Detox platform, named by the
-# batch input (ios, android).
+# batch input, e.g. dt-ios-pr.
 #
 # It runs as the account input's CI role, E2E_TEST_STACK_ROLE_ARN_PROD or
 # _DEV, which trusts only jobs in this file and e2e-test-stack-destroy.yml, on

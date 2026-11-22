@@ -22,7 +22,7 @@ on:
   workflow_call:
     inputs:
       batch:
-        description: "The batch within the run, as create was given it (ios or android)"
+        description: "The batch within the run, as create was given it, e.g. dt-ios-pr"
         type: string
         required: true
       account:
@@ -40,7 +40,7 @@ on:
   workflow_dispatch:
     inputs:
       batch_id:
-        description: "The batch to destroy, from its run's create summary, e.g. mobile-1234-ios-1-a1b2c3"
+        description: "The batch to destroy, from its run's create summary, e.g. mobile-1234-dt-ios-pr-1-a1b2c3"
         required: true
         type: string
       account:
