@@ -1,0 +1,135 @@
+---
+name: E2E Test Stack - Destroy
+
+# Collects the logs of a batch's servers still up, then destroys it, with the
+# toolkit's logs and destroy actions. A run calls it for each lane's batch once
+# it is done with it: destroy releases every attempt's batch of the run,
+# reports any site, mail or SSO host the router still serves after 30 seconds,
+# and destroys again expecting "not found".
+#
+# By hand, it takes one batch id and its account, from a run's create summary.
+# In another account the batch is not found, and the run passes with the batch
+# still up: give the account the summary names. Another run's batch is collected
+# and destroyed only when that run was started by hand, by the same person, and
+# has completed; any other batch is left to its run's own destroy, or to the
+# reaper at its TTL. A batch already gone has no logs, is "not found", and
+# passes.
+#
+# It runs as the account input's CI role, which trusts only jobs in this file
+# and e2e-test-stack-create.yml, on main and release-*.*.
+
+on:
+  workflow_call:
+    inputs:
+      batch:
+        description: "The batch within the run, as create was given it, e.g. dt-ios-pr"
+        type: string
+        required: true
+      account:
+        description: "AWS account the batch was created in: prod or dev"
+        type: string
+        required: true
+      channel:
+        description: "Control plane channel the batch was created on: v1 or edge"
+        type: string
+        default: "v1"
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY:
+        description: "The repository's credentials key, which opens the batch's sealed token"
+        required: true
+  workflow_dispatch:
+    inputs:
+      batch_id:
+        description: "The batch to destroy, from its run's create summary, e.g. mobile-1234-dt-ios-pr-1-a1b2c3"
+        required: true
+        type: string
+      account:
+        description: "AWS account the batch was created in, as its run's create summary says; in another, it is not found and stays up"
+        required: false
+        type: choice
+        options: ["prod", "dev"]
+        default: "prod"
+      channel:
+        description: "Control plane channel the batch was created on"
+        required: false
+        type: choice
+        options: ["v1", "edge"]
+        default: "v1"
+
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
+env:
+  CALLER_KEY: mobile
+  # Called: the batch, and no id. By hand: the id, and no batch.
+  BATCH: ${{ inputs.batch }}
+  BATCH_ID: ${{ inputs.batch_id }}
+  # Empty, and refused, for an account that is neither or whose variable is unset.
+  ROLE_ARN: ${{ inputs.account == 'dev' && vars.E2E_TEST_STACK_ROLE_ARN_DEV || inputs.account == 'prod' && vars.E2E_TEST_STACK_ROLE_ARN_PROD || '' }}
+
+jobs:
+  logs:
+    # Also in a cancelled run, so a batch destroyed then still has its logs.
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: ci/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      # Every server still up, ready or not, into one artifact, e2e-test-stack-logs-<batch>-<attempt>.
+      - name: ci/logs
+        id: logs
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ env.BATCH }}
+          batch-id: ${{ env.BATCH_ID }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      # Every server whose full log was saved names the containers it ran.
+      - name: ci/assert-logs
+        env:
+          SERVERS: ${{ steps.logs.outputs.servers }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SERVERS" ] || [ "$SERVERS" = '[]' ]; then
+            echo "no server is up, so no logs were collected"
+            exit 0
+          fi
+          bad=$(jq -r '[.[] | select(.full and (.containers | length) == 0) | .index] | join(", ")' <<< "$SERVERS")
+          if [ -n "$bad" ]; then
+            echo "::error::the log of server(s) ${bad} names no container"
+            exit 1
+          fi
+          jq -r '.[] | "  server \(.index): \(.containers | join(" "))"' <<< "$SERVERS"
+
+  # A failed logs job never keeps the batch up.
+  destroy:
+    needs: logs
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: ci/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      - name: ci/destroy
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ env.BATCH }}
+          batch-id: ${{ env.BATCH_ID }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}

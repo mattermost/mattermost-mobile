@@ -36,6 +36,9 @@ export type RequiredPlugin = {
     id: string;
     url: string | null;
     fixture?: string | null;
+
+    /** The server image carries it: on e2e-test-stack servers it is enabled and checked, never installed or downloaded. */
+    prepackaged?: boolean;
 };
 
 export type ProvisionCredentials = {

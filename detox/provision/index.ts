@@ -11,6 +11,8 @@
  * Environment variables:
  *   ADMIN_USERNAME / ADMIN_PASSWORD - admin credentials (required)
  *   AGENTS_PLUGIN_DOWNLOAD_URL - optional override for mattermost-ai install URL
+ *   E2E_SERVER_SOURCE - e2e-test-stack for e2e-test-stack servers: the prepackaged plugins are enabled and checked,
+ *     never installed or downloaded
  */
 
 import {readCredentialsFromEnv} from './env';

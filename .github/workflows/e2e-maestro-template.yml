@@ -56,6 +56,26 @@ on:
         required: false
         type: string
         default: ""
+      e2e_test_stack:
+        description: "Run on a one-server e2e-test-stack batch instead of the MM_TEST_SERVER_URL server"
+        type: boolean
+        default: false
+      e2e_test_stack_account:
+        description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
+        type: string
+        default: ""
+      e2e_test_stack_channel:
+        description: "e2e-test-stack only: the control plane channel, v1 or edge"
+        type: string
+        default: "v1"
+      e2e_test_stack_server_image:
+        description: "e2e-test-stack only: the Mattermost server image, master, latest, esr or an image by tag"
+        type: string
+        default: ""
+      e2e_test_stack_batch:
+        description: "e2e-test-stack only: this platform's batch name, which create, provision and the test job use"
+        type: string
+        default: ""
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL:
         required: true
@@ -76,6 +96,9 @@ on:
       MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
         required: false
       MM_E2E_RELEASE_WEBHOOK_URL:
+        required: false
+      # e2e-test-stack only: the repository's credentials key, which opens the batch's sealed server credentials.
+      E2E_TEST_STACK_CREDENTIALS_KEY:
         required: false
     outputs:
       STATUS:
@@ -136,10 +159,74 @@ env:
   COMMIT_HASH: ${{ inputs.MOBILE_VERSION || github.sha }}
 
 jobs:
+  # e2e-test-stack only, before any server is created: code under test from before e2e-test-stack provisioning
+  # would download the plugins the server image carries instead of enabling them.
+  e2e-test-stack-check:
+    if: inputs.e2e_test_stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          sparse-checkout: detox/provision
+          persist-credentials: false
+
+      - name: ci/e2e-test-stack-check-provision-code
+        run: |
+          if ! grep -rqE '^export function isE2eTestStack\(' detox/provision; then
+            echo "::error::the code under test predates e2e-test-stack provisioning; merge main into it"
+            exit 1
+          fi
+
+  # e2e-test-stack only: this platform's batch, one server, which SITE_1 is.
+  e2e-test-stack-create:
+    if: inputs.e2e_test_stack
+    needs: e2e-test-stack-check
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-create.yml
+    with:
+      batch: ${{ inputs.e2e_test_stack_batch }}
+      account: ${{ inputs.e2e_test_stack_account }}
+      channel: ${{ inputs.e2e_test_stack_channel }}
+      server_image: ${{ inputs.e2e_test_stack_server_image }}
+      count: "1"
+      license: enterprise-advanced
+      shared_admin_password: true
+      # The batch's lifetime from create: the run and any re-run of its failed jobs must end within it.
+      ttl: 2h
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  # The batch's one server, provisioned as provision-e2e-servers does Matterwick's (license and plugins). As the last
+  # server of its batch it gets no demo plugin, which no Maestro flow uses.
+  e2e-test-stack-provision:
+    if: inputs.e2e_test_stack
+    needs: e2e-test-stack-create
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/e2e-test-stack-provision.yml
+    with:
+      batch: ${{ inputs.e2e_test_stack_batch }}
+      slices: '["0"]'
+      mobile_version: ${{ inputs.MOBILE_VERSION }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
   e2e-maestro-ios:
     # TSIO shard label = job name; prefer tsio-shard-name (e.g. maestro-ios-e2e).
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
-    if: ${{ inputs.platform == 'ios' || inputs.platform == '' }}
+    needs: e2e-test-stack-provision
+    # Today's server: always. e2e-test-stack: once this platform's batch is ready.
+    if: >-
+      !cancelled() && (inputs.platform == 'ios' || inputs.platform == '') &&
+      (!inputs.e2e_test_stack || needs.e2e-test-stack-provision.result == 'success')
     runs-on: macos-26
     timeout-minutes: 90
     outputs:
@@ -157,6 +244,51 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+
+      # e2e-test-stack only: the open action runs on Node 26; prepare-node-deps then switches to the specs' version.
+      - name: ci/e2e-test-stack-setup-node
+        if: inputs.e2e_test_stack
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      # e2e-test-stack only: reads this run's create response, from whichever attempt created the batch.
+      - name: ci/e2e-test-stack-open
+        id: e2e-test-stack-open
+        if: inputs.e2e_test_stack
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/open@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        with:
+          caller-key: mobile
+          batch: ${{ inputs.e2e_test_stack_batch }}
+          index: "0"
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      # e2e-test-stack only: the batch's server as SITE_1, with its admin, in place of MM_TEST_SERVER_URL and the
+      # MM_MOBILE_E2E_ADMIN_* secrets.
+      - name: ci/e2e-test-stack-server
+        if: inputs.e2e_test_stack
+        env:
+          BATCH: ${{ inputs.e2e_test_stack_batch }}
+          INSTANCES: ${{ steps.e2e-test-stack-open.outputs.instances }}
+        run: |
+          set -euo pipefail
+          field() { jq -r --arg f "$1" '.[0][$f] // ""' <<< "$INSTANCES"; }
+          site=$(field site_url)
+          username=$(field admin_username)
+          password=$(field admin_password)
+          email=$(field admin_email)
+          if [ -z "$site" ] || [ -z "$username" ] || [ -z "$password" ]; then
+            echo "::error::the ${BATCH} batch has no server with a site and an admin"
+            exit 1
+          fi
+          {
+            echo "SITE_1_URL=$site"
+            echo "ADMIN_USERNAME=$username"
+            echo "ADMIN_PASSWORD=$password"
+            echo "ADMIN_EMAIL=$email"
+          } >> "$GITHUB_ENV"
+          echo "SITE_1=$site"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -688,7 +820,8 @@ jobs:
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
         uses: ./.github/actions/e2e-override-label
         with:
-          pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          # A trial e2e-test-stack/<lane> status is never overridden: it gates nothing.
+          pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
 
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
@@ -815,7 +948,11 @@ jobs:
   e2e-maestro-android:
     # TSIO shard label = job name; prefer tsio-shard-name (e.g. maestro-android-e2e).
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
-    if: ${{ inputs.platform == 'android' }}
+    needs: e2e-test-stack-provision
+    # Today's server: always. e2e-test-stack: once this platform's batch is ready.
+    if: >-
+      !cancelled() && inputs.platform == 'android' &&
+      (!inputs.e2e_test_stack || needs.e2e-test-stack-provision.result == 'success')
     runs-on: ubuntu-latest-8-cores
     timeout-minutes: 90
     outputs:
@@ -832,6 +969,51 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+
+      # e2e-test-stack only: the open action runs on Node 26; prepare-node-deps then switches to the specs' version.
+      - name: ci/e2e-test-stack-setup-node
+        if: inputs.e2e_test_stack
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      # e2e-test-stack only: reads this run's create response, from whichever attempt created the batch.
+      - name: ci/e2e-test-stack-open
+        id: e2e-test-stack-open
+        if: inputs.e2e_test_stack
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/open@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        with:
+          caller-key: mobile
+          batch: ${{ inputs.e2e_test_stack_batch }}
+          index: "0"
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      # e2e-test-stack only: the batch's server as SITE_1, with its admin, in place of MM_TEST_SERVER_URL and the
+      # MM_MOBILE_E2E_ADMIN_* secrets.
+      - name: ci/e2e-test-stack-server
+        if: inputs.e2e_test_stack
+        env:
+          BATCH: ${{ inputs.e2e_test_stack_batch }}
+          INSTANCES: ${{ steps.e2e-test-stack-open.outputs.instances }}
+        run: |
+          set -euo pipefail
+          field() { jq -r --arg f "$1" '.[0][$f] // ""' <<< "$INSTANCES"; }
+          site=$(field site_url)
+          username=$(field admin_username)
+          password=$(field admin_password)
+          email=$(field admin_email)
+          if [ -z "$site" ] || [ -z "$username" ] || [ -z "$password" ]; then
+            echo "::error::the ${BATCH} batch has no server with a site and an admin"
+            exit 1
+          fi
+          {
+            echo "SITE_1_URL=$site"
+            echo "ADMIN_USERNAME=$username"
+            echo "ADMIN_PASSWORD=$password"
+            echo "ADMIN_EMAIL=$email"
+          } >> "$GITHUB_ENV"
+          echo "SITE_1=$site"
 
       - name: Install system dependencies
         timeout-minutes: 6
@@ -1437,7 +1619,8 @@ jobs:
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
         uses: ./.github/actions/e2e-override-label
         with:
-          pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          # A trial e2e-test-stack/<lane> status is never overridden: it gates nothing.
+          pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
 
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
