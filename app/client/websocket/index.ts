@@ -12,6 +12,7 @@ import {hasReliableWebsocket} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError, logInfo, logWarning} from '@utils/log';
+import {readServerCa} from '@utils/server_ca';
 import {isSecureUrl} from '@utils/url';
 
 const MAX_WEBSOCKET_FAILS = 7;
@@ -86,10 +87,11 @@ export default class WebSocketClient {
             return;
         }
 
-        const [websocketUrl, version, reliableWebsocketConfig] = await Promise.all([
+        const [websocketUrl, version, reliableWebsocketConfig, serverCa] = await Promise.all([
             getConfigValue(database, 'WebsocketURL'),
             getConfigValue(database, 'Version'),
             getConfigValue(database, 'EnableReliableWebSockets'),
+            readServerCa(this.serverUrl),
         ]);
 
         // Bail if teardown started while we were awaiting config values
@@ -154,7 +156,13 @@ export default class WebSocketClient {
                 logDebug('WebSocket: Added shared password header for', this.serverUrl);
             }
 
-            const {client} = await getOrCreateWebSocketClient(this.url, {headers, timeoutInterval: WEBSOCKET_TIMEOUT});
+            const {client} = await getOrCreateWebSocketClient(this.url, {
+                headers,
+                timeoutInterval: WEBSOCKET_TIMEOUT,
+
+                // Trust the custom CA selected for this server (if any), as the REST client does.
+                ...(serverCa ? {serverCa} : {}),
+            });
 
             // Bail if teardown started while we were awaiting the native client
             if (this.stop) {

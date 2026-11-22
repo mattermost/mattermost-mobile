@@ -17,6 +17,7 @@ import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
 import {logError, logDebug} from '@utils/log';
+import {readServerCa} from '@utils/server_ca';
 
 const wsMinReconnectRetryTimeMs = 1000; // 1 second
 export const wsReconnectionTimeout = 30000; // 30 seconds
@@ -68,8 +69,10 @@ export class WebSocketClient extends EventEmitter {
         const baseUrl = toWsUrl(websocketURL || this.serverUrl);
         const wsUrl = `${baseUrl}${this.wsPath}?calls=true&connection_id=${this.connID}&sequence_number=${this.serverSeqNo}`;
 
+        const serverCa = await readServerCa(this.serverUrl);
         const {client} = await getOrCreateWebSocketClient(wsUrl, {
             headers: {authorization: `Bearer ${this.authToken}`},
+            ...(serverCa ? {serverCa} : {}),
         });
         this.wsClient = client;
 

@@ -20,11 +20,13 @@ import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
 import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
+import {getPreauthSecret} from '@init/credentials';
 import ManagedApp from '@init/managed_app';
 import {toMilliseconds} from '@utils/datetime';
 import {getIntlShape} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
+import {readServerCa, saveServerCa} from '@utils/server_ca';
 import {isSecureUrl} from '@utils/url';
 
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
@@ -91,6 +93,26 @@ class NetworkManagerSingleton {
         }
     };
 
+    /**
+     * Stores (or clears, when serverCa is undefined) the CA for a server. It is applied as
+     * sessionConfiguration.serverCa the next time a client for that server is created.
+     * Returns true if the stored CA was written or removed.
+     */
+    public saveServerCa = (serverUrl: string, serverCa?: string): boolean => {
+        return saveServerCa(serverUrl, serverCa);
+    };
+
+    /**
+     * Saves the CA and recreates the server's API client so it takes effect immediately.
+     */
+    public setServerCa = async (serverUrl: string, serverCa?: string, bearerToken?: string) => {
+        this.saveServerCa(serverUrl, serverCa);
+
+        // getOrCreateAPIClient returns an existing client unchanged, so drop it first.
+        this.invalidateClient(serverUrl);
+        return this.createClient(serverUrl, bearerToken, await getPreauthSecret(serverUrl));
+    };
+
     public invalidateClient = (serverUrl: string) => {
         this.clients[serverUrl]?.invalidate();
         delete this.clients[serverUrl];
@@ -138,6 +160,8 @@ class NetworkManagerSingleton {
             ...this.DEFAULT_CONFIG.headers,
         };
 
+        const serverCa = await readServerCa(serverUrl);
+
         const config = {
             ...this.DEFAULT_CONFIG,
             sessionConfiguration: {
@@ -146,6 +170,7 @@ class NetworkManagerSingleton {
                 timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForResource,
                 waitsForConnectivity: managedConfig?.useVPN === 'true',
                 collectMetrics: true,
+                ...(serverCa ? {serverCa} : {}),
             },
             headers,
         };

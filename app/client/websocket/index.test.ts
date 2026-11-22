@@ -9,6 +9,7 @@ import {getConfigValue} from '@queries/servers/system';
 import {enableFakeTimers, disableFakeTimers, advanceTimers} from '@test/timer_helpers';
 import {hasReliableWebsocket} from '@utils/config';
 import {logDebug, logInfo, logError, logWarning} from '@utils/log';
+import {readServerCa} from '@utils/server_ca';
 
 import WebSocketClient from './index';
 
@@ -39,6 +40,10 @@ jest.mock('@utils/log', () => ({
 
 jest.mock('@utils/config', () => ({
     hasReliableWebsocket: jest.fn(),
+}));
+
+jest.mock('@utils/server_ca', () => ({
+    readServerCa: jest.fn(async () => undefined),
 }));
 
 const mockedHasReliableWebsocket = jest.mocked(hasReliableWebsocket);
@@ -114,6 +119,48 @@ describe('WebSocketClient', () => {
 
         expect(mockedGetOrCreateWebSocketClient).toHaveBeenLastCalledWith('ws://example.com/api/v4/websocket', {headers: {origin: 'ws://example.com'}, timeoutInterval: 30000});
         secretClient.close(true);
+    });
+
+    it('should pass the server CA to the WebSocket client', async () => {
+        const pem = '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n';
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
+        mockedGetConfigValue.mockResolvedValueOnce('wss://example.com');
+        jest.mocked(readServerCa).mockResolvedValueOnce(pem);
+
+        await client.initialize();
+
+        expect(readServerCa).toHaveBeenCalledWith(serverUrl);
+        expect(mockedGetOrCreateWebSocketClient).toHaveBeenCalledWith('wss://example.com/api/v4/websocket', {headers: {origin: 'wss://example.com'}, timeoutInterval: 30000, serverCa: pem});
+    });
+
+    it('should read the CA for the server, not the WebSocket URL', async () => {
+        // WebsocketURL can point to a different host; the CA is stored under the server URL.
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
+        mockedGetConfigValue.mockResolvedValueOnce('wss://ws.example.com');
+
+        await client.initialize();
+
+        expect(readServerCa).toHaveBeenCalledWith(serverUrl);
+        expect(readServerCa).not.toHaveBeenCalledWith('wss://ws.example.com');
+    });
+
+    it('should not set serverCa when no CA is stored for the server', async () => {
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
+        mockedGetConfigValue.mockResolvedValueOnce('wss://example.com');
+
+        await client.initialize();
+
+        const config = mockedGetOrCreateWebSocketClient.mock.lastCall?.[1];
+        expect(config).not.toHaveProperty('serverCa');
+    });
+
+    it('should not read the CA when there is no server database', async () => {
+        delete DatabaseManager.serverDatabases[serverUrl];
+
+        await client.initialize();
+
+        expect(readServerCa).not.toHaveBeenCalled();
+        expect(mockedGetOrCreateWebSocketClient).not.toHaveBeenCalled();
     });
 
     it('should log an error when creating the WebSocket client fails', async () => {

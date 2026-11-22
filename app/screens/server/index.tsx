@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
+import {File} from 'expo-file-system';
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
@@ -26,12 +27,13 @@ import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {getErrorMessage, preauthSecretInvalidMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {getLoginScreen, loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
-import ServerForm from './form';
+import ServerForm, {type ServerCaFile} from './form';
 import ServerHeader from './header';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
@@ -47,6 +49,11 @@ let cancelPing: undefined | (() => void);
 const defaultServerUrlMessage = defineMessage({
     id: 'mobile.server_url.empty',
     defaultMessage: 'Please enter a valid server URL',
+});
+
+const serverCaApplyErrorMessage = defineMessage({
+    id: 'mobile.components.select_server_view.serverCaApplyError',
+    defaultMessage: 'Could not apply the selected CA certificate',
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -90,6 +97,8 @@ const Server = ({
     const [urlError, setUrlError] = useState<string | undefined>();
     const [preauthSecretError, setPreauthSecretError] = useState<string | undefined>();
     const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+    const [serverCaFile, setServerCaFile] = useState<ServerCaFile | undefined>();
+    const [serverCaError, setServerCaError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
@@ -317,10 +326,25 @@ const Server = ({
             cancelPing = undefined;
         };
 
-        const headRequest = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
+        let serverCa: string | undefined;
+        if (serverCaFile) {
+            try {
+                serverCa = await new File(serverCaFile.uri).text();
+            } catch (error) {
+                logError('error reading server CA file', error);
+                setServerCaError(formatMessage(serverCaApplyErrorMessage));
+                setShowAdvancedOptions(true);
+                cancelPing();
+                return;
+            }
+        }
+
+        // The redirect check uses the generic client, which has no serverCa configured and would
+        // fail for servers signed by a private CA, so skip it when a CA has been selected.
+        const headRequest: {url?: string; error?: unknown} = serverCa ? {url: sanitizeUrl(pingUrl, !retryWithHttp)} : await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
         if (!headRequest.url) {
             cancelPing();
-            if (retryWithHttp) {
+            if (retryWithHttp && !serverCa) {
                 const nurl = pingUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
@@ -330,6 +354,12 @@ const Server = ({
             }
             return;
         }
+        // Store (or clear) the CA for this server so that the client doPing creates gets
+        // sessionConfiguration.serverCa. Drop any existing client so the new config is used.
+        if (NetworkManager.saveServerCa(headRequest.url, serverCa)) {
+            NetworkManager.invalidateClient(headRequest.url);
+        }
+
         const result = await doPing(
             headRequest.url,
             true, // verifyPushProxy
@@ -478,6 +508,10 @@ const Server = ({
                         handleUrlTextChanged={handleUrlTextChanged}
                         preauthSecret={preauthSecret}
                         preauthSecretError={preauthSecretError}
+                        serverCaFile={serverCaFile}
+                        serverCaError={serverCaError}
+                        setServerCaFile={setServerCaFile}
+                        setServerCaError={setServerCaError}
                         setShowAdvancedOptions={setShowAdvancedOptions}
                         showAdvancedOptions={showAdvancedOptions}
                         theme={theme}

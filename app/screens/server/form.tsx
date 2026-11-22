@@ -1,17 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {errorCodes, isErrorWithCode, keepLocalCopy, pick} from '@react-native-documents/picker';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Pressable, View} from 'react-native';
+import {Keyboard, type LayoutChangeEvent, Pressable, Text, TouchableOpacity, View} from 'react-native';
 import Animated, {FlipInEasyX, FlipOutXUp, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import {usePreventDoubleTap} from '@hooks/utils';
+import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+export type ServerCaFile = {
+    name: string;
+    uri: string; // temporary local copy in the app's caches directory
+};
 
 type Props = {
     autoFocus?: boolean;
@@ -26,6 +34,10 @@ type Props = {
     handleUrlTextChanged: (text: string) => void;
     preauthSecret?: string;
     preauthSecretError?: string;
+    serverCaFile?: ServerCaFile;
+    serverCaError?: string;
+    setServerCaFile: (file: ServerCaFile | undefined) => void;
+    setServerCaError: (error: string | undefined) => void;
     setShowAdvancedOptions: React.Dispatch<React.SetStateAction<boolean>>;
     showAdvancedOptions: boolean;
     theme: Theme;
@@ -80,6 +92,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         gap: 24,
         width: '100%',
     },
+    serverCaContainer: {
+        width: '100%',
+        marginTop: 16,
+        gap: 8,
+        alignItems: 'flex-start',
+    },
+    serverCaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        width: '100%',
+    },
+    serverCaName: {
+        flex: 1,
+        color: theme.centerChannelColor,
+        ...typography('Body', 100, 'Regular'),
+    },
+    serverCaError: {
+        color: theme.errorTextColor,
+        ...typography('Body', 75, 'Regular'),
+    },
 }));
 
 const messages = defineMessages({
@@ -103,9 +136,23 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.sharedSecretHelp',
         defaultMessage: 'The authentication secret shared by the administrator',
     },
+    selectServerCa: {
+        id: 'mobile.components.select_server_view.selectServerCa',
+        defaultMessage: 'Select CA certificate',
+    },
+    changeServerCa: {
+        id: 'mobile.components.select_server_view.changeServerCa',
+        defaultMessage: 'Change CA certificate',
+    },
+    serverCaFileError: {
+        id: 'mobile.components.select_server_view.serverCaFileError',
+        defaultMessage: 'Could not open the selected file',
+    },
 });
 
-const ADVANCED_OPTIONS_EXPANDED = 114;
+const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
+
+// Height of the "Advanced Options" header; the expanded height adds the measured content height.
 const ADVANCED_OPTIONS_COLLAPSED = 40;
 
 const ServerForm = ({
@@ -121,6 +168,10 @@ const ServerForm = ({
     handleUrlTextChanged,
     preauthSecret = '',
     preauthSecretError,
+    serverCaFile,
+    serverCaError,
+    setServerCaFile,
+    setServerCaError,
     setShowAdvancedOptions,
     showAdvancedOptions,
     theme,
@@ -139,6 +190,41 @@ const ServerForm = ({
         handleConnect();
     }, [handleConnect]);
 
+    const onSelectServerCa = usePreventDoubleTap(useCallback(async () => {
+        Keyboard.dismiss();
+        try {
+            // System document picker (Storage Access Framework on Android): no storage permission needed.
+            const [picked] = await pick({allowMultiSelection: false, type: ['*/*']});
+            if (!picked) {
+                return;
+            }
+
+            // Content URIs from the picker can become unreadable later, so keep a local copy.
+            const name = picked.name ?? 'ca.pem';
+            const [copy] = await keepLocalCopy({
+                files: [{uri: picked.uri, fileName: name}],
+                destination: 'cachesDirectory',
+            });
+            if (copy.status !== 'success') {
+                throw new Error(copy.copyError);
+            }
+
+            setServerCaFile({name, uri: copy.localUri});
+            setServerCaError(undefined);
+        } catch (error) {
+            if (isErrorWithCode(error) && error.code === errorCodes.OPERATION_CANCELED) {
+                return;
+            }
+            logError('error selecting server CA file', error);
+            setServerCaError(formatMessage(messages.serverCaFileError));
+        }
+    }, [formatMessage, setServerCaError, setServerCaFile]));
+
+    const onClearServerCa = useCallback(() => {
+        setServerCaFile(undefined);
+        setServerCaError(undefined);
+    }, [setServerCaError, setServerCaFile]);
+
     const onUrlSubmit = useCallback(() => {
         displayNameRef.current?.focus();
     }, []);
@@ -156,9 +242,19 @@ const ServerForm = ({
     }, [setShowAdvancedOptions]);
 
     const chevronRotation = useSharedValue(showAdvancedOptions ? 180 : 0);
+    const advancedOptionsContentHeight = useSharedValue(0);
     const advancedOptionsStyle = useAnimatedStyle(() => ({
-        height: showAdvancedOptions ? ADVANCED_OPTIONS_EXPANDED : withTiming(ADVANCED_OPTIONS_COLLAPSED, {duration: 250}),
+        height: showAdvancedOptions ? ADVANCED_OPTIONS_COLLAPSED + advancedOptionsContentHeight.value : withTiming(ADVANCED_OPTIONS_COLLAPSED, {duration: 250}),
     }));
+
+    // The content grows when a CA file is selected or an error is shown, so measure it
+    // instead of using a fixed expanded height.
+    const onAdvancedOptionsContentLayout = useCallback((e: LayoutChangeEvent) => {
+        advancedOptionsContentHeight.value = e.nativeEvent.layout.height;
+
+        // advancedOptionsContentHeight is a Reanimated shared value with a stable reference.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         chevronRotation.value = withTiming(showAdvancedOptions ? 180 : 0, {duration: 250});
@@ -245,6 +341,7 @@ const ServerForm = ({
                 {showAdvancedOptions && (
                     <Animated.View
                         style={styles.advancedOptionsContent}
+                        onLayout={onAdvancedOptionsContentLayout}
                         entering={FlipInEasyX.duration(250)}
                         exiting={FlipOutXUp.duration(250)}
                     >
@@ -268,6 +365,53 @@ const ServerForm = ({
                             style={styles.chooseText}
                             testID='server_form.preauth_secret_help'
                         />
+                        <View style={styles.serverCaContainer}>
+                            <Button
+                                emphasis='tertiary'
+                                iconName='paperclip'
+                                onPress={onSelectServerCa}
+                                size='m'
+                                testID='server_form.server_ca.button'
+                                text={formatMessage(serverCaFile ? messages.changeServerCa : messages.selectServerCa)}
+                                theme={theme}
+                            />
+                            {serverCaFile && (
+                                <View style={styles.serverCaRow}>
+                                    <CompassIcon
+                                        name='file-generic-outline'
+                                        size={20}
+                                        color={changeOpacity(theme.centerChannelColor, 0.64)}
+                                    />
+                                    <Text
+                                        style={styles.serverCaName}
+                                        numberOfLines={1}
+                                        ellipsizeMode='middle'
+                                        testID='server_form.server_ca.name'
+                                    >
+                                        {serverCaFile.name}
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={onClearServerCa}
+                                        hitSlop={hitSlop}
+                                        testID='server_form.server_ca.clear'
+                                    >
+                                        <CompassIcon
+                                            name='close-circle'
+                                            size={20}
+                                            color={changeOpacity(theme.centerChannelColor, 0.64)}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            {Boolean(serverCaError) && (
+                                <Text
+                                    style={styles.serverCaError}
+                                    testID='server_form.server_ca.error'
+                                >
+                                    {serverCaError}
+                                </Text>
+                            )}
+                        </View>
                     </Animated.View>
                 )}
             </Animated.View>

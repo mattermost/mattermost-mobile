@@ -9,8 +9,13 @@ import {encode} from '@msgpack/msgpack';
 
 import DatabaseManager from '@database/manager';
 import {advanceTimers, enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
+import {readServerCa} from '@utils/server_ca';
 
 import {WebSocketClient, wsReconnectionTimeoutErr, wsReconnectionTimeout} from './websocket_client';
+
+jest.mock('@utils/server_ca', () => ({
+    readServerCa: jest.fn(async () => undefined),
+}));
 
 jest.mock('@mattermost/react-native-network-client', () => ({
     getOrCreateWebSocketClient: jest.fn(),
@@ -77,6 +82,38 @@ describe('WebSocketClient', () => {
         const ws = new WebSocketClient('server2', mockWsPath, mockToken);
         await ws.initialize();
         expect(ws.wsClient).toBeNull();
+    });
+
+    it('should pass the server CA to the WebSocket client', async () => {
+        const pem = '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n';
+        jest.mocked(readServerCa).mockResolvedValueOnce(pem);
+        const ws = new WebSocketClient(mockServerUrl, mockWsPath, mockToken);
+
+        await ws.init(false);
+
+        expect(readServerCa).toHaveBeenCalledWith(mockServerUrl);
+        expect(getOrCreateWebSocketClient).toHaveBeenCalledWith(
+            expect.stringContaining(mockWsPath),
+            {headers: {authorization: `Bearer ${mockToken}`}, serverCa: pem},
+        );
+    });
+
+    it('should not set serverCa when no CA is stored for the server', async () => {
+        const ws = new WebSocketClient(mockServerUrl, mockWsPath, mockToken);
+
+        await ws.init(false);
+
+        const config = (getOrCreateWebSocketClient as jest.Mock).mock.lastCall?.[1];
+        expect(config).toEqual({headers: {authorization: `Bearer ${mockToken}`}});
+    });
+
+    it('should not read the CA when the server database is missing', async () => {
+        const ws = new WebSocketClient('server2', mockWsPath, mockToken);
+
+        await ws.init(false);
+
+        expect(readServerCa).not.toHaveBeenCalled();
+        expect(getOrCreateWebSocketClient).not.toHaveBeenCalled();
     });
 
     it('should init and register handlers', async () => {
