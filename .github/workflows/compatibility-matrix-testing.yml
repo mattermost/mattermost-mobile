@@ -617,11 +617,6 @@ jobs:
       - maestro-ios-e2e
       - maestro-android-e2e
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-
       - name: Resolve upstream matrix outcome
         id: upstream
         run: |
@@ -679,9 +674,9 @@ jobs:
       maestro-android-matrix: ${{ steps.plan.outputs.maestro-android-matrix }}
       stale: ${{ steps.plan.outputs.stale }}
     steps:
+      # Always check out rerun/reporting helpers from the workflow dispatch ref (main), never old release tags.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
           sparse-checkout: |
             detox/utils/rerun-failed.js
@@ -996,10 +991,18 @@ jobs:
       # the channel rollup mints an OIDC token to read each shard's TSIO group.
       id-token: write
     steps:
+      # Always check out reporting scripts from the workflow dispatch ref (main), never old release tags.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-channel-notify-rollup.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
+            detox/utils/build-tsio-job-config.js
+            detox/utils/cli-args.js
+            detox/utils/rerun-failed.js
+          sparse-checkout-cone-mode: false
       # This attempt's triage verdicts (none when no shard failed, or triage did not finish).
       - name: Download triage findings
         continue-on-error: true

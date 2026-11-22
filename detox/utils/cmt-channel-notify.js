@@ -223,182 +223,6 @@ function formatLegResultText(leg) {
     return `❌ ${leg.passed}/${executed}`;
 }
 
-const JUDGEMENTS = {
-    'app-bug': {emoji: '🔴', heading: 'Suspected app bug — corroborated, needs investigation'},
-    investigate: {emoji: '🔍', heading: 'Needs a closer look — not enough evidence to call it an app bug'},
-    flaky: {emoji: '🟠', heading: 'Flaky — intermittent in TSIO history'},
-    known: {emoji: '⚪', heading: 'Known failing — also failed before this run'},
-    infra: {emoji: '⚠️', heading: 'Infra / environment — not an app failure'},
-};
-
-// A visibility/existence wait expiring says the UI was not in the expected
-// state in time — timing, navigation, or a slow server explain it at least as
-// well as an app bug, so it is never enough on its own for "app bug".
-const TIMING_ERROR_PATTERNS = [
-    /timed out while waiting|timeout expired/i,
-    /TOEXIST|TOBEVISIBLE|to be visible|not visible/i,
-    /Failed expectation/i,
-];
-
-// A direct assertion on content or state (expected X, got Y) is the kind of
-// failure an app bug actually produces — unlike a wait expiring.
-const HARD_ASSERTION_PATTERNS = [
-    /toHaveText|toHaveLabel|toHaveValue/i,
-    /expected .{0,80} to (be|equal|match|contain)/i,
-    /Expected:[\s\S]{0,120}Received:/i,
-    /AssertionError/i,
-];
-
-const INFRA_ERROR_PATTERNS = [
-    /(?:^|[._])feature_disabled\b|feature is not enabled|not enabled on this server/i,
-    /simctl|NSPOSIXErrorDomain|Failed to CreateArtifact/i,
-    /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|socket hang up|No response from server|timeout of \d+ ?ms exceeded/i,
-    /Exceeded timeout of \d+ ?ms for a (hook|test)/i,
-    /Cannot read properties of undefined \(reading '(id|channel|team|user)'\)/i,
-    /test server (is )?(down|unreachable)|server did not (respond|become ready)|server not at baseline/i,
-];
-
-/**
- * Judge one failing test from the evidence TSIO has for it. "app-bug" is the
- * last resort, not the default: it needs a direct content/state assertion
- * (not a wait expiring) AND corroboration — the same test failing on another
- * leg of this run, or a test that passed in earlier history now failing that
- * assertion. Anything weaker is "investigate": one observation of a timing
- * wait is as consistent with a flake or a slow server as with an app bug.
- *
- * @param {{title?: string, error?: string, previousStatuses?: string[], passedOnRetry?: boolean, alsoFailedElsewhere?: boolean}} failure
- * @returns {{category: string, reason: string}}
- */
-function classifyFailure(failure) {
-    const title = failure?.title || '';
-    const error = failure?.error || '';
-    const previous = failure?.previousStatuses || [];
-
-    if (/spec did not run/i.test(title) || /produced no result/i.test(error)) {
-        return {category: 'infra', reason: 'spec never ran (shard produced no result)'};
-    }
-    for (const pattern of INFRA_ERROR_PATTERNS) {
-        if (pattern.test(error)) {
-            return {category: 'infra', reason: 'error points at the test environment, not the app'};
-        }
-    }
-    if (failure?.passedOnRetry) {
-        return {category: 'flaky', reason: 'passed on retry in this run'};
-    }
-    const sawPass = previous.includes('passed') || previous.includes('flaky');
-    const sawFail = previous.includes('failed');
-    if (sawPass && sawFail) {
-        return {category: 'flaky', reason: 'passed and failed in recent TSIO history'};
-    }
-    if (sawFail) {
-        return {category: 'known', reason: 'failed in earlier runs in TSIO history'};
-    }
-    if (TIMING_ERROR_PATTERNS.some((pattern) => pattern.test(error))) {
-        return {category: 'investigate', reason: 'visibility/existence wait expired — timing, navigation, or app; needs a repro or a repeat before calling it an app bug'};
-    }
-    if (!HARD_ASSERTION_PATTERNS.some((pattern) => pattern.test(error))) {
-        return {category: 'investigate', reason: 'single observation with no direct assertion in the error — needs a repro or a repeat'};
-    }
-    if (failure?.alsoFailedElsewhere) {
-        return {category: 'app-bug', reason: 'direct assertion failed on more than one leg of this run, no infra cause in the error'};
-    }
-    if (sawPass) {
-        return {category: 'app-bug', reason: 'passed in earlier runs and now fails a direct assertion, no infra cause in the error'};
-    }
-    return {category: 'investigate', reason: 'direct assertion, but a single observation with no earlier history — needs a repeat before calling it an app bug'};
-}
-
-/**
- * @param {string} jobName gh_job_name of the leg the failure came from
- * @returns {string}
- */
-function legLabelForJob(jobName) {
-    const parsed = parseMobileJobName(jobName);
-    return parsed ? formatLegName(parsed) : (jobName || 'unknown leg');
-}
-
-const MAX_JUDGED_PER_CATEGORY = 15;
-
-function suiteKeyOf(title) {
-    return (title || '').replace(/›?\s*MM-[A-Za-z0-9_-]+.*$/, '').trim();
-}
-
-/**
- * @param {Array} failures - failed tests from TSIO
- * @returns {Array<{failure: Object, verdict: {category: string, reason: string}}>}
- */
-function judgeFailures(failures) {
-    // Corroboration for the app-bug gate: the same test failing on more than
-    // one leg of this run is a second, independent observation of it.
-    const jobsByTitle = new Map();
-    for (const failure of failures || []) {
-        const title = (failure.title || '').trim();
-        if (!title) {
-            continue;
-        }
-        if (!jobsByTitle.has(title)) {
-            jobsByTitle.set(title, new Set());
-        }
-        if (failure.job) {
-            jobsByTitle.get(title).add(failure.job);
-        }
-    }
-    const judged = (failures || []).map((failure) => {
-        const enriched = {
-            ...failure,
-            alsoFailedElsewhere: (jobsByTitle.get((failure.title || '').trim())?.size || 0) > 1,
-        };
-        return {failure: enriched, verdict: classifyFailure(enriched)};
-    });
-
-    // Cascade rule: a suite whose own setup hit an environment failure in this
-    // leg (e.g. the server rejects channel creation) makes its sibling tests
-    // fail in setup too, with generic errors that carry no infra marker. Those
-    // are not independent app-bug candidates.
-    const cascadeKeyOf = (failure) => {
-        const suite = suiteKeyOf(failure.title);
-        return failure.job && suite ? `${failure.job}|${suite}` : null;
-    };
-    const infraSuites = new Set(
-        judged.
-            filter((entry) => entry.verdict.category === 'infra').
-            map((entry) => cascadeKeyOf(entry.failure)).
-            filter(Boolean),
-    );
-    for (const entry of judged) {
-        const key = cascadeKeyOf(entry.failure);
-        if ((entry.verdict.category === 'app-bug' || entry.verdict.category === 'investigate') && key && infraSuites.has(key)) {
-            entry.verdict = {category: 'infra', reason: 'same suite hit an environment failure in this leg — likely a cascade'};
-        }
-    }
-    return judged;
-}
-
-function formatFailureJudgement(failures) {
-    const judged = judgeFailures(failures);
-    if (judged.length === 0) {
-        return [];
-    }
-
-    const lines = ['**Failure judgement** _(TSIO history + error text; “suspected” still needs a human confirm)_', ''];
-    for (const category of Object.keys(JUDGEMENTS)) {
-        const group = judged.filter((entry) => entry.verdict.category === category);
-        if (group.length === 0) {
-            continue;
-        }
-        const {emoji, heading} = JUDGEMENTS[category];
-        lines.push(`${emoji} **${heading} (${group.length})**`);
-        for (const {failure, verdict} of group.slice(0, MAX_JUDGED_PER_CATEGORY)) {
-            lines.push(`- ${legLabelForJob(failure.job)} ${failure.title || 'unnamed test'} — ${verdict.reason}`);
-        }
-        if (group.length > MAX_JUDGED_PER_CATEGORY) {
-            lines.push(`- …and ${group.length - MAX_JUDGED_PER_CATEGORY} more (see the consolidated report)`);
-        }
-        lines.push('');
-    }
-    return lines;
-}
-
 // The verdict on each failed test comes from the E2E triage job (the toolkit's findings file, schema 2), which
 // checked it against TSIO history: one judge for the run. Each test sits under what it means, in plain words.
 const VERDICT_SECTIONS = [
@@ -529,7 +353,8 @@ function formatTriageVerdict({triage, legs = [], failures = []}) {
         for (const {lane, row, verdict} of group.slice(0, MAX_PER_VERDICT)) {
             // A Maestro flow's full title is its file path again: its own title says it.
             const name = row.full_title && !row.full_title.startsWith(row.file || '\0') ? row.full_title : row.title;
-            lines.push(`- ${laneName(lane)} ${name || 'unnamed test'}${verdict.reason ? ` — ${verdict.reason}` : ''}`);
+            const detail = row.ai?.explanation || verdict.reason;
+            lines.push(`- ${laneName(lane)} ${name || 'unnamed test'}${detail ? ` — ${detail}` : ''}`);
         }
         if (group.length > MAX_PER_VERDICT) {
             lines.push(`- …and ${group.length - MAX_PER_VERDICT} more in the run`);
@@ -544,34 +369,19 @@ function formatTriageVerdict({triage, legs = [], failures = []}) {
         lines.push(`🔁 **Passed on retry, not product bugs:** ${total} test${total === 1 ? '' : 's'} (${retried.map((lane) => `${laneName(lane.lane)} ${lane.counts.flaky}`).join(', ')})`, '');
     }
 
-    // A failed test has a verdict only when a finding of its run names it: a triage job that failed, found only a
-    // problem with the whole run, or left out a test (a spec that never ran) gave none. Those failures are judged
-    // from their error text, as before triage, except one that passed on retry in a run triage checked: it is in
-    // the retry count above. Failed tests with neither a verdict nor TSIO detail were not checked, so say so
-    // instead of guessing.
-    const named = new Map();
+    // Any failed test not covered by a triage finding is reported as not checked instead of re-judged locally.
     const verdicts = new Map();
     for (const lane of triage || []) {
         const key = legKeyOf(lane.lane);
         if (!key) {
             continue;
         }
-        const names = named.get(key) || new Set();
-        for (const row of lane.findings || []) {
-            names.add(row.full_title || row.title).add(row.title);
-        }
-        named.set(key, names);
         verdicts.set(key, (verdicts.get(key) || 0) + (lane.findings || []).length);
     }
-    const unjudged = (failures || []).filter((failure) => {
-        const names = named.get(legKeyOf(failure.job));
-        return !(names && namedIn(names, failure.title)) && !(names && failure.passedOnRetry);
-    });
-    lines.push(...formatFailureJudgement(unjudged));
     const unchecked = [];
     for (const leg of legs || []) {
         const key = legKey(leg);
-        const accounted = (verdicts.get(key) || 0) + unjudged.filter((failure) => legKeyOf(failure.job) === key).length;
+        const accounted = verdicts.get(key) || 0;
         const missing = leg.failed - accounted;
         if (missing > 0) {
             unchecked.push(accounted ? `${formatLegName(leg)} (${missing} of ${leg.failed} failed tests)` : formatLegName(leg));
@@ -620,20 +430,16 @@ const NOT_PRODUCT_BUGS = [
     {key: 'setup', label: 'setup (device or server)'},
 ];
 
-// A failed test triage did not name is judged from its error text (classifyFailure).
-const VERDICT_OF_JUDGEMENT = {'app-bug': 'product', investigate: 'look', flaky: 'flaky', known: 'still', infra: 'setup'};
 const UNCLEARED = new Set(['product', 'new', 'look']);
 const MAX_NAMED_BUGS = 5;
 
-// Mobile's judge of a failure triage left uncleared, from what the error text alone proves. The app runs in its own
-// process, so none of these is the app failing: a call the test's setup made to the server, a Jest hook or test
-// timeout (the setup or the harness never finished), the device layer, or a JavaScript error in the test's code.
-// Checked against 303 failures of 13 main runs: every one these patterns matched was not a product bug.
+// Mobile's narrow post-triage check for harness/setup errors unique to Detox/Maestro (toolkit already handles
+// DeviceUnreachable, Detox isReady crashes, feature_disabled, and small-suite storms upstream).
 const SETUP_ERRORS = [
     /Exceeded timeout of \d+ ?ms for a (hook|test)/,
-    /No response from server|socket hang up|\{"(id|message)":"/,
+    /No response from server|socket hang up|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|\{"(id|message)":"/,
     /never (became|reached)|could not (confirm|enable)|did not attach file|seed failed|server baseline|apiCheckSystemHealth/,
-    /DeviceServerDied|DeviceUnreachable|Detox can't seem to connect to the test app|"reactNativeReload"/,
+    /DeviceServerDied|"reactNativeReload"/,
 ];
 const TEST_CODE_ERRORS = /^(TypeError|ReferenceError|SyntaxError):/;
 
@@ -750,7 +556,7 @@ function formatMainChannelMessage({
                     key = 'stale';
                 }
             }
-            verdicts.push({key, leg, lane: lane.lane, title: row.title, new: verdictOf(row, true).key === 'new'});
+            verdicts.push({key, leg, lane: lane.lane, title: row.title, explanation: row.ai?.explanation || null, new: verdictOf(row, true).key === 'new'});
             names.add(row.full_title || row.title).add(row.title);
         }
         named.set(leg, names);
@@ -759,8 +565,9 @@ function formatMainChannelMessage({
         const names = named.get(legKeyOf(failure.job));
         return !failure.passedOnRetry && !(names && namedIn(names, failure.title));
     });
-    for (const {failure, verdict} of judgeFailures(unjudged)) {
-        verdicts.push({key: VERDICT_OF_JUDGEMENT[verdict.category] || 'look', leg: legKeyOf(failure.job)});
+    for (const failure of unjudged) {
+        const fallback = causeOfError(failure.error);
+        verdicts.push({key: fallback || 'look', leg: legKeyOf(failure.job)});
     }
     for (const leg of legs) {
         const key = legKey(leg);
@@ -828,7 +635,7 @@ function formatMainChannelMessage({
     if (confirmed.length) {
         lines.push(`🐞 **Product bugs (${confirmed.length}) — failed again on a fresh device:** ${perRun(confirmed)}`);
         for (const v of confirmed.slice(0, MAX_NAMED_BUGS)) {
-            lines.push(`- ${laneName(v.lane)} ${v.title}`);
+            lines.push(`- ${laneName(v.lane)} ${v.title}${v.explanation ? ` — ${v.explanation}` : ''}`);
         }
         if (confirmed.length > MAX_NAMED_BUGS) {
             lines.push(`- …and ${confirmed.length - MAX_NAMED_BUGS} more in the report`);
@@ -984,13 +791,20 @@ function formatCmtChannelMessage(params) {
         lines.push(...massFailures, '');
     }
 
-    // The triage job's verdicts when it ran; the history-and-error-text judgement only where it did not.
+    // The triage job's verdicts when it ran; without triage, name failing tests neutrally without legacy heuristics.
     if (triage?.length) {
         lines.push(...formatTriageVerdict({triage, legs, failures}));
-    } else {
-        lines.push(...formatFailureJudgement(failures));
-        if ((failures || []).length > 0 && failed > failures.length) {
-            lines.push(`_Judged ${failures.length} of ${failed} failing tests; the rest have no TSIO test detail yet._`, '');
+    } else if ((failures || []).length > 0) {
+        const active = failures.filter((f) => !f.passedOnRetry);
+        if (active.length) {
+            lines.push(`🔎 **Not checked by triage (${active.length})**`);
+            for (const failure of active.slice(0, MAX_PER_VERDICT)) {
+                lines.push(`- ${laneName(failure.job)} ${failure.title || 'unnamed test'}`);
+            }
+            if (active.length > MAX_PER_VERDICT) {
+                lines.push(`- …and ${active.length - MAX_PER_VERDICT} more in the report`);
+            }
+            lines.push('');
         }
     }
 
@@ -1294,7 +1108,6 @@ module.exports = {
     judgeFinding,
     formatMassFailures,
     verdictOf,
-    classifyFailure,
     failuresFromConsolidated,
     fetchFailuresFromConsolidated,
     fetchPerJobCountsFromConsolidated,
