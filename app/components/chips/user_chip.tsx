@@ -5,6 +5,7 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
 import ProfilePicture from '@components/profile_picture';
+import {useTheme} from '@context/theme';
 import {displayUsername} from '@utils/user';
 
 import BaseChip from './base_chip';
@@ -32,6 +33,7 @@ export default function UserChip({
     showAnimation,
 }: SelectedChipProps) {
     const intl = useIntl();
+    const theme = useTheme();
 
     const onPress = useMemo(() => {
         if (!receivedOnPress) {
@@ -56,8 +58,9 @@ export default function UserChip({
             iconSize={20}
             testID={`${testID}.profile_picture`}
             showStatus={false}
+            imageBackgroundColor={theme.centerChannelBg}
         />
-    ), [testID, user]);
+    ), [testID, theme.centerChannelBg, user]);
 
     return (
         <BaseChip

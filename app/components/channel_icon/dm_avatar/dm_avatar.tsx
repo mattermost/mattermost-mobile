@@ -42,7 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const DmAvatar = ({
     authorId,
     author,
-    isOnCenterBg,
+    isOnCenterBg = false,
     style,
     size,
 }: Props) => {
@@ -73,6 +73,7 @@ const DmAvatar = ({
             statusSize={12}
             statusStyle={[styles.status, isOnCenterBg && styles.statusOnCenterBg]}
             containerStyle={style}
+            isOnCenterBg={isOnCenterBg}
         />
     );
 };

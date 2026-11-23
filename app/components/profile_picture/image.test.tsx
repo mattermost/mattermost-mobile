@@ -4,10 +4,11 @@
 import React from 'react';
 
 import {ExpoImageAnimated} from '@components/expo_image';
-import {getDefaultThemeByAppearance} from '@context/theme';
+import {Preferences} from '@constants';
+import {CustomThemeProvider, getDefaultThemeByAppearance} from '@context/theme';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
-import {blendColors, getComponents} from '@utils/theme';
+import {blendColors, getComponents, getProfileImageBackground} from '@utils/theme';
 
 import Image from './image';
 
@@ -43,5 +44,36 @@ describe('ProfilePicture Image', () => {
 
         // Avatars are also rendered on non-center surfaces (e.g. the sidebar), where a translucent fill disappears
         expect(getComponents(style.backgroundColor).alpha).toBe(1);
+    });
+
+    it('should use the sidebar-visible fill when not on center bg', () => {
+        const sidebarTheme = Preferences.THEMES.quartz;
+        const {getByTestId} = renderWithIntlAndTheme(
+            <CustomThemeProvider theme={sidebarTheme}>
+                <Image
+                    author={author}
+                    size={32}
+                    isOnCenterBg={false}
+                    url='https://server.example.com'
+                />
+            </CustomThemeProvider>,
+        );
+
+        const style = getByTestId('profile_picture.image').props.style;
+        expect(style.backgroundColor).toBe(getProfileImageBackground(sidebarTheme, false));
+    });
+
+    it('should use imageBackgroundColor as the fill when provided', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <Image
+                author={author}
+                size={32}
+                imageBackgroundColor='#ffffff'
+                url='https://server.example.com'
+            />,
+        );
+
+        const style = getByTestId('profile_picture.image').props.style;
+        expect(style.backgroundColor).toBe('#ffffff');
     });
 });
