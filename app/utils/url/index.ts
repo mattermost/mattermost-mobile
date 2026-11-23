@@ -206,22 +206,26 @@ export function getScheme(url: string) {
     return match && match[1];
 }
 
+// Matches a URL scheme only at the very start (RFC 3986), so a colon in the path or query
+// of a relative link (e.g. "/team?filter=kind:bug") is not mistaken for a scheme.
+const LEADING_SCHEME_REGEX = /^([a-z][a-z0-9+.-]*):/i;
+
+export function hasUrlScheme(url: string): boolean {
+    return LEADING_SCHEME_REGEX.test(url);
+}
+
 export function isValidAutoLink(url: string, customSchemes?: string[]): boolean {
-    const scheme = getScheme(url);
-    if (!scheme) {
+    const match = LEADING_SCHEME_REGEX.exec(url);
+    if (!match) {
         return false;
     }
 
-    const schemeLower = scheme.toLowerCase();
+    const schemeLower = match[1].toLowerCase();
     if (AUTOLINKED_URL_SCHEMES.has(schemeLower)) {
         return true;
     }
 
-    if (customSchemes) {
-        return customSchemes.some((s) => s.toLowerCase() === schemeLower);
-    }
-
-    return false;
+    return Boolean(customSchemes?.some((s) => s.toLowerCase() === schemeLower));
 }
 
 export function getYouTubeVideoId(link?: string) {

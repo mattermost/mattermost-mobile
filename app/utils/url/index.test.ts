@@ -10,6 +10,7 @@ import {
     cleanUpUrlable,
     cleanUrlForLogging,
     extractFilenameFromUrl,
+    hasUrlScheme,
     extractFirstLink,
     extractStartLink,
     getScheme,
@@ -19,6 +20,7 @@ import {
     getYouTubeVideoId,
     isImageLink,
     isParsableUrl,
+    isValidAutoLink,
     isUrlSafe,
     isValidUrl,
     isYoutubeLink,
@@ -511,5 +513,33 @@ describe('isParsableUrl', () => {
         expect(isParsableUrl('   ')).toBe(false);
         expect(isParsableUrl(null as unknown as string)).toBe(false);
         expect(isParsableUrl(undefined as unknown as string)).toBe(false);
+    });
+});
+
+describe('hasUrlScheme and isValidAutoLink', () => {
+    it('detects a scheme only at the start of the url', () => {
+        expect(hasUrlScheme('sha256:abc123')).toBe(true);
+        expect(hasUrlScheme('https://example.com')).toBe(true);
+        expect(hasUrlScheme('/team/channels/town-square')).toBe(false);
+        expect(hasUrlScheme('/team/channels/town-square?filter=kind:bug')).toBe(false);
+        expect(hasUrlScheme('page#section:one')).toBe(false);
+    });
+
+    it('allows the fixed schemes case-insensitively', () => {
+        expect(isValidAutoLink('https://example.com')).toBe(true);
+        expect(isValidAutoLink('MAILTO:a@example.com')).toBe(true);
+        expect(isValidAutoLink('mattermost://team')).toBe(true);
+    });
+
+    it('rejects unknown schemes and urls without a scheme', () => {
+        expect(isValidAutoLink('sha256:abc123')).toBe(false);
+        expect(isValidAutoLink('data:text/html,hi')).toBe(false);
+        expect(isValidAutoLink('/team/channels/town-square?filter=kind:bug')).toBe(false);
+    });
+
+    it('allows server-configured custom schemes', () => {
+        expect(isValidAutoLink('custom:action', ['custom'])).toBe(true);
+        expect(isValidAutoLink('CUSTOM:action', ['custom'])).toBe(true);
+        expect(isValidAutoLink('custom:action', ['other'])).toBe(false);
     });
 });

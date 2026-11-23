@@ -350,6 +350,19 @@ describe('Markdown', () => {
             expect(links[0].props.href).toBe('/team/channels/town-square');
         });
 
+        it('should not mistake a colon in a relative link query for a scheme', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='[bugs](/team/channels/town-square?filter=kind:bug)'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links).toHaveLength(1);
+            expect(links[0].props.href).toBe('/team/channels/town-square?filter=kind:bug');
+        });
+
         it('should keep allowed schemes as links', () => {
             renderWithIntl(
                 <Markdown

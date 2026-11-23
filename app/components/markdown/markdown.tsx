@@ -19,7 +19,7 @@ import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getScheme, isValidAutoLink} from '@utils/url';
+import {getScheme, hasUrlScheme, isValidAutoLink} from '@utils/url';
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
@@ -526,7 +526,7 @@ const Markdown = ({
             return <Text>{children}</Text>;
         }
 
-        if (getScheme(href) && !isValidAutoLink(href, customUrlSchemes)) {
+        if (hasUrlScheme(href) && !isValidAutoLink(href, customUrlSchemes)) {
             return children;
         }
 
