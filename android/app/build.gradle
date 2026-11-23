@@ -126,6 +126,12 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     namespace "com.mattermost.rnbeta"
 
+    sourceSets {
+        main {
+            java.srcDirs += intuneEnabled ? ["src/intune/java"] : ["src/nointune/java"]
+        }
+    }
+
     lintOptions {
         checkReleaseBuilds false
         abortOnError false
@@ -147,9 +153,6 @@ android {
         // tell Gradle to resolve `:detox` dependencies against the `full` flavor
         // (which is what the prebuilt AAR also corresponds to).
         missingDimensionStrategy 'detox', 'full'
-
-        // Intune MAM support (enabled via environment variable)
-        buildConfigField "boolean", "INTUNE_ENABLED", intuneEnabled.toString()
     }
 
     signingConfigs {

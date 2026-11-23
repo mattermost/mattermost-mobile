@@ -38,6 +38,9 @@ else
     git checkout -- ios/Mattermost.xcodeproj/project.pbxproj
 fi
 
+# Android autolinking is cached independently of INTUNE_ENABLED
+rm -rf android/build/generated/autolinking
+
 # Reinstall pods without Intune
 echo "📦 Reinstalling iOS dependencies (OSS mode)..."
 npm run pod-install

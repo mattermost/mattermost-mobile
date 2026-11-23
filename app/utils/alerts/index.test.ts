@@ -715,9 +715,28 @@ describe('Intune alerts', () => {
     });
 
     describe('showMAMEnrollmentFailedAlert', () => {
-        it('should show enrollment failed alert', async () => {
-            await showMAMEnrollmentFailedAlert('en');
-            expect(Alert.alert).toHaveBeenCalledWith('Enrollment Failed', expect.stringContaining('Failed to enroll'), [{text: 'Okay', onPress: undefined}], {cancelable: false});
+        it('should offer retry and logout for a failure that is not a denial', async () => {
+            const onDismiss = jest.fn();
+            const onRetry = jest.fn();
+            await showMAMEnrollmentFailedAlert('en', onDismiss, onRetry);
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Enrollment Failed',
+                'Failed to enroll in Microsoft Intune. Please try again.',
+                [
+                    {text: 'Retry', style: 'default', onPress: onRetry},
+                    {text: 'Logout', style: 'destructive', onPress: onDismiss},
+                ],
+                {cancelable: false},
+            );
+        });
+
+        it.each([
+            ['not_licensed', 'Your account is not licensed for Microsoft Intune'],
+            ['not_protected', 'This app must be protected with an Intune policy'],
+        ] as const)('should only allow dismissing a %s denial', async (reason, text) => {
+            const onDismiss = jest.fn();
+            await showMAMEnrollmentFailedAlert('en', onDismiss, jest.fn(), reason);
+            expect(Alert.alert).toHaveBeenCalledWith('Enrollment Failed', expect.stringContaining(text), [{text: 'Okay', onPress: onDismiss}], {cancelable: false});
         });
     });
 

@@ -92,6 +92,8 @@ export type IntuneConditionalLaunchBlockedEvent = Readonly<{
     reason: string;
 }>;
 
+export type IntuneEnrollmentOutcome = 'enrolled' | 'not_protected' | 'not_licensed' | 'failed' | 'timeout';
+
 export type IntuneEnrollmentChangedEvent = Readonly<{
     enrolled: boolean;
     oid: string;

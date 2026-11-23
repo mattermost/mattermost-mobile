@@ -48,6 +48,7 @@ import {
 } from '@utils/alerts';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMainActivity} from '@utils/helpers';
+import {isProtectionPolicyRequired} from '@utils/intune_errors';
 import {logDebug, logError} from '@utils/log';
 import {handleAppStateResume} from '@utils/security/app_state';
 import {getAuthenticationOutcome, probeDeviceSecured} from '@utils/security/authentication';
@@ -681,30 +682,39 @@ class SecurityManagerSingleton {
                 this.setScreenCapturePolicy(serverUrl);
             };
 
+            const endSession = () => {
+                logout(serverUrl, undefined, {removeServer: false});
+                beforeExit();
+                resolve(false);
+            };
+
             const handleEnrollment = async () => {
                 try {
-                    // Step 1: Acquire MSAL tokens via native login
                     const tokens = await IntuneManager.login(serverUrl, [intuneScope]);
+                    const outcome = await IntuneManager.enrollAndWait(serverUrl, tokens.identity);
 
-                    // Step 2: Enroll in MAM (NO token sent to server - session exists)
-                    // If enrollServer doesn't throw, consider it successful
-                    // Policy and enrollment status will be updated via events
-                    IntuneManager.enrollServer(serverUrl, tokens.identity);
+                    if (outcome === 'not_protected' || outcome === 'not_licensed') {
+                        logDebug('ensureMAMEnrollment: Access denied', {outcome});
+                        await showMAMEnrollmentFailedAlert(locale, endSession, undefined, outcome);
+                        return;
+                    }
+
+                    if (outcome !== 'enrolled') {
+                        logError('ensureMAMEnrollment: Enrollment did not complete', outcome);
+                        await showMAMEnrollmentFailedAlert(locale, endSession, handleEnrollment);
+                        return;
+                    }
 
                     logDebug('ensureMAMEnrollment: Enrollment successful');
-
-                    // Always clear enrolling flag and remove blur
                     beforeExit();
                     resolve(true);
                 } catch (error) {
                     logError('ensureMAMEnrollment: Failed', error);
-
-                    await showMAMEnrollmentFailedAlert(locale, () => {
-                        // Always clear enrolling flag and remove blur
-                        beforeExit();
-                        logout(serverUrl, undefined, {removeServer: true});
-                        resolve(false);
-                    });
+                    if (isProtectionPolicyRequired(error)) {
+                        await showMAMEnrollmentFailedAlert(locale, endSession, undefined, 'not_protected');
+                        return;
+                    }
+                    await showMAMEnrollmentFailedAlert(locale, endSession, handleEnrollment);
                 }
             };
 
@@ -1059,6 +1069,9 @@ class SecurityManagerSingleton {
 
             // Check if all wipes succeeded
             const success = results.every((result) => result === true);
+            if (success) {
+                IntuneManager.cleanupAfterWipe(oid);
+            }
 
             // Report completion status (clears pending state if successful)
             IntuneManager.reportWipeComplete(oid, success);

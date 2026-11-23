@@ -10,11 +10,12 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.mattermost.hardware.keyboard.MattermostHardwareKeyboardImpl
+import com.mattermost.helpers.IntuneReactActivity
 import com.mattermost.rnutils.helpers.FoldableObserver
 import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory;
 import expo.modules.ReactActivityDelegateWrapper
 
-class MainActivity : ReactActivity() {
+class MainActivity : IntuneReactActivity() {
     private var HWKeyboardConnected = false
     private lateinit var foldableObserver: FoldableObserver
     private var lastOrientation: Int = Configuration.ORIENTATION_UNDEFINED

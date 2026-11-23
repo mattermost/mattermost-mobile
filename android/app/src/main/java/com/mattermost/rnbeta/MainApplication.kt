@@ -35,11 +35,6 @@ import java.io.File
 
 class MainApplication : Application(), ReactApplication, INotificationsApplication {
 
-    // Lazy-initialized Intune helper for MAM SDK integration
-    private val intuneHelper by lazy {
-        IntuneHelper(applicationContext) { reactHost }
-    }
-
     override val reactHost: ReactHost by lazy {
         DefaultNewArchitectureEntryPoint.releaseLevel = try {
             ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
@@ -58,9 +53,6 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
     override fun onCreate() {
         super.onCreate()
 
-        // Initialize Intune MAM SDK (must be done early in app lifecycle)
-        intuneHelper.initializeIfEnabled()
-
         // Initialize Sentry early for native crash reporting
         RNSentrySDK.init(this)
 
@@ -70,6 +62,8 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         TurboLog.configure(options = ConfigureOptions(maximumNumberOfFiles = 5, logsDirectory = applicationContext.cacheDir.absolutePath + "/logs", logPrefix = applicationContext.packageName))
 
         TurboLog.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
+
+        IntuneHelper.initialize(this) { reactHost }
 
         // Tells React Native to use our RCTOkHttpClientFactory which builds an OKHttpClient
         // with a cookie jar defined in APIClientModule and an interceptor to intercept all

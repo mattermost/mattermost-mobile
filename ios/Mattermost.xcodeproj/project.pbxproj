@@ -2064,6 +2064,8 @@
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
+					"-Xlinker",
+					"-no_compact_unwind",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta;

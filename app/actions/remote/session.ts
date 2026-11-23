@@ -20,6 +20,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
+import {IntuneAccessDeniedError} from '@utils/intune_errors';
 import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 import {canReceiveNotifications} from '@utils/push_proxy';
@@ -178,6 +179,7 @@ type LogoutOptions = {
     skipEvents?: boolean;
     logoutOnAlert?: boolean;
     skipAlert?: boolean; // Skip showing alert dialog (for automated wipes)
+    skipNavigation?: boolean; // Clean up the session without leaving the current screen
 };
 
 export const logout = async (
@@ -189,7 +191,13 @@ export const logout = async (
         skipEvents = false,
         logoutOnAlert = false,
         skipAlert = false,
+        skipNavigation = false,
     }: LogoutOptions = {}) => {
+    // Marked before any await: a 401 from the ending session emits its own logout that must not navigate either
+    if (skipNavigation) {
+        EphemeralStore.setSilentLogout(serverUrl);
+    }
+
     if (!skipServerLogout) {
         let loggedOut = false;
         try {
@@ -216,7 +224,7 @@ export const logout = async (
             buttons.push({
                 text: confirm,
                 onPress: logoutOnAlert ? undefined : () => {
-                    logout(serverUrl, intl, {skipEvents, removeServer, logoutOnAlert, skipServerLogout: true});
+                    logout(serverUrl, intl, {skipEvents, removeServer, logoutOnAlert, skipNavigation, skipServerLogout: true});
                 },
             });
             Alert.alert(
@@ -226,6 +234,7 @@ export const logout = async (
             );
 
             if (!logoutOnAlert) {
+                EphemeralStore.clearSilentLogout(serverUrl);
                 return {data: false};
             }
         }
@@ -360,7 +369,13 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         const {accessToken, identity} = tokens;
 
         // Step 2: POST accessToken to /oauth/intune to exchange for session token
-        const client = NetworkManager.getClient(serverUrl);
+        // A blocked sign-in invalidates the client, so a retry has to recreate it
+        let client;
+        try {
+            client = NetworkManager.getClient(serverUrl);
+        } catch {
+            client = await NetworkManager.createClient(serverUrl, undefined, EphemeralStore.getPendingPreauthSecret(serverUrl));
+        }
         const deviceToken = await getDeviceToken();
         const voipDeviceToken = await getVoIPDeviceToken();
         let csrfToken: string;
@@ -402,7 +417,12 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
             try {
                 const isManaged = IntuneManager.isManagedServer(serverUrl);
                 if (!isManaged) {
-                    IntuneManager.enrollServer(serverUrl, identity);
+                    const outcome = await IntuneManager.enrollAndWait(serverUrl, identity);
+                    if (outcome === 'not_protected' || outcome === 'not_licensed') {
+                        // The user is not protected by any app protection policy, so the session is ended
+                        await logout(serverUrl, undefined, {removeServer: true, skipAlert: true, skipNavigation: true});
+                        return {error: new IntuneAccessDeniedError(outcome), failed: true};
+                    }
                 }
             } catch (error) {
                 logWarning('Intune MAM enrollment failed, MAM protection may not be configured properly', error);

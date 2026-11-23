@@ -967,14 +967,10 @@ platform :android do
       require 'uri'
       require 'base64'
 
-      # Read gradle.properties to get keystore configuration
-      # Check user gradle.properties first, then fall back to project gradle.properties
-      user_props_file = File.expand_path('~/.gradle/gradle.properties')
-      project_props_file = '../android/gradle.properties'
-      props_file = File.exist?(user_props_file) ? user_props_file : project_props_file
+      # Read keystore configuration like Gradle does: project gradle.properties, overridden per key by the user's
       gradle_props = {}
-
-      if File.exist?(props_file)
+      ['../android/gradle.properties', File.expand_path('~/.gradle/gradle.properties')].each do |props_file|
+        next unless File.exist?(props_file)
         File.read(props_file).each_line do |line|
           next if line.strip.empty? || line.strip.start_with?('#')
           key, value = line.split('=', 2)
@@ -983,9 +979,9 @@ platform :android do
         UI.message("Reading gradle.properties from: #{props_file}")
       end
 
-      # Determine which keystore to use (same logic as Gradle)
+      # Determine which keystore to use (same logic as Gradle, where storeFile is relative to android/app)
       if gradle_props['MATTERMOST_RELEASE_STORE_FILE'] && !gradle_props['MATTERMOST_RELEASE_STORE_FILE'].empty?
-        keystore_path = File.expand_path("#{gradle_props['MATTERMOST_RELEASE_STORE_FILE']}")
+        keystore_path = File.expand_path(gradle_props['MATTERMOST_RELEASE_STORE_FILE'], File.expand_path('../android/app'))
         keystore_password = gradle_props['MATTERMOST_RELEASE_PASSWORD']
         key_alias = gradle_props['MATTERMOST_RELEASE_KEY_ALIAS']
         UI.message("Using release keystore: #{keystore_path}")
@@ -1022,6 +1018,8 @@ platform :android do
         'authorization_user_agent' => 'DEFAULT',
         'redirect_uri' => "msauth://#{package_name}/#{encoded_hash}",
         'broker_redirect_uri_registered' => true,
+        'account_mode' => 'MULTIPLE',
+        'client_capabilities' => 'protapp',
         'authorities' => [
           {
             'type' => 'AAD',

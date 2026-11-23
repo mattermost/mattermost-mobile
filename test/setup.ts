@@ -253,6 +253,7 @@ jest.mock('@managers/intune_manager', () => ({
         init: jest.fn(),
         login: jest.fn(),
         enrollServer: jest.fn(),
+        enrollAndWait: jest.fn(() => Promise.resolve('enrolled')),
         unenrollServer: jest.fn(),
         setCurrentIdentity: jest.fn(),
         cleanupAfterWipe: jest.fn(),

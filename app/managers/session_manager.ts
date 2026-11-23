@@ -144,16 +144,11 @@ export class SessionManagerSingleton {
             EphemeralModeManager.removeServer(serverUrl);
             SessionAttributesManager.removeServer(serverUrl);
 
-            if (activeServerUrl === serverUrl) {
-                let displayName = '';
+            if (activeServerUrl === serverUrl && !EphemeralStore.isSilentLogout(serverUrl)) {
                 let launchType: LaunchType = Launch.AddServer;
                 if (!Object.keys(DatabaseManager.serverDatabases).length) {
                     EphemeralStore.setTheme(getDefaultThemeByAppearance());
                     launchType = Launch.Normal;
-
-                    if (activeServerDisplayName) {
-                        displayName = activeServerDisplayName;
-                    }
                 }
 
                 // set the onboardingViewed value to false so the launch will show the onboarding screen after all servers were removed
@@ -161,13 +156,14 @@ export class SessionManagerSingleton {
                 if (!servers.length) {
                     await storeOnboardingViewedValue(false);
                 }
-                const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName});
+                const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName: activeServerDisplayName || ''});
 
                 requestAnimationFrame(() => {
                     router.replace({pathname: launchRoute.route, params: propsToParams(launchRoute.params)});
                 });
             }
         } finally {
+            EphemeralStore.clearSilentLogout(serverUrl);
             this.terminatingSessionUrl.delete(serverUrl);
         }
     };

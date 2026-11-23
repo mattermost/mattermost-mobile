@@ -14,7 +14,10 @@ import {IntuneAuthRequiredReasons} from '@managers/intune_manager/types';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getConfigValue} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {intuneErrorMessages, type IntuneAccessDeniedReason} from '@utils/intune_errors';
+import {logDebug, logError} from '@utils/log';
+
+const MAM_ALERT_DELAY_MS = 500;
 
 export const messages = defineMessages({
     not_secured_vendor_ios: {
@@ -135,7 +138,7 @@ export const messages = defineMessages({
     },
     mam_enrollment_failed_message: {
         id: 'security_manager.mam_enrollment_failed_message',
-        defaultMessage: 'Failed to enroll in Microsoft Intune. You will be logged out.',
+        defaultMessage: 'Failed to enroll in Microsoft Intune. Please try again.',
     },
     mam_declined_title: {
         id: 'security_manager.mam_declined_title',
@@ -539,18 +542,47 @@ export const showMAMEnrollmentRequiredAlert = async (
 
 /**
  * Shows an alert when MAM enrollment fails.
- * User will be logged out after dismissing the alert.
+ * A denial (not protected / not licensed) can only be dismissed, which ends the session.
+ * Any other failure offers a retry, and signing out is left to the user.
  */
 export const showMAMEnrollmentFailedAlert = async (
-    locale?: string,
-    callback?: () => void,
+    locale: string | undefined,
+    callback: (() => void) | undefined,
+    retryCallback?: () => void,
+    deniedReason?: IntuneAccessDeniedReason,
 ) => {
     const resolvedLocale = locale || DEFAULT_LOCALE;
 
+    // An alert raised while the Intune block screen is opening is not shown on Android
+    await new Promise((resolve) => setTimeout(resolve, MAM_ALERT_DELAY_MS));
+
+    let message = messages.mam_enrollment_failed_message;
+    if (deniedReason) {
+        message = deniedReason === 'not_licensed' ? intuneErrorMessages.accessDeniedNotLicensed : intuneErrorMessages.accessDeniedNotProtected;
+    }
+
+    const buttons: AlertButton[] = [];
+    if (retryCallback && !deniedReason) {
+        buttons.push({
+            text: getLocalizedMessage(resolvedLocale, messages.retry.id, messages.retry.defaultMessage),
+            style: 'default',
+            onPress: retryCallback,
+        });
+        buttons.push({
+            text: getLocalizedMessage(resolvedLocale, messages.logout.id, messages.logout.defaultMessage),
+            style: 'destructive',
+            onPress: callback,
+        });
+    } else {
+        buttons.push({text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback});
+    }
+
+    logDebug('showMAMEnrollmentFailedAlert: showing', {deniedReason, retry: Boolean(retryCallback)});
+
     Alert.alert(
         getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_title.id, messages.mam_enrollment_failed_title.defaultMessage),
-        getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_message.id, messages.mam_enrollment_failed_message.defaultMessage),
-        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
+        getLocalizedMessage(resolvedLocale, message.id, message.defaultMessage),
+        buttons,
         {cancelable: false},
     );
 };

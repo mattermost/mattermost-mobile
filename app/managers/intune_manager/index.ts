@@ -18,6 +18,7 @@ import type {
     IntuneComplianceCompletedEvent,
     IntuneComplianceFailedEvent,
     IntuneEnrollmentChangedEvent,
+    IntuneEnrollmentOutcome,
     IntuneIdentitySwitchRequiredEvent,
     IntunePolicyChangedEvent,
     IntuneWipeRequestedEvent,
@@ -27,6 +28,8 @@ import type {
     IntuneSpec,
     IntunePolicy,
 } from './types';
+
+const ENROLLMENT_OUTCOME_TIMEOUT_MS = 30000;
 
 let Intune: IntuneSpec | null = null;
 try {
@@ -101,6 +104,63 @@ export class IntuneManagerSingleton {
     }
 
     /**
+     * Enroll a server in MAM and wait for the SDK outcome.
+     * Enrollment that succeeds without a policy means the user is not targeted by any app protection policy.
+     * @param serverUrl - The Mattermost server URL
+     * @param identity - The MSAL identity (upn, tid, oid)
+     * @param timeoutMs - How long to wait for an outcome before reporting 'timeout'
+     */
+    enrollAndWait(serverUrl: string, identity: MSALIdentity, timeoutMs = ENROLLMENT_OUTCOME_TIMEOUT_MS): Promise<IntuneEnrollmentOutcome> {
+        const intune = Intune;
+        if (!intune) {
+            return Promise.resolve('timeout');
+        }
+
+        return new Promise((resolve) => {
+            let settled = false;
+
+            const finish = (outcome: IntuneEnrollmentOutcome) => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                clearTimeout(timer);
+                subscription.remove();
+                resolve(outcome);
+            };
+
+            const hasPolicy = () => {
+                try {
+                    return Boolean(intune.getPolicy(serverUrl));
+                } catch (error) {
+                    logError('IntuneManager: Failed to read policy after enrollment', error);
+                    return true;
+                }
+            };
+
+            const subscription = intune.onIntuneEnrollmentChanged((event) => {
+                if (event.oid !== identity.oid && !event.serverUrls?.includes(serverUrl)) {
+                    return;
+                }
+
+                if (event.enrolled) {
+                    finish(hasPolicy() ? 'enrolled' : 'not_protected');
+                } else if (event.reason === 'not_licensed') {
+                    finish('not_licensed');
+                } else if (event.reason === 'not_targeted' || event.reason === 'licensed_not_targeted') {
+                    finish('not_protected');
+                } else if (event.reason === 'failed') {
+                    finish('failed');
+                }
+            });
+            const timer = setTimeout(() => finish('timeout'), timeoutMs);
+
+            logDebug('IntuneManager: Enrolling in MAM and waiting for the outcome');
+            intune.enrollInMAM(serverUrl, identity);
+        });
+    }
+
+    /**
      * Unenroll a server from Intune MAM
      * @param serverUrl - The Mattermost server URL
      * @param doWipe - Whether to perform selective wipe
@@ -112,11 +172,6 @@ export class IntuneManagerSingleton {
 
         try {
             const currentServer = await DatabaseManager.getActiveServerUrl();
-            const isManaged = Intune.isManagedServer(serverUrl);
-            if (!isManaged) {
-                logDebug('IntuneManager: Server not enrolled in MAM, skipping unenrollment');
-                return;
-            }
             logDebug('IntuneManager: Starting unenrollment', {doWipe});
             if (currentServer === serverUrl) {
                 await Intune.setCurrentIdentity(null);
@@ -179,7 +234,7 @@ export class IntuneManagerSingleton {
             logDebug(`IntuneManager: Current identity ${identity}`);
         } catch (error) {
             logError('IntuneManager: Failed to set current identity', error);
-            if (serverUrl) {
+            if (serverUrl && Intune.isManagedServer(serverUrl)) {
                 await new Promise((resolve) => setTimeout(resolve, 250));
                 Emm.applyBlurEffect(0.5);
                 const locale = await getCurrentUserLocale(serverUrl);

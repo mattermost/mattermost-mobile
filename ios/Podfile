@@ -117,6 +117,7 @@ post_install do |installer|
 
   installer.pods_project.targets.each do |t|
     t.build_configurations.each do |bc|
+      bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = app_deployment_target
       bc.build_settings['SWIFT_VERSION']        = '5.9'
       bc.build_settings['OTHER_LDFLAGS']        = ['$(inherited)', '-ObjC']
       bc.build_settings['STRIP_SWIFT_SYMBOLS']  = 'NO'

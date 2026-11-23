@@ -224,6 +224,27 @@ describe('SecurityManager', () => {
             expect(SecurityManager.serverConfig['server-2']).toBeDefined();
             expect(logError).toHaveBeenCalled();
         });
+
+        test('should retry pending wipes and clean up the account when they succeed', async () => {
+            jest.mocked(queryAllActiveServers).mockReturnValue({fetch: jest.fn().mockResolvedValue([{url: 'server-1'}])} as unknown as Query<ServersModel>);
+            jest.mocked(getSecurityConfig).mockResolvedValue({} as SecurityClientConfig);
+            jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: 'db-1'} as unknown as ServerDatabase);
+            jest.mocked(IntuneManager.getPolicy).mockResolvedValue(null);
+            jest.mocked(IntuneManager.getPendingWipes).mockReturnValueOnce([
+                {oid: 'oid-ok', serverUrls: ['server-1'], timestamp: 1},
+                {oid: 'oid-fail', serverUrls: ['server-2'], timestamp: 1},
+            ]);
+            const performWipeSpy = jest.spyOn(SecurityManager as any, 'performSelectiveWipe').mockImplementation(async (serverUrl: unknown) => serverUrl === 'server-1');
+
+            await SecurityManager.init();
+
+            expect(IntuneManager.cleanupAfterWipe).toHaveBeenCalledWith('oid-ok');
+            expect(IntuneManager.cleanupAfterWipe).not.toHaveBeenCalledWith('oid-fail');
+            expect(IntuneManager.reportWipeComplete).toHaveBeenCalledWith('oid-ok', true);
+            expect(IntuneManager.reportWipeComplete).toHaveBeenCalledWith('oid-fail', false);
+
+            performWipeSpy.mockRestore();
+        });
     });
 
     describe('addServer', () => {

@@ -12,6 +12,7 @@ Pod::Spec.new do |s|
   s.requires_arc          = true
 
   s.static_framework      = true
+  s.libraries             = 'c++'
 
   # mirror Package.swift deps
   s.dependency 'SQLite.swift', '0.15.4'             # module name: SQLite
