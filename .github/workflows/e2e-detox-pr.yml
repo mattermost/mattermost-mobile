@@ -459,7 +459,7 @@ jobs:
     # Runner / Xcode image is not in the git tree. Changing this label (or the
     # Xcode on it) without bumping CACHE_VERSION in
     # compute-e2e-build-fingerprint/action.yml serves stale cached binaries.
-    runs-on: macos-26
+    runs-on: xcode-27
     needs:
       - resolve-e2e-policy
       - compute-build-fingerprints

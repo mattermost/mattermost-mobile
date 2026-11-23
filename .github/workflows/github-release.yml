@@ -27,7 +27,7 @@ jobs:
         uses: ./.github/actions/test
 
   build-ios-unsigned:
-    runs-on: macos-15-large
+    runs-on: xcode-27-xlarge
     needs:
       - test
     steps:

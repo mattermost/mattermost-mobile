@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/test
 
   build-ios-pr:
-    runs-on: macos-15-large
+    runs-on: xcode-27-xlarge
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository && (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS') }}
     needs:
       - test

@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/test
 
   build-ios-simulator:
-    runs-on: macos-15-large
+    runs-on: xcode-27-xlarge
     if: ${{ !contains(github.ref_name, 'beta-ios') }}
     needs:
       - test
@@ -60,18 +60,18 @@ jobs:
           AWS_BUCKET_NAME: "${{ secrets.MM_MOBILE_RELEASE_AWS_NEW_BUCKET_NAME }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios upload_artifacts_to_s3 --env ios.simulator output_file:"Mattermost-simulator-x86_64.app.zip" s3_client_oidc:true
+        run: bundle exec fastlane ios upload_artifacts_to_s3 --env ios.simulator output_file:"Mattermost-simulator-arm64.app.zip" s3_client_oidc:true
         working-directory: ./fastlane
 
       - name: ci/upload-ios-pr-simulator
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+          path: Mattermost-simulator-arm64.app.zip
 
 
   build-and-deploy-ios-beta:
-    runs-on: macos-15-large
+    runs-on: xcode-27-xlarge
     if: ${{ !contains(github.ref_name, 'beta-sim') }}
     needs:
       - test
