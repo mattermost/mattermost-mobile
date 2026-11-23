@@ -1,0 +1,354 @@
+---
+name: E2E Tests - Build
+
+# One app build for e2e-tests-ci.yml, as e2e-detox-pr.yml builds them: its content fingerprint, the S3 build cache,
+# and the build on a miss. The artifact keeps e2e-detox-pr.yml's name, so the templates download it from this run:
+#   ios              ios-build-simulator-<run id>          the iOS simulator app (detox-ios, detox-ipad, maestro-ios)
+#   android-detox    android-build-files-<run id>          the Android Detox APKs (detox-android)
+#   android-maestro  android-maestro-build-files-<run id>  the Android Maestro APK (maestro-android)
+# The cache scope is pr-<pr_number>, else branch-<ref>: a run by hand reads the main scope but never writes it.
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: "The build: ios, android-detox or android-maestro"
+        type: string
+        required: true
+      commit_sha:
+        description: "The commit under test"
+        type: string
+        required: true
+      pr_number:
+        description: "The pull request the commit belongs to; empty for none"
+        type: string
+        default: ""
+    secrets:
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        description: "AWS access key for the S3 build cache"
+        required: true
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        description: "AWS secret key for the S3 build cache"
+        required: true
+      MM_MOBILE_INTUNE_DEPLOY_KEY:
+        required: false
+      MM_MOBILE_GITHUB_TOKEN:
+        required: false
+      MM_MOBILE_STORE_FILE:
+        required: false
+      MM_MOBILE_STORE_ALIAS:
+        required: false
+      MM_MOBILE_STORE_PASSWORD:
+        required: false
+      MATTERMOST_BUILD_GH_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  # Changing this switches the iOS build path. Bump CACHE_VERSION in
+  # .github/actions/compute-e2e-build-fingerprint/action.yml or cached
+  # binaries built under the previous INTUNE setting will be served.
+  INTUNE_ENABLED: 'false'
+  # The S3 build cache.
+  BUILD_CACHE_BUCKET: "mattermost-detox-report"
+
+jobs:
+  compute-build-fingerprint:
+    name: Compute build fingerprint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      fingerprint: ${{ steps.fingerprint.outputs.fingerprint }}
+      cache-scope: ${{ steps.scope.outputs.scope }}
+    steps:
+      - name: Check target
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          case "$TARGET" in
+            ios | android-detox | android-maestro) ;;
+            *) echo "::error::target must be ios, android-detox or android-maestro"; exit 1 ;;
+          esac
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+
+      # Cache trust scope, as e2e-detox-pr.yml resolves it for a run that is not a main push.
+      - name: Resolve cache trust scope
+        id: scope
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -eu
+          if [ -n "$PR_NUMBER" ]; then
+            # Digits only: a crafted pr_number must not be able to escape the prefix.
+            pr=$(printf '%s' "$PR_NUMBER" | tr -cd '0-9')
+            if [ -z "$pr" ]; then
+              echo "::error::pr_number '$PR_NUMBER' contains no digits; cannot build a safe cache scope."
+              exit 1
+            fi
+            scope="pr-${pr}"
+          else
+            slug=$(printf '%s' "$REF_NAME" | tr -c 'a-zA-Z0-9._-' '-' | cut -c1-60)
+            scope="branch-${slug}"
+          fi
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          echo "Cache trust scope: $scope"
+
+      - name: Compute fingerprint
+        id: fingerprint
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: ${{ inputs.target }}
+
+  build-ios-simulator:
+    if: inputs.target == 'ios'
+    # Runner / Xcode image is not in the git tree. Changing this label (or the
+    # Xcode on it) without bumping CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml serves stale cached binaries.
+    runs-on: macos-26
+    needs: compute-build-fingerprint
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Check for cached iOS build
+        id: cache-check
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
+          scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
+          platform: ios
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
+
+      - name: Prepare iOS Build
+        if: env.SKIP_BUILD != 'true'
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        if: env.SKIP_BUILD != 'true'
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Build iOS Simulator
+        if: env.SKIP_BUILD != 'true'
+        env:
+          TAG: ${{ inputs.commit_sha }}
+          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      # Uploaded from the cache or a fresh build, for the lanes to download.
+      - name: Upload iOS Simulator Build
+        if: always() && hashFiles('Mattermost-simulator-*.app.zip') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+          # A "Re-run all jobs" builds again under the same run id.
+          overwrite: true
+
+      - name: Save iOS build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
+          scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
+          platform: ios
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: save
+
+  build-android-apk:
+    if: inputs.target == 'android-detox'
+    # Runner image is not in the git tree: bump CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml when changing this label.
+    runs-on: ubuntu-latest-8-cores
+    needs: compute-build-fingerprint
+    permissions:
+      contents: read
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Check for cached Android Detox build
+        id: cache-check
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
+          scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
+          platform: android-detox
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
+
+      - name: Prepare Android Build
+        if: env.SKIP_BUILD != 'true'
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      # Same key as e2e-detox-pr.yml's build-android-apk, so the workflows share the cache.
+      - name: Cache Gradle dependencies
+        if: env.SKIP_BUILD != 'true'
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Detox build
+        if: env.SKIP_BUILD != 'true'
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run e2e:android-build
+
+      # Uploaded from the cache or a fresh build, for the lanes to download.
+      - name: Upload Android Build
+        if: always() && hashFiles('android/app/build/**/*') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+          # A "Re-run all jobs" builds again under the same run id.
+          overwrite: true
+
+      - name: Save Android Detox build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
+          scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
+          platform: android-detox
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: save
+
+  build-android-apk-maestro:
+    if: inputs.target == 'android-maestro'
+    # Runner image is not in the git tree: bump CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml when changing this label.
+    runs-on: ubuntu-latest-8-cores
+    needs: compute-build-fingerprint
+    permissions:
+      contents: read
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Check for cached Android Maestro build
+        id: cache-check
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
+          scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
+          platform: android-maestro
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
+
+      - name: Prepare Android Build
+        if: env.SKIP_BUILD != 'true'
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Build Maestro Android APK
+        if: env.SKIP_BUILD != 'true'
+        uses: ./.github/actions/build-android-maestro-apk
+
+      # Uploaded from the cache or a fresh build, for the lanes to download.
+      - name: Upload Maestro Android Build
+        if: always() && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-maestro-build-files-${{ github.run_id }}
+          path: android/app/build/outputs/apk/release/
+          # A "Re-run all jobs" builds again under the same run id.
+          overwrite: true
+
+      - name: Save Android Maestro build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
+          scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
+          platform: android-maestro
+          bucket: ${{ env.BUILD_CACHE_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: save
