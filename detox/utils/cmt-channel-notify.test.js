@@ -12,12 +12,13 @@ const {
     buildLegSummaries,
     formatLegResultText,
     formatCmtChannelMessage,
+    buildAgentHandoff,
+    formatAgentFixBrief,
     formatTriageVerdict,
     judgeFinding,
     formatMassFailures,
     verdictOf,
     notifyCmtChannel,
-    classifyFailure,
     failuresFromConsolidated,
     fetchFailuresFromConsolidated,
     fetchPerJobCountsFromConsolidated,
@@ -170,11 +171,10 @@ describe('cmt-channel-notify', () => {
             });
 
             assert.equal(text, [
-                '🟡 **Mobile CMT — no product bug confirmed** on `release-2.40`',
-                '`55afc0b`',
-                '**1 failed** · 461 passed · 40 skipped',
-                '🔎 **Not confirmed (1) — not re-run, or the re-run gave no result:** [🤖 detox-android (11.9.0)](https://test-io.test.mattermost.com/reports/r/rid-android) 1',
-                '➡️ [Full report](https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/55afc0b/mobile-release)',
+                ':yellow_circle: **Mobile CMT** on `release-2.40`: no product bugs confirmed · 1 failure needs a look',
+                '🔎 **Needs a look** (1)',
+                '• [🤖 detox-android (11.9.0)](https://test-io.test.mattermost.com/reports/r/rid-android) 1',
+                '461 passed · 1 failed · 40 skipped · [Report](https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/55afc0b/mobile-release)',
                 '',
             ].join('\n'));
         });
@@ -270,39 +270,6 @@ describe('cmt-channel-notify', () => {
         });
     });
 
-    describe('classifyFailure', () => {
-        it('judges a spec that never ran as infra', () => {
-            assert.equal(classifyFailure({title: 'CI shard reporting › spec did not run', error: 'x was assigned to a shard but produced no result'}).category, 'infra');
-        });
-
-        it('judges a server-disabled feature error as infra, not an app bug', () => {
-            assert.equal(classifyFailure({title: 'MM-T6310', error: 'api.channel.create_channel.attributes_feature_disabled: Channel attributes are not enabled on this server.'}).category, 'infra');
-            assert.equal(classifyFailure({title: 'MM-68219_1', error: 'Failed to create permission policy: {"id":"api.access_control_policy.permission_policies.feature_disabled","message":"Permission policies feature is not enabled.","status_code":501}'}).category, 'infra');
-            assert.equal(classifyFailure({title: 'MM-T6197_1', error: 'classification lock: *** login failed: {"message":"No response from server: timeout of 45000ms exceeded."}'}).category, 'infra');
-        });
-
-        it('judges a test with mixed pass/fail history as flaky', () => {
-            assert.equal(classifyFailure({title: 'MM-T1', error: 'timeout', previousStatuses: ['passed', 'failed', 'passed']}).category, 'flaky');
-            assert.equal(classifyFailure({title: 'MM-T1', error: 'timeout', passedOnRetry: true}).category, 'flaky');
-        });
-
-        it('judges a repeatedly failing test as known, and a corroborated direct assertion as suspected app bug', () => {
-            assert.equal(classifyFailure({title: 'MM-T2', error: 'expect mismatch', previousStatuses: ['failed', 'failed']}).category, 'known');
-            assert.equal(classifyFailure({title: 'MM-T3', error: "expected element toHaveText 'HIGH'", previousStatuses: ['passed', 'passed']}).category, 'app-bug');
-            assert.equal(classifyFailure({title: 'MM-T3', error: "expected element toHaveText 'HIGH'", previousStatuses: [], alsoFailedElsewhere: true}).category, 'app-bug');
-        });
-
-        it('does not treat a selected-view mismatch carrying a direct assertion as timing', () => {
-            assert.equal(classifyFailure({title: 'MM-T8', error: "'HIGH' doesn't match the selected view (toHaveText)", previousStatuses: ['passed']}).category, 'app-bug');
-        });
-
-        it('does not call a timing wait or a single uncorroborated assertion an app bug', () => {
-            assert.equal(classifyFailure({title: 'MM-T4', error: 'Timed out while waiting for expectation: TOBEVISIBLE TIMEOUT(10s)', previousStatuses: []}).category, 'investigate');
-            assert.equal(classifyFailure({title: 'MM-T5', error: "expected element toHaveText 'HIGH'", previousStatuses: []}).category, 'investigate');
-            assert.equal(classifyFailure({title: 'MM-T6', error: 'some opaque failure', previousStatuses: ['passed']}).category, 'investigate');
-        });
-    });
-
     describe('failuresFromConsolidated', () => {
         it('extracts this commit\'s failures with earlier history attached', () => {
             const identity = {commit_sha: 'sha1', gh_run_attempt: '1'};
@@ -383,75 +350,31 @@ describe('cmt-channel-notify', () => {
         });
     });
 
-    describe('formatCmtChannelMessage failure judgement', () => {
-        it('renders grouped judgements when failures are supplied', () => {
+    describe('formatCmtChannelMessage without triage findings', () => {
+        it('lists unjudged failures neutrally without legacy regex heuristics', () => {
             const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
+                compositeIdentity: {branch: 'feature', commit_sha: '97a2993abc', name: 'mobile-pr'},
                 detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
                 perJobCounts: {},
                 failures: [
-                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-1 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: ['passed']},
-                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Attributes MM-2 - case', error: 'Channel attributes are not enabled on this server.', previousStatuses: []},
-                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Attributes MM-3 - case', error: 'chip not visible after 10s', previousStatuses: []},
+                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-1 - case', error: "expected element toHaveText 'HIGH'"},
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Attributes MM-2 - case', error: 'Channel attributes are not enabled on this server.'},
+                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Retried MM-3 - case', error: 'transient', passedOnRetry: true},
                 ],
             });
-            assert.match(text, /Failure judgement/);
-            assert.match(text, /🔴 \*\*Suspected app bug — corroborated, needs investigation \(1\)\*\*/);
-            assert.match(text, /⚠️ \*\*Infra \/ environment — not an app failure \(2\)\*\*/);
-            assert.match(text, /Attributes MM-3 - case — same suite hit an environment failure/);
-            assert.match(text, /Messaging MM-1 - case — passed in earlier runs and now fails a direct assertion/);
+            assert.doesNotMatch(text, /Failure judgement|Suspected app bug/);
+            assert.match(text, /🔎 \*\*Not checked by triage \(2\)\*\*/);
+            assert.match(text, /Messaging MM-1 - case/);
+            assert.doesNotMatch(text, /Retried MM-3/);
         });
 
-        it('promotes a direct assertion that failed on two legs to suspected app bug', () => {
-            const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
-                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
-                perJobCounts: {},
-                failures: [
-                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
-                    {job: 'detox-android-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
-                ],
-            });
-            assert.match(text, /🔴 \*\*Suspected app bug — corroborated, needs investigation \(2\)\*\*/);
-            assert.match(text, /direct assertion failed on more than one leg/);
-        });
-
-        it('does not promote a direct assertion when only one leg has a job name', () => {
-            const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
-                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
-                perJobCounts: {},
-                failures: [
-                    {job: 'detox-ios-Server_12.1.0-rc1', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
-                    {job: '', title: 'Messaging MM-7 - case', error: "expected element toHaveText 'HIGH'", previousStatuses: []},
-                ],
-            });
-            assert.doesNotMatch(text, /Suspected app bug/);
-            assert.match(text, /🔍 \*\*Needs a closer look — not enough evidence to call it an app bug \(2\)\*\*/);
-        });
-
-        it('does not cascade failures whose job or suite is unknown', () => {
-            const text = formatCmtChannelMessage({
-                compositeIdentity: {branch: 'build-release-833', commit_sha: '97a2993abc', name: 'mobile-pr'},
-                detail: {status: 'incomplete', test_stats: {passed: 10, failed: 2, skipped: 0, total: 12}, reports: []},
-                perJobCounts: {},
-                failures: [
-                    {job: '', title: '', error: 'Channel attributes are not enabled on this server.', previousStatuses: []},
-                    {job: '', title: '', error: 'expect mismatch', previousStatuses: []},
-                ],
-            });
-            assert.match(text, /🔍 \*\*Needs a closer look — not enough evidence to call it an app bug \(1\)\*\*/);
-            assert.match(text, /⚠️ \*\*Infra \/ environment — not an app failure \(1\)\*\*/);
-            assert.doesNotMatch(text, /likely a cascade/);
-        });
-
-        it('renders no judgement section without failure details', () => {
+        it('renders no unchecked section without failure details', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {branch: 'feature', commit_sha: 'a1b2c3d', name: 'mobile-pr'},
                 detail: {status: 'completed', test_stats: {passed: 1, failed: 1}, reports: []},
                 perJobCounts: {},
             });
-            assert.doesNotMatch(text, /Failure judgement/);
+            assert.doesNotMatch(text, /Failure judgement|Not checked by triage/);
         });
     });
 
@@ -622,11 +545,10 @@ describe('cmt-channel-notify', () => {
             assert.deepEqual(formatMassFailures([leg(4, 1), leg(9, 20)]), [], 'a few failures, or a minority of the run, are judged one by one');
         });
 
-        it('judges from the error text the failed runs whose triage named no test', () => {
+        it('marks failed runs whose triage left no findings as not checked instead of running legacy heuristics', () => {
             const lanes = [
-                {lane: 'maestro-android-e2e', counts: {flaky: 0}, findings: [row('clock_display', 'REGRESSION', 'needs investigation')]},
-                {lane: 'detox-android', triaged: false, verdict: null, counts: {flaky: 0}, findings: []}, // triage failed
-                // detox-ios left no findings file at all; maestro-ios failed with no test detail in TSIO
+                {lane: 'maestro-android-e2e', counts: {flaky: 0}, findings: [{...row('clock_display', 'REGRESSION', 'app bug'), ai: {explanation: 'Header clock did not render.'}}]},
+                {lane: 'detox-android', triaged: false, verdict: null, counts: {flaky: 0}, findings: []},
             ];
             const legs = [
                 {platform: 'android', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed: 1, passed: 2},
@@ -634,32 +556,17 @@ describe('cmt-channel-notify', () => {
                 {platform: 'ios', framework: 'detox', kind: 'e2e', serverVersion: 'default', failed: 1, passed: 5},
                 {platform: 'ios', framework: 'maestro', kind: 'e2e', serverVersion: 'default', failed: 2, passed: 5},
             ];
-            const failures = [
-                {title: 'clock_display', job: 'maestro-android-e2e', error: 'Element not found'},
-                {title: 'Channels MM-T1 - should open', job: 'detox-android', error: 'Element not found'},
-                {title: 'Search MM-T2 - should find', job: 'detox-ios', error: 'Element not found'},
-            ];
-            const text = formatTriageVerdict({triage: lanes, legs, failures}).join('\n');
-            assert.match(text, /Failure judgement/);
-            assert.match(text, /^- 🤖 detox-android Channels MM-T1 - should open — /m, 'a run whose triage failed is judged from the error text');
-            assert.match(text, /^- 📱 detox-ios Search MM-T2 - should find — /m, 'a run with no findings file is judged from the error text');
-            assert.equal(text.match(/clock_display/g).length, 1, 'a test triage judged is not judged again');
-            assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 maestro-ios — the triage job left no verdict; look at the run$/m);
+            const text = formatTriageVerdict({triage: lanes, legs, failures: []}).join('\n');
+            assert.doesNotMatch(text, /Failure judgement/);
+            assert.match(text, /Header clock did not render\./);
+            assert.match(text, /^⚙️ \*\*Not checked:\*\* 🤖 detox-android, 📱 detox-ios, 📱 maestro-ios — the triage job left no verdict; look at the run$/m);
         });
 
-        it('judges a failed test triage left out, and names failed tests with neither a verdict nor detail', () => {
+        it('reports the remaining failed count when triage only covered part of a lane', () => {
             const lanes = [{lane: 'detox-ios', counts: {flaky: 0}, findings: [row('Login MM-T3 - should log in', 'FLAKY_ON_TRUNK', 'flaky')]}];
             const legs = [{platform: 'ios', framework: 'detox', kind: 'e2e', serverVersion: 'default', failed: 4, passed: 5}];
-            const failures = [
-                {title: 'Login MM-T3 - should log in', job: 'detox-ios', error: 'Element not found'},
-                {title: 'spec did not run', job: 'detox-ios', error: 'was assigned to a shard but produced no result'},
-                {title: 'Search MM-T9 - should find', job: 'detox-ios', error: 'Element not found', passedOnRetry: true},
-            ];
-            const text = formatTriageVerdict({triage: lanes, legs, failures}).join('\n');
-            assert.match(text, /^- 📱 detox-ios spec did not run — /m, 'a failure with no finding is judged from its error text');
-            assert.equal(text.match(/Login MM-T3/g).length, 1);
-            assert.doesNotMatch(text, /MM-T9/, 'a test that passed on retry is in the retry count, not a failure');
-            assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 detox-ios \(2 of 4 failed tests\) — the triage job left no verdict; look at the run$/m);
+            const text = formatTriageVerdict({triage: lanes, legs, failures: []}).join('\n');
+            assert.match(text, /^⚙️ \*\*Not checked:\*\* 📱 detox-ios \(3 of 4 failed tests\) — the triage job left no verdict; look at the run$/m);
         });
 
         // TSIO keeps each try as its own entry: main run 40764686027's detox-android had 2 tests that failed both
@@ -832,7 +739,6 @@ describe('cmt-channel-notify', () => {
             assert.equal(judge('Error: [beforeAll] Failed to create regular bot: {"id":"api.context.invalid_param.app_error","message":"Invalid post.channel_id"}'), 'setup');
             assert.equal(judge('AllowDownloadLogs=false never reached the client config; the flow\'s pre-condition was not in force'), 'setup');
             assert.equal(judge('maestro.android.DeviceServerDiedException: Device server died during \'viewHierarchy\' on emulator-5554'), 'setup');
-            assert.equal(judge('Detox can\'t seem to connect to the test app(s)!'), 'setup');
             assert.equal(judge('TypeError: Cannot read properties of undefined (reading \'id\')'), 'test');
         });
 
@@ -864,6 +770,186 @@ describe('cmt-channel-notify', () => {
             const row = finding(error);
             assert.equal(judgeFinding(row, lane([row]), new Set([error])), 'flaky');
             assert.equal(judgeFinding(row, lane([row]), new Set(['Test Failed: something else'])), 'new');
+        });
+    });
+
+    describe('workflow wiring and AI explanations', () => {
+        const fs = require('node:fs');
+        const path = require('node:path');
+        const repoRoot = path.join(__dirname, '../..');
+
+        it('checks out CMT and PR/main reporting scripts from dispatch ref, not MOBILE_VERSION', () => {
+            const cmt = fs.readFileSync(path.join(repoRoot, '.github/workflows/compatibility-matrix-testing.yml'), 'utf8');
+            const notifyBlock = cmt.slice(cmt.indexOf('  tsio-channel-notify:'), cmt.indexOf('  tsio-triage:'));
+            assert.ok(!notifyBlock.includes('ref: ${{ inputs.MOBILE_VERSION }}'), 'CMT channel notify must use dispatch ref');
+            const planBlock = cmt.slice(cmt.indexOf('  plan-rerun-cmt:'), cmt.indexOf('  rerun-detox-e2e:'));
+            assert.ok(!planBlock.includes('ref: ${{ inputs.MOBILE_VERSION }}'), 'CMT rerun planner must use dispatch ref');
+            const pr = fs.readFileSync(path.join(repoRoot, '.github/workflows/e2e-detox-pr.yml'), 'utf8');
+            const prNotify = pr.slice(pr.indexOf('  tsio-channel-notify:'), pr.indexOf('  tsio-triage:'));
+            assert.ok(!prNotify.includes('ref: ${{ inputs.MOBILE_VERSION }}'), 'PR/main channel notify must use dispatch ref');
+        });
+
+        it('includes AI explanation beside confirmed product bugs in main/CMT short messages', () => {
+            const detail = {status: 'completed', test_stats: {passed: 600, failed: 1, skipped: 0}, reports: [{id: 'r1', gh_job_name: 'detox-ios-Server_12.1.0'}]};
+            const triage = [{
+                lane: 'detox-ios-Server_12.1.0',
+                counts: {passed: 600, failed: 1, flaky: 0},
+                findings: [{title: 'MM-T5000_4', class: 'REGRESSION', label: 'app bug', ai: {explanation: 'Edit Server screen crashes on pre-auth save.'}}],
+            }];
+            const rerun = {lanes: {}, tooMany: {}, results: {'detox-ios-Server_12.1.0': new Map([['MM-T5000_4', 'failed']])}};
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'build-release-838', commit_sha: 'a87cebb', name: 'mobile-release', run_group: 'mobile-release'},
+                detail,
+                perJobCounts: {'detox-ios-Server_12.1.0': {passed: 600, failed: 1, skipped: 0, flaky: 0}},
+                triage,
+                rerun,
+            });
+            assert.match(text, /`MM-T5000_4` — Edit Server screen crashes on pre-auth save\./);
+            assert.match(notifyBlockForAgent(), /cmt-agent-handoff\.json/);
+            assert.match(notifyBlockForAgent(), /CURSOR_MOBILE_CMT_AUTOFIX_WEBHOOK_URL/);
+            function notifyBlockForAgent() {
+                const cmt = fs.readFileSync(path.join(repoRoot, '.github/workflows/compatibility-matrix-testing.yml'), 'utf8');
+                return cmt.slice(cmt.indexOf('  tsio-channel-notify:'), cmt.indexOf('  tsio-triage:'));
+            }
+        });
+
+        it('posts a 2-line green summary for Mobile CMT on clean pass and 3-line summary when all failures are cleared', () => {
+            const cmtId = {repository: 'mattermost/mattermost-mobile', branch: 'build-release-838', commit_sha: 'a87cebb', name: 'mobile-release', run_group: 'mobile-release'};
+            const runUrl = 'https://github.com/mattermost/mattermost-mobile/actions/runs/41592185082';
+            const clean = formatCmtChannelMessage({
+                compositeIdentity: cmtId,
+                detail: {status: 'completed', test_stats: {passed: 1406, failed: 0, skipped: 94}, reports: []},
+                perJobCounts: {'detox-ios-Server_12.1.0': {passed: 1406, failed: 0, skipped: 94, flaky: 0}},
+                triage: [],
+                runUrl,
+            });
+            assert.equal(clean, [
+                ':green_circle: **Mobile CMT** on `build-release-838`: all tests passed',
+                `1406 passed · 0 failed · 94 skipped · [Run](${runUrl})`,
+                '',
+            ].join('\n'));
+
+            const cleared = formatCmtChannelMessage({
+                compositeIdentity: cmtId,
+                detail: {status: 'completed', test_stats: {passed: 1403, failed: 3, skipped: 94}, reports: []},
+                perJobCounts: {'detox-ios-Server_12.1.0': {passed: 1403, failed: 3, skipped: 94, flaky: 0}},
+                triage: [{
+                    lane: 'detox-ios-Server_12.1.0',
+                    counts: {passed: 1403, failed: 3, flaky: 0},
+                    findings: [
+                        {title: 'MM-T1 flaky', file: 'detox/e2e/test/a.e2e.ts', class: 'FLAKY_ON_TRUNK', label: 'flaky'},
+                        {title: 'MM-T2 fresh pass', file: 'detox/e2e/test/b.e2e.ts', class: 'REGRESSION', label: 'needs investigation'},
+                        {title: 'MM-T3 fresh pass 2', file: 'detox/e2e/test/c.e2e.ts', class: 'REGRESSION', label: 'needs investigation'},
+                    ],
+                }],
+                rerun: {lanes: {}, tooMany: {}, results: {'detox-ios-Server_12.1.0': new Map([['MM-T2 fresh pass', 'passed'], ['MM-T3 fresh pass 2', 'passed']])}},
+                runUrl,
+            });
+            assert.equal(cleared, [
+                ':green_circle: **Mobile CMT** on `build-release-838`: no product bugs found',
+                '🔁 **Flaky / Infra:** 2 passed on a fresh device · 1 flaky',
+                `1403 passed · 3 failed · 94 skipped · [Run](${runUrl})`,
+                '',
+            ].join('\n'));
+        });
+
+        it('separates Product bugs, Test bugs (including stale), Needs a look, and Flaky/Infra on Mobile CMT and builds schema-1 agent handoff', () => {
+            const cmtId = {repository: 'mattermost/mattermost-mobile', branch: 'build-release-838', commit_sha: 'a87cebb123', name: 'mobile-release', run_group: 'mobile-release'};
+            const runUrl = 'https://github.com/mattermost/mattermost-mobile/actions/runs/41592185082';
+            const perJobCounts = {
+                'detox-ios-Server_11.7.15': {passed: 27, failed: 0, skipped: 2, flaky: 0},
+                'detox-ios-Server_12.1.0': {passed: 608, failed: 4, skipped: 41, flaky: 1},
+                'maestro-ios-Server_12.1.0': {passed: 6, failed: 1, skipped: 1, flaky: 0},
+            };
+            const detail = {status: 'completed', test_stats: {passed: 641, failed: 5, skipped: 44, flaky: 1}, reports: []};
+            const triage = [
+                {
+                    lane: 'detox-ios-Server_12.1.0',
+                    counts: {passed: 608, failed: 4, flaky: 1},
+                    findings: [
+                        {title: 'MM-T5000_4 - survive preauth edit', full_title: 'Server Login > MM-T5000_4 - survive preauth edit', file: 'detox/e2e/test/server_login/edit_preauth.e2e.ts', class: 'REGRESSION', label: 'app bug', error_first_line: 'Timed out waiting for server.screen', ai: {cause: 'app_bug', confidence: 0.93, explanation: 'Edit Server screen crashes on pre-auth save.'}},
+                        {title: 'MM-T6197_1 - classification banner', full_title: 'Classification > MM-T6197_1 - classification banner', file: 'detox/e2e/test/banners/classification.e2e.ts', class: 'REGRESSION', label: 'server compat', error_first_line: 'Banner selector missing on 12.1', ai: {cause: 'server_compat', confidence: 0.9, explanation: 'Banner test expects old 11.x selector.'}},
+                        {title: 'MM-68219_1 - redacted files', full_title: 'ABAC > MM-68219_1 - redacted files', file: 'detox/e2e/test/abac/redacted.e2e.ts', class: 'REGRESSION', label: 'needs investigation', error_first_line: 'Element not found'},
+                        {title: 'MM-T4896_1 - markdown image', full_title: 'Markdown > MM-T4896_1 - markdown image', file: 'detox/e2e/test/markdown/image.e2e.ts', class: 'FLAKY_ON_TRUNK', label: 'flaky'},
+                    ],
+                },
+                {
+                    lane: 'maestro-ios-Server_12.1.0',
+                    counts: {passed: 6, failed: 1, flaky: 0},
+                    findings: [
+                        {title: 'attach_logs_toggle_visible', full_title: 'detox/maestro/flows/settings/attach_logs.yml > attach_logs_toggle_visible', file: 'detox/maestro/flows/settings/attach_logs.yml', class: 'REGRESSION', label: 'test bug', error_first_line: 'Assertion failed: toggle text changed', ai: {cause: 'test_bug', confidence: 0.88, explanation: 'Toggle label was renamed in main.'}},
+                    ],
+                },
+            ];
+            const rerun = {
+                lanes: {},
+                tooMany: {},
+                results: {'detox-ios-Server_12.1.0': new Map([['MM-T5000_4 - survive preauth edit', 'failed']])},
+                stale: {'detox-ios-Server_12.1.0': ['MM-68219_1 - redacted files']},
+            };
+
+            const text = formatCmtChannelMessage({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun, runUrl});
+            assert.match(text, /^:red_circle: \*\*Mobile CMT\*\* on `build-release-838`: 1 product bug found · 3 test bugs$/m);
+            assert.match(text, /^🐞 \*\*Product bugs\*\* \(1\)$/m);
+            assert.match(text, /`MM-T5000_4` survive preauth edit — Edit Server screen crashes on pre-auth save\. · 📱 detox-ios \(12\.1\.0\)/);
+            assert.match(text, /^🧪 \*\*Test bugs\*\* \(3\)$/m);
+            assert.match(text, /`MM-T6197_1` classification banner — Banner test expects old 11\.x selector\./);
+            assert.match(text, /`attach_logs_toggle_visible` — Toggle label was renamed in main\./);
+            assert.match(text, /`MM-68219_1` redacted files — out of date on this branch/);
+            assert.match(text, /^🔁 \*\*Flaky \/ Infra:\*\* 1 flaky · 1 passed on retry$/m);
+            assert.match(text, /\[Run & Fix Brief\]/);
+
+            const handoff = buildAgentHandoff({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun, runUrl});
+            assert.equal(handoff.schema, 1);
+            assert.equal(handoff.items.length, 4, '1 product bug + 3 test/stale bugs; flaky excluded');
+            assert.equal(handoff.items[0].kind, 'product_bug');
+            assert.equal(handoff.items[0].mode, 'draft_investigation');
+            assert.deepEqual(handoff.items[0].matrix, {failed: ['detox-ios/12.1.0'], passed_servers: []});
+            assert.equal(handoff.items[0].repro_hint, 'npx jest --config detox/e2e/config.js detox/e2e/test/server_login/edit_preauth.e2e.ts');
+            const maestroItem = handoff.items.find((i) => i.test.title === 'attach_logs_toggle_visible');
+            assert.equal(maestroItem.kind, 'test_bug');
+            assert.equal(maestroItem.mode, 'fix_pr');
+            assert.deepEqual(maestroItem.matrix.passed_servers, [], 'servers without per-test pass evidence are not guessed');
+            assert.equal(maestroItem.repro_hint, 'maestro test detox/maestro/flows/settings/attach_logs.yml');
+
+            const brief = formatAgentFixBrief(handoff);
+            assert.match(brief, /### 🤖 Agent Fix Brief \(4 actionable\)/);
+            assert.doesNotMatch(brief, /Passed servers: 11\.7\.15/);
+            assert.match(brief, /maestro test detox\/maestro\/flows\/settings\/attach_logs\.yml/);
+            assert.equal(formatAgentFixBrief({...handoff, items: []}), '');
+        });
+
+        it('shows mass-failure and tooMany setup warnings on Mobile CMT even when failed tests are named', () => {
+            const cmtId = {repository: 'mattermost/mattermost-mobile', branch: 'build-release-838', commit_sha: 'a87cebb', name: 'mobile-release', run_group: 'mobile-release'};
+            const perJobCounts = {
+                'maestro-android-Server_12.1.0': {passed: 2, failed: 9, skipped: 0, flaky: 0},
+                'detox-ios-Server_12.1.0': {passed: 590, failed: 12, skipped: 0, flaky: 0},
+            };
+            const detail = {status: 'completed', test_stats: {passed: 592, failed: 21, skipped: 0}, reports: []};
+            const triage = [
+                {lane: 'maestro-android-Server_12.1.0', counts: {passed: 2, failed: 9, flaky: 0}, findings: [{title: 'clock_display', class: 'REGRESSION', label: 'needs investigation'}]},
+                {lane: 'detox-ios-Server_12.1.0', counts: {passed: 590, failed: 12, flaky: 0}, findings: [{title: 'MM-T1', class: 'REGRESSION', label: 'needs investigation'}]},
+            ];
+            const rerun = {lanes: {}, tooMany: {'detox-ios-Server_12.1.0': 12}, results: {}};
+            const text = formatCmtChannelMessage({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun});
+            assert.match(text, /⚠️ \*\*📱 detox-ios \(12\.1\.0\): 12 failed at once, too many to re-run\*\*/);
+            assert.match(text, /⚠️ \*\*🤖 maestro-android \(12\.1\.0\): 9 of 11 tests failed\.\*\*/);
+
+            // Pending/incomplete TSIO details never produce a green CMT headline.
+            const pending = formatCmtChannelMessage({
+                compositeIdentity: cmtId,
+                detail: {status: 'pending', test_stats: {passed: 600, failed: 0, skipped: 0}, reports: []},
+                perJobCounts: {'detox-ios-Server_12.1.0': {passed: 600, failed: 0, skipped: 0, flaky: 0}},
+                triage: [],
+            });
+            assert.match(pending, /^:yellow_circle: \*\*Mobile CMT\*\* on `build-release-838`: setup problem$/m);
+            assert.match(pending, /Incomplete results/);
+
+            // Also verify CMT workflow passes per-server lane-job-filter to e2e/triage.
+            const cmt = fs.readFileSync(path.join(repoRoot, '.github/workflows/compatibility-matrix-testing.yml'), 'utf8');
+            const triageBlock = cmt.slice(cmt.indexOf('  tsio-triage:'));
+            assert.match(triageBlock, /mobile-cmt-ios-full-\$\{VER\}/);
+            assert.match(triageBlock, /lane-job-filter: \$\{\{ steps\.lanes\.outputs\.lane-job-filter \}\}/);
         });
     });
 });
