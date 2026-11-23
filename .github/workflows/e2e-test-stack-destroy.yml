@@ -85,7 +85,7 @@ jobs:
       # Every server still up, ready or not, into one artifact, e2e-test-stack-logs-<batch>-<attempt>.
       - name: ci/logs
         id: logs
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
           caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ env.BATCH }}
@@ -125,7 +125,7 @@ jobs:
           package-manager-cache: false
 
       - name: ci/destroy
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
           caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ env.BATCH }}

@@ -274,7 +274,7 @@ jobs:
       - name: ci/e2e-test-stack-open
         id: e2e-test-stack-open
         if: inputs.e2e_test_stack
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/open@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/open@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
           caller-key: mobile
           batch: ${{ inputs.e2e_test_stack_batch }}
@@ -1016,7 +1016,7 @@ jobs:
       - name: ci/e2e-test-stack-open
         id: e2e-test-stack-open
         if: inputs.e2e_test_stack
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/open@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/open@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
           caller-key: mobile
           batch: ${{ inputs.e2e_test_stack_batch }}

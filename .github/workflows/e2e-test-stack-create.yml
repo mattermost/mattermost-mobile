@@ -149,7 +149,7 @@ jobs:
       # destroy releases every attempt's.
       - name: ci/create
         id: create
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/create@e2e-test-stack-split/logs # toolkit #25-#30; main once they merge
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/create@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
           caller-key: mobile
           batch: ${{ inputs.batch }}
