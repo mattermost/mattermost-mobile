@@ -1,14 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import tinyColor from 'tinycolor2';
+
 import {Preferences} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 
 import {
     blendColors,
+    blendForContrast,
     changeOpacity,
     getComponents,
     getKeyboardAppearanceFromTheme,
+    getProfileImageBackground,
     hexToHue,
     makeStyleSheetFromTheme,
     setThemeDefaults,
@@ -151,6 +155,60 @@ describe('blendColors', () => {
         const opacity = 0.5;
         const result = blendColors(background, foreground, opacity, true);
         expect(result).toBe('#7f007f');
+    });
+});
+
+describe('blendForContrast', () => {
+    it('should raise opacity until readability meets minRatio', () => {
+        const background = '#ffffff';
+        const foreground = '#000000';
+        const startOpacity = 0.01;
+        const minRatio = 4.5;
+        const fill = blendForContrast(background, foreground, minRatio, startOpacity);
+
+        expect(tinyColor.readability(fill, background)).toBeGreaterThanOrEqual(minRatio);
+        expect(fill).not.toBe(blendColors(background, foreground, startOpacity));
+    });
+
+    it('should keep the start blend when it already meets minRatio', () => {
+        const background = '#ffffff';
+        const foreground = '#000000';
+        const startOpacity = 0.08;
+
+        expect(blendForContrast(background, foreground, 1.1, startOpacity)).toBe(
+            blendColors(background, foreground, startOpacity),
+        );
+    });
+
+    it('should stop at full opacity when minRatio cannot be met', () => {
+        const background = '#ffffff';
+        const foreground = '#f0f0f0';
+
+        expect(blendForContrast(background, foreground, 4.5)).toBe(blendColors(background, foreground, 1));
+    });
+});
+
+describe('getProfileImageBackground', () => {
+    it('should return the 0.08 center blend when on center bg', () => {
+        const denim = Preferences.THEMES.denim;
+        const centerFill = blendColors(denim.centerChannelBg, denim.centerChannelColor, 0.08);
+        expect(getProfileImageBackground(denim)).toBe(centerFill);
+    });
+
+    it('should preserve the light center fill when it already contrasts with the sidebar', () => {
+        const denim = Preferences.THEMES.denim;
+        const centerFill = blendColors(denim.centerChannelBg, denim.centerChannelColor, 0.08);
+        expect(getProfileImageBackground(denim, false)).toBe(centerFill);
+    });
+
+    it('should return an opaque sidebar-visible fill when the center fill does not contrast', () => {
+        const theme = Preferences.THEMES.quartz;
+        const centerFill = blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.08);
+        const fill = getProfileImageBackground(theme, false);
+
+        expect(tinyColor.readability(fill, theme.sidebarBg)).toBeGreaterThanOrEqual(3);
+        expect(fill).not.toBe(centerFill);
+        expect(getComponents(fill).alpha).toBe(1);
     });
 });
 

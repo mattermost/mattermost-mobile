@@ -156,6 +156,30 @@ export function blendColors(background: string, foreground: string, opacity: num
     return `rgba(${red},${green},${blue},${alpha})`;
 }
 
+const DEFAULT_AVATAR_FILL_OPACITY = 0.08;
+const MIN_AVATAR_FILL_CONTRAST = 3;
+
+export function blendForContrast(background: string, foreground: string, minRatio: number, startOpacity = DEFAULT_AVATAR_FILL_OPACITY): string {
+    let opacity = startOpacity;
+    let fill = blendColors(background, foreground, opacity);
+    while (tinyColor.readability(fill, background) < minRatio && opacity < 1) {
+        opacity = Math.min(1, opacity + 0.04);
+        fill = blendColors(background, foreground, opacity);
+    }
+    return fill;
+}
+
+export function getProfileImageBackground(theme: Theme, isOnCenterBg = true): string {
+    const centerFill = blendColors(theme.centerChannelBg, theme.centerChannelColor, DEFAULT_AVATAR_FILL_OPACITY);
+    if (isOnCenterBg) {
+        return centerFill;
+    }
+    if (tinyColor.readability(centerFill, theme.sidebarBg) >= MIN_AVATAR_FILL_CONTRAST) {
+        return centerFill;
+    }
+    return blendForContrast(theme.sidebarBg, theme.sidebarText, MIN_AVATAR_FILL_CONTRAST);
+}
+
 const themeTypeMap: ThemeTypeMap = {
     Mattermost: 'denim',
     Organization: 'sapphire',
