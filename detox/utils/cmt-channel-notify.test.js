@@ -867,7 +867,7 @@ describe('cmt-channel-notify', () => {
                     lane: 'detox-ios-Server_12.1.0',
                     counts: {passed: 608, failed: 4, flaky: 1},
                     findings: [
-                        {title: 'MM-T5000_4 - survive preauth edit', full_title: 'Server Login > MM-T5000_4 - survive preauth edit', file: 'detox/e2e/test/server_login/edit_preauth.e2e.ts', class: 'REGRESSION', label: 'app bug', error_first_line: 'Timed out waiting for server.screen', ai: {cause: 'app_bug', confidence: 0.93, explanation: 'Edit Server screen crashes on pre-auth save.'}},
+                        {title: 'MM-T5000_4 - survive preauth edit', full_title: 'Server Login > MM-T5000_4 - survive preauth edit', file: 'detox/e2e/test/server_login/edit_preauth.e2e.ts', class: 'REGRESSION', label: 'app bug', error_first_line: 'Timed out waiting for server.screen', other_lanes: [{platform: 'detox-ios-Server_11.7.15', result: 'passed'}], ai: {cause: 'app_bug', confidence: 0.93, explanation: 'Edit Server screen crashes on pre-auth save.'}},
                         {title: 'MM-T6197_1 - classification banner', full_title: 'Classification > MM-T6197_1 - classification banner', file: 'detox/e2e/test/banners/classification.e2e.ts', class: 'REGRESSION', label: 'server compat', error_first_line: 'Banner selector missing on 12.1', ai: {cause: 'server_compat', confidence: 0.9, explanation: 'Banner test expects old 11.x selector.'}},
                         {title: 'MM-68219_1 - redacted files', full_title: 'ABAC > MM-68219_1 - redacted files', file: 'detox/e2e/test/abac/redacted.e2e.ts', class: 'REGRESSION', label: 'needs investigation', error_first_line: 'Element not found'},
                         {title: 'MM-T4896_1 - markdown image', full_title: 'Markdown > MM-T4896_1 - markdown image', file: 'detox/e2e/test/markdown/image.e2e.ts', class: 'FLAKY_ON_TRUNK', label: 'flaky'},
@@ -909,6 +909,7 @@ describe('cmt-channel-notify', () => {
             const maestroItem = handoff.items.find((i) => i.test.title === 'attach_logs_toggle_visible');
             assert.equal(maestroItem.kind, 'test_bug');
             assert.equal(maestroItem.mode, 'fix_pr');
+            assert.deepEqual(maestroItem.matrix.passed_servers, [], 'servers without an explicit pass for this test are not guessed');
             assert.equal(maestroItem.repro_hint, 'maestro test detox/maestro/flows/settings/attach_logs.yml');
 
             const brief = formatAgentFixBrief(handoff);
@@ -933,6 +934,16 @@ describe('cmt-channel-notify', () => {
             const text = formatCmtChannelMessage({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun});
             assert.match(text, /⚠️ \*\*📱 detox-ios \(12\.1\.0\): 12 failed at once, too many to re-run\*\*/);
             assert.match(text, /⚠️ \*\*🤖 maestro-android \(12\.1\.0\): 9 of 11 tests failed\.\*\*/);
+
+            // Pending/incomplete TSIO details never produce a green CMT headline.
+            const pending = formatCmtChannelMessage({
+                compositeIdentity: cmtId,
+                detail: {status: 'pending', test_stats: {passed: 600, failed: 0, skipped: 0}, reports: []},
+                perJobCounts: {'detox-ios-Server_12.1.0': {passed: 600, failed: 0, skipped: 0, flaky: 0}},
+                triage: [],
+            });
+            assert.match(pending, /^:yellow_circle: \*\*Mobile CMT\*\* on `build-release-838`: setup problem$/m);
+            assert.match(pending, /Incomplete results/);
 
             // Also verify CMT workflow passes per-server lane-job-filter to e2e/triage.
             const cmt = fs.readFileSync(path.join(repoRoot, '.github/workflows/compatibility-matrix-testing.yml'), 'utf8');

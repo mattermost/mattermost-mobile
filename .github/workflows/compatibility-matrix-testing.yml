@@ -663,6 +663,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: '!cancelled() && needs.tsio-triage.result != ''skipped'''
     needs:
+      - calculate-commit-hash
       - tsio-triage
     permissions:
       contents: read
@@ -692,14 +693,31 @@ jobs:
           pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
           path: triage-findings
       # A spec that differs from main's is out of date on this release branch: it is not re-run on the old build.
-      - name: Fetch main to compare specs
+      - name: Fetch main and target release commit to compare specs
+        id: refs
         continue-on-error: true
-        run: git fetch --no-tags --depth=1 origin main
+        env:
+          MOBILE_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+        run: |
+          [ -n "$MOBILE_SHA" ] || exit 0
+          git fetch --no-tags --depth=1 origin main
+          MAIN_SHA=$(git rev-parse FETCH_HEAD)
+          git fetch --no-tags --depth=1 origin "$MOBILE_SHA"
+          TARGET_SHA=$(git rev-parse FETCH_HEAD)
+          echo "main_sha=$MAIN_SHA" >> "$GITHUB_OUTPUT"
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
       - name: Plan the re-run
         id: plan
         env:
           CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
-        run: node detox/utils/rerun-failed.js --findings-dir triage-findings --cmt-matrix "$CMT_MATRIX" --compare-ref FETCH_HEAD
+          MAIN_SHA: ${{ steps.refs.outputs.main_sha }}
+          TARGET_SHA: ${{ steps.refs.outputs.target_sha }}
+        run: |
+          ARGS=(--findings-dir triage-findings --cmt-matrix "$CMT_MATRIX")
+          if [ -n "$MAIN_SHA" ] && [ -n "$TARGET_SHA" ]; then
+            ARGS+=(--compare-ref "$MAIN_SHA" --target-ref "$TARGET_SHA")
+          fi
+          node detox/utils/rerun-failed.js "${ARGS[@]}"
 
   rerun-detox-e2e:
     name: rerun-mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}

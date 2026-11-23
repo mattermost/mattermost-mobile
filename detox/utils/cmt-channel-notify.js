@@ -530,6 +530,13 @@ function evaluateMainVerdicts({legs, failures, triage, rerun}) {
                     key = 'stale';
                 }
             }
+            const passedServers = (row.other_lanes || []).
+                filter((l) => l.result === 'passed').
+                map((l) => {
+                    const p = parseMobileJobName(l.platform);
+                    return (p?.kind === 'cmt' && p.serverVersion !== 'default' ? p.serverVersion : null) || (/Server_([^\s/]+)/).exec(l.platform || '')?.[1] || null;
+                }).
+                filter(Boolean);
             verdicts.push({
                 key,
                 leg,
@@ -542,6 +549,7 @@ function evaluateMainVerdicts({legs, failures, triage, rerun}) {
                 aiConfidence: typeof row.ai?.confidence === 'number' ? row.ai.confidence : null,
                 explanation: row.ai?.explanation || null,
                 error: row.error_first_line || null,
+                passedServers,
                 new: verdictOf(row, true).key === 'new',
             });
             names.add(row.full_title || row.title).add(row.title);
@@ -603,6 +611,7 @@ function groupMobileTests(items) {
                 error: v.error || null,
                 lanes: v.lane ? [v.lane] : [],
                 servers: server ? [server] : [],
+                passedServers: [...new Set(v.passedServers || [])],
                 failedLegs: [legId],
             });
             continue;
@@ -612,6 +621,11 @@ function groupMobileTests(items) {
         }
         if (server && !seen.servers.includes(server)) {
             seen.servers.push(server);
+        }
+        for (const ps of v.passedServers || []) {
+            if (!seen.passedServers.includes(ps)) {
+                seen.passedServers.push(ps);
+            }
         }
         if (!seen.failedLegs.includes(legId)) {
             seen.failedLegs.push(legId);
@@ -775,6 +789,9 @@ function formatMainChannelMessage({
     if (noResults.length) {
         setupLines.push(`⚙️ **No results:** ${noResults.map(formatLegName).join(', ')} — test results did not upload, or the run ran no tests; re-run to see if anything failed`);
     }
+    if (detail?.status === 'pending') {
+        setupLines.push('⚙️ **Incomplete results:** one or more test groups could not be read from TSIO — look at the run');
+    }
     if (!upstreamJobsSucceeded && failed === 0) {
         setupLines.push('⚙️ A CI job failed outside the tests (install, build or teardown).');
     }
@@ -888,7 +905,6 @@ function buildAgentHandoff({compositeIdentity, detail, perJobCounts, failures, t
     const branch = (compositeIdentity?.branch || '').replace(/^refs\/(heads|tags)\//, '');
     const commitSha = compositeIdentity?.commit_sha || '';
     const legs = buildLegSummaries(perJobCounts, detail?.reports || []);
-    const allServers = [...new Set(legs.filter((l) => l.kind === 'cmt' && l.serverVersion !== 'default').map((l) => l.serverVersion))];
     const verdicts = evaluateMainVerdicts({legs, failures, triage, rerun});
 
     const groups = [
@@ -918,7 +934,7 @@ function buildAgentHandoff({compositeIdentity, detail, perJobCounts, failures, t
         },
         matrix: {
             failed: g.failedLegs,
-            passed_servers: allServers.filter((s) => !g.servers.includes(s)),
+            passed_servers: (g.passedServers || []).filter((s) => !g.servers.includes(s)),
         },
         repro_hint: mobileReproHint(g.file),
         links: {report_url: reportUrl, run_url: runUrl},
