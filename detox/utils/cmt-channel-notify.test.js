@@ -867,7 +867,7 @@ describe('cmt-channel-notify', () => {
                     lane: 'detox-ios-Server_12.1.0',
                     counts: {passed: 608, failed: 4, flaky: 1},
                     findings: [
-                        {title: 'MM-T5000_4 - survive preauth edit', full_title: 'Server Login > MM-T5000_4 - survive preauth edit', file: 'detox/e2e/test/server_login/edit_preauth.e2e.ts', class: 'REGRESSION', label: 'app bug', error_first_line: 'Timed out waiting for server.screen', other_lanes_passed: ['detox-ios-Server_11.7.15'], ai: {cause: 'app_bug', confidence: 0.93, explanation: 'Edit Server screen crashes on pre-auth save.'}},
+                        {title: 'MM-T5000_4 - survive preauth edit', full_title: 'Server Login > MM-T5000_4 - survive preauth edit', file: 'detox/e2e/test/server_login/edit_preauth.e2e.ts', class: 'REGRESSION', label: 'app bug', error_first_line: 'Timed out waiting for server.screen', ai: {cause: 'app_bug', confidence: 0.93, explanation: 'Edit Server screen crashes on pre-auth save.'}},
                         {title: 'MM-T6197_1 - classification banner', full_title: 'Classification > MM-T6197_1 - classification banner', file: 'detox/e2e/test/banners/classification.e2e.ts', class: 'REGRESSION', label: 'server compat', error_first_line: 'Banner selector missing on 12.1', ai: {cause: 'server_compat', confidence: 0.9, explanation: 'Banner test expects old 11.x selector.'}},
                         {title: 'MM-68219_1 - redacted files', full_title: 'ABAC > MM-68219_1 - redacted files', file: 'detox/e2e/test/abac/redacted.e2e.ts', class: 'REGRESSION', label: 'needs investigation', error_first_line: 'Element not found'},
                         {title: 'MM-T4896_1 - markdown image', full_title: 'Markdown > MM-T4896_1 - markdown image', file: 'detox/e2e/test/markdown/image.e2e.ts', class: 'FLAKY_ON_TRUNK', label: 'flaky'},
@@ -904,17 +904,17 @@ describe('cmt-channel-notify', () => {
             assert.equal(handoff.items.length, 4, '1 product bug + 3 test/stale bugs; flaky excluded');
             assert.equal(handoff.items[0].kind, 'product_bug');
             assert.equal(handoff.items[0].mode, 'draft_investigation');
-            assert.deepEqual(handoff.items[0].matrix, {failed: ['detox-ios/12.1.0'], passed_servers: ['11.7.15']});
+            assert.deepEqual(handoff.items[0].matrix, {failed: ['detox-ios/12.1.0'], passed_servers: []});
             assert.equal(handoff.items[0].repro_hint, 'npx jest --config detox/e2e/config.js detox/e2e/test/server_login/edit_preauth.e2e.ts');
             const maestroItem = handoff.items.find((i) => i.test.title === 'attach_logs_toggle_visible');
             assert.equal(maestroItem.kind, 'test_bug');
             assert.equal(maestroItem.mode, 'fix_pr');
-            assert.deepEqual(maestroItem.matrix.passed_servers, [], 'servers without an explicit pass for this test are not guessed');
+            assert.deepEqual(maestroItem.matrix.passed_servers, [], 'servers without per-test pass evidence are not guessed');
             assert.equal(maestroItem.repro_hint, 'maestro test detox/maestro/flows/settings/attach_logs.yml');
 
             const brief = formatAgentFixBrief(handoff);
             assert.match(brief, /### 🤖 Agent Fix Brief \(4 actionable\)/);
-            assert.match(brief, /Passed servers: 11\.7\.15/);
+            assert.doesNotMatch(brief, /Passed servers: 11\.7\.15/);
             assert.match(brief, /maestro test detox\/maestro\/flows\/settings\/attach_logs\.yml/);
             assert.equal(formatAgentFixBrief({...handoff, items: []}), '');
         });

@@ -530,12 +530,6 @@ function evaluateMainVerdicts({legs, failures, triage, rerun}) {
                     key = 'stale';
                 }
             }
-            const passedServers = (row.other_lanes_passed || []).
-                map((platform) => {
-                    const p = parseMobileJobName(platform);
-                    return (p?.kind === 'cmt' && p.serverVersion !== 'default' ? p.serverVersion : null) || (/Server_([^\s/]+)/).exec(platform || '')?.[1] || null;
-                }).
-                filter(Boolean);
             verdicts.push({
                 key,
                 leg,
@@ -548,7 +542,6 @@ function evaluateMainVerdicts({legs, failures, triage, rerun}) {
                 aiConfidence: typeof row.ai?.confidence === 'number' ? row.ai.confidence : null,
                 explanation: row.ai?.explanation || null,
                 error: row.error_first_line || null,
-                passedServers,
                 new: verdictOf(row, true).key === 'new',
             });
             names.add(row.full_title || row.title).add(row.title);
@@ -610,7 +603,6 @@ function groupMobileTests(items) {
                 error: v.error || null,
                 lanes: v.lane ? [v.lane] : [],
                 servers: server ? [server] : [],
-                passedServers: [...new Set(v.passedServers || [])],
                 failedLegs: [legId],
             });
             continue;
@@ -620,11 +612,6 @@ function groupMobileTests(items) {
         }
         if (server && !seen.servers.includes(server)) {
             seen.servers.push(server);
-        }
-        for (const ps of v.passedServers || []) {
-            if (!seen.passedServers.includes(ps)) {
-                seen.passedServers.push(ps);
-            }
         }
         if (!seen.failedLegs.includes(legId)) {
             seen.failedLegs.push(legId);
@@ -933,7 +920,7 @@ function buildAgentHandoff({compositeIdentity, detail, perJobCounts, failures, t
         },
         matrix: {
             failed: g.failedLegs,
-            passed_servers: (g.passedServers || []).filter((s) => !g.servers.includes(s)),
+            passed_servers: [],
         },
         repro_hint: mobileReproHint(g.file),
         links: {report_url: reportUrl, run_url: runUrl},
