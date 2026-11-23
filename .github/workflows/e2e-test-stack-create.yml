@@ -60,12 +60,10 @@ on:
       server_env:
         description: "Server settings as a JSON object of strings; the default is mobile's E2E server settings"
         type: string
-        # One setting per line, sorted by name. The two ConnectedWorkspacesSettings are set at boot: the server starts its
-        # shared-channel service only at startup. Set here, they cannot be switched off through the config API.
+        # One setting per line, sorted by name. Not the ConnectedWorkspacesSettings: the stack boots every server with them
+        # on from its config file, and here they could not be switched through the config API, as the specs do.
         default: |-
           {
-            "MM_CONNECTEDWORKSPACESSETTINGS_ENABLEREMOTECLUSTERSERVICE": "true",
-            "MM_CONNECTEDWORKSPACESSETTINGS_ENABLESHAREDCHANNELS": "true",
             "MM_EMAILSETTINGS_FEEDBACKEMAIL": "test@example.com",
             "MM_EMAILSETTINGS_REPLYTOADDRESS": "test@example.com",
             "MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS": "true",
