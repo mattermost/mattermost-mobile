@@ -629,7 +629,10 @@ function groupMobileTests(items) {
 function formatCmtTestLine(g) {
     const id = (/^(MM-T?\d+(?:_\d+)?)\b/).exec(g.title)?.[1];
     const rest = id ? cut(g.title.slice(id.length).replace(/^[\s-]+/, ''), 50) : '';
-    const display = id ? (rest ? `\`${id}\` ${rest}` : `\`${id}\``) : `\`${cut(g.title, 55)}\``;
+    let display = `\`${cut(g.title, 55)}\``;
+    if (id) {
+        display = rest ? `\`${id}\` ${rest}` : `\`${id}\``;
+    }
     let reason = g.explanation ? cut(g.explanation, 160) : '';
     if (!reason) {
         if (g.key === 'stale') {
