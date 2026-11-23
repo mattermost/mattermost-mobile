@@ -9,6 +9,7 @@ import * as PostActions from '@actions/local/post';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import * as ChannelActions from './channel';
@@ -193,44 +194,74 @@ describe('notifications', () => {
         expect(result.error).toBeDefined();
     });
 
-    it('openNotification - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
-
-        // Mock switchToChannelById to avoid navigation timeout issues
-        const switchToChannelByIdSpy = jest.spyOn(ChannelActions, 'switchToChannelById').mockResolvedValue({});
+    describe('openNotification', () => {
+        let switchToChannelByIdSpy: jest.SpyInstance;
 
         // Set up myChannel and myTeam so the navigation path is taken
-        await operator.handleMyChannel({
-            channels: [channel],
-            myChannels: [{
-                id: channelId,
-                user_id: user1.id,
-                channel_id: channelId,
-                roles: '',
-                last_viewed_at: 0,
-                msg_count: 0,
-                mention_count: 0,
-                notify_props: {},
-                last_update_at: 0,
-            } as ChannelMembership],
-            prepareRecordsOnly: false,
-        });
-        await operator.handleMyTeam({
-            myTeams: [{
-                id: teamId,
-                team_id: teamId,
-                roles: '',
-            } as MyTeam],
-            prepareRecordsOnly: false,
-        });
-        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        const setupChannelAndTeam = async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            await operator.handleMyChannel({
+                channels: [channel],
+                myChannels: [{
+                    id: channelId,
+                    user_id: user1.id,
+                    channel_id: channelId,
+                    roles: '',
+                    last_viewed_at: 0,
+                    msg_count: 0,
+                    mention_count: 0,
+                    notify_props: {},
+                    last_update_at: 0,
+                } as ChannelMembership],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleMyTeam({
+                myTeams: [{
+                    id: teamId,
+                    team_id: teamId,
+                    roles: '',
+                } as MyTeam],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        };
 
-        const result = await openNotification(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData) as {error?: unknown};
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-        expect(switchToChannelByIdSpy).toHaveBeenCalled();
+        beforeEach(() => {
+            // Mock switchToChannelById to avoid navigation timeout issues
+            switchToChannelByIdSpy = jest.spyOn(ChannelActions, 'switchToChannelById').mockResolvedValue({});
+        });
 
-        switchToChannelByIdSpy.mockRestore();
+        afterEach(() => {
+            switchToChannelByIdSpy.mockRestore();
+            EphemeralStore.setProcessingNotification('');
+        });
+
+        it('should switch to the channel of the notification', async () => {
+            await setupChannelAndTeam();
+
+            const result = await openNotification(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData) as {error?: unknown};
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(switchToChannelByIdSpy).toHaveBeenCalled();
+        });
+
+        it('should skip the notification the app was launched from', async () => {
+            await setupChannelAndTeam();
+            EphemeralStore.setProcessingNotification('ack1');
+
+            const result = await openNotification(serverUrl, {payload: {...notificationData, ack_id: 'ack1'}} as NotificationWithData);
+            expect(result).toEqual({});
+            expect(switchToChannelByIdSpy).not.toHaveBeenCalled();
+        });
+
+        it('should open a notification with no identifier after the app was launched from another one', async () => {
+            await setupChannelAndTeam();
+            EphemeralStore.setProcessingNotification('ack1');
+
+            const result = await openNotification(serverUrl, {payload: {...notificationData, ack_id: 'ack2'}} as NotificationWithData) as {error?: unknown};
+            expect(result.error).toBeUndefined();
+            expect(switchToChannelByIdSpy).toHaveBeenCalledWith(serverUrl, channelId, teamId);
+        });
     });
 });
 

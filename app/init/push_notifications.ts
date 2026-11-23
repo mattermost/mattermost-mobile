@@ -190,18 +190,25 @@ class PushNotificationsSingleton {
     handleMessageNotification = async (notification: NotificationWithData) => {
         const {payload, foreground, userInteraction} = notification;
         const serverUrl = await this.getServerUrlFromNotification(notification);
-        if (serverUrl) {
-            if (foreground) {
-                // Move this to a local action
-                this.handleInAppNotification(serverUrl, notification);
-            } else if (userInteraction && !payload?.userInfo?.local) {
-                // Handle notification tapped
-                openNotification(serverUrl, notification);
-            } else {
-                // Awaited so the caller can keep the app alive until the DB write
-                // completes (see onNotificationReceivedBackground).
-                await backgroundNotification(serverUrl, notification);
-            }
+        if (!serverUrl) {
+            logDebug('PushNotifications.handleMessageNotification: no server found for the notification', {
+                hasServerUrl: Boolean(payload?.server_url),
+                hasServerId: Boolean(payload?.server_id),
+                userInteraction: Boolean(userInteraction),
+            });
+            return;
+        }
+
+        if (foreground) {
+            // Move this to a local action
+            this.handleInAppNotification(serverUrl, notification);
+        } else if (userInteraction && !payload?.userInfo?.local) {
+            // Handle notification tapped
+            openNotification(serverUrl, notification);
+        } else {
+            // Awaited so the caller can keep the app alive until the DB write
+            // completes (see onNotificationReceivedBackground).
+            await backgroundNotification(serverUrl, notification);
         }
     };
 

@@ -23,8 +23,8 @@ import {queryMyTeams} from '@queries/servers/team';
 import {getExpoRouterPath} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {handleDeepLink, getLaunchPropsFromDeepLink} from '@utils/deep_link';
-import {logInfo} from '@utils/log';
-import {convertToNotificationData} from '@utils/notification';
+import {logDebug, logInfo} from '@utils/log';
+import {convertToNotificationData, getNotificationKey} from '@utils/notification';
 import {removeProtocol} from '@utils/url';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
@@ -72,7 +72,7 @@ export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResul
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
         const notificationData = convertToNotificationData(notification!);
-        EphemeralStore.setProcessingNotification(notificationData.identifier);
+        EphemeralStore.setProcessingNotification(getNotificationKey(notificationData));
         return determineRouteFromNotification(notificationData);
     }
 
@@ -239,6 +239,12 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
                 break;
             }
 
+            logDebug('determineAuthenticatedRoute: notification launch falls back to app entry', {
+                launchError: Boolean(props.launchError),
+                userInteraction: Boolean(extra.userInteraction),
+                hasChannelId: Boolean(extra.payload?.channel_id),
+                isLocal: Boolean(extra.payload?.userInfo?.local),
+            });
             appEntry(props.serverUrl!);
             break;
         }

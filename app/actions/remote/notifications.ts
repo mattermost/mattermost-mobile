@@ -19,8 +19,9 @@ import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById, prepareMyTeams} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
-import {logWarning} from '@utils/log';
-import {emitNotificationError} from '@utils/notification';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug, logWarning} from '@utils/log';
+import {emitNotificationError, getNotificationKey} from '@utils/notification';
 import {processPostsFetched} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -218,7 +219,11 @@ export const openNotification = async (serverUrl: string, notification: Notifica
     // Wait for initial launch to kick in if needed
     await new Promise((r) => setTimeout(r, 500));
 
-    if (EphemeralStore.getProcessingNotification() === notification.identifier) {
+    // The launch flow already handles the notification that started the app, so skip
+    // that one only. An empty key cannot identify a notification and never matches.
+    const notificationKey = getNotificationKey(notification);
+    if (notificationKey && EphemeralStore.getProcessingNotification() === notificationKey) {
+        logDebug('openNotification: skipped, already handled by the launch flow');
         return {};
     }
 
@@ -266,6 +271,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         }
         return switchToChannelById(serverUrl, channelId, teamId);
     } catch (error) {
+        logWarning('openNotification', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

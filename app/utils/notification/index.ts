@@ -57,7 +57,17 @@ export const convertToNotificationData = (notification: Notification, tapped = t
     return notificationData;
 };
 
-export type NotificationErrorType = 'Team' | 'Channel' | 'ChannelAccess' | 'Connection' | 'Post';
+/**
+ * Returns a stable identity for a notification, used to recognise the same tap being
+ * delivered twice (as the launch notification and as an opened event).
+ * Only iOS provides an identifier; Android payloads are identified by their ack or post id.
+ */
+export const getNotificationKey = (notification: NotificationWithData): string => {
+    const {identifier, payload} = notification;
+    return identifier || payload?.identifier || payload?.ack_id || payload?.post_id || '';
+};
+
+export type NotificationErrorType ='Team' | 'Channel' | 'ChannelAccess' | 'Connection' | 'Post';
 
 export const notificationError = (intl: IntlShape, type: NotificationErrorType) => {
     const title = intl.formatMessage({id: 'notification.message_not_found', defaultMessage: 'Message not found'});

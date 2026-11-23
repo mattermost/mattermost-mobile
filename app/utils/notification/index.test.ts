@@ -12,6 +12,7 @@ import {navigateToRoot} from '@screens/navigation';
 
 import {
     convertToNotificationData,
+    getNotificationKey,
     notificationError,
     emitNotificationError,
     scheduleExpiredNotification,
@@ -79,6 +80,29 @@ describe('Notification Utils', () => {
         it('should return the original notification if no payload is present', () => {
             const result = convertToNotificationData({identifier: 'id'} as any, false);
             expect(result).toEqual({identifier: 'id'});
+        });
+    });
+
+    describe('getNotificationKey', () => {
+        it('should use the notification identifier when there is one', () => {
+            const result = getNotificationKey(convertToNotificationData(notification as any));
+            expect(result).toBe('id');
+        });
+
+        it('should use the ack id when the notification has no identifier', () => {
+            const result = getNotificationKey(convertToNotificationData({...notification, identifier: undefined} as any));
+            expect(result).toBe('ack_id');
+        });
+
+        it('should use the post id when the notification has neither identifier nor ack id', () => {
+            const payload = {...notification.payload, ack_id: undefined};
+            const result = getNotificationKey(convertToNotificationData({...notification, identifier: undefined, payload} as any));
+            expect(result).toBe('post_id');
+        });
+
+        it('should return an empty key when nothing identifies the notification', () => {
+            const result = getNotificationKey({identifier: undefined} as any);
+            expect(result).toBe('');
         });
     });
 
