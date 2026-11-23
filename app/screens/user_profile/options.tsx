@@ -6,13 +6,19 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 
 import {createDirectChannel, switchToChannelById} from '@actions/remote/channel';
+import {joinCallAndOpenCallScreen} from '@calls/actions/calls';
+import {showUserCallOptions} from '@calls/components/user_call_options';
+import {isPhoneDialingAvailable} from '@calls/state';
 import Button from '@components/button';
 import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 
+import type {DialablePhone} from '@calls/types/calls';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 export type OptionsType = 'all' | 'message';
@@ -22,6 +28,7 @@ type Props = {
     type: OptionsType;
     userId: string;
     username: string;
+    phones: DialablePhone[];
 };
 
 const styles = StyleSheet.create({
@@ -47,7 +54,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const UserProfileOptions = ({location, type, userId, username}: Props) => {
+const UserProfileOptions = ({location, type, userId, username, phones}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -65,6 +72,20 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
         }
     }, [userId, serverUrl]);
 
+    const startCall = useCallback(async () => {
+        const {data, error} = await createDirectChannel(serverUrl, userId);
+        if (data) {
+            joinCallAndOpenCallScreen(intl, serverUrl, data.id);
+        } else {
+            logError('error on UserProfileOptions.startCall', getFullErrorMessage(error));
+        }
+    }, [intl, serverUrl, userId]);
+
+    const openCallOptions = useCallback(async () => {
+        await dismissBottomSheet();
+        showUserCallOptions(intl, serverUrl, userId, phones, startCall);
+    }, [intl, serverUrl, userId, phones, startCall]);
+
     if (type === 'all') {
         return (
             <View style={styles.container}>
@@ -81,6 +102,17 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
                     testID='user_profile_options.mention.option'
                     text={intl.formatMessage({id: 'channel_info.mention', defaultMessage: 'Mention'})}
                 />
+                {phones.length > 0 && isPhoneDialingAvailable(serverUrl) && (
+                    <>
+                        <View style={styles.divider}/>
+                        <OptionBox
+                            iconName='phone'
+                            onPress={openCallOptions}
+                            testID='user_profile_options.call.option'
+                            text={intl.formatMessage({id: 'mobile.user_profile.call', defaultMessage: 'Call'})}
+                        />
+                    </>
+                )}
             </View>
         );
     }

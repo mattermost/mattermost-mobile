@@ -9,7 +9,7 @@ import type ClientBase from './base';
 
 export interface ClientChannelsMix {
     getAllChannels: (page?: number, perPage?: number, notAssociatedToGroup?: string, excludeDefaultChannels?: boolean, includeTotalCount?: boolean) => Promise<any>;
-    createChannel: (channel: Channel) => Promise<Channel>;
+    createChannel: (channel: Channel, propertyValues?: PropertyValuePatchItem[]) => Promise<Channel>;
     createDirectChannel: (userIds: string[]) => Promise<Channel>;
     createGroupChannel: (userIds: string[]) => Promise<Channel>;
     deleteChannel: (channelId: string) => Promise<any>;
@@ -108,10 +108,14 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    createChannel = async (channel: Channel) => {
+    // property_values rides the create request itself rather than a second call,
+    // so the server can refuse a channel that would not satisfy its own required
+    // attributes. Omitted entirely when empty: a server with the feature or
+    // licence off 400s a create body that carries the key at all.
+    createChannel = async (channel: Channel, propertyValues?: PropertyValuePatchItem[]) => {
         return this.doFetch(
             `${this.getChannelsRoute()}`,
-            {method: 'post', body: channel},
+            {method: 'post', body: {...channel, ...(propertyValues?.length && {property_values: propertyValues})}},
         );
     };
 

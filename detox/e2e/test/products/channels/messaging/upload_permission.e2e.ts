@@ -7,7 +7,14 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {assertAbacBaseline, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
+import {
+    assertAbacBaseline,
+    convergeDepartment,
+    createAbacChannel,
+    createChannelMember,
+    getProvisionedDepartmentField,
+    setDepartment,
+} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -28,13 +35,17 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
+import {allOrFirstError} from '@support/utils/converge';
 import {expect} from 'detox';
+
+const UPLOAD_ACTION = 'upload_file_attachment';
 
 describe('Messaging - Upload Permission (ABAC)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 
     let testChannel: any;
+    let controlChannel: any;
     let testTeam: any;
     let deniedUser: any;
     let allowedUser: any;
@@ -59,27 +70,16 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
 
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: team.id,
-            type: 'O',
-            prefix: 'abac-upload',
-        });
-        testChannel = channel;
+        testChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-upload');
+        controlChannel = await createAbacChannel(siteOneUrl, team.id, 'abac-upload-control');
 
-        // # Create denied user (Department: "Sales") and add to team + channel
-        ({user: deniedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'denied'}));
-        await Team.apiAddUserToTeam(siteOneUrl, deniedUser.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, testChannel.id);
-        await setDepartment(siteOneUrl, deniedUser.id, department.id, 'Sales');
-
-        // # Create allowed user (Department: "Engineering") and add to team + channel
-        ({user: allowedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'allowed'}));
-        await Team.apiAddUserToTeam(siteOneUrl, allowedUser.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, testChannel.id);
-        await setDepartment(siteOneUrl, allowedUser.id, department.id, 'Engineering');
-
-        // # Wait for the server-side attribute view to pick up the values (30s refresh gate)
-        await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
+        // # Create the denied and allowed users and add them to team + channel
+        deniedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'denied');
+        const controlMembership = await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, controlChannel.id);
+        if (controlMembership.error) {
+            throw new Error(`Failed to add the denied user to the control channel: ${JSON.stringify(controlMembership.error)}`);
+        }
+        allowedUser = await createChannelMember(siteOneUrl, team.id, testChannel.id, 'allowed');
 
         // # In this channel only, Engineering can upload files and Sales cannot
         const {policy, error: policyError} = await AccessControl.apiCreateChannelPermissionPolicy(
@@ -102,6 +102,12 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             throw new Error(`Failed to activate permission policy: ${JSON.stringify(activateError)}`);
         }
 
+        // # Set each user's Department and wait until the server itself decides as the policy says
+        await allOrFirstError([
+            convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Sales', testChannel.id, UPLOAD_ACTION, false, timeouts.TWO_MIN),
+            convergeDepartment(siteOneUrl, allowedUser, departmentFieldId, 'Engineering', testChannel.id, UPLOAD_ACTION, true, timeouts.TWO_MIN),
+        ]);
+
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
     });
 
@@ -121,7 +127,7 @@ describe('Messaging - Upload Permission (ABAC)', () => {
         }
     });
 
-    it('MM-68219_3 - should disable the attachment button when the policy denies uploads in the channel', async () => {
+    it('MM-68219_3 - should disable the attachment button only in the channel where the policy denies uploads', async () => {
         // # Log in as the denied user (Department: Sales) and open the channel
         await LoginScreen.login(deniedUser);
         await ChannelListScreen.toBeVisible();
@@ -132,6 +138,14 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.attachmentAction).not.toExist();
+
+        // * The same user can still upload in a channel without the policy
+        await ChannelScreen.back();
+        await ChannelScreen.open(channelsCategory, controlChannel.name);
+        await waitFor(ChannelScreen.attachmentAction).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
+        await expect(ChannelScreen.attachmentActionDisabled).not.toExist();
 
         await ChannelScreen.back();
         await HomeScreen.logout();
@@ -156,6 +170,10 @@ describe('Messaging - Upload Permission (ABAC)', () => {
     });
 
     it('MM-68219_5 - should enable the attachment button without reopening the channel once the user attribute satisfies the policy', async () => {
+        // # Start from a server-side deny. A first attempt has it from beforeAll; an in-place retry
+        // follows an attempt that granted the user and only restored the attribute at the end.
+        await convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Sales', testChannel.id, UPLOAD_ACTION, false);
+
         // # Log in as the denied user and open the channel
         await LoginScreen.login(deniedUser);
         await ChannelListScreen.toBeVisible();
@@ -164,19 +182,50 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             toExist().
             withTimeout(timeouts.TEN_SEC);
 
-        // # Change the user's attribute so the policy now grants uploads
-        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
+        let grantError: unknown;
+        try {
+            // # Change the user's attribute so the policy grants uploads, and wait until the server
+            // itself grants them: until then no client can enable the button.
+            await convergeDepartment(siteOneUrl, deniedUser, departmentFieldId, 'Engineering', testChannel.id, UPLOAD_ACTION, true);
 
-        // * The button re-enables on its own. The server's attribute view refreshes on a 30s gate,
-        // which the app's delayed re-check is built to outlast.
-        await waitFor(ChannelScreen.attachmentAction).
-            toExist().
-            withTimeout(timeouts.ONE_MIN);
+            // # Save the value once more. Its attribute event is what the app re-checks on, and the
+            // server now answers it from the new value; the first event may have been answered from
+            // a stale cached subject (server defect, see convergeDepartment).
+            // TODO: drop this save with convergeDepartment's reassert once the server is fixed.
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Engineering');
 
-        // # Restore the attribute so the suite leaves the user as it found it
-        await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+            // * The button re-enables without reopening the channel
+            await waitFor(ChannelScreen.attachmentAction).
+                toExist().
+                withTimeout(timeouts.ONE_MIN);
+        } catch (error) {
+            grantError = error;
+        }
 
-        await ChannelScreen.back();
-        await HomeScreen.logout();
+        // # Restore the attribute so the suite leaves the user as it found it. Do not wait for the
+        // deny to land: it can take minutes, which this test's 300s budget does not have after
+        // login and the grant wait. A retry waits for it at the start instead. A cleanup failure
+        // must not replace an error from the grant wait above.
+        try {
+            await setDepartment(siteOneUrl, deniedUser.id, departmentFieldId, 'Sales');
+        } catch (cleanupError) {
+            if (grantError) {
+                console.warn('[upload_permission] restore cleanup failed:', cleanupError); // eslint-disable-line no-console
+            } else {
+                throw cleanupError;
+            }
+        } finally {
+            // # Return to the channel list, then log out so no cached grant decision survives into the next test or retry
+            try {
+                await ChannelScreen.back();
+            } catch {
+                // Best effort: the logout below is the cleanup that must run.
+            }
+            await HomeScreen.logout();
+        }
+
+        if (grantError) {
+            throw grantError;
+        }
     });
 });

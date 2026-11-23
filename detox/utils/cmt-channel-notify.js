@@ -14,6 +14,9 @@ const PLATFORM_ORDER = {ios: 0, android: 1, ipad: 2};
 const FRAMEWORK_ORDER = {detox: 0, maestro: 1};
 const FETCH_TIMEOUT_MS = 15_000;
 
+// The consolidated report of a full Detox run takes TSIO about 20s to build.
+const CONSOLIDATED_TIMEOUT_MS = 90_000;
+
 /**
  * Fetch with an abort timeout that stays armed until `readBody` finishes.
  *
@@ -220,171 +223,746 @@ function formatLegResultText(leg) {
     return `❌ ${leg.passed}/${executed}`;
 }
 
-const JUDGEMENTS = {
-    'app-bug': {emoji: '🔴', heading: 'Suspected app bug — corroborated, needs investigation'},
-    investigate: {emoji: '🔍', heading: 'Needs a closer look — not enough evidence to call it an app bug'},
-    flaky: {emoji: '🟠', heading: 'Flaky — intermittent in TSIO history'},
-    known: {emoji: '⚪', heading: 'Known failing — also failed before this run'},
-    infra: {emoji: '⚠️', heading: 'Infra / environment — not an app failure'},
-};
-
-// A visibility/existence wait expiring says the UI was not in the expected
-// state in time — timing, navigation, or a slow server explain it at least as
-// well as an app bug, so it is never enough on its own for "app bug".
-const TIMING_ERROR_PATTERNS = [
-    /timed out while waiting|timeout expired/i,
-    /TOEXIST|TOBEVISIBLE|to be visible|not visible/i,
-    /Failed expectation/i,
+// The verdict on each failed test comes from the E2E triage job (the toolkit's findings file, schema 2), which
+// checked it against TSIO history: one judge for the run. Each test sits under what it means, in plain words.
+const VERDICT_SECTIONS = [
+    {key: 'product', title: '🐞 **Product bugs**'},
+    {key: 'still', title: '↩️ **Still failing** — failed on the previous main run too'},
+    {key: 'look', title: '🔎 **Needs a look**'},
+    {key: 'test', title: '🧪 **Problems with the test, not product bugs**'},
+    {key: 'flaky', title: '🔁 **Flaky, not product bugs**'},
+    {key: 'setup', title: '⚙️ **Setup problems, not product bugs**'},
 ];
-
-// A direct assertion on content or state (expected X, got Y) is the kind of
-// failure an app bug actually produces — unlike a wait expiring.
-const HARD_ASSERTION_PATTERNS = [
-    /toHaveText|toHaveLabel|toHaveValue/i,
-    /expected .{0,80} to (be|equal|match|contain)/i,
-    /Expected:[\s\S]{0,120}Received:/i,
-    /AssertionError/i,
-];
-
-const INFRA_ERROR_PATTERNS = [
-    /attributes_feature_disabled|not enabled on this server/i,
-    /simctl|NSPOSIXErrorDomain|Failed to CreateArtifact/i,
-    /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|socket hang up/i,
-    /Exceeded timeout of \d+ ?ms for a hook/i,
-    /Cannot read properties of undefined \(reading '(id|channel|team|user)'\)/i,
-    /test server (is )?(down|unreachable)|server did not (respond|become ready)/i,
-];
+const TEST_PROBLEM_LABELS = new Set(['test bug', 'server compat', 'out of date', 'fixed on main']);
+const MAX_PER_VERDICT = 5;
 
 /**
- * Judge one failing test from the evidence TSIO has for it. "app-bug" is the
- * last resort, not the default: it needs a direct content/state assertion
- * (not a wait expiring) AND corroboration — the same test failing on another
- * leg of this run, or a test that passed in earlier history now failing that
- * assertion. Anything weaker is "investigate": one observation of a timing
- * wait is as consistent with a flake or a slow server as with an app bug.
+ * Where one triage finding belongs. On main there is no PR: a test that passed every earlier main run and fails
+ * now broke with a change since the last main run, so it is "new" rather than "needs a look" — unless triage
+ * called it flaky or a problem with the test, which no merged change explains.
  *
- * @param {{title?: string, error?: string, previousStatuses?: string[], passedOnRetry?: boolean, alsoFailedElsewhere?: boolean}} failure
- * @returns {{category: string, reason: string}}
+ * @param {{class?: string, label?: string}} row - findings-file row
+ * @param {boolean} onMain
+ * @returns {{key: string, reason: string}}
  */
-function classifyFailure(failure) {
-    const title = failure?.title || '';
-    const error = failure?.error || '';
-    const previous = failure?.previousStatuses || [];
+function verdictOf(row, onMain) {
+    const label = row.label || '';
+    const cls = row.class || '';
+    if (label === 'app bug') {
+        return {key: 'product', reason: 'the app does not do what the test expects'};
+    }
+    if (label === 'caused by PR') {
+        return {key: onMain ? 'new' : 'product', reason: onMain ? 'this change edited the test' : 'caused by this change'};
+    }
+    if (cls === 'BROKEN_ON_TRUNK' || label === 'broken on main') {
+        return {key: 'still', reason: ''};
+    }
+    if (cls === 'INFRA_ERROR') {
+        return {key: 'setup', reason: 'the test device or server failed, not the app'};
+    }
+    if (label === 'flaky') {
+        return {key: 'flaky', reason: 'failed by chance; it passes on retry or on other runs'};
+    }
+    if (TEST_PROBLEM_LABELS.has(label)) {
+        return {key: 'test', reason: 'the test itself is wrong, not the app'};
+    }
+    if (onMain && cls === 'REGRESSION') {
+        return {key: 'new', reason: ''};
+    }
+    if (cls === 'INSUFFICIENT_DATA') {
+        return {key: 'look', reason: 'not enough history to tell'};
+    }
+    return {key: 'look', reason: 'the cause is not clear'};
+}
 
-    if (/spec did not run/i.test(title) || /produced no result/i.test(error)) {
-        return {category: 'infra', reason: 'spec never ran (shard produced no result)'};
-    }
-    for (const pattern of INFRA_ERROR_PATTERNS) {
-        if (pattern.test(error)) {
-            return {category: 'infra', reason: 'error points at the test environment, not the app'};
-        }
-    }
-    if (failure?.passedOnRetry) {
-        return {category: 'flaky', reason: 'passed on retry in this run'};
-    }
-    const sawPass = previous.includes('passed') || previous.includes('flaky');
-    const sawFail = previous.includes('failed');
-    if (sawPass && sawFail) {
-        return {category: 'flaky', reason: 'passed and failed in recent TSIO history'};
-    }
-    if (sawFail) {
-        return {category: 'known', reason: 'failed in earlier runs in TSIO history'};
-    }
-    if (TIMING_ERROR_PATTERNS.some((pattern) => pattern.test(error))) {
-        return {category: 'investigate', reason: 'visibility/existence wait expired — timing, navigation, or app; needs a repro or a repeat before calling it an app bug'};
-    }
-    if (!HARD_ASSERTION_PATTERNS.some((pattern) => pattern.test(error))) {
-        return {category: 'investigate', reason: 'single observation with no direct assertion in the error — needs a repro or a repeat'};
-    }
-    if (failure?.alsoFailedElsewhere) {
-        return {category: 'app-bug', reason: 'direct assertion failed on more than one leg of this run, no infra cause in the error'};
-    }
-    if (sawPass) {
-        return {category: 'app-bug', reason: 'passed in earlier runs and now fails a direct assertion, no infra cause in the error'};
-    }
-    return {category: 'investigate', reason: 'direct assertion, but a single observation with no earlier history — needs a repeat before calling it an app bug'};
+function laneName(lane) {
+    const parsed = parseMobileJobName(lane);
+    return parsed ? formatLegName(parsed) : (lane || 'unknown run');
 }
 
 /**
- * @param {string} jobName gh_job_name of the leg the failure came from
+ * A run where most tests failed at once: its setup (device, app build or server) or one broken screen explains
+ * that better than as many separate failures.
+ *
+ * @param {Array<{failed: number, passed: number}>} legs - buildLegSummaries rows
+ * @returns {string[]}
+ */
+function isMassFailure(leg) {
+    return leg.failed >= 5 && leg.failed * 2 >= leg.passed + leg.failed;
+}
+
+function formatMassFailures(legs) {
+    return (legs || []).
+        filter(isMassFailure).
+        map((leg) => `⚠️ **${formatLegName(leg)}: ${leg.failed} of ${leg.passed + leg.failed} tests failed.** When most of a run fails at once it is usually its setup (device, app build or server) or one broken screen — look at that run before the single tests.`);
+}
+
+/**
+ * The changes merged since the last main run, the likely cause of a test that is new on main.
+ *
+ * @param {{from: string, to: string, prs: Array<{number: number, title: string}>, partial?: boolean} | null} changes
+ * @param {string} repository
  * @returns {string}
  */
-function legLabelForJob(jobName) {
-    const parsed = parseMobileJobName(jobName);
-    return parsed ? formatLegName(parsed) : (jobName || 'unknown leg');
+function formatChanges(changes, repository) {
+    if (!changes) {
+        return 'most likely from a change merged since the last main run';
+    }
+    if (changes.from === changes.to) {
+        return 'no change was merged since the last main run, so no new change explains these';
+    }
+    const range = `\`${changes.from.slice(0, 7)}\` → \`${changes.to.slice(0, 7)}\``;
+    if (!changes.prs.length) {
+        return `most likely from a change merged since the last main run (${range})`;
+    }
+    const link = (pr) => `[#${pr.number}](https://github.com/${repository}/pull/${pr.number})`;
+    if (changes.prs.length === 1 && !changes.partial) {
+        return `most likely from ${link(changes.prs[0])} ${changes.prs[0].title}`;
+    }
+    const shown = changes.prs.slice(0, 3).map(link).join(' · ');
+    if (changes.partial) {
+        return `most likely from one of the many changes merged since the last main run (${range}), among them ${shown}`;
+    }
+    const more = changes.prs.length > 3 ? ` and ${changes.prs.length - 3} more` : '';
+    return `most likely from one of the ${changes.prs.length} changes merged since the last main run: ${shown}${more}`;
 }
 
-const MAX_JUDGED_PER_CATEGORY = 15;
-
-function suiteKeyOf(title) {
-    return (title || '').replace(/›?\s*MM-[A-Za-z0-9_-]+.*$/, '').trim();
-}
-
-function formatFailureJudgement(failures) {
-    // Corroboration for the app-bug gate: the same test failing on more than
-    // one leg of this run is a second, independent observation of it.
-    const jobsByTitle = new Map();
-    for (const failure of failures || []) {
-        const title = (failure.title || '').trim();
-        if (!title) {
+/**
+ * The verdict section from the triage findings of every run that had one (PR and CMT runs).
+ *
+ * @param {Object} params
+ * @param {Array<{lane: string, findings?: Array, counts?: {flaky?: number}}>} params.triage - findings files
+ * @param {Array} [params.legs] - buildLegSummaries rows, to name runs that failed with no triage verdict
+ * @returns {string[]}
+ */
+function formatTriageVerdict({triage, legs = []}) {
+    const entries = [];
+    for (const lane of triage || []) {
+        for (const row of lane.findings || []) {
+            entries.push({lane: lane.lane, row, verdict: verdictOf(row, false)});
+        }
+    }
+    const lines = [];
+    for (const {key, title} of VERDICT_SECTIONS) {
+        const group = entries.filter((e) => e.verdict.key === key);
+        if (!group.length) {
             continue;
         }
-        if (!jobsByTitle.has(title)) {
-            jobsByTitle.set(title, new Set());
+        lines.push(`${title} (${group.length})`);
+        for (const {lane, row, verdict} of group.slice(0, MAX_PER_VERDICT)) {
+            // A Maestro flow's full title is its file path again: its own title says it.
+            const name = row.full_title && !row.full_title.startsWith(row.file || '\0') ? row.full_title : row.title;
+            const detail = row.ai?.explanation || verdict.reason;
+            lines.push(`- ${laneName(lane)} ${name || 'unnamed test'}${detail ? ` — ${detail}` : ''}`);
         }
-        if (failure.job) {
-            jobsByTitle.get(title).add(failure.job);
-        }
-    }
-    const judged = (failures || []).map((failure) => {
-        const enriched = {
-            ...failure,
-            alsoFailedElsewhere: (jobsByTitle.get((failure.title || '').trim())?.size || 0) > 1,
-        };
-        return {failure: enriched, verdict: classifyFailure(enriched)};
-    });
-
-    // Cascade rule: a suite whose own setup hit an environment failure in this
-    // leg (e.g. the server rejects channel creation) makes its sibling tests
-    // fail in setup too, with generic errors that carry no infra marker. Those
-    // are not independent app-bug candidates.
-    const cascadeKeyOf = (failure) => {
-        const suite = suiteKeyOf(failure.title);
-        return failure.job && suite ? `${failure.job}|${suite}` : null;
-    };
-    const infraSuites = new Set(
-        judged.
-            filter((entry) => entry.verdict.category === 'infra').
-            map((entry) => cascadeKeyOf(entry.failure)).
-            filter(Boolean),
-    );
-    for (const entry of judged) {
-        const key = cascadeKeyOf(entry.failure);
-        if ((entry.verdict.category === 'app-bug' || entry.verdict.category === 'investigate') && key && infraSuites.has(key)) {
-            entry.verdict = {category: 'infra', reason: 'same suite hit an environment failure in this leg — likely a cascade'};
-        }
-    }
-    if (judged.length === 0) {
-        return [];
-    }
-
-    const lines = ['**Failure judgement** _(TSIO history + error text; “suspected” still needs a human confirm)_', ''];
-    for (const category of Object.keys(JUDGEMENTS)) {
-        const group = judged.filter((entry) => entry.verdict.category === category);
-        if (group.length === 0) {
-            continue;
-        }
-        const {emoji, heading} = JUDGEMENTS[category];
-        lines.push(`${emoji} **${heading} (${group.length})**`);
-        for (const {failure, verdict} of group.slice(0, MAX_JUDGED_PER_CATEGORY)) {
-            lines.push(`- ${legLabelForJob(failure.job)} ${failure.title || 'unnamed test'} — ${verdict.reason}`);
-        }
-        if (group.length > MAX_JUDGED_PER_CATEGORY) {
-            lines.push(`- …and ${group.length - MAX_JUDGED_PER_CATEGORY} more (see the consolidated report)`);
+        if (group.length > MAX_PER_VERDICT) {
+            lines.push(`- …and ${group.length - MAX_PER_VERDICT} more in the run`);
         }
         lines.push('');
     }
+
+    // Tests that failed a try and passed the next are in no list above: they are flaky, not failures.
+    const retried = (triage || []).filter((lane) => (lane.counts?.flaky || 0) > 0);
+    if (retried.length) {
+        const total = retried.reduce((n, lane) => n + lane.counts.flaky, 0);
+        lines.push(`🔁 **Passed on retry, not product bugs:** ${total} test${total === 1 ? '' : 's'} (${retried.map((lane) => `${laneName(lane.lane)} ${lane.counts.flaky}`).join(', ')})`, '');
+    }
+
+    // Any failed test not covered by a triage finding is reported as not checked instead of re-judged locally.
+    const verdicts = new Map();
+    for (const lane of triage || []) {
+        const key = legKeyOf(lane.lane);
+        if (!key) {
+            continue;
+        }
+        verdicts.set(key, (verdicts.get(key) || 0) + (lane.findings || []).length);
+    }
+    const unchecked = [];
+    for (const leg of legs || []) {
+        const key = legKey(leg);
+        const accounted = verdicts.get(key) || 0;
+        const missing = leg.failed - accounted;
+        if (missing > 0) {
+            unchecked.push(accounted ? `${formatLegName(leg)} (${missing} of ${leg.failed} failed tests)` : formatLegName(leg));
+        }
+    }
+    if (unchecked.length) {
+        lines.push(`⚙️ **Not checked:** ${unchecked.join(', ')} — the triage job left no verdict; look at the run`, '');
+    }
     return lines;
+}
+
+// TSIO names a failed test "Suite › test"; a triage finding names it by its title ("test") and full title
+// ("Suite test", or a Maestro flow's file path).
+function namedIn(names, title) {
+    const text = title || '';
+    return names.has(text) || names.has(text.split(' › ').pop()) || names.has(text.replace(/ › /g, ' '));
+}
+
+// One key per run: CMT runs of the same framework and platform differ by server version.
+function legKey({framework, platform, serverVersion}) {
+    return `${framework}-${platform}-${serverVersion}`;
+}
+
+function legKeyOf(jobName) {
+    const parsed = parseMobileJobName(jobName);
+    return parsed ? legKey(parsed) : null;
+}
+
+function bucketOf(compositeIdentity) {
+    const {webhookBucketForReportName} = require('./build-tsio-job-config');
+    return webhookBucketForReportName(compositeIdentity?.run_group || compositeIdentity?.name || '');
+}
+
+// Main and CMT runs answer one question per failed test; a PR run keeps the detailed message.
+function postsShortMessage(compositeIdentity) {
+    return ['mobile-main', 'mobile-release'].includes(bucketOf(compositeIdentity));
+}
+
+// After a merge the channel needs one answer per failed test: a product bug, or not one. Only a test that fails
+// again on a fresh device (rerun-failed.js) is a product bug; what was not re-run is not confirmed either way.
+const NOT_PRODUCT_BUGS = [
+    {key: 'fresh-pass', label: 'passed on a fresh device'},
+    {key: 'flaky', label: 'flaky'},
+    {key: 'still', label: 'already failing before this run'},
+    {key: 'test', label: 'a problem with the test'},
+    {key: 'setup', label: 'setup (device or server)'},
+];
+
+const UNCLEARED = new Set(['product', 'new', 'look']);
+const MAX_NAMED_BUGS = 5;
+const CMT_FLAKY_BUCKETS = NOT_PRODUCT_BUGS.filter(({key}) => key !== 'test');
+const countWord = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const cut = (text, max) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
+
+// Mobile's narrow post-triage check for harness/setup errors unique to Detox/Maestro (toolkit already handles
+// DeviceUnreachable, Detox isReady crashes, feature_disabled, and small-suite storms upstream).
+const SETUP_ERRORS = [
+    /Exceeded timeout of \d+ ?ms for a (hook|test)/,
+    /No response from server|socket hang up|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|\{"(id|message)":"/,
+    /never (became|reached)|could not (confirm|enable)|did not attach file|seed failed|server baseline|apiCheckSystemHealth/,
+    /DeviceServerDied|"reactNativeReload"/,
+];
+const TEST_CODE_ERRORS = /^(TypeError|ReferenceError|SyntaxError):/;
+
+// The server says a feature is off (attributes_feature_disabled / permission_policies.feature_disabled): every spec of that feature fails on this server.
+const FEATURE_OFF = /(?:^|[._])feature_disabled\b|feature is not enabled|not enabled on this server/i;
+const specFolder = (file) => (file || '').replace(/\/[^/]*$/, '');
+
+// The same failure, whatever its numbers and ids.
+function errorSignature(text) {
+    return (text || '').split('\n')[0].replace(/[0-9a-f]{8,}|\d+/gi, '#').trim();
+}
+
+function causeOfError(text) {
+    const line = (text || '').split('\n')[0];
+    if (TEST_CODE_ERRORS.test(line)) {
+        return 'test';
+    }
+    return SETUP_ERRORS.some((pattern) => pattern.test(line)) ? 'setup' : null;
+}
+
+/**
+ * A finding's verdict after mobile's judge: triage's, unless the failure is one triage left uncleared and
+ *   - its error is setup, the harness, the device or the test's code (causeOfError);
+ *   - the server said the feature is off for another spec in the same folder: setup;
+ *   - at least half of the tests that ran in the lane, and 3 or more, failed with the same error: the run, not each test;
+ *   - a test in the lane failed with the same error and passed on its retry (retried, from TSIO): flaky.
+ *
+ * @param {Object} row - finding (schema 2)
+ * @param {{findings?: Array, counts?: Object}} lane - its findings file
+ * @param {Iterable<string>} [retried] - errors of the lane's tests that failed and then passed their retry
+ * @returns {string} verdict key
+ */
+function judgeFinding(row, lane, retried) {
+    const key = verdictOf(row, true).key;
+    if (!UNCLEARED.has(key)) {
+        return key;
+    }
+    const cause = causeOfError(row.error_first_line);
+    if (cause) {
+        return cause;
+    }
+    const folder = row.file && specFolder(row.file);
+    if (folder && (lane.findings || []).some((other) => specFolder(other.file) === folder && FEATURE_OFF.test(other.error_first_line || ''))) {
+        return 'setup';
+    }
+    const signature = errorSignature(row.error_first_line);
+    if (signature) {
+        const same = (lane.findings || []).filter((other) => errorSignature(other.error_first_line) === signature).length;
+        const counts = lane.counts || {};
+        const ran = (counts.passed || 0) + (counts.failed || 0) + (counts.flaky || 0);
+        if (same >= 3 && same * 2 >= ran) {
+            return 'setup';
+        }
+        if ([...(retried || [])].some((error) => errorSignature(error) === signature)) {
+            return 'flaky';
+        }
+    }
+    return key;
+}
+
+/**
+ * Evaluate per-test verdicts from triage findings, fresh-device reruns, and unjudged TSIO failures.
+ * Shared by formatMainChannelMessage and buildAgentHandoff so both classify identically.
+ */
+function evaluateMainVerdicts({legs, failures, triage, rerun}) {
+    const verdicts = [];
+    const named = new Map();
+    for (const lane of triage || []) {
+        const leg = legKeyOf(lane.lane);
+        const names = named.get(leg) || new Set();
+        const retried = (failures || []).
+            filter((failure) => failure.passedOnRetry && legKeyOf(failure.job) === leg).
+            map((failure) => failure.error);
+        for (const row of lane.findings || []) {
+            // What the error text leaves uncleared, the fresh-device re-run decides: failed again is a product
+            // bug, passed is not one. Only without a re-run result does a retry of the same error clear it.
+            let key = judgeFinding(row, lane);
+            const again = UNCLEARED.has(key) ? rerun?.results?.[lane.lane]?.get(row.title) : undefined;
+            if (again === 'failed') {
+                key = 'confirmed';
+            } else if (again === 'passed') {
+                key = 'fresh-pass';
+            } else if (UNCLEARED.has(key)) {
+                key = judgeFinding(row, lane, retried);
+                if (UNCLEARED.has(key) && rerun?.stale?.[lane.lane]?.includes(row.title)) {
+                    key = 'stale';
+                }
+            }
+            verdicts.push({
+                key,
+                leg,
+                lane: lane.lane,
+                title: row.title,
+                fullTitle: row.full_title || row.title,
+                file: row.file || '',
+                label: row.label || '',
+                aiCause: row.ai?.cause || null,
+                aiConfidence: typeof row.ai?.confidence === 'number' ? row.ai.confidence : null,
+                explanation: row.ai?.explanation || null,
+                error: row.error_first_line || null,
+                new: verdictOf(row, true).key === 'new',
+            });
+            names.add(row.full_title || row.title).add(row.title);
+        }
+        named.set(leg, names);
+    }
+    const unjudged = (failures || []).filter((failure) => {
+        const names = named.get(legKeyOf(failure.job));
+        return !failure.passedOnRetry && !(names && namedIn(names, failure.title));
+    });
+    for (const failure of unjudged) {
+        const fallback = causeOfError(failure.error);
+        verdicts.push({
+            key: fallback || 'look',
+            leg: legKeyOf(failure.job),
+            lane: failure.job || '',
+            title: failure.title || '',
+            fullTitle: failure.title || '',
+            file: '',
+            label: fallback === 'test' ? 'test bug' : 'needs investigation',
+            aiCause: null,
+            aiConfidence: null,
+            explanation: null,
+            error: (failure.error || '').split('\n')[0] || null,
+        });
+    }
+    for (const leg of legs) {
+        const key = legKey(leg);
+        const missing = leg.failed - verdicts.filter((v) => v.leg === key).length;
+        for (let i = 0; i < missing; i++) {
+            verdicts.push({key: 'look', leg: key});
+        }
+    }
+    return verdicts;
+}
+
+/** Deduplicate named verdicts across platforms/servers so each unique test is shown once. */
+function groupMobileTests(items) {
+    const byTest = new Map();
+    for (const v of items) {
+        if (!v.title) {
+            continue;
+        }
+        const mapKey = `${v.file || ''}\n${v.fullTitle || v.title}`;
+        const parsed = parseMobileJobName(v.lane);
+        const server = parsed?.kind === 'cmt' ? parsed.serverVersion : '';
+        const legId = parsed && server ? `${parsed.framework}-${parsed.platform}/${server}` : (v.lane || v.leg || 'unknown');
+        const seen = byTest.get(mapKey);
+        if (!seen) {
+            byTest.set(mapKey, {
+                key: v.key,
+                title: v.title,
+                fullTitle: v.fullTitle || v.title,
+                file: v.file || '',
+                label: v.label || '',
+                aiCause: v.aiCause ?? null,
+                aiConfidence: v.aiConfidence ?? null,
+                explanation: v.explanation || null,
+                error: v.error || null,
+                lanes: v.lane ? [v.lane] : [],
+                servers: server ? [server] : [],
+                failedLegs: [legId],
+            });
+            continue;
+        }
+        if (v.lane && !seen.lanes.includes(v.lane)) {
+            seen.lanes.push(v.lane);
+        }
+        if (server && !seen.servers.includes(server)) {
+            seen.servers.push(server);
+        }
+        if (!seen.failedLegs.includes(legId)) {
+            seen.failedLegs.push(legId);
+        }
+        seen.explanation = seen.explanation || v.explanation;
+        seen.error = seen.error || v.error;
+        seen.aiCause = seen.aiCause || v.aiCause;
+        if (seen.aiConfidence === null && typeof v.aiConfidence === 'number') {
+            seen.aiConfidence = v.aiConfidence;
+        }
+    }
+    return [...byTest.values()].sort((a, b) => b.failedLegs.length - a.failedLegs.length || a.title.localeCompare(b.title));
+}
+
+function formatCmtTestLine(g) {
+    const id = (/^(MM-T?\d+(?:_\d+)?)\b/).exec(g.title)?.[1];
+    const rest = id ? cut(g.title.slice(id.length).replace(/^[\s-]+/, ''), 50) : '';
+    let display = `\`${cut(g.title, 55)}\``;
+    if (id) {
+        display = rest ? `\`${id}\` ${rest}` : `\`${id}\``;
+    }
+    let reason = g.explanation ? cut(g.explanation, 160) : '';
+    if (!reason) {
+        if (g.key === 'stale') {
+            reason = 'out of date on this branch';
+        } else if (g.key === 'test') {
+            reason = g.label === 'server compat' ? 'server compatibility test issue' : 'the test itself is wrong, not the app';
+        } else if (g.error) {
+            reason = cut(g.error, 140);
+        } else if (g.key === 'confirmed') {
+            reason = 'failed again on a fresh device';
+        } else {
+            reason = 'not confirmed — needs a look';
+        }
+    }
+    const where = g.lanes.slice(0, 3).map(laneName).join(', ') + (g.lanes.length > 3 ? ` +${g.lanes.length - 3} more` : '');
+    return `• ${display} — ${reason}${where ? ` · ${where}` : ''}`;
+}
+
+/** Mobile CMT (`mobile-release`) 3-bucket summary; always posts, including a 2-line green pass. */
+function formatMobileCmtMessage({title, on, legs, verdicts, confirmed, unconfirmed, setupLines, unexplained, perRun, retried, rerun, passed, failed, skipped, reportUrl, runUrl}) {
+    const productGroups = groupMobileTests(confirmed);
+    const testGroups = groupMobileTests(verdicts.filter((v) => v.key === 'test' || v.key === 'stale'));
+    const unconfirmedGroups = groupMobileTests(unconfirmed);
+    const unnamedUnconfirmed = unconfirmed.filter((v) => !v.title);
+    const flakyParts = CMT_FLAKY_BUCKETS.
+        map(({key, label}) => ({label, count: verdicts.filter((v) => v.key === key).length})).
+        filter(({count}) => count > 0).
+        map(({label, count}) => `${count} ${label}`);
+    if (retried) {
+        flakyParts.push(`${retried} passed on retry`);
+    }
+
+    const testTag = testGroups.length ? ` · ${countWord(testGroups.length, 'test bug', 'test bugs')}` : '';
+    let headline;
+    if (confirmed.length) {
+        headline = `:red_circle: **${title}**${on}: ${countWord(productGroups.length || confirmed.length, 'product bug', 'product bugs')} found${testTag}`;
+    } else if (unconfirmed.length || unexplained) {
+        const n = unconfirmedGroups.length + unnamedUnconfirmed.length;
+        const heldText = n ? ` · ${n} ${n === 1 ? 'failure needs' : 'failures need'} a look` : '';
+        headline = `:yellow_circle: **${title}**${on}: no product bugs confirmed${heldText}${testTag}`;
+    } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
+        headline = `:yellow_circle: **${title}**${on}: setup problem${testTag}`;
+    } else if (testGroups.length) {
+        headline = `:green_circle: **${title}**${on}: no product bugs found${testTag}`;
+    } else if (failed > 0 || flakyParts.length) {
+        headline = `:green_circle: **${title}**${on}: no product bugs found`;
+    } else {
+        headline = `:green_circle: **${title}**${on}: all tests passed`;
+    }
+
+    const lines = [headline];
+    const massFlagged = new Set();
+    for (const [lane, totalFailed] of Object.entries(rerun?.tooMany || {})) {
+        const key = legKeyOf(lane);
+        if (key) {
+            massFlagged.add(key);
+        }
+        lines.push(`⚠️ **${laneName(lane)}: ${totalFailed} failed at once, too many to re-run** — check that run's setup first.`);
+    }
+    lines.push(...formatMassFailures(legs.filter((leg) => !massFlagged.has(legKey(leg)))));
+
+    const pushGroup = (heading, groups) => {
+        if (!groups.length) {
+            return;
+        }
+        lines.push(`${heading} (${groups.length})`, ...groups.slice(0, MAX_NAMED_BUGS).map(formatCmtTestLine));
+        if (groups.length > MAX_NAMED_BUGS) {
+            lines.push(`…and ${groups.length - MAX_NAMED_BUGS} more in the run`);
+        }
+    };
+    pushGroup('🐞 **Product bugs**', productGroups);
+    if (unconfirmedGroups.length || unnamedUnconfirmed.length) {
+        const totalUnconfirmed = unconfirmedGroups.length + unnamedUnconfirmed.length;
+        lines.push(`🔎 **Needs a look** (${totalUnconfirmed})`);
+        for (const g of unconfirmedGroups.slice(0, MAX_NAMED_BUGS)) {
+            lines.push(formatCmtTestLine(g));
+        }
+        if (unconfirmedGroups.length > MAX_NAMED_BUGS) {
+            lines.push(`…and ${unconfirmedGroups.length - MAX_NAMED_BUGS} more in the run`);
+        }
+        if (unnamedUnconfirmed.length) {
+            lines.push(`• ${perRun(unnamedUnconfirmed)}`);
+        }
+    }
+    pushGroup('🧪 **Test bugs**', testGroups);
+    if (unexplained) {
+        lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
+    }
+    if (flakyParts.length) {
+        lines.push(`🔁 **Flaky / Infra:** ${flakyParts.join(' · ')}`);
+    }
+    lines.push(...setupLines);
+
+    const hasBrief = productGroups.length + testGroups.length + unconfirmedGroups.length > 0;
+    const links = [
+        reportUrl && `[Report](${reportUrl})`,
+        runUrl && `[${hasBrief ? 'Run & Fix Brief' : 'Run'}](${runUrl})`,
+    ].filter(Boolean);
+    lines.push([`${passed} passed`, `${failed} failed`, `${skipped} skipped`, ...links].join(' · '));
+    return lines.join('\n') + '\n';
+}
+
+/**
+ * The main and CMT message, a few lines as on desktop: product bugs (failed again on a fresh device), failures not
+ * confirmed either way, test bugs (broken out on CMT), then what is not a product bug. Main returns null when clean
+ * or cleared; CMT delegates to formatMobileCmtMessage and always posts.
+ *
+ * @param {Object} params - see formatCmtChannelMessage; `rerun` is {lanes, tooMany, results} from rerun-failed.js
+ * @returns {string|null}
+ */
+function formatMainChannelMessage({
+    compositeIdentity,
+    detail,
+    reportUrl,
+    runUrl,
+    baseUrl,
+    perJobCounts,
+    failures,
+    triage,
+    changes = null,
+    rerun = null,
+    upstreamJobsSucceeded = true,
+    hasFailures = false,
+}) {
+    const legs = buildLegSummaries(perJobCounts, detail?.reports || [], baseUrl);
+
+    // Each test once (the per-test counts): TSIO's group totals count every failed entry of a test.
+    const stats = detail?.test_stats || {};
+    const sum = (field) => legs.reduce((n, leg) => n + leg[field], 0);
+    const passed = legs.length ? sum('passed') : (stats.passed ?? 0) + (stats.flaky ?? 0);
+    const failed = legs.length ? sum('failed') : stats.failed ?? 0;
+    const skipped = legs.length ? sum('skipped') : stats.skipped ?? 0;
+
+    const verdicts = evaluateMainVerdicts({legs, failures, triage, rerun});
+    const confirmed = verdicts.filter((v) => v.key === 'confirmed');
+    const unconfirmed = verdicts.filter((v) => UNCLEARED.has(v.key));
+    const stale = verdicts.filter((v) => v.key === 'stale');
+    const setupLines = [];
+    const noResults = legs.filter((leg) => leg.status === 'missing' || leg.status === 'no-results');
+    if (noResults.length) {
+        setupLines.push(`⚙️ **No results:** ${noResults.map(formatLegName).join(', ')} — test results did not upload, or the run ran no tests; re-run to see if anything failed`);
+    }
+    if (detail?.status === 'pending') {
+        setupLines.push('⚙️ **Incomplete results:** one or more test groups could not be read from TSIO — look at the run');
+    }
+    if (!upstreamJobsSucceeded && failed === 0) {
+        setupLines.push('⚙️ A CI job failed outside the tests (install, build or teardown).');
+    }
+    const unexplained = upstreamJobsSucceeded && hasFailures && failed === 0;
+
+    // Each run once, with its count; a run where most tests failed at once is flagged where it first appears.
+    const flagged = new Set();
+    const perRun = (group) => {
+        const parts = legs.
+            map((leg) => ({leg, count: group.filter((v) => v.leg === legKey(leg)).length})).
+            filter(({count}) => count > 0).
+            map(({leg, count}) => {
+                const name = leg.reportUrl ? `[${formatLegName(leg)}](${leg.reportUrl})` : formatLegName(leg);
+                let note = '';
+                const tooMany = Object.entries(rerun?.tooMany || {}).find(([lane]) => legKeyOf(lane) === legKey(leg))?.[1];
+                if ((tooMany || isMassFailure(leg)) && !flagged.has(leg)) {
+                    flagged.add(leg);
+                    const what = tooMany ? `${tooMany} failed at once, too many to re-run` : `${leg.failed} of ${leg.passed + leg.failed} tests failed`;
+                    note = ` (${what}: check that run's setup first)`;
+                }
+                return {text: `${name} ${count}${note}`, count};
+            });
+        const other = group.length - parts.reduce((n, part) => n + part.count, 0);
+        return [...parts.map((part) => part.text), ...(other > 0 ? [`other runs ${other}`] : [])].join(' · ');
+    };
+
+    const title = reportTitleForIdentity(compositeIdentity);
+    const branch = (compositeIdentity?.branch || '').replace(/^refs\/(heads|tags)\//, '');
+    const on = branch ? ` on \`${branch}\`` : '';
+    const retried = Object.values(perJobCounts || {}).reduce((n, counts) => n + (counts.flaky || 0), 0) ||
+        (triage || []).reduce((n, lane) => n + (lane.counts?.flaky || 0), 0);
+
+    if (bucketOf(compositeIdentity) === 'mobile-release') {
+        return formatMobileCmtMessage({
+            title, on, legs, verdicts, confirmed, unconfirmed, setupLines, unexplained, perRun, retried, rerun, passed, failed, skipped, reportUrl, runUrl,
+        });
+    }
+
+    let header;
+    if (confirmed.length) {
+        header = `🔴 **${title} — product bug**${on}`;
+    } else if (unconfirmed.length || stale.length || unexplained) {
+        header = `🟡 **${title} — no product bug confirmed**${on}`;
+    } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
+        header = `🟡 **${title} — setup problem**${on}`;
+    } else {
+        return null;
+    }
+
+    const shortSha = (compositeIdentity?.commit_sha || '').slice(0, 7);
+    const newOnMain = bucketOf(compositeIdentity) === 'mobile-main' && confirmed.some((v) => v.new);
+    const lines = [
+        header,
+        [shortSha && `\`${shortSha}\``, newOnMain && formatChanges(changes, compositeIdentity?.repository || 'mattermost/mattermost-mobile')].filter(Boolean).join(' · '),
+        `**${failed} failed** · ${passed} passed · ${skipped} skipped`,
+    ].filter(Boolean);
+    if (confirmed.length) {
+        lines.push(`🐞 **Product bugs (${confirmed.length}) — failed again on a fresh device:** ${perRun(confirmed)}`);
+        for (const v of confirmed.slice(0, MAX_NAMED_BUGS)) {
+            lines.push(`- ${laneName(v.lane)} ${v.title}${v.explanation ? ` — ${v.explanation}` : ''}`);
+        }
+        if (confirmed.length > MAX_NAMED_BUGS) {
+            lines.push(`- …and ${confirmed.length - MAX_NAMED_BUGS} more in the report`);
+        }
+    }
+    if (unconfirmed.length) {
+        lines.push(`🔎 **Not confirmed (${unconfirmed.length}) — not re-run, or the re-run gave no result:** ${perRun(unconfirmed)}`);
+    }
+    if (stale.length) {
+        lines.push(`📝 **Test differs from main (${stale.length}) — out of date on this branch, not re-run:** ${perRun(stale)}`);
+    }
+    if (unexplained) {
+        lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
+    }
+
+    const notProduct = NOT_PRODUCT_BUGS.
+        map(({key, label}) => ({label, count: verdicts.filter((v) => v.key === key).length})).
+        filter(({count}) => count > 0).
+        map(({label, count}) => `${count} ${label}`);
+    if (retried) {
+        notProduct.push(`${retried} passed on retry`);
+    }
+    if (notProduct.length) {
+        lines.push(`🔁 **Not product bugs:** ${notProduct.join(' · ')}`);
+    }
+    lines.push(...setupLines);
+
+    const links = [reportUrl && `[Full report](${reportUrl})`, runUrl && `[Workflow run](${runUrl})`].filter(Boolean).join(' · ');
+    if (links) {
+        lines.push(`➡️ ${links}`);
+    }
+    return lines.join('\n') + '\n';
+}
+
+function mobileReproHint(file) {
+    if (!file) {
+        return '';
+    }
+    if (file.startsWith('detox/maestro/') || (/\.ya?ml$/).test(file)) {
+        return `maestro test ${file}`;
+    }
+    return `npx jest --config detox/e2e/config.js ${file}`;
+}
+
+/**
+ * Structured agent-handoff payload (schema 1, matching desktop) for actionable Mobile CMT bugs:
+ * product bugs (draft investigation), test/stale/compat bugs (fix PR), and unsettled failures.
+ */
+function buildAgentHandoff({compositeIdentity, detail, perJobCounts, failures, triage, rerun, reportUrl = '', runUrl = ''}) {
+    const repository = compositeIdentity?.repository || 'mattermost/mattermost-mobile';
+    const branch = (compositeIdentity?.branch || '').replace(/^refs\/(heads|tags)\//, '');
+    const commitSha = compositeIdentity?.commit_sha || '';
+    const legs = buildLegSummaries(perJobCounts, detail?.reports || []);
+    const verdicts = evaluateMainVerdicts({legs, failures, triage, rerun});
+
+    const groups = [
+        ...groupMobileTests(verdicts.filter((v) => v.key === 'confirmed')).map((g) => ({g, kind: 'product_bug', mode: 'draft_investigation'})),
+        ...groupMobileTests(verdicts.filter((v) => v.key === 'test' || v.key === 'stale')).map((g) => ({
+            g,
+            kind: g.label === 'server compat' ? 'server_compat' : 'test_bug',
+            mode: 'fix_pr',
+        })),
+        ...groupMobileTests(verdicts.filter((v) => UNCLEARED.has(v.key))).map((g) => ({g, kind: 'needs_investigation', mode: 'investigate'})),
+    ];
+
+    const items = groups.map(({g, kind, mode}) => ({
+        schema: 1,
+        kind,
+        mode,
+        repository,
+        branch,
+        commit_sha: commitSha,
+        test: {title: g.title, full_title: g.fullTitle, file: g.file},
+        triage: {
+            label: g.key === 'stale' ? 'out of date' : (g.label || g.key),
+            ai_cause: g.aiCause ?? null,
+            ai_confidence: g.aiConfidence ?? null,
+            explanation: g.explanation ?? null,
+            error_first_line: g.error ?? null,
+        },
+        matrix: {
+            failed: g.failedLegs,
+            passed_servers: [],
+        },
+        repro_hint: mobileReproHint(g.file),
+        links: {report_url: reportUrl, run_url: runUrl},
+    }));
+    return {schema: 1, repository, branch, commit_sha: commitSha, run_url: runUrl, report_url: reportUrl, items};
+}
+
+const BRIEF_TAG = {
+    product_bug: '🐞 Product bug (draft PR — do not auto-merge)',
+    test_bug: '🧪 Test bug (safe for fix PR)',
+    server_compat: '🧪 Server compat test bug (safe for fix PR)',
+    needs_investigation: '🔎 Needs investigation',
+};
+
+/** Copy-pasteable Markdown Agent Fix Brief for GITHUB_STEP_SUMMARY. Empty when no actionable items exist. */
+function formatAgentFixBrief(handoff) {
+    if (!handoff?.items?.length) {
+        return '';
+    }
+    const lines = [`### 🤖 Agent Fix Brief (${handoff.items.length} actionable)`, ''];
+    for (const item of handoff.items) {
+        const conf = typeof item.triage.ai_confidence === 'number' ? ` (confidence ${Math.round(item.triage.ai_confidence * 100)}%)` : '';
+        lines.push(`#### ${BRIEF_TAG[item.kind] || item.kind}: \`${item.test.title}\``);
+        if (item.test.file) {
+            lines.push(`- **Spec:** \`${item.test.file}\``);
+        }
+        if (item.matrix.failed.length) {
+            const passed = item.matrix.passed_servers.length ? ` · Passed servers: ${item.matrix.passed_servers.join(', ')}` : '';
+            lines.push(`- **Matrix:** Failed on ${item.matrix.failed.join(', ')}${passed}`);
+        }
+        if (item.triage.explanation) {
+            lines.push(`- **AI diagnosis:** ${item.triage.explanation}${conf}`);
+        }
+        if (item.triage.error_first_line) {
+            lines.push(`- **Error:** \`${cut(item.triage.error_first_line, 200)}\``);
+        }
+        if (item.repro_hint) {
+            lines.push(`- **Repro:** \`${item.repro_hint}\``);
+        }
+        lines.push('');
+    }
+    return lines.join('\n');
 }
 
 function reportTitleForIdentity(compositeIdentity) {
@@ -428,19 +1006,25 @@ function formatMetaLine(compositeIdentity) {
 
 /**
  * @param {Object} params
- * @returns {string}
+ * @returns {string|null} null when there is nothing to post: the run passed, or (main and CMT) no failure is a
+ *   product bug (see formatMainChannelMessage)
  */
-function formatCmtChannelMessage({
-    compositeIdentity,
-    detail,
-    reportUrl,
-    runUrl,
-    baseUrl,
-    perJobCounts,
-    failures,
-    upstreamJobsSucceeded = true,
-    hasFailures = false,
-}) {
+function formatCmtChannelMessage(params) {
+    if (postsShortMessage(params.compositeIdentity)) {
+        return formatMainChannelMessage(params);
+    }
+    const {
+        compositeIdentity,
+        detail,
+        reportUrl,
+        runUrl,
+        baseUrl,
+        perJobCounts,
+        failures,
+        triage,
+        upstreamJobsSucceeded = true,
+        hasFailures = false,
+    } = params;
     const stats = detail?.test_stats || {};
 
     const passed = (stats.passed ?? 0) + (stats.flaky ?? 0);
@@ -450,6 +1034,11 @@ function formatCmtChannelMessage({
         detail?.status !== 'completed' ||
         !upstreamJobsSucceeded ||
         hasFailures;
+
+    // The channel hears about a run only when something failed: the PR's checks already show a pass.
+    if (!overallFailed) {
+        return null;
+    }
     const title = reportTitleForIdentity(compositeIdentity);
     const legs = buildLegSummaries(perJobCounts, detail?.reports || [], baseUrl);
 
@@ -489,9 +1078,26 @@ function formatCmtChannelMessage({
         lines.push('_No per-leg results available yet._', '');
     }
 
-    lines.push(...formatFailureJudgement(failures));
-    if ((failures || []).length > 0 && failed > failures.length) {
-        lines.push(`_Judged ${failures.length} of ${failed} failing tests; the rest have no TSIO test detail yet._`, '');
+    const massFailures = formatMassFailures(legs);
+    if (massFailures.length) {
+        lines.push(...massFailures, '');
+    }
+
+    // The triage job's verdicts when it ran; without triage, name failing tests neutrally without legacy heuristics.
+    if (triage?.length) {
+        lines.push(...formatTriageVerdict({triage, legs}));
+    } else if ((failures || []).length > 0) {
+        const active = failures.filter((f) => !f.passedOnRetry);
+        if (active.length) {
+            lines.push(`🔎 **Not checked by triage (${active.length})**`);
+            for (const failure of active.slice(0, MAX_PER_VERDICT)) {
+                lines.push(`- ${laneName(failure.job)} ${failure.title || 'unnamed test'}`);
+            }
+            if (active.length > MAX_PER_VERDICT) {
+                lines.push(`- …and ${active.length - MAX_PER_VERDICT} more in the report`);
+            }
+            lines.push('');
+        }
     }
 
     // A tracked test failure already fails the E2E job (the aggregator exits 1 by
@@ -533,7 +1139,7 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
 
     const consol = await fetchConsolidated(baseUrl, compositeIdentity);
 
-    const counts = {};
+    const triesByTest = {}; // job → Map(spec → the statuses of its tries in this attempt)
     const commitSha = compositeIdentity.commit_sha;
     const attempt = Number.parseInt(compositeIdentity.gh_run_attempt || '1', 10);
 
@@ -549,19 +1155,44 @@ async function fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, gro
             if (!job) {
                 continue;
             }
-            if (!counts[job]) {
-                counts[job] = {passed: 0, failed: 0, skipped: 0, flaky: 0};
+            if (!triesByTest[job]) {
+                triesByTest[job] = new Map();
             }
-            const status = entry.status || 'failed';
-            if (Object.prototype.hasOwnProperty.call(counts[job], status)) {
-                counts[job][status] += 1;
-            } else {
-                counts[job].failed += 1;
-            }
+            const tries = triesByTest[job];
+            tries.set(spec, [...(tries.get(spec) || []), entry.status || 'failed']);
         }
     }
 
+    const counts = {};
+    for (const [job, tries] of Object.entries(triesByTest)) {
+        counts[job] = {passed: 0, failed: 0, skipped: 0, flaky: 0};
+        for (const statuses of tries.values()) {
+            counts[job][outcomeOf(statuses)] += 1;
+        }
+    }
     return counts;
+}
+
+const OUTCOMES = ['passed', 'failed', 'skipped', 'flaky'];
+
+/**
+ * One outcome per test of a run. TSIO keeps each try as its own entry (failed, then passed on the retry), so a
+ * test that failed a try and passed the next is flaky, and one that failed every try failed once. A status TSIO
+ * does not name counts as failed.
+ *
+ * @param {string[]} statuses - the test's tries in this attempt
+ * @returns {string}
+ */
+function outcomeOf(statuses) {
+    const failed = statuses.some((status) => status === 'failed' || !OUTCOMES.includes(status));
+    const passed = statuses.some((status) => status === 'passed' || status === 'flaky');
+    if (statuses.includes('flaky') || (failed && passed)) {
+        return 'flaky';
+    }
+    if (failed) {
+        return 'failed';
+    }
+    return passed ? 'passed' : 'skipped';
 }
 
 /**
@@ -607,7 +1238,7 @@ function failuresFromConsolidated(consol, compositeIdentity, groupDetail) {
             title: spec.full_title || '',
             error: failedHere.error_message || '',
             previousStatuses: history.filter((entry) => !isCurrentRun(entry)).map((entry) => entry.status || 'failed'),
-            passedOnRetry: current.some((entry) => entry.status === 'flaky'),
+            passedOnRetry: outcomeOf(current.filter((entry) => entry.report_id === failedHere.report_id).map((entry) => entry.status || 'failed')) === 'flaky',
         });
     }
     return failures;
@@ -637,6 +1268,7 @@ async function fetchConsolidated(baseUrl, compositeIdentity) {
             }
             return res.json();
         },
+        CONSOLIDATED_TIMEOUT_MS,
     );
 }
 
@@ -658,6 +1290,12 @@ async function fetchFailuresFromConsolidated(baseUrl, compositeIdentity, groupDe
  * @param {string} params.text
  * @param {string} [params.username]
  */
+// Test names and errors come from the tests ("…when posting @all, @channel, and @here"): a zero-width space after
+// each @ keeps them from mentioning, and emailing, the whole channel.
+function withoutMentions(text) {
+    return (text || '').replace(/@(?=[\w.-])/g, '@\u200b');
+}
+
 async function postMattermostWebhook({core, webhookUrl, text, username = 'Mobile E2E'}) {
     if (!webhookUrl) {
         core.info('MATTERMOST webhook URL not set — skipping E2E channel notify');
@@ -667,7 +1305,7 @@ async function postMattermostWebhook({core, webhookUrl, text, username = 'Mobile
     const body = {
         username,
         icon_url: 'https://mattermost.com/wp-content/uploads/2022/02/icon.png',
-        text,
+        text: withoutMentions(text),
     };
 
     await fetchWithTimeout(
@@ -705,6 +1343,9 @@ async function notifyCmtChannel({
     runUrl,
     perJobCounts,
     failures,
+    triage,
+    changes,
+    rerun,
     upstreamJobsSucceeded = true,
     hasFailures = false,
     webhookUrl,
@@ -729,9 +1370,16 @@ async function notifyCmtChannel({
             baseUrl,
             perJobCounts: counts,
             failures,
+            triage,
+            changes,
+            rerun,
             upstreamJobsSucceeded,
             hasFailures,
         });
+        if (!text) {
+            core.info('E2E channel notify: the run passed, or no failure is a product bug or a setup problem — nothing to post');
+            return;
+        }
 
         await postMattermostWebhook({core, webhookUrl: resolvedWebhook, text});
     } catch (error) {
@@ -748,7 +1396,12 @@ module.exports = {
     formatLegResultText,
     reportTitleForIdentity,
     formatCmtChannelMessage,
-    classifyFailure,
+    buildAgentHandoff,
+    formatAgentFixBrief,
+    formatTriageVerdict,
+    judgeFinding,
+    formatMassFailures,
+    verdictOf,
     failuresFromConsolidated,
     fetchFailuresFromConsolidated,
     fetchPerJobCountsFromConsolidated,

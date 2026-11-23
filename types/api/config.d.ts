@@ -129,13 +129,16 @@ interface ClientConfig {
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
     FeatureFlagChannelAttributes?: string;
+    FeatureFlagChannelAttributesRequired?: string;
     FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
+    FeatureFlagChannelPermissionActions?: string;
     FeatureFlagCustomProfileAttributes?: string;
     FeatureFlagMmBlocksEnabled?: string;
     FeatureFlagPermissionPolicies?: string;
+    FeatureFlagRecurringScheduledPosts?: string;
     FeatureFlagSessionAttributes?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;

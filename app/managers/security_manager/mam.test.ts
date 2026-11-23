@@ -527,7 +527,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(false);
             expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), expect.any(Function));
-            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: true});
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
             expect(logError).toHaveBeenCalled();
 
             enrollmentAlertSpy.mockRestore();
@@ -551,7 +551,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(false);
             expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), undefined, outcome);
-            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: true});
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
             expect(SecurityManager.isEnrolling).toBe(false);
 
             enrollmentAlertSpy.mockRestore();
@@ -574,7 +574,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(false);
             expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), undefined, 'not_protected');
-            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: true});
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
 
             enrollmentAlertSpy.mockRestore();
             failedAlertSpy.mockRestore();

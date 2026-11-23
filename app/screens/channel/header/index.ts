@@ -3,34 +3,43 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
+import {getDialablePhones, NO_PHONES} from '@calls/utils';
 import {General} from '@constants';
 import {DISPLAY_LABEL_HEADER} from '@constants/channel_attributes';
 import {queryPlaybookRunsPerChannel} from '@playbooks/database/queries/run';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannel, observeChannelInfo, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
-import {observeChannelBookmarksEnabled} from '@queries/servers/features';
+import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
+import {observeChannelBookmarksEnabled, observeCustomProfileAttributesEnabled} from '@queries/servers/features';
 import {observeChannelAttributesEnabled, observeResolvedChannelAttributes} from '@queries/servers/properties';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeIsUserLanguageSupportedByAutotranslation, observeUser} from '@queries/servers/user';
 import {selectAttributesForAction, type ResolvedChannelAttribute} from '@utils/channel_attributes';
 import {
+    convertProfileAttributesToCustomAttributes,
     getUserCustomStatus,
     getUserIdFromChannelName,
     isBot,
     isCustomStatusExpired as checkCustomStatusIsExpired,
     isDeactivated,
+    sortCustomProfileAttributes,
 } from '@utils/user';
 
 import ChannelHeader from './header';
 
+import type {DialablePhone} from '@calls/types/calls';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     channelId: string;
+};
+
+const samePhones = (prev: DialablePhone[], next: DialablePhone[]) => {
+    return prev.length === next.length && prev.every((phone, i) => phone.number === next[i].number && phone.label === next[i].label);
 };
 
 const NO_ATTRIBUTES: ResolvedChannelAttribute[] = [];
@@ -65,6 +74,25 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         combineLatestWith(dmUser),
         switchMap(([userId, dm]) => of$(Boolean(dm && dm.id !== userId && !isBot(dm) && !isDeactivated(dm)))),
         distinctUntilChanged(),
+    );
+
+    const dmPhoneUserId = combineLatest([canCallDMUser, dmUser, observeCustomProfileAttributesEnabled(database)]).pipe(
+        map(([canCall, dm, enabled]) => (canCall && enabled ? dm?.id : undefined)),
+        distinctUntilChanged(),
+    );
+
+    const dmUserPhones = dmPhoneUserId.pipe(
+        switchMap((id) => {
+            if (!id) {
+                return of$(NO_PHONES);
+            }
+
+            return combineLatest([observeCustomProfileFields(database), observeCustomProfileAttributesByUserId(database, id)]).pipe(
+                // eslint-disable-next-line max-nested-callbacks
+                map(([fields, attributes]) => getDialablePhones(convertProfileAttributesToCustomAttributes(attributes, fields, sortCustomProfileAttributes, true))),
+            );
+        }),
+        distinctUntilChanged(samePhones),
     );
 
     const customStatus = dmUser.pipe(
@@ -142,6 +170,8 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         canAddBookmarks,
         channelAttributes,
         canCallDMUser,
+        dmPhoneUserId,
+        dmUserPhones,
         channelType,
         currentUserId,
         customStatus,

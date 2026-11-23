@@ -185,6 +185,8 @@ jest.mock('@livekit/react-native-webrtc', () => {
         RTCSessionDescription: jest.fn(),
         RTCView: jest.fn(),
         registerGlobals: jest.fn(),
+        AudioDeviceModule: {setMuteMode: jest.fn()},
+        AudioEngineMuteMode: {VoiceProcessing: 0, RestartEngine: 1, InputMixer: 2},
     };
 });
 
@@ -228,6 +230,7 @@ jest.mock('livekit-client', () => ({
         ParticipantDisconnected: 'participantDisconnected',
         RoomMetadataChanged: 'roomMetadataChanged',
     },
+    ParticipantKind: {STANDARD: 0, SIP: 3},
     DisconnectReason: {
         CLIENT_INITIATED: 1,
         SERVER_SHUTDOWN: 3,
@@ -245,7 +248,10 @@ jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
 });
 
 /* eslint-disable no-console */
-jest.mock('@database/manager');
+// Loaded as a module, not as a __mocks__ manual mock: Jest registers a manual mock only once it has
+// loaded, so a module reached from the mock's own imports (operator handlers → queries) that imports
+// @database/manager would get a second, empty DatabaseManager.
+jest.mock('@database/manager', () => jest.requireActual('@database/manager/__mocks__'));
 
 jest.mock('@managers/intune_manager', () => ({
     __esModule: true,

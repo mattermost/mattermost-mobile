@@ -17,6 +17,12 @@ inputs:
     description: The os of the device used for the tests
     required: false
     default: "iOS 18.1"
+  spec_files:
+    description: >-
+      Space-separated spec files to run instead of every spec under search_path (a re-run of
+      failed specs). Files outside search_path are dropped.
+    required: false
+    default: ""
   durations_file:
     description: >-
       Optional spec-duration manifest (from .github/actions/s3-spec-durations).
@@ -50,6 +56,7 @@ runs:
       env:
         PARALLELISM: ${{ inputs.parallelism }}
         SEARCH_PATH: ${{ inputs.search_path }}
+        SPEC_FILES: ${{ inputs.spec_files }}
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
         DURATIONS_FILE: ${{ inputs.durations_file }}

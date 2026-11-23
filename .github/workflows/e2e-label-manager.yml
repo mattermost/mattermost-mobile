@@ -65,8 +65,11 @@ on:
       - labeled
       - unlabeled
 
+# A push supersedes only an older push, and a label event only an older event for the same label. One group per PR
+# let the labels bots set right after a push cancel that push's run, so an E2E/Override PR never got its statuses
+# back on the new commit and its required checks waited forever.
 concurrency:
-  group: e2e-label-manager-${{ github.event.pull_request.number }}
+  group: e2e-label-manager-${{ github.event.pull_request.number }}-${{ github.event.label.name && format('label-{0}', github.event.label.name) || format('action-{0}', github.event.action) }}
   cancel-in-progress: true
 
 jobs:

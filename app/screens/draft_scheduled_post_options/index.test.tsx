@@ -54,6 +54,17 @@ describe('DraftScheduledPostOptions', () => {
                 update_at: Date.now(),
                 create_at: Date.now(),
                 user_id: TestHelper.basicUser!.id,
+            }, {
+                id: 'recurring-draft-id',
+                channel_id: TestHelper.basicChannel!.id,
+                root_id: '',
+                message: 'This is a recurring scheduled post message',
+                scheduled_at: Date.now() + 3600000, // 1 hour in the future
+                update_at: Date.now(),
+                create_at: Date.now(),
+                user_id: TestHelper.basicUser!.id,
+                repeat_type: 'weekly',
+                repeat_timezone: 'America/New_York',
             }],
             actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
             prepareRecordsOnly: false,
@@ -106,6 +117,24 @@ describe('DraftScheduledPostOptions', () => {
         expect(screen.getByTestId('rescheduled_draft')).toBeTruthy();
         expect(screen.getByTestId('delete_draft')).toBeTruthy();
         expect(screen.queryByTestId('edit_draft')).toBeFalsy(); // Edit option should not be present for scheduled posts
+    });
+
+    it('should not render the send option for a recurring scheduled post', () => {
+        const recurringProps = {
+            ...baseProps,
+            channelId: scheduled![1].channelId,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            draftId: scheduled![1].id,
+        };
+
+        renderWithEverything(
+            <DraftScheduledPostOptions {...recurringProps}/>, {database},
+        );
+
+        expect(screen.queryByTestId('send_draft_button')).toBeFalsy();
+        expect(screen.getByText('Copy Text')).toBeTruthy();
+        expect(screen.getByTestId('rescheduled_draft')).toBeTruthy();
+        expect(screen.getByTestId('delete_draft')).toBeTruthy();
     });
 
     it('renders tablet view without header', () => {

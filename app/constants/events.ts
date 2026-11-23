@@ -5,6 +5,7 @@ import keyMirror from '@utils/key_mirror';
 
 export default keyMirror({
     ACCOUNT_SELECT_TABLET_VIEW: null,
+    CHANNEL_ACCESS_REVOKED: null,
     CHANNEL_ARCHIVED: null,
     CHANNEL_SWITCH: null,
     CLOSE_BOTTOM_SHEET: null,
@@ -38,6 +39,7 @@ export default keyMirror({
     ACTIVE_SCREEN: null,
     ACTIVE_SERVER_CHANGED: null,
     FILE_ADD_REMOVED: null,
+    INTERACTIVE_DIALOG_CLOSED: null,
     POST_DELETED_FOR_CHANNEL: null,
     BLUR_AND_DISMISS_KEYBOARD: null,
     KEYBOARD_STATE_CHANGED: null,

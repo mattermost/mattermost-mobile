@@ -350,7 +350,7 @@ describe('WebSocket Burn on Read Actions', () => {
         beforeEach(() => {
             const mockOperator = {
                 database: {},
-                handlePosts: jest.fn().mockResolvedValue({}),
+                handlePosts: jest.fn().mockResolvedValue({models: [], revokedFiles: []}),
             };
             DatabaseManager.serverDatabases[serverUrl] = {operator: mockOperator} as unknown as ServerDatabase;
         });

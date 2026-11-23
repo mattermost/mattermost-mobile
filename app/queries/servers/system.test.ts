@@ -22,7 +22,7 @@ import {
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
     canViewArchivedChannels, observeCanViewArchivedChannels,
     observeLicense, observeAllowedThemesKeys, observeOnlyUnreads,
-    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata,
+    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata, isRedactionEnforced,
 } from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -362,6 +362,44 @@ describe('observeIsMinimumLicenseTier', () => {
                 });
             });
         });
+    });
+});
+
+describe('isRedactionEnforced', () => {
+    const serverUrl = 'baseHandler.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    const storeConfigValues = async (values: Record<string, string>) => {
+        await operator.handleConfigs({
+            configs: Object.entries(values).map(([id, value]) => ({id, value})),
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    };
+
+    it('should require both the feature flag and the config setting', async () => {
+        expect(await isRedactionEnforced(database)).toBe(false);
+
+        await storeConfigValues({FeatureFlagPermissionPolicies: 'true'});
+        expect(await isRedactionEnforced(database)).toBe(false);
+
+        await storeConfigValues({EnableAttributeBasedAccessControl: 'true'});
+        expect(await isRedactionEnforced(database)).toBe(true);
+
+        await storeConfigValues({FeatureFlagPermissionPolicies: 'false'});
+        expect(await isRedactionEnforced(database)).toBe(false);
     });
 });
 

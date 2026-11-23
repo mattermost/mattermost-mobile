@@ -23,6 +23,7 @@ type CustomProfileField = {
     attrs?: {
         sort_order?: number;
         saml?: string;
+        managed?: string;
         [key: string]: unknown;
     };
 

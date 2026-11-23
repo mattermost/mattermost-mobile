@@ -31,6 +31,7 @@ const PluginId = 'com.mattermost.calls';
 
 const REACTION_TIMEOUT = 10000;
 const REACTION_LIMIT = 20;
+const REACTION_MIN_INTERVAL_MS = 200;
 const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
 const CAPTION_TIMEOUT = 5000;
 const RING_LENGTH = 30000;
@@ -38,6 +39,9 @@ const RING_LENGTH = 30000;
 // How long the caller hears the outbound ringback tone before it auto-stops.
 // The same window the callee's phone rings for, so both ends give up together.
 const RINGBACK_TONE_TIMEOUT = RING_LENGTH;
+
+// Matches the server's sipNoAnswerTimeout: a phone keeps ringing that long.
+const PHONE_RINGBACK_TONE_TIMEOUT = toMilliseconds({seconds: 60});
 
 export enum Ringtone {
     Calm = 'Calm',
@@ -66,6 +70,7 @@ export default {
     PluginId,
     REACTION_TIMEOUT,
     REACTION_LIMIT,
+    REACTION_MIN_INTERVAL_MS,
     MessageBarType,
     CALL_QUALITY_RESET_MS,
     CAPTION_TIMEOUT,
@@ -74,5 +79,6 @@ export default {
     JOB_TYPE_CAPTIONING,
     RING_LENGTH,
     RINGBACK_TONE_TIMEOUT,
+    PHONE_RINGBACK_TONE_TIMEOUT,
     RINGTONE_DEFAULT,
 };

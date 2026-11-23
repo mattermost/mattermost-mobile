@@ -15,13 +15,13 @@ import {
     SECOND_FIELD_OPTIONS,
     TEST_FIELD_OPTIONS,
 } from '@support/channel_attributes_fixtures';
-import {Channel, Post, Properties, Team, User} from '@support/server_api';
+import {Channel, Preference, Properties, Team, User} from '@support/server_api';
 import {assertServerBaseline} from '@support/server_baseline';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {reloadApp, timeouts, wait} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -38,7 +38,7 @@ const {
 // The flag-off tests and the required-attribute test change server-wide state, so they live in
 // channel_attributes_flag_off.e2e.ts on the mutation server.
 // FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
-// so enableChannelAttributes() can never succeed and every test here fails in beforeAll.
+// so the server baseline cannot turn it on.
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Header chips and Channel Info section', () => {
     const serverOneDisplayName = 'Server 1';
     let testUser: any;
@@ -64,10 +64,20 @@ const {
     });
 
     afterAll(async () => {
+        let cleanupError: unknown;
         try {
             await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
-        } finally {
+        } catch (error) {
+            cleanupError = error;
+        }
+        try {
             await HomeScreen.logout();
+        } catch (error) {
+            cleanupError ??= error;
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -78,12 +88,27 @@ const {
     });
 
     afterEach(async () => {
+        let cleanupError: unknown;
+
         // Delete the per-test channel so attribute fields on it do not leak into the next test.
         if (testChannel) {
-            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            if (testChannel.type !== 'D') {
+                const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+                if (result.error) {
+                    cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
+                }
+            }
             testChannel = null;
         }
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+        } catch (error) {
+            cleanupError ??= error;
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
+        }
     });
 
     describe('with the flag on', () => {
@@ -225,14 +250,23 @@ const {
             // # Create a second user for the DM. DMs are server-global; no shared team needed.
             const {user: dmTarget} = await User.apiCreateUser(siteOneUrl);
 
-            // # Create the DM and post a message so it appears in the sidebar.
+            // # Create the DM and record it as opened, which keeps it in the sidebar after the reload
+            // (filterAutoclosedDMs hides a read DM with no view or open time). A post would do that by
+            // leaving it unread, but it reaches this device as a push and over the websocket while
+            // reloadApp below runs: on Android one landing during the reload was followed by SQLite
+            // corruption of the server database (4e2a508, e3e8916).
             const {channel: dmChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, dmTarget.id]);
             testChannel = dmChannel;
-            await Post.apiCreatePost(siteOneUrl, {channelId: dmChannel.id, message: 'hello'});
+            const {error: openTimeError} = await Preference.apiSaveUserPreferences(siteOneUrl, testUser.id, [
+                {user_id: testUser.id, category: 'channel_open_time', name: dmChannel.id, value: String(Date.now())},
+            ]);
+            if (openTimeError) {
+                throw new Error(`Failed to save the DM open time: ${JSON.stringify(openTimeError)}`);
+            }
 
             // # Set an attribute value on the DM channel (server accepts it; mobile must not show it).
             await Properties.apiSetChannelAttributeValue(siteOneUrl, dmChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
 
@@ -422,7 +456,7 @@ const {
             }
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -435,7 +469,7 @@ const {
 
             // # Change the value to LOW via the API and reload.
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'LOW'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -470,7 +504,7 @@ const {
             });
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -519,7 +553,7 @@ const {
             });
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -570,7 +604,7 @@ const {
             });
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);

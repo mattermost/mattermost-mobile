@@ -114,6 +114,12 @@ type PropertyValue<T = unknown> = {
 
 type PropertyValuePatch<T = unknown> = Partial<Pick<PropertyValue<T>, 'value'>>;
 
+// A null value clears it; the server upserts a null-valued row instead of deleting.
+type PropertyValuePatchItem<T = unknown> = {
+    field_id: string;
+    value: T | null;
+};
+
 type PropertyValuesUpdatedData = {
     object_type?: string;
     target_id?: string;

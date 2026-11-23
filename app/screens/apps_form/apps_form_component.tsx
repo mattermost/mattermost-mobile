@@ -21,7 +21,7 @@ import useDidUpdate from '@hooks/did_update';
 import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
 import {resolveRelativeDate, parseDateInTimezone} from '@utils/date_utils';
-import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType, flattenAppFields} from '@utils/dialog_utils';
+import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType, flattenAppFields, mergeUserValues} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {logDebug, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -81,6 +81,22 @@ function fieldsAsElements(fields?: AppField[]): DialogElement[] {
                 value: option.value || '',
             })),
             multiselect: f.multiselect,
+
+            // checkbox_matrix validation in checkDialogElementForError is guarded on
+            // matrix_config, so omitting it here made that whole block unreachable:
+            // malformed row:col entries were submitted verbatim instead of showing
+            // "Invalid matrix selection format".
+            matrix_config: f.matrix_config && {
+                rows: f.matrix_config.rows.map((row) => ({
+                    text: row.label || '',
+                    value: row.value || '',
+                })),
+                columns: f.matrix_config.columns.map((column) => ({
+                    text: column.label || '',
+                    value: column.value || '',
+                })),
+                row_selection: f.matrix_config.row_selection,
+            },
         } as DialogElement;
     }) || [];
 }
@@ -95,6 +111,11 @@ export type Props = {
     refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
     submit: (values: AppFormValues) => Promise<DoAppCallResult<FormResponseData>>;
     performLookupCall: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<AppLookupResponse>>;
+
+    // When refreshNonce changes, the form is re-fetched with refreshForm and the values
+    // the user entered are kept.
+    refreshForm?: (values: AppFormValues) => Promise<DoAppCallResult<FormResponseData>>;
+    refreshNonce?: number;
     channelId?: string;
 }
 
@@ -144,8 +165,12 @@ function computeExpandBumps(
     return next;
 }
 
-type ValuesAction = {name: string; value: AppFormValue} | {elements?: AppField[]}
+type ValuesAction = {name: string; value: AppFormValue} | {elements?: AppField[]} | {values: AppFormValues}
 function valuesReducer(state: AppFormValues, action: ValuesAction) {
+    if ('values' in action) {
+        return action.values;
+    }
+
     if (!('name' in action)) {
         // Merge server values over user input so a refresh keeps what they typed.
         return {...state, ...initValues(action.elements)};
@@ -204,6 +229,9 @@ export function initValues(fields?: AppField[]) {
             }
 
             values[field.name] = defaultMoment.toISOString();
+        } else if (field.type === AppFieldTypes.CHECKBOX_GROUP || field.type === AppFieldTypes.CHECKBOX_MATRIX) {
+            // Always an array: native Apps forms may omit the value or send ''.
+            values[field.name] = Array.isArray(field.value) ? field.value : [];
         } else if (field.value !== undefined && field.value !== null) {
             // Use provided value for non-boolean fields
             values[field.name] = field.value;
@@ -220,6 +248,8 @@ function AppsFormComponent({
     refreshOnSelect,
     submit,
     performLookupCall,
+    refreshForm,
+    refreshNonce,
     channelId = '',
 }: Props) {
     const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
@@ -259,7 +289,41 @@ function AppsFormComponent({
         });
     }, []);
 
+    // Latest value the user entered for each field, re-applied when the form is refreshed
+    // on return so user input survives (including edits made while the refresh was in
+    // flight) while untouched fields pick up new server values.
+    const userValuesRef = useRef<AppFormValues>({});
+
+    // The fields as they were when a refresh on return started; set while one is pending.
+    const refreshPreviousFieldsRef = useRef<Map<string, AppField> | undefined>(undefined);
+    const refreshSeqRef = useRef(0);
+
+    // A submit or field refresh replaces the form with one that owns its values; drop
+    // any pending refresh on return so its user values aren't applied to that form.
+    const cancelRefreshOnReturn = useCallback(() => {
+        refreshSeqRef.current++;
+        refreshPreviousFieldsRef.current = undefined;
+    }, []);
+
     useDidUpdate(() => {
+        const previousFields = refreshPreviousFieldsRef.current;
+        if (previousFields) {
+            refreshPreviousFieldsRef.current = undefined;
+            const refreshedFields = flattenAppFields(form.fields || []);
+
+            // Forget values for removed fields so a later refresh can't restore them.
+            const refreshedNames = new Set(refreshedFields.map((f) => f.name));
+            for (const name of Object.keys(userValuesRef.current)) {
+                if (!refreshedNames.has(name)) {
+                    delete userValuesRef.current[name];
+                }
+            }
+
+            dispatchValues({values: mergeUserValues(refreshedFields, initValues(form.fields), previousFields, userValuesRef.current)});
+            return;
+        }
+
+        userValuesRef.current = {};
         dispatchValues({elements: form.fields});
     }, [form]);
 
@@ -314,8 +378,10 @@ function AppsFormComponent({
         }
 
         const newValues = {...values, [name]: value};
+        userValuesRef.current[name] = value;
 
         if (field.refresh) {
+            cancelRefreshOnReturn();
             refreshOnSelect(field, newValues, value).then((res) => {
                 // Check if component is still mounted before updating state
                 if (!isMountedRef.current) {
@@ -368,7 +434,7 @@ function AppsFormComponent({
         }
 
         dispatchValues({name, value});
-    }, [form, values, refreshOnSelect, updateErrors, bumpErroredSections, intl]);
+    }, [form, values, refreshOnSelect, updateErrors, bumpErroredSections, intl, cancelRefreshOnReturn]);
 
     // Memoize elements conversion for performance; flatten collapsible containers to leaf fields
     const elements = useMemo(() => fieldsAsElements(flattenAppFields(form.fields || [])), [form.fields]);
@@ -406,6 +472,7 @@ function AppsFormComponent({
 
         submittingRef.current = true;
         setSubmitting(true);
+        cancelRefreshOnReturn();
 
         const res = await submit(submission);
 
@@ -457,7 +524,42 @@ function AppsFormComponent({
                 submittingRef.current = false;
                 setSubmitting(false);
         }
-    }, [elements, form, values, submit, uploadingFields, updateErrors, bumpErroredSections, serverUrl, intl]);
+    }, [elements, form, values, submit, uploadingFields, updateErrors, bumpErroredSections, serverUrl, intl, cancelRefreshOnReturn]);
+
+    const refreshOnReturn = useCallback(async () => {
+        if (!refreshForm) {
+            return;
+        }
+
+        const seq = ++refreshSeqRef.current;
+        refreshPreviousFieldsRef.current = new Map(flattenAppFields(form.fields || []).flatMap((f) => (f.name ? [[f.name, f] as const] : [])));
+
+        let res: DoAppCallResult<FormResponseData>;
+        try {
+            res = await refreshForm(values);
+        } catch (err) {
+            res = {error: {type: AppCallResponseTypes.ERROR, text: err instanceof Error ? err.message : String(err)}};
+        }
+
+        if (!isMountedRef.current || seq !== refreshSeqRef.current) {
+            return;
+        }
+
+        // A returned form arrives through the form prop, which applies the user values.
+        if (res.data?.type !== AppCallResponseTypes.FORM) {
+            refreshPreviousFieldsRef.current = undefined;
+        }
+
+        if (res.error) {
+            updateErrors(elements, res.error.data?.errors, res.error.text);
+        }
+    }, [refreshForm, form.fields, values, elements, updateErrors]);
+
+    useDidUpdate(() => {
+        if (refreshNonce) {
+            refreshOnReturn();
+        }
+    }, [refreshNonce]);
 
     // Default submit lives in the header (like edit_profile) so it clears the keyboard;
     // forms with their own submit_buttons keep those inline instead.
@@ -580,13 +682,14 @@ function AppsFormComponent({
             return null;
         }
         const value = secureGetFromRecord(values, field.name);
+        const fieldValue = field.type === AppFieldTypes.BOOL ? (value ?? false) : (value || '');
         return (
             <AppsFormField
                 field={field}
                 key={field.name}
                 name={field.name}
                 errorText={secureGetFromRecord(errors, field.name)}
-                value={value || ''}
+                value={fieldValue}
                 performLookup={performLookup}
                 onChange={onChange}
                 setFieldUploading={setFieldUploading}
@@ -641,6 +744,7 @@ function AppsFormComponent({
                                     size='lg'
                                     text={o.label || ''}
                                     disabled={submitting || uploadingFields.size > 0}
+                                    testID={`interactive_dialog.submit_button.${o.value}`}
                                 />
                             </View>
                         ))}

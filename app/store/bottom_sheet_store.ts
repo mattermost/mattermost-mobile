@@ -4,10 +4,13 @@
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type React from 'react';
 
+type KeyboardBehavior = 'extend' | 'fillParent' | 'interactive';
+
 class BottomSheetStoreSingleton {
     private renderContentCallback?: () => React.ReactNode;
     private footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode;
     private snapPoints?: Array<string | number>;
+    private keyboardBehavior?: KeyboardBehavior;
 
     public setRenderContentCallback(callback: () => React.ReactNode) {
         this.renderContentCallback = callback;
@@ -45,10 +48,25 @@ class BottomSheetStoreSingleton {
         this.snapPoints = undefined;
     }
 
+    // The default 'extend' jumps to the tallest snap point when the keyboard shows.
+    // Sheets with a text input pass 'interactive' to grow by the keyboard height instead.
+    public setKeyboardBehavior(behavior: KeyboardBehavior) {
+        this.keyboardBehavior = behavior;
+    }
+
+    public getKeyboardBehavior() {
+        return this.keyboardBehavior;
+    }
+
+    public removeKeyboardBehavior() {
+        this.keyboardBehavior = undefined;
+    }
+
     public reset() {
         this.removeRenderContentCallback();
         this.removeFooterComponent();
         this.removeSnapPoints();
+        this.removeKeyboardBehavior();
     }
 }
 

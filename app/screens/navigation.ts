@@ -61,7 +61,13 @@ export function getExpoRouterPath(screen: AvailableScreens, props?: any): string
  * @param params - Route parameters including theme
  * @param options - RNN layout options (ignored by Expo Router as theme comes from params)
  */
-export function navigateToScreen(screen: AvailableScreens, props?: Record<string, unknown>, reset = false) {
+/**
+ * Returns true only when navigation was actually issued. Callers that reserve state
+ * for the destination screen need this: all three failure paths here (no router, an
+ * unmapped screen, or a throw) are otherwise silent, so a caller cannot tell that the
+ * screen will never mount.
+ */
+export function navigateToScreen(screen: AvailableScreens, props?: Record<string, unknown>, reset = false): boolean {
     try {
         if (router) {
             const route = getExpoRouterPath(screen, props);
@@ -72,11 +78,14 @@ export function navigateToScreen(screen: AvailableScreens, props?: Record<string
                 } else {
                     router.push({pathname: route, params});
                 }
+                return true;
             }
+            logError('navigateToScreen: no Expo Router path for screen', screen);
         }
     } catch (e) {
         logError('navigateToScreen: Expo Router navigation failed', e);
     }
+    return false;
 }
 
 export function navigateToScreenWithBaseRoute(baseRoute: string, screen: AvailableScreens, props?: Record<string, unknown>, reset = false) {
@@ -114,12 +123,24 @@ export async function dismissToStackRoot() {
     }
 }
 
-export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Array<string | number>, footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode) {
+export function bottomSheet(
+    renderContent: () => React.ReactNode,
+    snapPoints: Array<string | number>,
+    footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode,
+    keyboardBehavior?: 'extend' | 'fillParent' | 'interactive',
+) {
     DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     BottomSheetStore.setSnapPoints(snapPoints);
     BottomSheetStore.setRenderContentCallback(renderContent);
     if (footerComponent) {
         BottomSheetStore.setFooterComponent(footerComponent);
+    } else {
+        BottomSheetStore.removeFooterComponent();
+    }
+    if (keyboardBehavior) {
+        BottomSheetStore.setKeyboardBehavior(keyboardBehavior);
+    } else {
+        BottomSheetStore.removeKeyboardBehavior();
     }
 
     navigateToScreen(Screens.GENERIC_BOTTOM_SHEET);

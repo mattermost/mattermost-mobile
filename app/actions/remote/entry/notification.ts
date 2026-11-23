@@ -6,6 +6,7 @@ import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {refetchCurrentUser} from '@actions/remote/user';
+import {ServerErrors} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
@@ -18,7 +19,7 @@ import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
-import {isErrorWithStatusCode} from '@utils/errors';
+import {getServerError, isErrorWithStatusCode} from '@utils/errors';
 import {dismissKeyboard} from '@utils/keyboard';
 import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
@@ -100,7 +101,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!myChannel) {
         const resp = await fetchMyChannel(serverUrl, teamId, channelId, false, groupLabel);
         if (resp.error) {
-            if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
+            if (getServerError(resp.error) === ServerErrors.CHANNEL_ACCESS_DENIED) {
+                emitNotificationError('ChannelAccess');
+            } else if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Channel');
             } else {
                 emitNotificationError('Connection');

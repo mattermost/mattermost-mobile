@@ -1,20 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {AudioDeviceModule, AudioEngineMuteMode} from '@livekit/react-native-webrtc';
 import CallsNative from '@mattermost/calls-native';
-import {type EmitterSubscription} from 'react-native';
+import {Platform, type EmitterSubscription} from 'react-native';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {setAudioDeviceInfo} from '@calls/state';
 import {AudioDevice, type AudioDeviceType} from '@calls/types/calls';
-import {getErrorMessage} from '@utils/errors';
-import {logDebug} from '@utils/log';
+import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
+import {logDebug, logWarning} from '@utils/log';
 
 export const startAudioSession = async () => {
     try {
         await CallsNative.startAudioSession();
     } catch (err) {
         throw new Error(`calls: failed to start audio session: ${getErrorMessage(err)}`);
+    }
+
+    if (Platform.OS === 'ios') {
+        try {
+            // InputMixer avoids VoiceProcessing's input mute, which CallKit reports back as mute actions.
+            await AudioDeviceModule.setMuteMode(AudioEngineMuteMode.InputMixer);
+        } catch (err) {
+            logWarning('calls: unable to set audio engine mute mode', getFullErrorMessage(err));
+        }
     }
 };
 

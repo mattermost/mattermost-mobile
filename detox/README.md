@@ -188,6 +188,15 @@ callbacks on `:3000`, and the server must be able to reach it:
   | `WEBHOOK_PUBLIC_BASE_URL` + `CLOUDFLARED_TUNNEL_TOKEN` | Run a named Cloudflare tunnel for that hostname. The token is passed via `TUNNEL_TOKEN` because argv is world-readable. |
   | neither | Fall back to a `trycloudflare.com` quick tunnel. Time-boxed and DNS-flaky, so treat it as a last resort. |
 
+- **e2e-test-stack server**: no tunnel. A batch created with `services: webhook`
+  runs the stack's own sidecar inside each server, which the server calls at
+  `http://webhook:3000`. Set `WEBHOOK_BASE_URL=http://webhook:3000` and
+  `WEBHOOK_SIDECAR=e2e-test-stack`: the runner cannot reach that address, so
+  the specs skip their check from the runner, and the stack reports the server
+  ready only once the sidecar is configured. Its replies say `Playwright
+  mm_blocks …` where this repository's sidecar says `Detox mm_blocks …`; the
+  specs accept either. The E2E workflows do this for e2e-test-stack lanes.
+
   ```sh
   cd detox
   SITE_1_URL="https://your-test-server" \

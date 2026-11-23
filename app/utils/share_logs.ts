@@ -6,6 +6,7 @@ import {Alert} from 'react-native';
 import Share from 'react-native-share';
 
 import {pathWithPrefix} from '@utils/file';
+import {EXCLUDE_THIS_APP_FROM_FILE_SHARE} from '@utils/share_targets';
 
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
@@ -29,6 +30,7 @@ export const shareLogs = async (metadata: ReportAProblemMetadata, siteName: stri
             failOnCancel: false,
             urls: attachments.length ? attachments : undefined,
             message: buildEmailBody(metadata),
+            excludedActivityTypes: EXCLUDE_THIS_APP_FROM_FILE_SHARE,
         });
     } catch (e: unknown) {
         Alert.alert('Error', `${e}`);

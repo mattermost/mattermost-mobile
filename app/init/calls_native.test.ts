@@ -10,7 +10,7 @@ import CallsNative, {
 import {Platform} from 'react-native';
 
 import {storeVoIPDeviceToken} from '@actions/app/global';
-import {dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
+import {applyNativeCallMute, dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
     clearNativeCallMapping,
@@ -34,7 +34,7 @@ jest.mock('@calls/actions', () => ({
     hasMicrophonePermission: jest.fn(),
     joinCall: jest.fn(),
     leaveCall: jest.fn(),
-    muteMyself: jest.fn(),
+    applyNativeCallMute: jest.fn(),
     unmuteMyself: jest.fn(),
 }));
 jest.mock('@calls/actions/permissions', () => ({
@@ -367,7 +367,7 @@ describe('onCallAnswered', () => {
         await onCallAnswered({uuid: 'u1'});
 
         expect(setMicPermissionsGranted).toHaveBeenCalledWith(true);
-        expect(joinCall).toHaveBeenCalledWith(SERVER_URL, 'ch1', 'user1', true, expect.anything(), undefined, 't1');
+        expect(joinCall).toHaveBeenCalledWith(SERVER_URL, {type: 'channel', channelID: 'ch1'}, 'user1', true, expect.anything(), undefined, 't1');
         expect(CallsNative.reportConnected).toHaveBeenCalledWith('u1');
         expect(unmuteMyself).toHaveBeenCalled();
         expect(CallsNative.setMuted).not.toHaveBeenCalled();
@@ -460,30 +460,27 @@ describe('onCallEnded', () => {
 describe('onMuteChanged', () => {
     const mapping = {serverUrl: SERVER_URL, channelId: 'ch1', postId: '', threadId: ''};
 
-    it('mutes the JS side when native reports muted=true', () => {
+    it('mutes the connection when native reports muted=true', () => {
         (getNativeCallMapping as jest.Mock).mockReturnValueOnce(mapping);
         (getCurrentCall as jest.Mock).mockReturnValueOnce({serverUrl: SERVER_URL, channelId: 'ch1'});
         const {onMuteChanged} = loadAndInit();
         onMuteChanged({uuid: 'u1', muted: true});
-        expect(muteMyself).toHaveBeenCalled();
-        expect(unmuteMyself).not.toHaveBeenCalled();
+        expect(applyNativeCallMute).toHaveBeenCalledWith(true);
     });
 
-    it('unmutes the JS side when native reports muted=false', () => {
+    it('unmutes the connection when native reports muted=false', () => {
         (getNativeCallMapping as jest.Mock).mockReturnValueOnce(mapping);
         (getCurrentCall as jest.Mock).mockReturnValueOnce({serverUrl: SERVER_URL, channelId: 'ch1'});
         const {onMuteChanged} = loadAndInit();
         onMuteChanged({uuid: 'u1', muted: false});
-        expect(unmuteMyself).toHaveBeenCalled();
-        expect(muteMyself).not.toHaveBeenCalled();
+        expect(applyNativeCallMute).toHaveBeenCalledWith(false);
     });
 
     it('does nothing when no mapping exists', () => {
         (getNativeCallMapping as jest.Mock).mockReturnValueOnce(undefined);
         const {onMuteChanged} = loadAndInit();
         onMuteChanged({uuid: 'u1', muted: true});
-        expect(muteMyself).not.toHaveBeenCalled();
-        expect(unmuteMyself).not.toHaveBeenCalled();
+        expect(applyNativeCallMute).not.toHaveBeenCalled();
     });
 
     it('does nothing when the current call does not match the mapping', () => {
@@ -491,7 +488,6 @@ describe('onMuteChanged', () => {
         (getCurrentCall as jest.Mock).mockReturnValueOnce({serverUrl: SERVER_URL, channelId: 'other-channel'});
         const {onMuteChanged} = loadAndInit();
         onMuteChanged({uuid: 'u1', muted: true});
-        expect(muteMyself).not.toHaveBeenCalled();
-        expect(unmuteMyself).not.toHaveBeenCalled();
+        expect(applyNativeCallMute).not.toHaveBeenCalled();
     });
 });

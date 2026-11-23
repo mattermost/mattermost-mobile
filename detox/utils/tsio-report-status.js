@@ -17,8 +17,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal;
     try {
-        return await fetch(url, {...options, signal: controller.signal});
+        return await fetch(url, {...options, signal});
     } finally {
         clearTimeout(timer);
     }
@@ -243,9 +244,100 @@ function triageAnnouncement({announce, state, overrideApplied, failed, runUrl, c
     };
 }
 
-async function createCommitStatus(token, repository, sha, payload) {
+/** A response's text, or a note saying why it could not be read within timeoutMs. Never rejects. */
+async function readBodyWithin(res, timeoutMs, controller) {
+    let timer;
+    const timeout = new Promise((resolve) => {
+        timer = setTimeout(() => {
+            controller?.abort();
+            resolve(`(body not read within ${timeoutMs}ms)`);
+        }, timeoutMs);
+    });
+    try {
+        return await Promise.race([res.text().catch((err) => `(body unreadable: ${err.message})`), timeout]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/** Runs a response body read under timeoutMs, aborting controller if it stalls. */
+async function readWithTimeout(promise, timeoutMs, controller) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            controller?.abort();
+            reject(new Error(`body not read within ${timeoutMs}ms`));
+        }, timeoutMs);
+    });
+    try {
+        return await Promise.race([promise, timeout]);
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+const STATUS_POST_ATTEMPTS = 3;
+const STATUS_POST_DELAY_MS = 2000;
+
+/**
+ * A GitHub REST call, tried again on a 5xx, a 429 rate limit or a dropped connection: the callers
+ * here only post a status (posting it again repeats it) or read. Any other 4xx is the request's
+ * fault and fails at once. Resolves to the OK response, or to readBody(res) when given.
+ */
+async function githubRequestWithRetry(url, init, {
+    what = 'GitHub request',
+    fetchImpl = fetchWithTimeout,
+    wait = sleep,
+    attempts = STATUS_POST_ATTEMPTS,
+    delayMs = STATUS_POST_DELAY_MS,
+    bodyTimeoutMs = FETCH_TIMEOUT_MS,
+    readBody,
+} = {}) {
+    let lastError;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        const controller = new AbortController();
+        const signal = init?.signal ? AbortSignal.any([init.signal, controller.signal]) : controller.signal;
+        let res;
+        try {
+            res = await fetchImpl(url, {...init, signal});
+        } catch (err) {
+            lastError = new Error(`${what} failed: ${err.message}`);
+        }
+        if (res?.ok) {
+            if (!readBody) {
+                controller.abort();
+                res.body?.cancel?.().catch(Boolean);
+                return res;
+            }
+            try {
+                return await readWithTimeout(Promise.resolve().then(() => readBody(res)), bodyTimeoutMs, controller);
+            } catch (err) {
+                lastError = new Error(`${what} failed: ${err.message}`);
+            }
+        } else if (res) {
+            // The body is only for the message: a connection that drops or stalls while it is read must not
+            // escape the retry or hold it (fetchWithTimeout's timer ends when the headers arrive).
+            const body = await readBodyWithin(res, bodyTimeoutMs, controller);
+            lastError = new Error(`${what} failed: ${res.status} ${body}`);
+            if (res.status < 500 && res.status !== 429) {
+                throw lastError;
+            }
+        }
+        if (attempt < attempts) {
+            console.warn(`tsio-report-status: ${lastError.message}; trying again (${attempt + 1}/${attempts})`);
+            await wait(delayMs * attempt);
+        }
+    }
+    throw lastError;
+}
+
+/**
+ * Posts a commit status, with githubRequestWithRetry's retries: giving up on a transient error
+ * would fail the lane's job on a run whose tests passed.
+ */
+async function createCommitStatus(token, repository, sha, payload, options = {}) {
     const [owner, repo] = repository.split('/');
-    const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
+    await githubRequestWithRetry(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -254,8 +346,7 @@ async function createCommitStatus(token, repository, sha, payload) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`createCommitStatus failed: ${res.status} ${await res.text()}`);
+    }, {...options, what: 'createCommitStatus'});
 }
 
 async function reportTsioStatus(options) {
@@ -611,6 +702,8 @@ async function main() {
 module.exports = {
     buildDisplayReportUrl,
     buildWorkflowRunUrl,
+    createCommitStatus,
+    githubRequestWithRetry,
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
@@ -623,6 +716,7 @@ module.exports = {
     OVERRIDE_LABEL,
     PRODUCTION_URL,
     STAGING_URL,
+    TRIAGE_CHECK_CONTEXT,
 };
 
 if (require.main === module) {

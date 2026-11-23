@@ -8,6 +8,7 @@ const {describe, it} = require('node:test');
 
 const {
     buildDisplayReportUrl,
+    createCommitStatus,
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
@@ -298,6 +299,87 @@ describe('tsio-report-status', () => {
                 }),
                 `${base}/reports/mattermost-mobile/main/deadbee/mobile-release`,
             );
+        });
+    });
+
+    describe('createCommitStatus', () => {
+        const payload = {state: 'success', context: 'e2e-test/detox-ipad', description: '19 passed', target_url: 'https://example.test'};
+        const respond = (step) => (typeof step === 'number' ? {ok: step < 300, status: step, text: async () => `body ${step}`} : step);
+        const scripted = (...steps) => {
+            const calls = [];
+            const fetchImpl = async (url, options) => {
+                calls.push({url, options});
+                const step = steps[calls.length - 1];
+                if (step instanceof Error) {
+                    throw step;
+                }
+                return respond(step);
+            };
+            return {calls, fetchImpl};
+        };
+        const wait = async () => {};
+
+        it('tries again after a GitHub 5xx and stops once the status is posted', async () => {
+            const waits = [];
+            const recordWait = async (ms) => {
+                waits.push(ms);
+            };
+            const {calls, fetchImpl} = scripted(500, 201);
+            await createCommitStatus('t', 'mattermost/mattermost-mobile', 'abc', payload, {fetchImpl, wait: recordWait});
+            assert.equal(calls.length, 2);
+            assert.equal(calls[0].url, 'https://api.github.com/repos/mattermost/mattermost-mobile/statuses/abc');
+            assert.deepEqual(JSON.parse(calls[1].options.body), payload);
+            assert.deepEqual(waits, [2000]);
+        });
+
+        it('tries again after a dropped connection', async () => {
+            const {calls, fetchImpl} = scripted(new Error('socket hang up'), 201);
+            await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait});
+            assert.equal(calls.length, 2);
+        });
+
+        it('tries again when a 5xx body cannot be read', async () => {
+            const dropped = {
+                ok: false,
+                status: 502,
+                text: async () => {
+                    throw new Error('terminated');
+                },
+            };
+            const {calls, fetchImpl} = scripted(dropped, 201);
+            await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait});
+            assert.equal(calls.length, 2);
+        });
+
+        it('tries again when a 5xx body stalls instead of waiting for it', async () => {
+            const stalled = {
+                ok: false,
+                status: 503,
+                text: () => new Promise(() => {}),
+            };
+            const {calls, fetchImpl} = scripted(stalled, 201);
+            await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait, bodyTimeoutMs: 10});
+            assert.equal(calls.length, 2);
+            assert.equal(calls[0].options.signal.aborted, true);
+            assert.equal(calls[1].options.signal.aborted, true);
+        });
+
+        it('tries again after a 429 rate limit', async () => {
+            const {calls, fetchImpl} = scripted(429, 201);
+            await createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait});
+            assert.equal(calls.length, 2);
+        });
+
+        it('fails at once on a 4xx: the request is wrong, not GitHub', async () => {
+            const {calls, fetchImpl} = scripted(422);
+            await assert.rejects(createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait}), /createCommitStatus failed: 422 body 422/);
+            assert.equal(calls.length, 1);
+        });
+
+        it('gives up after the last attempt with the last error', async () => {
+            const {calls, fetchImpl} = scripted(502, 503, 500);
+            await assert.rejects(createCommitStatus('t', 'o/r', 'abc', payload, {fetchImpl, wait}), /createCommitStatus failed: 500 body 500/);
+            assert.equal(calls.length, 3);
         });
     });
 });

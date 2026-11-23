@@ -35,7 +35,7 @@ import {
     uploadDisabledWarning,
 } from './index';
 
-import type FileModel from '@typings/database/models/servers/file';
+import type {RevokedFile} from '@typings/database/database';
 import type {Asset} from 'react-native-image-picker';
 
 jest.mock('react-native', () => {
@@ -133,7 +133,7 @@ describe('Image utils', () => {
         it('should remove both the recorded path and the default download path', () => {
             // Opening a document downloads it to the default path without recording it on the row.
             jest.mocked(File).mockClear();
-            const file = {id: 'fileid', name: 'doc.pdf', extension: 'pdf', mimeType: 'application/pdf', localPath: '/data/my%20doc.pdf'} as unknown as FileModel;
+            const file: RevokedFile = {id: 'fileid', name: 'doc.pdf', extension: 'pdf', mime_type: 'application/pdf', localPath: '/data/my%20doc.pdf'};
 
             deleteDownloadedFiles('http://server.com', [file]);
 

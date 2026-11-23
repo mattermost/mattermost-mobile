@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {distinctUntilChanged, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
+import {distinctUntilChanged, map, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
 
 import {
     observeCallsConfig,
@@ -135,8 +135,10 @@ export const observeDMCallingState = () => {
         distinctUntilChanged(),
     );
 
-    const dmCallee = combineLatest([database, dmCalleeId]).pipe(
-        switchMap(([db, calleeId]) => (db && calleeId ? observeUser(db, calleeId) : of$(undefined))),
+    // A phone call's callee is the dialed number; the Calls bot it runs through is never shown.
+    const isPhoneCall = currentCall.pipe(map((call) => Boolean(call?.phone)), distinctUntilChanged());
+    const dmCallee = combineLatest([database, dmCalleeId, isPhoneCall]).pipe(
+        switchMap(([db, calleeId, isPhone]) => (db && calleeId && !isPhone ? observeUser(db, calleeId) : of$(undefined))),
     );
 
     const isDMCall = dmCalleeId.pipe(

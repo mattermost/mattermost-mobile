@@ -18,7 +18,7 @@ defineMessages({
 });
 
 import {storeVoIPDeviceToken} from '@actions/app/global';
-import {dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
+import {applyNativeCallMute, dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
     clearNativeCallMapping,
@@ -153,7 +153,7 @@ class CallsNativeSingleton {
             setMicPermissionsGranted(hasMic);
 
             const intl = getIntlShape(user.locale);
-            const res = await joinCall(serverUrl, channelId, user.id, hasMic, intl, undefined, threadId);
+            const res = await joinCall(serverUrl, {type: 'channel', channelID: channelId}, user.id, hasMic, intl, undefined, threadId);
             if (res.error) {
                 logError('onCallAnswered: joinCall failed', res.error);
                 CallsNative.reportEnded(uuid, 'failed');
@@ -213,11 +213,7 @@ class CallsNativeSingleton {
         if (!currentCall || currentCall.serverUrl !== mapping.serverUrl || currentCall.channelId !== mapping.channelId) {
             return;
         }
-        if (muted) {
-            muteMyself();
-        } else {
-            unmuteMyself();
-        }
+        applyNativeCallMute(muted);
     };
 }
 

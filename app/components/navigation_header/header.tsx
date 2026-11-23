@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Platform, Text, View} from 'react-native';
+import {Platform, Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming, type SharedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -50,6 +50,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'flex-start',
         paddingHorizontal: 16,
         zIndex: 10,
+    },
+    pressed: {
+        opacity: 0.72,
     },
     subtitleContainer: {
         flexDirection: 'row',
@@ -231,11 +234,6 @@ const Header = ({
                             {titleCompanion}
                         </View>
                         }
-                        {!isLargeTitle && Boolean(subtitleComponent) &&
-                        <View style={styles.subtitleContainer}>
-                            {subtitleComponent}
-                        </View>
-                        }
                         {!isLargeTitle && !subtitleComponent && Boolean(subtitle || subtitleCompanion) &&
                         <View style={styles.subtitleContainer}>
                             <Text
@@ -251,6 +249,18 @@ const Header = ({
                         }
                     </View>
                 </TouchableWithFeedback>
+                {/* Outside the title button so screen readers can reach the buttons inside it, but still opens the same screen when tapped. */}
+                {!isLargeTitle && Boolean(subtitleComponent) &&
+                <Pressable
+                    accessible={false}
+                    disabled={!onTitlePress}
+                    onPress={onTitlePress}
+                    style={({pressed}) => [styles.subtitleContainer, pressed && styles.pressed]}
+                    testID='navigation.header.subtitle_component'
+                >
+                    {subtitleComponent}
+                </Pressable>
+                }
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
                 {rightComponent}

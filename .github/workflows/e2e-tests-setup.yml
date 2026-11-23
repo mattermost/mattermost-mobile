@@ -1,0 +1,354 @@
+---
+name: E2E Tests - Setup
+
+# Setup for e2e-tests-ci.yml: validates its inputs, resolves the e2e-test-stack account, channel and server image,
+# names each chosen lane's batch, builds each lane's TSIO config and posts a pending commit status for each chosen
+# lane. Statuses are under e2e-test-stack/<lane>, apart from the required e2e-test/* contexts.
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        description: "The commit under test, a full 40-character SHA"
+        type: string
+        required: true
+      pr_number:
+        description: "The pull request the commit belongs to; empty for none"
+        type: string
+        default: ""
+      lanes:
+        description: "Comma-separated lanes: detox-ios, detox-ipad, detox-android, maestro-ios, maestro-android"
+        type: string
+        required: true
+      account:
+        description: "AWS account of the e2e-test-stack control plane: prod or dev"
+        type: string
+        default: "prod"
+      channel:
+        description: "Control plane channel: v1 or edge"
+        type: string
+        required: true
+      server:
+        description: "The server under test: master, latest or esr"
+        type: string
+        default: "master"
+      server_image:
+        description: "A server image tag that replaces server; empty for none"
+        type: string
+        default: ""
+    outputs:
+      commit-sha:
+        description: "The commit under test, lowercase"
+        value: ${{ jobs.setup.outputs.commit-sha }}
+      lanes:
+        description: "JSON array of the chosen lanes"
+        value: ${{ jobs.setup.outputs.lanes }}
+      build-ios:
+        description: "Whether a chosen lane needs the iOS simulator app"
+        value: ${{ jobs.setup.outputs.build-ios }}
+      build-android-detox:
+        description: "Whether a chosen lane needs the Android Detox APKs"
+        value: ${{ jobs.setup.outputs.build-android-detox }}
+      build-android-maestro:
+        description: "Whether a chosen lane needs the Android Maestro APK"
+        value: ${{ jobs.setup.outputs.build-android-maestro }}
+      account:
+        description: "The e2e-test-stack account"
+        value: ${{ jobs.setup.outputs.account }}
+      channel:
+        description: "The e2e-test-stack channel"
+        value: ${{ jobs.setup.outputs.channel }}
+      server-image:
+        description: "master, latest, esr or an image by tag, which create resolves"
+        value: ${{ jobs.setup.outputs.server-image }}
+      batches:
+        description: "JSON object of each chosen lane's batch name"
+        value: ${{ jobs.setup.outputs.batches }}
+      job-configs:
+        description: "JSON object of each chosen lane's TSIO config, keyed by its TSIO job key"
+        value: ${{ jobs.setup.outputs.job-configs }}
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      commit-sha: ${{ steps.inputs.outputs.commit-sha }}
+      lanes: ${{ steps.inputs.outputs.lanes }}
+      build-ios: ${{ steps.inputs.outputs.build-ios }}
+      build-android-detox: ${{ steps.inputs.outputs.build-android-detox }}
+      build-android-maestro: ${{ steps.inputs.outputs.build-android-maestro }}
+      account: ${{ steps.inputs.outputs.account }}
+      channel: ${{ steps.inputs.outputs.channel }}
+      server-image: ${{ steps.inputs.outputs.server-image }}
+      batches: ${{ steps.batch.outputs.batches }}
+      job-configs: ${{ steps.tsio.outputs.job-configs }}
+    steps:
+      # The TSIO job-config helper at this workflow's own commit.
+      - name: Checkout TSIO job-config helper
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/build-tsio-job-config.js
+
+      - name: e2e-tests/inputs
+        id: inputs
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          LANES: ${{ inputs.lanes }}
+          ACCOUNT: ${{ inputs.account }}
+          CHANNEL: ${{ inputs.channel }}
+          SERVER: ${{ inputs.server }}
+          IMAGE: ${{ inputs.server_image }}
+        run: |
+          set -euo pipefail
+          sha=$(printf '%s' "$COMMIT_SHA" | tr '[:upper:]' '[:lower:]')
+          if ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::commit_sha must be a full 40-character commit SHA"
+            exit 1
+          fi
+          if [ -n "$PR_NUMBER" ] && ! [[ "$PR_NUMBER" =~ ^[1-9][0-9]{0,6}$ ]]; then
+            echo "::error::pr_number must be a pull request number, or empty"
+            exit 1
+          fi
+
+          # The chosen lanes, in the order given, each once.
+          lanes='[]'
+          IFS=, read -ra names <<< "$LANES"
+          for name in "${names[@]}"; do
+            name=$(printf '%s' "$name" | tr -d '[:space:]')
+            [ -n "$name" ] || continue
+            case "$name" in
+              detox-ios | detox-ipad | detox-android | maestro-ios | maestro-android) ;;
+              *) echo "::error::unknown lane '${name}': lanes are detox-ios, detox-ipad, detox-android, maestro-ios and maestro-android"; exit 1 ;;
+            esac
+            lanes=$(jq -c --arg l "$name" 'if index($l) then . else . + [$l] end' <<< "$lanes")
+          done
+          if [ "$lanes" = '[]' ]; then
+            echo "::error::lanes names no lane: give one or more of detox-ios, detox-ipad, detox-android, maestro-ios and maestro-android"
+            exit 1
+          fi
+          has() { jq -e --arg l "$1" 'index($l) != null' <<< "$lanes" > /dev/null; }
+          build_ios=false
+          if has detox-ios || has detox-ipad || has maestro-ios; then build_ios=true; fi
+          build_android_detox=false
+          if has detox-android; then build_android_detox=true; fi
+          build_android_maestro=false
+          if has maestro-android; then build_android_maestro=true; fi
+
+          case "$ACCOUNT" in
+            prod | dev) ;;
+            *) echo "::error::e2e_test_stack_account must be prod or dev"; exit 1 ;;
+          esac
+          case "$CHANNEL" in
+            v1 | edge) ;;
+            *) echo "::error::e2e_test_stack_channel must be v1 or edge"; exit 1 ;;
+          esac
+
+          # e2e_test_stack_server_image when given, only Mattermost's enterprise builds, released or development, by
+          # tag; else e2e_test_stack_server, which create resolves.
+          if [ -z "$IMAGE" ]; then
+            case "$SERVER" in
+              master | latest | esr) ;;
+              *) echo "::error::e2e_test_stack_server must be master, latest or esr"; exit 1 ;;
+            esac
+            image=$SERVER
+          else
+            repos='(mattermost|mattermostdevelopment)/mattermost-enterprise(-fips)?-edition'
+            if ! [[ "$IMAGE" =~ ^((docker\.io|index\.docker\.io)/)?${repos}:[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+              echo "::error::the server image must be a tag of mattermost/ or mattermostdevelopment/ mattermost-enterprise-edition or mattermost-enterprise-fips-edition, e.g. mattermost/mattermost-enterprise-edition:10.11.3"
+              exit 1
+            fi
+            image=$IMAGE
+          fi
+
+          {
+            echo "commit-sha=${sha}"
+            echo "lanes=${lanes}"
+            echo "build-ios=${build_ios}"
+            echo "build-android-detox=${build_android_detox}"
+            echo "build-android-maestro=${build_android_maestro}"
+            echo "account=${ACCOUNT}"
+            echo "channel=${CHANNEL}"
+            echo "server-image=${image}"
+          } >> "$GITHUB_OUTPUT"
+
+      # Each lane's batch name, <dt|ms>-<ios|ipad|andr>-<run type>, which create, provision, the test jobs and destroy
+      # use; the run id in the instance key tells runs apart. The run type is pr with pr_number, else main on main and
+      # rel on release-<major>.<minor>, the only refs e2e-tests-ci.yml runs on.
+      - name: e2e-tests/batch
+        id: batch
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REF_NAME: ${{ github.ref_name }}
+          LANES: ${{ steps.inputs.outputs.lanes }}
+        run: |
+          set -euo pipefail
+          if [ -n "$PR_NUMBER" ]; then
+            type="pr"
+          elif [ "$REF_NAME" = main ]; then
+            type="main"
+          elif [[ "$REF_NAME" =~ ^release-[0-9]+\.[0-9]+$ ]]; then
+            type="rel"
+          else
+            echo "::error::no run type for ref '${REF_NAME}' without a pr_number"
+            exit 1
+          fi
+          batches=$(jq -c --arg t "$type" '
+            {"detox-ios": "dt-ios", "detox-ipad": "dt-ipad", "detox-android": "dt-andr",
+             "maestro-ios": "ms-ios", "maestro-android": "ms-andr"} as $prefix
+            | map({key: ., value: "\($prefix[.])-\($t)"}) | from_entries' <<< "$LANES")
+          {
+            echo "type=${type}"
+            echo "batches=${batches}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: e2e-tests/branch
+        id: branch
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          COMMIT_SHA: ${{ steps.inputs.outputs.commit-sha }}
+          REF_NAME: ${{ github.ref_name }}
+        with:
+          script: |
+            const sha = process.env.COMMIT_SHA;
+            const prInput = parseInt(process.env.PR_NUMBER, 10);
+            if (Number.isFinite(prInput)) {
+              // The commit under test must be one of the PR's, so its results, cache scope and report name that PR.
+              // The API lists at most 250 commits of a PR.
+              let pr, commits;
+              try {
+                [{data: pr}, commits] = await Promise.all([
+                  github.rest.pulls.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prInput,
+                  }),
+                  github.paginate(github.rest.pulls.listCommits, {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prInput,
+                    per_page: 100,
+                  }),
+                ]);
+              } catch (e) {
+                if (e.status !== 404) throw e;
+                core.setFailed(`PR #${prInput} not found`);
+                return;
+              }
+              if (!commits.some((c) => c.sha === sha)) {
+                const more = commits.length >= 250 ? ` (only its first 250 commits can be checked)` : '';
+                core.setFailed(`commit ${sha} is not a commit of PR #${prInput}${more}`);
+                return;
+              }
+              core.setOutput('branch', pr.head.ref);
+              return;
+            }
+            // Without a PR, the commit must be on the ref the run reports under: its tip or an ancestor of it.
+            let onRef = false;
+            try {
+              const {data} = await github.rest.repos.compareCommitsWithBasehead({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                basehead: `${sha}...${context.sha}`,
+                per_page: 1,
+              });
+              onRef = ['ahead', 'identical'].includes(data.status);
+            } catch (e) {
+              if (e.status !== 404 && e.status !== 422) throw e;
+            }
+            if (!onRef) {
+              core.setFailed(`commit ${sha} is not on ${context.ref}; set pr_number for a PR's commit`);
+              return;
+            }
+            core.setOutput('branch', process.env.REF_NAME);
+
+      # As e2e-detox-pr.yml's calculate-tsio-identity, for the chosen lanes only, with each status context moved from
+      # e2e-test/<lane> to e2e-test-stack/<lane>. The report group is mobile-e2e-test-stack-pr, -main or -release.
+      - name: e2e-tests/tsio
+        id: tsio
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MM_SHA: ${{ steps.inputs.outputs.commit-sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          TYPE: ${{ steps.batch.outputs.type }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          LANES: ${{ steps.inputs.outputs.lanes }}
+        run: |
+          set -euo pipefail
+          case "$TYPE" in
+            pr) RUN_NAME=mobile-e2e-test-stack-pr ;;
+            main) RUN_NAME=mobile-e2e-test-stack-main ;;
+            rel) RUN_NAME=mobile-e2e-test-stack-release ;;
+          esac
+          BASE=$(jq -nc \
+            --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
+            --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_NUMBER" --arg name "$RUN_NAME" \
+            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name,
+              run_group:$name, framework:"detox"} + (if $pr == "" then {} else {gh_pr_number:$pr} end)')
+          export BASE LANES
+          JOB_CONFIGS=$(node -e '
+            const {buildTsioJobConfigMap} = require("./detox/utils/build-tsio-job-config.js");
+            const keys = {
+              "detox-ios": "detox-ios",
+              "detox-ipad": "detox-ipad",
+              "detox-android": "detox-android",
+              "maestro-ios": "maestro-ios-e2e",
+              "maestro-android": "maestro-android-e2e",
+            };
+            const lanes = JSON.parse(process.env.LANES);
+            const configs = buildTsioJobConfigMap(JSON.parse(process.env.BASE), lanes.map((lane) => keys[lane]));
+            for (const lane of lanes) {
+              configs[keys[lane]].status_context = "e2e-test-stack/" + lane;
+            }
+            process.stdout.write(JSON.stringify(configs));
+          ')
+          echo "job-configs=${JOB_CONFIGS}" >> "$GITHUB_OUTPUT"
+
+      - name: e2e-tests/pending-statuses
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_CONFIGS: ${{ steps.tsio.outputs.job-configs }}
+          COMMIT_SHA: ${{ steps.inputs.outputs.commit-sha }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          jq -c 'to_entries[]' <<< "$JOB_CONFIGS" | while read -r entry; do
+            context=$(jq -r '.value.status_context' <<< "$entry")
+            name=$(jq -r '.value.composite_identity.name' <<< "$entry")
+            gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+              -f state=pending \
+              -f context="$context" \
+              -f description="Mobile E2E on e2e-test-stack (${name}): waiting for TSIO report" \
+              -f target_url="$TARGET_URL" > /dev/null
+            echo "pending: ${context}"
+          done
+
+      - name: e2e-tests/summary
+        env:
+          SHA: ${{ steps.inputs.outputs.commit-sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          ACCOUNT: ${{ steps.inputs.outputs.account }}
+          CHANNEL: ${{ steps.inputs.outputs.channel }}
+          IMAGE: ${{ steps.inputs.outputs.server-image }}
+          BATCHES: ${{ steps.batch.outputs.batches }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### E2E on e2e-test-stack"
+            echo
+            echo "Commit \`${SHA}\`${PR_NUMBER:+ of PR #${PR_NUMBER}}, account \`${ACCOUNT}\`, channel \`${CHANNEL}\`, server \`${IMAGE}\` (each lane's create summary names the image it resolved)."
+            echo
+            echo "| Lane | Batch | Status context |"
+            echo "|---|---|---|"
+            jq -r 'to_entries[] | "| \(.key) | `\(.value)` | `e2e-test-stack/\(.key)` |"' <<< "$BATCHES"
+          } >> "$GITHUB_STEP_SUMMARY"

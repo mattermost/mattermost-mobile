@@ -17,7 +17,7 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 
 describe('Server Login - Edit Server Preauth Secret', () => {
     const serverOneDisplayName = 'Server 1';
@@ -27,9 +27,10 @@ describe('Server Login - Edit Server Preauth Secret', () => {
         await ServerListScreen.open();
         await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
-        await wait(timeouts.ONE_SEC);
-        await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverOneDisplayName,
+            ServerListScreen.getServerItemEditOption(serverOneDisplayName),
+        );
         await EditServerScreen.toBeVisible();
     };
 

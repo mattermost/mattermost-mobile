@@ -11,6 +11,7 @@ import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
 import {PostConfigProvider} from '@context/post_config';
 import {useTheme} from '@context/theme';
+import {useClearViewableItemsOnUnmount} from '@hooks/in_viewport';
 import {convertSearchTermToRegex, parseSearchTerms} from '@utils/markdown';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {emitPostsInViewport} from '@utils/post_list/viewport';
@@ -53,6 +54,7 @@ const PostResults = ({
     searchValue,
 }: Props) => {
     const theme = useTheme();
+    useClearViewableItemsOnUnmount(Screens.SEARCH);
     const styles = getStyles(theme);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
     const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
