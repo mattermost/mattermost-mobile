@@ -21,8 +21,10 @@ const path = require('path');
 const {webhookBucketForReportName} = require('./build-tsio-job-config');
 const {parseArgs} = require('./cli-args');
 const {
+    buildAgentHandoff,
     fetchFailuresFromConsolidated,
     fetchPerJobCountsFromConsolidated,
+    formatAgentFixBrief,
     notifyCmtChannel,
     resolveWebhookUrl,
 } = require('./cmt-channel-notify');
@@ -366,6 +368,29 @@ async function main() {
         hasFailures,
         webhookUrl,
     });
+
+    if (webhookBucketForReportName(rollupIdentity.name) === 'mobile-release') {
+        const handoff = buildAgentHandoff({
+            compositeIdentity: rollupIdentity,
+            detail,
+            perJobCounts,
+            failures,
+            triage,
+            rerun,
+            runUrl,
+        });
+        if (handoff.items.length > 0) {
+            const handoffFile = args['handoff-file'] || process.env.HANDOFF_FILE || '';
+            if (handoffFile) {
+                fs.writeFileSync(handoffFile, JSON.stringify(handoff, null, 2));
+                console.log(`tsio-channel-notify-rollup: wrote ${handoff.items.length} actionable items to ${handoffFile}`);
+            }
+            const brief = formatAgentFixBrief(handoff);
+            if (brief && process.env.GITHUB_STEP_SUMMARY) {
+                fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n${brief}`);
+            }
+        }
+    }
 }
 
 if (require.main === module) {

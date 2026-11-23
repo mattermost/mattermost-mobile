@@ -432,6 +432,9 @@ const NOT_PRODUCT_BUGS = [
 
 const UNCLEARED = new Set(['product', 'new', 'look']);
 const MAX_NAMED_BUGS = 5;
+const CMT_FLAKY_BUCKETS = NOT_PRODUCT_BUGS.filter(({key}) => key !== 'test');
+const countWord = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const cut = (text, max) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
 
 // Mobile's narrow post-triage check for harness/setup errors unique to Detox/Maestro (toolkit already handles
 // DeviceUnreachable, Detox isReady crashes, feature_disabled, and small-suite storms upstream).
@@ -501,9 +504,155 @@ function judgeFinding(row, lane, retried) {
 }
 
 /**
+ * Evaluate per-test verdicts from triage findings, fresh-device reruns, and unjudged TSIO failures.
+ * Shared by formatMainChannelMessage and buildAgentHandoff so both classify identically.
+ */
+function evaluateMainVerdicts({legs, failures, triage, rerun}) {
+    const verdicts = [];
+    const named = new Map();
+    for (const lane of triage || []) {
+        const leg = legKeyOf(lane.lane);
+        const names = named.get(leg) || new Set();
+        const retried = (failures || []).
+            filter((failure) => failure.passedOnRetry && legKeyOf(failure.job) === leg).
+            map((failure) => failure.error);
+        for (const row of lane.findings || []) {
+            // What the error text leaves uncleared, the fresh-device re-run decides: failed again is a product
+            // bug, passed is not one. Only without a re-run result does a retry of the same error clear it.
+            let key = judgeFinding(row, lane);
+            const again = UNCLEARED.has(key) ? rerun?.results?.[lane.lane]?.get(row.title) : undefined;
+            if (again === 'failed') {
+                key = 'confirmed';
+            } else if (again === 'passed') {
+                key = 'fresh-pass';
+            } else if (UNCLEARED.has(key)) {
+                key = judgeFinding(row, lane, retried);
+                if (UNCLEARED.has(key) && rerun?.stale?.[lane.lane]?.includes(row.title)) {
+                    key = 'stale';
+                }
+            }
+            verdicts.push({
+                key,
+                leg,
+                lane: lane.lane,
+                title: row.title,
+                fullTitle: row.full_title || row.title,
+                file: row.file || '',
+                label: row.label || '',
+                aiCause: row.ai?.cause || null,
+                aiConfidence: typeof row.ai?.confidence === 'number' ? row.ai.confidence : null,
+                explanation: row.ai?.explanation || null,
+                error: row.error_first_line || null,
+                new: verdictOf(row, true).key === 'new',
+            });
+            names.add(row.full_title || row.title).add(row.title);
+        }
+        named.set(leg, names);
+    }
+    const unjudged = (failures || []).filter((failure) => {
+        const names = named.get(legKeyOf(failure.job));
+        return !failure.passedOnRetry && !(names && namedIn(names, failure.title));
+    });
+    for (const failure of unjudged) {
+        const fallback = causeOfError(failure.error);
+        verdicts.push({
+            key: fallback || 'look',
+            leg: legKeyOf(failure.job),
+            lane: failure.job || '',
+            title: failure.title || '',
+            fullTitle: failure.title || '',
+            file: '',
+            label: fallback === 'test' ? 'test bug' : 'needs investigation',
+            aiCause: null,
+            aiConfidence: null,
+            explanation: null,
+            error: (failure.error || '').split('\n')[0] || null,
+        });
+    }
+    for (const leg of legs) {
+        const key = legKey(leg);
+        const missing = leg.failed - verdicts.filter((v) => v.leg === key).length;
+        for (let i = 0; i < missing; i++) {
+            verdicts.push({key: 'look', leg: key});
+        }
+    }
+    return verdicts;
+}
+
+/** Deduplicate named verdicts across platforms/servers so each unique test is shown once. */
+function groupMobileTests(items) {
+    const byTest = new Map();
+    for (const v of items) {
+        if (!v.title) {
+            continue;
+        }
+        const mapKey = `${v.file || ''}\n${v.fullTitle || v.title}`;
+        const parsed = parseMobileJobName(v.lane);
+        const server = parsed?.kind === 'cmt' ? parsed.serverVersion : '';
+        const legId = parsed && server ? `${parsed.framework}-${parsed.platform}/${server}` : (v.lane || v.leg || 'unknown');
+        const seen = byTest.get(mapKey);
+        if (!seen) {
+            byTest.set(mapKey, {
+                key: v.key,
+                title: v.title,
+                fullTitle: v.fullTitle || v.title,
+                file: v.file || '',
+                label: v.label || '',
+                aiCause: v.aiCause ?? null,
+                aiConfidence: v.aiConfidence ?? null,
+                explanation: v.explanation || null,
+                error: v.error || null,
+                lanes: v.lane ? [v.lane] : [],
+                servers: server ? [server] : [],
+                failedLegs: [legId],
+            });
+            continue;
+        }
+        if (v.lane && !seen.lanes.includes(v.lane)) {
+            seen.lanes.push(v.lane);
+        }
+        if (server && !seen.servers.includes(server)) {
+            seen.servers.push(server);
+        }
+        if (!seen.failedLegs.includes(legId)) {
+            seen.failedLegs.push(legId);
+        }
+        seen.explanation = seen.explanation || v.explanation;
+        seen.error = seen.error || v.error;
+        seen.aiCause = seen.aiCause || v.aiCause;
+        if (seen.aiConfidence === null && typeof v.aiConfidence === 'number') {
+            seen.aiConfidence = v.aiConfidence;
+        }
+    }
+    return [...byTest.values()].sort((a, b) => b.failedLegs.length - a.failedLegs.length || a.title.localeCompare(b.title));
+}
+
+function formatCmtTestLine(g) {
+    const id = (/^(MM-T?\d+(?:_\d+)?)\b/).exec(g.title)?.[1];
+    const rest = id ? cut(g.title.slice(id.length).replace(/^[\s-]+/, ''), 50) : '';
+    const display = id ? (rest ? `\`${id}\` ${rest}` : `\`${id}\``) : `\`${cut(g.title, 55)}\``;
+    let reason = g.explanation ? cut(g.explanation, 160) : '';
+    if (!reason) {
+        if (g.key === 'stale') {
+            reason = 'out of date on this branch';
+        } else if (g.key === 'test') {
+            reason = g.label === 'server compat' ? 'server compatibility test issue' : 'the test itself is wrong, not the app';
+        } else if (g.error) {
+            reason = cut(g.error, 140);
+        } else if (g.key === 'confirmed') {
+            reason = 'failed again on a fresh device';
+        } else {
+            reason = 'not confirmed — needs a look';
+        }
+    }
+    const where = g.lanes.slice(0, 3).map(laneName).join(', ') + (g.lanes.length > 3 ? ` +${g.lanes.length - 3} more` : '');
+    return `• ${display} — ${reason}${where ? ` · ${where}` : ''}`;
+}
+
+/**
  * The main and CMT message, a few lines as on desktop: product bugs (failed again on a fresh device), failures not
- * confirmed either way, then what is not a product bug. Null when there is nothing to post: the run passed, or every
- * failure is flaky, passed on a fresh device or on retry, already failing before, a problem with the test or setup.
+ * confirmed either way, test bugs (broken out on CMT), then what is not a product bug. Main returns null when clean
+ * or cleared; CMT posts a 2-line green summary so release owners know CMT finished clean.
  *
  * @param {Object} params - see formatCmtChannelMessage; `rerun` is {lanes, tooMany, results} from rerun-failed.js
  * @returns {string|null}
@@ -531,52 +680,7 @@ function formatMainChannelMessage({
     const failed = legs.length ? sum('failed') : stats.failed ?? 0;
     const skipped = legs.length ? sum('skipped') : stats.skipped ?? 0;
 
-    // One verdict per failed test: the triage job's where a finding names it, the error text's where none does
-    // (a test that passed on retry is counted below, not judged), and "not checked" for the rest of a run's failures.
-    const verdicts = [];
-    const named = new Map();
-    for (const lane of triage || []) {
-        const leg = legKeyOf(lane.lane);
-        const names = named.get(leg) || new Set();
-        const retried = (failures || []).
-            filter((failure) => failure.passedOnRetry && legKeyOf(failure.job) === leg).
-            map((failure) => failure.error);
-        for (const row of lane.findings || []) {
-            // What the error text leaves uncleared, the fresh-device re-run decides: failed again is a product
-            // bug, passed is not one. Only without a re-run result does a retry of the same error clear it.
-            let key = judgeFinding(row, lane);
-            const again = UNCLEARED.has(key) ? rerun?.results?.[lane.lane]?.get(row.title) : undefined;
-            if (again === 'failed') {
-                key = 'confirmed';
-            } else if (again === 'passed') {
-                key = 'fresh-pass';
-            } else if (UNCLEARED.has(key)) {
-                key = judgeFinding(row, lane, retried);
-                if (UNCLEARED.has(key) && rerun?.stale?.[lane.lane]?.includes(row.title)) {
-                    key = 'stale';
-                }
-            }
-            verdicts.push({key, leg, lane: lane.lane, title: row.title, explanation: row.ai?.explanation || null, new: verdictOf(row, true).key === 'new'});
-            names.add(row.full_title || row.title).add(row.title);
-        }
-        named.set(leg, names);
-    }
-    const unjudged = (failures || []).filter((failure) => {
-        const names = named.get(legKeyOf(failure.job));
-        return !failure.passedOnRetry && !(names && namedIn(names, failure.title));
-    });
-    for (const failure of unjudged) {
-        const fallback = causeOfError(failure.error);
-        verdicts.push({key: fallback || 'look', leg: legKeyOf(failure.job)});
-    }
-    for (const leg of legs) {
-        const key = legKey(leg);
-        const missing = leg.failed - verdicts.filter((v) => v.leg === key).length;
-        for (let i = 0; i < missing; i++) {
-            verdicts.push({key: 'look', leg: key});
-        }
-    }
-
+    const verdicts = evaluateMainVerdicts({legs, failures, triage, rerun});
     const confirmed = verdicts.filter((v) => v.key === 'confirmed');
     const unconfirmed = verdicts.filter((v) => UNCLEARED.has(v.key));
     const stale = verdicts.filter((v) => v.key === 'stale');
@@ -589,20 +693,6 @@ function formatMainChannelMessage({
         setupLines.push('⚙️ A CI job failed outside the tests (install, build or teardown).');
     }
     const unexplained = upstreamJobsSucceeded && hasFailures && failed === 0;
-
-    const title = reportTitleForIdentity(compositeIdentity);
-    const branch = (compositeIdentity?.branch || '').replace(/^refs\/(heads|tags)\//, '');
-    const on = branch ? ` on \`${branch}\`` : '';
-    let header;
-    if (confirmed.length) {
-        header = `🔴 **${title} — product bug**${on}`;
-    } else if (unconfirmed.length || stale.length || unexplained) {
-        header = `🟡 **${title} — no product bug confirmed**${on}`;
-    } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
-        header = `🟡 **${title} — setup problem**${on}`;
-    } else {
-        return null;
-    }
 
     // Each run once, with its count; a run where most tests failed at once is flagged where it first appears.
     const flagged = new Set();
@@ -624,6 +714,98 @@ function formatMainChannelMessage({
         const other = group.length - parts.reduce((n, part) => n + part.count, 0);
         return [...parts.map((part) => part.text), ...(other > 0 ? [`other runs ${other}`] : [])].join(' · ');
     };
+
+    const title = reportTitleForIdentity(compositeIdentity);
+    const branch = (compositeIdentity?.branch || '').replace(/^refs\/(heads|tags)\//, '');
+    const on = branch ? ` on \`${branch}\`` : '';
+    const retried = Object.values(perJobCounts || {}).reduce((n, counts) => n + (counts.flaky || 0), 0) ||
+        (triage || []).reduce((n, lane) => n + (lane.counts?.flaky || 0), 0);
+
+    // Mobile CMT (mobile-release): always posts (including 2-line green pass), with 3-bucket deduplicated summary.
+    if (bucketOf(compositeIdentity) === 'mobile-release') {
+        const productGroups = groupMobileTests(confirmed);
+        const testBugs = verdicts.filter((v) => v.key === 'test' || v.key === 'stale');
+        const testGroups = groupMobileTests(testBugs);
+        const unconfirmedGroups = groupMobileTests(unconfirmed);
+        const unnamedUnconfirmed = unconfirmed.filter((v) => !v.title);
+        const flakyParts = CMT_FLAKY_BUCKETS.
+            map(({key, label}) => ({label, count: verdicts.filter((v) => v.key === key).length})).
+            filter(({count}) => count > 0).
+            map(({label, count}) => `${count} ${label}`);
+        if (retried) {
+            flakyParts.push(`${retried} passed on retry`);
+        }
+
+        const testTag = testGroups.length ? ` · ${countWord(testGroups.length, 'test bug', 'test bugs')}` : '';
+        let headline;
+        if (confirmed.length) {
+            headline = `:red_circle: **${title}**${on}: ${countWord(productGroups.length || confirmed.length, 'product bug', 'product bugs')} found${testTag}`;
+        } else if (unconfirmed.length || unexplained) {
+            const n = unconfirmedGroups.length + unnamedUnconfirmed.length;
+            const heldText = n ? ` · ${n} ${n === 1 ? 'failure needs' : 'failures need'} a look` : '';
+            headline = `:yellow_circle: **${title}**${on}: no product bugs confirmed${heldText}${testTag}`;
+        } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
+            headline = `:yellow_circle: **${title}**${on}: setup problem${testTag}`;
+        } else if (testGroups.length) {
+            headline = `:green_circle: **${title}**${on}: no product bugs found${testTag}`;
+        } else if (failed > 0 || flakyParts.length) {
+            headline = `:green_circle: **${title}**${on}: no product bugs found`;
+        } else {
+            headline = `:green_circle: **${title}**${on}: all tests passed`;
+        }
+
+        const lines = [headline];
+        const pushGroup = (heading, groups) => {
+            if (!groups.length) {
+                return;
+            }
+            lines.push(`${heading} (${groups.length})`, ...groups.slice(0, MAX_NAMED_BUGS).map(formatCmtTestLine));
+            if (groups.length > MAX_NAMED_BUGS) {
+                lines.push(`…and ${groups.length - MAX_NAMED_BUGS} more in the run`);
+            }
+        };
+        pushGroup('🐞 **Product bugs**', productGroups);
+        if (unconfirmedGroups.length || unnamedUnconfirmed.length) {
+            const totalUnconfirmed = unconfirmedGroups.length + unnamedUnconfirmed.length;
+            lines.push(`🔎 **Needs a look** (${totalUnconfirmed})`);
+            for (const g of unconfirmedGroups.slice(0, MAX_NAMED_BUGS)) {
+                lines.push(formatCmtTestLine(g));
+            }
+            if (unconfirmedGroups.length > MAX_NAMED_BUGS) {
+                lines.push(`…and ${unconfirmedGroups.length - MAX_NAMED_BUGS} more in the run`);
+            }
+            if (unnamedUnconfirmed.length) {
+                lines.push(`• ${perRun(unnamedUnconfirmed)}`);
+            }
+        }
+        pushGroup('🧪 **Test bugs**', testGroups);
+        if (unexplained) {
+            lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
+        }
+        if (flakyParts.length) {
+            lines.push(`🔁 **Flaky / Infra:** ${flakyParts.join(' · ')}`);
+        }
+        lines.push(...setupLines);
+
+        const hasBrief = productGroups.length + testGroups.length + unconfirmedGroups.length > 0;
+        const links = [
+            reportUrl && `[Report](${reportUrl})`,
+            runUrl && `[${hasBrief ? 'Run & Fix Brief' : 'Run'}](${runUrl})`,
+        ].filter(Boolean);
+        lines.push([`${passed} passed`, `${failed} failed`, `${skipped} skipped`, ...links].join(' · '));
+        return lines.join('\n') + '\n';
+    }
+
+    let header;
+    if (confirmed.length) {
+        header = `🔴 **${title} — product bug**${on}`;
+    } else if (unconfirmed.length || stale.length || unexplained) {
+        header = `🟡 **${title} — no product bug confirmed**${on}`;
+    } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
+        header = `🟡 **${title} — setup problem**${on}`;
+    } else {
+        return null;
+    }
 
     const shortSha = (compositeIdentity?.commit_sha || '').slice(0, 7);
     const newOnMain = bucketOf(compositeIdentity) === 'mobile-main' && confirmed.some((v) => v.new);
@@ -651,9 +833,6 @@ function formatMainChannelMessage({
         lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
     }
 
-    // Tests that failed a try and passed the next count as flaky, not as failures.
-    const retried = Object.values(perJobCounts || {}).reduce((n, counts) => n + (counts.flaky || 0), 0) ||
-        (triage || []).reduce((n, lane) => n + (lane.counts?.flaky || 0), 0);
     const notProduct = NOT_PRODUCT_BUGS.
         map(({key, label}) => ({label, count: verdicts.filter((v) => v.key === key).length})).
         filter(({count}) => count > 0).
@@ -671,6 +850,100 @@ function formatMainChannelMessage({
         lines.push(`➡️ ${links}`);
     }
     return lines.join('\n') + '\n';
+}
+
+function mobileReproHint(file) {
+    if (!file) {
+        return '';
+    }
+    if (file.startsWith('detox/maestro/') || (/\.ya?ml$/).test(file)) {
+        return `maestro test ${file}`;
+    }
+    return `npx jest --config detox/e2e/config.js ${file}`;
+}
+
+/**
+ * Structured agent-handoff payload (schema 1, matching desktop) for actionable Mobile CMT bugs:
+ * product bugs (draft investigation), test/stale/compat bugs (fix PR), and unsettled failures.
+ */
+function buildAgentHandoff({compositeIdentity, detail, perJobCounts, failures, triage, rerun, reportUrl = '', runUrl = ''}) {
+    const repository = compositeIdentity?.repository || 'mattermost/mattermost-mobile';
+    const branch = (compositeIdentity?.branch || '').replace(/^refs\/(heads|tags)\//, '');
+    const commitSha = compositeIdentity?.commit_sha || '';
+    const legs = buildLegSummaries(perJobCounts, detail?.reports || []);
+    const allServers = [...new Set(legs.filter((l) => l.kind === 'cmt' && l.serverVersion !== 'default').map((l) => l.serverVersion))];
+    const verdicts = evaluateMainVerdicts({legs, failures, triage, rerun});
+
+    const groups = [
+        ...groupMobileTests(verdicts.filter((v) => v.key === 'confirmed')).map((g) => ({g, kind: 'product_bug', mode: 'draft_investigation'})),
+        ...groupMobileTests(verdicts.filter((v) => v.key === 'test' || v.key === 'stale')).map((g) => ({
+            g,
+            kind: g.label === 'server compat' ? 'server_compat' : 'test_bug',
+            mode: 'fix_pr',
+        })),
+        ...groupMobileTests(verdicts.filter((v) => UNCLEARED.has(v.key))).map((g) => ({g, kind: 'needs_investigation', mode: 'investigate'})),
+    ];
+
+    const items = groups.map(({g, kind, mode}) => ({
+        schema: 1,
+        kind,
+        mode,
+        repository,
+        branch,
+        commit_sha: commitSha,
+        test: {title: g.title, full_title: g.fullTitle, file: g.file},
+        triage: {
+            label: g.key === 'stale' ? 'out of date' : (g.label || g.key),
+            ai_cause: g.aiCause ?? null,
+            ai_confidence: g.aiConfidence ?? null,
+            explanation: g.explanation ?? null,
+            error_first_line: g.error ?? null,
+        },
+        matrix: {
+            failed: g.failedLegs,
+            passed_servers: allServers.filter((s) => !g.servers.includes(s)),
+        },
+        repro_hint: mobileReproHint(g.file),
+        links: {report_url: reportUrl, run_url: runUrl},
+    }));
+    return {schema: 1, repository, branch, commit_sha: commitSha, run_url: runUrl, report_url: reportUrl, items};
+}
+
+const BRIEF_TAG = {
+    product_bug: '🐞 Product bug (draft PR — do not auto-merge)',
+    test_bug: '🧪 Test bug (safe for fix PR)',
+    server_compat: '🧪 Server compat test bug (safe for fix PR)',
+    needs_investigation: '🔎 Needs investigation',
+};
+
+/** Copy-pasteable Markdown Agent Fix Brief for GITHUB_STEP_SUMMARY. Empty when no actionable items exist. */
+function formatAgentFixBrief(handoff) {
+    if (!handoff?.items?.length) {
+        return '';
+    }
+    const lines = [`### 🤖 Agent Fix Brief (${handoff.items.length} actionable)`, ''];
+    for (const item of handoff.items) {
+        const conf = typeof item.triage.ai_confidence === 'number' ? ` (confidence ${Math.round(item.triage.ai_confidence * 100)}%)` : '';
+        lines.push(`#### ${BRIEF_TAG[item.kind] || item.kind}: \`${item.test.title}\``);
+        if (item.test.file) {
+            lines.push(`- **Spec:** \`${item.test.file}\``);
+        }
+        if (item.matrix.failed.length) {
+            const passed = item.matrix.passed_servers.length ? ` · Passed servers: ${item.matrix.passed_servers.join(', ')}` : '';
+            lines.push(`- **Matrix:** Failed on ${item.matrix.failed.join(', ')}${passed}`);
+        }
+        if (item.triage.explanation) {
+            lines.push(`- **AI diagnosis:** ${item.triage.explanation}${conf}`);
+        }
+        if (item.triage.error_first_line) {
+            lines.push(`- **Error:** \`${cut(item.triage.error_first_line, 200)}\``);
+        }
+        if (item.repro_hint) {
+            lines.push(`- **Repro:** \`${item.repro_hint}\``);
+        }
+        lines.push('');
+    }
+    return lines.join('\n');
 }
 
 function reportTitleForIdentity(compositeIdentity) {
@@ -1104,6 +1377,8 @@ module.exports = {
     formatLegResultText,
     reportTitleForIdentity,
     formatCmtChannelMessage,
+    buildAgentHandoff,
+    formatAgentFixBrief,
     formatTriageVerdict,
     judgeFinding,
     formatMassFailures,

@@ -1023,6 +1023,7 @@ jobs:
           TRIAGE_FINDINGS_DIR: triage-findings
           RERUN_RESULTS_DIR: rerun-results
           RERUN_STALE: ${{ needs.plan-rerun-cmt.outputs.stale || '{}' }}
+          HANDOFF_FILE: cmt-agent-handoff.json
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
           UPSTREAM_SUCCEEDED: ${{ needs.update-final-status.outputs.upstream-succeeded || 'false' }}
         run: |
@@ -1030,6 +1031,33 @@ jobs:
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM_SUCCEEDED" \
             --poll-attempts=6 || true
+
+      - name: Upload CMT agent handoff
+        if: always() && hashFiles('cmt-agent-handoff.json') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cmt-agent-handoff
+          path: cmt-agent-handoff.json
+          retention-days: 7
+
+      - name: Dispatch CMT agent fix
+        if: always() && hashFiles('cmt-agent-handoff.json') != ''
+        env:
+          WEBHOOK_URL: ${{ secrets.CURSOR_MOBILE_CMT_AUTOFIX_WEBHOOK_URL }}
+          WEBHOOK_KEY: ${{ secrets.CURSOR_MOBILE_CMT_AUTOFIX_WEBHOOK_KEY }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ] || [ -z "$WEBHOOK_KEY" ]; then
+            echo "No webhook configured: fix brief is in the job summary and cmt-agent-handoff.json artifact."
+            exit 0
+          fi
+          while IFS= read -r item; do
+            title=$(jq -r '.test.title' <<<"$item")
+            mode=$(jq -r '.mode' <<<"$item")
+            status=$(printf '%s' "$item" | curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+              -X POST "$WEBHOOK_URL" -H "Authorization: Bearer $WEBHOOK_KEY" -H 'Content-Type: application/json' \
+              --data-binary @-) || true
+            echo "[$mode] $title: HTTP ${status:-000}"
+          done < <(jq -c '.items[] | select(.mode == "fix_pr" or .mode == "draft_investigation")' cmt-agent-handoff.json)
 
       # Instance cleanup is handled by matterwick on workflow_run completed.
 

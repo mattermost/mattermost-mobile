@@ -12,6 +12,8 @@ const {
     buildLegSummaries,
     formatLegResultText,
     formatCmtChannelMessage,
+    buildAgentHandoff,
+    formatAgentFixBrief,
     formatTriageVerdict,
     judgeFinding,
     formatMassFailures,
@@ -169,11 +171,10 @@ describe('cmt-channel-notify', () => {
             });
 
             assert.equal(text, [
-                '🟡 **Mobile CMT — no product bug confirmed** on `release-2.40`',
-                '`55afc0b`',
-                '**1 failed** · 461 passed · 40 skipped',
-                '🔎 **Not confirmed (1) — not re-run, or the re-run gave no result:** [🤖 detox-android (11.9.0)](https://test-io.test.mattermost.com/reports/r/rid-android) 1',
-                '➡️ [Full report](https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/55afc0b/mobile-release)',
+                ':yellow_circle: **Mobile CMT** on `release-2.40`: no product bugs confirmed · 1 failure needs a look',
+                '🔎 **Needs a look** (1)',
+                '• [🤖 detox-android (11.9.0)](https://test-io.test.mattermost.com/reports/r/rid-android) 1',
+                '461 passed · 1 failed · 40 skipped · [Report](https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/55afc0b/mobile-release)',
                 '',
             ].join('\n'));
         });
@@ -803,7 +804,118 @@ describe('cmt-channel-notify', () => {
                 triage,
                 rerun,
             });
-            assert.match(text, /MM-T5000_4 — Edit Server screen crashes on pre-auth save\./);
+            assert.match(text, /`MM-T5000_4` — Edit Server screen crashes on pre-auth save\./);
+            assert.match(notifyBlockForAgent(), /cmt-agent-handoff\.json/);
+            assert.match(notifyBlockForAgent(), /CURSOR_MOBILE_CMT_AUTOFIX_WEBHOOK_URL/);
+            function notifyBlockForAgent() {
+                const cmt = fs.readFileSync(path.join(repoRoot, '.github/workflows/compatibility-matrix-testing.yml'), 'utf8');
+                return cmt.slice(cmt.indexOf('  tsio-channel-notify:'), cmt.indexOf('  tsio-triage:'));
+            }
+        });
+
+        it('posts a 2-line green summary for Mobile CMT on clean pass and 3-line summary when all failures are cleared', () => {
+            const cmtId = {repository: 'mattermost/mattermost-mobile', branch: 'build-release-838', commit_sha: 'a87cebb', name: 'mobile-release', run_group: 'mobile-release'};
+            const runUrl = 'https://github.com/mattermost/mattermost-mobile/actions/runs/41592185082';
+            const clean = formatCmtChannelMessage({
+                compositeIdentity: cmtId,
+                detail: {status: 'completed', test_stats: {passed: 1406, failed: 0, skipped: 94}, reports: []},
+                perJobCounts: {'detox-ios-Server_12.1.0': {passed: 1406, failed: 0, skipped: 94, flaky: 0}},
+                triage: [],
+                runUrl,
+            });
+            assert.equal(clean, [
+                ':green_circle: **Mobile CMT** on `build-release-838`: all tests passed',
+                `1406 passed · 0 failed · 94 skipped · [Run](${runUrl})`,
+                '',
+            ].join('\n'));
+
+            const cleared = formatCmtChannelMessage({
+                compositeIdentity: cmtId,
+                detail: {status: 'completed', test_stats: {passed: 1403, failed: 3, skipped: 94}, reports: []},
+                perJobCounts: {'detox-ios-Server_12.1.0': {passed: 1403, failed: 3, skipped: 94, flaky: 0}},
+                triage: [{
+                    lane: 'detox-ios-Server_12.1.0',
+                    counts: {passed: 1403, failed: 3, flaky: 0},
+                    findings: [
+                        {title: 'MM-T1 flaky', file: 'detox/e2e/test/a.e2e.ts', class: 'FLAKY_ON_TRUNK', label: 'flaky'},
+                        {title: 'MM-T2 fresh pass', file: 'detox/e2e/test/b.e2e.ts', class: 'REGRESSION', label: 'needs investigation'},
+                        {title: 'MM-T3 fresh pass 2', file: 'detox/e2e/test/c.e2e.ts', class: 'REGRESSION', label: 'needs investigation'},
+                    ],
+                }],
+                rerun: {lanes: {}, tooMany: {}, results: {'detox-ios-Server_12.1.0': new Map([['MM-T2 fresh pass', 'passed'], ['MM-T3 fresh pass 2', 'passed']])}},
+                runUrl,
+            });
+            assert.equal(cleared, [
+                ':green_circle: **Mobile CMT** on `build-release-838`: no product bugs found',
+                '🔁 **Flaky / Infra:** 2 passed on a fresh device · 1 flaky',
+                `1403 passed · 3 failed · 94 skipped · [Run](${runUrl})`,
+                '',
+            ].join('\n'));
+        });
+
+        it('separates Product bugs, Test bugs (including stale), Needs a look, and Flaky/Infra on Mobile CMT and builds schema-1 agent handoff', () => {
+            const cmtId = {repository: 'mattermost/mattermost-mobile', branch: 'build-release-838', commit_sha: 'a87cebb123', name: 'mobile-release', run_group: 'mobile-release'};
+            const runUrl = 'https://github.com/mattermost/mattermost-mobile/actions/runs/41592185082';
+            const perJobCounts = {
+                'detox-ios-Server_11.7.15': {passed: 27, failed: 0, skipped: 2, flaky: 0},
+                'detox-ios-Server_12.1.0': {passed: 608, failed: 4, skipped: 41, flaky: 1},
+                'maestro-ios-Server_12.1.0': {passed: 6, failed: 1, skipped: 1, flaky: 0},
+            };
+            const detail = {status: 'completed', test_stats: {passed: 641, failed: 5, skipped: 44, flaky: 1}, reports: []};
+            const triage = [
+                {
+                    lane: 'detox-ios-Server_12.1.0',
+                    counts: {passed: 608, failed: 4, flaky: 1},
+                    findings: [
+                        {title: 'MM-T5000_4 - survive preauth edit', full_title: 'Server Login > MM-T5000_4 - survive preauth edit', file: 'detox/e2e/test/server_login/edit_preauth.e2e.ts', class: 'REGRESSION', label: 'app bug', error_first_line: 'Timed out waiting for server.screen', ai: {cause: 'app_bug', confidence: 0.93, explanation: 'Edit Server screen crashes on pre-auth save.'}},
+                        {title: 'MM-T6197_1 - classification banner', full_title: 'Classification > MM-T6197_1 - classification banner', file: 'detox/e2e/test/banners/classification.e2e.ts', class: 'REGRESSION', label: 'server compat', error_first_line: 'Banner selector missing on 12.1', ai: {cause: 'server_compat', confidence: 0.9, explanation: 'Banner test expects old 11.x selector.'}},
+                        {title: 'MM-68219_1 - redacted files', full_title: 'ABAC > MM-68219_1 - redacted files', file: 'detox/e2e/test/abac/redacted.e2e.ts', class: 'REGRESSION', label: 'needs investigation', error_first_line: 'Element not found'},
+                        {title: 'MM-T4896_1 - markdown image', full_title: 'Markdown > MM-T4896_1 - markdown image', file: 'detox/e2e/test/markdown/image.e2e.ts', class: 'FLAKY_ON_TRUNK', label: 'flaky'},
+                    ],
+                },
+                {
+                    lane: 'maestro-ios-Server_12.1.0',
+                    counts: {passed: 6, failed: 1, flaky: 0},
+                    findings: [
+                        {title: 'attach_logs_toggle_visible', full_title: 'detox/maestro/flows/settings/attach_logs.yml > attach_logs_toggle_visible', file: 'detox/maestro/flows/settings/attach_logs.yml', class: 'REGRESSION', label: 'test bug', error_first_line: 'Assertion failed: toggle text changed', ai: {cause: 'test_bug', confidence: 0.88, explanation: 'Toggle label was renamed in main.'}},
+                    ],
+                },
+            ];
+            const rerun = {
+                lanes: {},
+                tooMany: {},
+                results: {'detox-ios-Server_12.1.0': new Map([['MM-T5000_4 - survive preauth edit', 'failed']])},
+                stale: {'detox-ios-Server_12.1.0': ['MM-68219_1 - redacted files']},
+            };
+
+            const text = formatCmtChannelMessage({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun, runUrl});
+            assert.match(text, /^:red_circle: \*\*Mobile CMT\*\* on `build-release-838`: 1 product bug found · 3 test bugs$/m);
+            assert.match(text, /^🐞 \*\*Product bugs\*\* \(1\)$/m);
+            assert.match(text, /`MM-T5000_4` survive preauth edit — Edit Server screen crashes on pre-auth save\. · 📱 detox-ios \(12\.1\.0\)/);
+            assert.match(text, /^🧪 \*\*Test bugs\*\* \(3\)$/m);
+            assert.match(text, /`MM-T6197_1` classification banner — Banner test expects old 11\.x selector\./);
+            assert.match(text, /`attach_logs_toggle_visible` — Toggle label was renamed in main\./);
+            assert.match(text, /`MM-68219_1` redacted files — out of date on this branch/);
+            assert.match(text, /^🔁 \*\*Flaky \/ Infra:\*\* 1 flaky · 1 passed on retry$/m);
+            assert.match(text, /\[Run & Fix Brief\]/);
+
+            const handoff = buildAgentHandoff({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun, runUrl});
+            assert.equal(handoff.schema, 1);
+            assert.equal(handoff.items.length, 4, '1 product bug + 3 test/stale bugs; flaky excluded');
+            assert.equal(handoff.items[0].kind, 'product_bug');
+            assert.equal(handoff.items[0].mode, 'draft_investigation');
+            assert.deepEqual(handoff.items[0].matrix, {failed: ['detox-ios/12.1.0'], passed_servers: ['11.7.15']});
+            assert.equal(handoff.items[0].repro_hint, 'npx jest --config detox/e2e/config.js detox/e2e/test/server_login/edit_preauth.e2e.ts');
+            const maestroItem = handoff.items.find((i) => i.test.title === 'attach_logs_toggle_visible');
+            assert.equal(maestroItem.kind, 'test_bug');
+            assert.equal(maestroItem.mode, 'fix_pr');
+            assert.equal(maestroItem.repro_hint, 'maestro test detox/maestro/flows/settings/attach_logs.yml');
+
+            const brief = formatAgentFixBrief(handoff);
+            assert.match(brief, /### 🤖 Agent Fix Brief \(4 actionable\)/);
+            assert.match(brief, /Passed servers: 11\.7\.15/);
+            assert.match(brief, /maestro test detox\/maestro\/flows\/settings\/attach_logs\.yml/);
+            assert.equal(formatAgentFixBrief({...handoff, items: []}), '');
         });
     });
 });
