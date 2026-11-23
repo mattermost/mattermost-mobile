@@ -530,11 +530,10 @@ function evaluateMainVerdicts({legs, failures, triage, rerun}) {
                     key = 'stale';
                 }
             }
-            const passedServers = (row.other_lanes || []).
-                filter((l) => l.result === 'passed').
-                map((l) => {
-                    const p = parseMobileJobName(l.platform);
-                    return (p?.kind === 'cmt' && p.serverVersion !== 'default' ? p.serverVersion : null) || (/Server_([^\s/]+)/).exec(l.platform || '')?.[1] || null;
+            const passedServers = (row.other_lanes_passed || []).
+                map((platform) => {
+                    const p = parseMobileJobName(platform);
+                    return (p?.kind === 'cmt' && p.serverVersion !== 'default' ? p.serverVersion : null) || (/Server_([^\s/]+)/).exec(platform || '')?.[1] || null;
                 }).
                 filter(Boolean);
             verdicts.push({
