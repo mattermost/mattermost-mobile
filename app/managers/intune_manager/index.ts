@@ -47,7 +47,7 @@ try {
  */
 export class IntuneManagerSingleton {
 
-    isIntuneEnabledForConfigAndLicense(config: ClientConfig, license?: ClientLicense): boolean {
+    isIntuneEnabledForConfigAndLicense(config: Partial<ClientConfig>, license?: Partial<ClientLicense>): boolean {
         return Boolean(Intune) && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced) &&
             config.IntuneMAMEnabled === 'true' && Boolean(config.IntuneScope) && Boolean(config.IntuneAuthService);
     }

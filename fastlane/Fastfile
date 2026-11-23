@@ -966,10 +966,12 @@ platform :android do
       # Calculate signature hash from keystore (matches Gradle logic)
       require 'uri'
       require 'base64'
+      require 'open3'
 
-      # Read keystore configuration like Gradle does: project gradle.properties, overridden per key by the user's
+      # Read keystore configuration like Gradle does: project gradle.properties, overridden per key by the Gradle user home's
       gradle_props = {}
-      ['../android/gradle.properties', File.expand_path('~/.gradle/gradle.properties')].each do |props_file|
+      gradle_user_home = ENV['GRADLE_USER_HOME'].to_s.empty? ? File.expand_path('~/.gradle') : File.expand_path(ENV['GRADLE_USER_HOME'])
+      ['../android/gradle.properties', File.join(gradle_user_home, 'gradle.properties')].each do |props_file|
         next unless File.exist?(props_file)
         File.read(props_file).each_line do |line|
           next if line.strip.empty? || line.strip.start_with?('#')
@@ -994,8 +996,15 @@ platform :android do
 
       # Extract SHA1 fingerprint from keystore
       begin
-        cert_output = sh("keytool -list -v -keystore '#{keystore_path}' -alias #{key_alias} -storepass #{keystore_password} -keypass #{keystore_password} 2>/dev/null | grep 'SHA1:' | cut -d: -f2-")
-        sha1_fingerprint = cert_output.strip.gsub(/[:\s]/, '')
+        # Not through `sh`: it logs the command line, which carries the keystore password
+        keytool_output, keytool_status = Open3.capture2e(
+          'keytool', '-list', '-v', '-keystore', keystore_path, '-alias', key_alias.to_s,
+          '-storepass', keystore_password.to_s, '-keypass', keystore_password.to_s
+        )
+        sha1_match = keytool_output.match(/SHA1:\s*((?:\h{2}:){19}\h{2})/)
+        raise 'keytool did not return a SHA1 fingerprint' unless keytool_status.success? && sha1_match
+
+        sha1_fingerprint = sha1_match[1].delete(':')
 
         # Convert hex to binary then base64 (matches Gradle logic)
         signature_hash = Base64.strict_encode64([sha1_fingerprint].pack('H*'))

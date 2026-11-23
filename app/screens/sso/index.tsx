@@ -9,15 +9,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {nativeEntraLogin, ssoLogin, ssoLoginWithCodeExchange} from '@actions/remote/session';
 import {Screens, Sso} from '@constants';
-import License from '@constants/license';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {getPreauthSecret} from '@init/credentials';
+import IntuneManager from '@managers/intune_manager';
 import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
-import {isMinimumLicenseTier} from '@utils/helpers';
 import {getIntuneErrorMessage} from '@utils/intune_errors';
 
 import SSOAuthentication from './sso_authentication';
@@ -63,9 +62,8 @@ const SSO = ({
     let loginUrl = '';
     let shouldUseNativeEntra = false;
 
-    shouldUseNativeEntra = config.IntuneMAMEnabled === 'true' && config.IntuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase() &&
-            Boolean(config.IntuneScope) &&
-            isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+    shouldUseNativeEntra = IntuneManager.isIntuneEnabledForConfigAndLicense(config, license) &&
+            config.IntuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase();
 
     switch (ssoType) {
         case Sso.GOOGLE: {

@@ -461,9 +461,16 @@ class SecurityManagerSingleton {
                 locale,
                 () => {
                     // User chose to go to store - open Company Portal in Play Store
-                    tryOpenURL(companyPortalUrl, undefined, () => {
-                        Emm.exitApp();
-                    });
+                    tryOpenURL(
+                        companyPortalUrl,
+                        (error) => {
+                            logError('SecurityManager: Could not open Company Portal', error);
+                            portalRequired();
+                        },
+                        () => {
+                            Emm.exitApp();
+                        },
+                    );
                 },
                 async () => {
                     // User cancelled - logout from all affected servers
