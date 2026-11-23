@@ -287,8 +287,10 @@ async function main() {
 
     const sampleIdentity = entries[0].composite_identity;
     const rollupIdentity = bucketIdentity(sampleIdentity);
+    const bucket = webhookBucketForReportName(rollupIdentity.name);
     const webhookUrl = resolveWebhookUrl(rollupIdentity.name);
-    if (!webhookUrl) {
+    const handoffFile = args['handoff-file'] || process.env.HANDOFF_FILE || '';
+    if (!webhookUrl && bucket !== 'mobile-release') {
         console.log(`tsio-channel-notify-rollup: no webhook for ${rollupIdentity.name} — skipping`);
         return;
     }
@@ -369,7 +371,7 @@ async function main() {
         webhookUrl,
     });
 
-    if (webhookBucketForReportName(rollupIdentity.name) === 'mobile-release') {
+    if (bucket === 'mobile-release') {
         const handoff = buildAgentHandoff({
             compositeIdentity: rollupIdentity,
             detail,
@@ -380,7 +382,6 @@ async function main() {
             runUrl,
         });
         if (handoff.items.length > 0) {
-            const handoffFile = args['handoff-file'] || process.env.HANDOFF_FILE || '';
             if (handoffFile) {
                 fs.writeFileSync(handoffFile, JSON.stringify(handoff, null, 2));
                 console.log(`tsio-channel-notify-rollup: wrote ${handoff.items.length} actionable items to ${handoffFile}`);

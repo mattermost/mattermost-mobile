@@ -1122,14 +1122,26 @@ jobs:
         id: lanes
         env:
           JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
+          JOB_KEY: ${{ matrix.job-key }}
         run: |
           echo "contexts=$(echo "$JOB_CONFIGS" | jq -r '[.[].status_context] | join(",")')" >> "$GITHUB_OUTPUT"
+          VER="${JOB_KEY#*-Server_}"
+          case "$JOB_KEY" in
+            detox-ios-Server_*)       FILTER="mobile-cmt-ios-full-${VER},mobile-cmt-ios-smoke-${VER},build-ios-simulator,provision" ;;
+            detox-ipad-Server_*)      FILTER="mobile-cmt-ipad-${VER},build-ios-simulator,provision" ;;
+            maestro-ios-Server_*)     FILTER="mobile-cmt-maestro-ios-${VER},build-ios-simulator,provision" ;;
+            detox-android-Server_*)   FILTER="mobile-cmt-android-full-${VER},mobile-cmt-android-smoke-${VER},build-android-apk,provision,!maestro" ;;
+            maestro-android-Server_*) FILTER="mobile-cmt-maestro-android-${VER},build-android-apk-maestro,provision" ;;
+            *)                        FILTER="${JOB_KEY}" ;;
+          esac
+          echo "lane-job-filter=${FILTER}" >> "$GITHUB_OUTPUT"
 
       - name: e2e/triage
         continue-on-error: true
         uses: ./.github/actions/e2e-triage
         with:
           job-key: ${{ matrix.job-key }}
+          lane-job-filter: ${{ steps.lanes.outputs.lane-job-filter }}
           composite-identity: ${{ toJSON(fromJSON(needs.cmt-identity.outputs.tsio-job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.cmt-identity.outputs.tsio-job-configs)[matrix.job-key].status_context }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

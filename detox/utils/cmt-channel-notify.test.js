@@ -917,5 +917,28 @@ describe('cmt-channel-notify', () => {
             assert.match(brief, /maestro test detox\/maestro\/flows\/settings\/attach_logs\.yml/);
             assert.equal(formatAgentFixBrief({...handoff, items: []}), '');
         });
+
+        it('shows mass-failure and tooMany setup warnings on Mobile CMT even when failed tests are named', () => {
+            const cmtId = {repository: 'mattermost/mattermost-mobile', branch: 'build-release-838', commit_sha: 'a87cebb', name: 'mobile-release', run_group: 'mobile-release'};
+            const perJobCounts = {
+                'maestro-android-Server_12.1.0': {passed: 2, failed: 9, skipped: 0, flaky: 0},
+                'detox-ios-Server_12.1.0': {passed: 590, failed: 12, skipped: 0, flaky: 0},
+            };
+            const detail = {status: 'completed', test_stats: {passed: 592, failed: 21, skipped: 0}, reports: []};
+            const triage = [
+                {lane: 'maestro-android-Server_12.1.0', counts: {passed: 2, failed: 9, flaky: 0}, findings: [{title: 'clock_display', class: 'REGRESSION', label: 'needs investigation'}]},
+                {lane: 'detox-ios-Server_12.1.0', counts: {passed: 590, failed: 12, flaky: 0}, findings: [{title: 'MM-T1', class: 'REGRESSION', label: 'needs investigation'}]},
+            ];
+            const rerun = {lanes: {}, tooMany: {'detox-ios-Server_12.1.0': 12}, results: {}};
+            const text = formatCmtChannelMessage({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun});
+            assert.match(text, /⚠️ \*\*📱 detox-ios \(12\.1\.0\): 12 failed at once, too many to re-run\*\*/);
+            assert.match(text, /⚠️ \*\*🤖 maestro-android \(12\.1\.0\): 9 of 11 tests failed\.\*\*/);
+
+            // Also verify CMT workflow passes per-server lane-job-filter to e2e/triage.
+            const cmt = fs.readFileSync(path.join(repoRoot, '.github/workflows/compatibility-matrix-testing.yml'), 'utf8');
+            const triageBlock = cmt.slice(cmt.indexOf('  tsio-triage:'));
+            assert.match(triageBlock, /mobile-cmt-ios-full-\$\{VER\}/);
+            assert.match(triageBlock, /lane-job-filter: \$\{\{ steps\.lanes\.outputs\.lane-job-filter \}\}/);
+        });
     });
 });

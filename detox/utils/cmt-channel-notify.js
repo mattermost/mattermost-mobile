@@ -333,10 +333,9 @@ function formatChanges(changes, repository) {
  * @param {Object} params
  * @param {Array<{lane: string, findings?: Array, counts?: {flaky?: number}}>} params.triage - findings files
  * @param {Array} [params.legs] - buildLegSummaries rows, to name runs that failed with no triage verdict
- * @param {Array} [params.failures] - failed tests from TSIO, judged from their error text where triage left no verdict
  * @returns {string[]}
  */
-function formatTriageVerdict({triage, legs = [], failures = []}) {
+function formatTriageVerdict({triage, legs = []}) {
     const entries = [];
     for (const lane of triage || []) {
         for (const row of lane.findings || []) {
@@ -649,10 +648,94 @@ function formatCmtTestLine(g) {
     return `• ${display} — ${reason}${where ? ` · ${where}` : ''}`;
 }
 
+/** Mobile CMT (`mobile-release`) 3-bucket summary; always posts, including a 2-line green pass. */
+function formatMobileCmtMessage({title, on, legs, verdicts, confirmed, unconfirmed, setupLines, unexplained, perRun, retried, rerun, passed, failed, skipped, reportUrl, runUrl}) {
+    const productGroups = groupMobileTests(confirmed);
+    const testGroups = groupMobileTests(verdicts.filter((v) => v.key === 'test' || v.key === 'stale'));
+    const unconfirmedGroups = groupMobileTests(unconfirmed);
+    const unnamedUnconfirmed = unconfirmed.filter((v) => !v.title);
+    const flakyParts = CMT_FLAKY_BUCKETS.
+        map(({key, label}) => ({label, count: verdicts.filter((v) => v.key === key).length})).
+        filter(({count}) => count > 0).
+        map(({label, count}) => `${count} ${label}`);
+    if (retried) {
+        flakyParts.push(`${retried} passed on retry`);
+    }
+
+    const testTag = testGroups.length ? ` · ${countWord(testGroups.length, 'test bug', 'test bugs')}` : '';
+    let headline;
+    if (confirmed.length) {
+        headline = `:red_circle: **${title}**${on}: ${countWord(productGroups.length || confirmed.length, 'product bug', 'product bugs')} found${testTag}`;
+    } else if (unconfirmed.length || unexplained) {
+        const n = unconfirmedGroups.length + unnamedUnconfirmed.length;
+        const heldText = n ? ` · ${n} ${n === 1 ? 'failure needs' : 'failures need'} a look` : '';
+        headline = `:yellow_circle: **${title}**${on}: no product bugs confirmed${heldText}${testTag}`;
+    } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
+        headline = `:yellow_circle: **${title}**${on}: setup problem${testTag}`;
+    } else if (testGroups.length) {
+        headline = `:green_circle: **${title}**${on}: no product bugs found${testTag}`;
+    } else if (failed > 0 || flakyParts.length) {
+        headline = `:green_circle: **${title}**${on}: no product bugs found`;
+    } else {
+        headline = `:green_circle: **${title}**${on}: all tests passed`;
+    }
+
+    const lines = [headline];
+    const massFlagged = new Set();
+    for (const [lane, totalFailed] of Object.entries(rerun?.tooMany || {})) {
+        const key = legKeyOf(lane);
+        if (key) {
+            massFlagged.add(key);
+        }
+        lines.push(`⚠️ **${laneName(lane)}: ${totalFailed} failed at once, too many to re-run** — check that run's setup first.`);
+    }
+    lines.push(...formatMassFailures(legs.filter((leg) => !massFlagged.has(legKey(leg)))));
+
+    const pushGroup = (heading, groups) => {
+        if (!groups.length) {
+            return;
+        }
+        lines.push(`${heading} (${groups.length})`, ...groups.slice(0, MAX_NAMED_BUGS).map(formatCmtTestLine));
+        if (groups.length > MAX_NAMED_BUGS) {
+            lines.push(`…and ${groups.length - MAX_NAMED_BUGS} more in the run`);
+        }
+    };
+    pushGroup('🐞 **Product bugs**', productGroups);
+    if (unconfirmedGroups.length || unnamedUnconfirmed.length) {
+        const totalUnconfirmed = unconfirmedGroups.length + unnamedUnconfirmed.length;
+        lines.push(`🔎 **Needs a look** (${totalUnconfirmed})`);
+        for (const g of unconfirmedGroups.slice(0, MAX_NAMED_BUGS)) {
+            lines.push(formatCmtTestLine(g));
+        }
+        if (unconfirmedGroups.length > MAX_NAMED_BUGS) {
+            lines.push(`…and ${unconfirmedGroups.length - MAX_NAMED_BUGS} more in the run`);
+        }
+        if (unnamedUnconfirmed.length) {
+            lines.push(`• ${perRun(unnamedUnconfirmed)}`);
+        }
+    }
+    pushGroup('🧪 **Test bugs**', testGroups);
+    if (unexplained) {
+        lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
+    }
+    if (flakyParts.length) {
+        lines.push(`🔁 **Flaky / Infra:** ${flakyParts.join(' · ')}`);
+    }
+    lines.push(...setupLines);
+
+    const hasBrief = productGroups.length + testGroups.length + unconfirmedGroups.length > 0;
+    const links = [
+        reportUrl && `[Report](${reportUrl})`,
+        runUrl && `[${hasBrief ? 'Run & Fix Brief' : 'Run'}](${runUrl})`,
+    ].filter(Boolean);
+    lines.push([`${passed} passed`, `${failed} failed`, `${skipped} skipped`, ...links].join(' · '));
+    return lines.join('\n') + '\n';
+}
+
 /**
  * The main and CMT message, a few lines as on desktop: product bugs (failed again on a fresh device), failures not
  * confirmed either way, test bugs (broken out on CMT), then what is not a product bug. Main returns null when clean
- * or cleared; CMT posts a 2-line green summary so release owners know CMT finished clean.
+ * or cleared; CMT delegates to formatMobileCmtMessage and always posts.
  *
  * @param {Object} params - see formatCmtChannelMessage; `rerun` is {lanes, tooMany, results} from rerun-failed.js
  * @returns {string|null}
@@ -721,79 +804,10 @@ function formatMainChannelMessage({
     const retried = Object.values(perJobCounts || {}).reduce((n, counts) => n + (counts.flaky || 0), 0) ||
         (triage || []).reduce((n, lane) => n + (lane.counts?.flaky || 0), 0);
 
-    // Mobile CMT (mobile-release): always posts (including 2-line green pass), with 3-bucket deduplicated summary.
     if (bucketOf(compositeIdentity) === 'mobile-release') {
-        const productGroups = groupMobileTests(confirmed);
-        const testBugs = verdicts.filter((v) => v.key === 'test' || v.key === 'stale');
-        const testGroups = groupMobileTests(testBugs);
-        const unconfirmedGroups = groupMobileTests(unconfirmed);
-        const unnamedUnconfirmed = unconfirmed.filter((v) => !v.title);
-        const flakyParts = CMT_FLAKY_BUCKETS.
-            map(({key, label}) => ({label, count: verdicts.filter((v) => v.key === key).length})).
-            filter(({count}) => count > 0).
-            map(({label, count}) => `${count} ${label}`);
-        if (retried) {
-            flakyParts.push(`${retried} passed on retry`);
-        }
-
-        const testTag = testGroups.length ? ` · ${countWord(testGroups.length, 'test bug', 'test bugs')}` : '';
-        let headline;
-        if (confirmed.length) {
-            headline = `:red_circle: **${title}**${on}: ${countWord(productGroups.length || confirmed.length, 'product bug', 'product bugs')} found${testTag}`;
-        } else if (unconfirmed.length || unexplained) {
-            const n = unconfirmedGroups.length + unnamedUnconfirmed.length;
-            const heldText = n ? ` · ${n} ${n === 1 ? 'failure needs' : 'failures need'} a look` : '';
-            headline = `:yellow_circle: **${title}**${on}: no product bugs confirmed${heldText}${testTag}`;
-        } else if (setupLines.length || verdicts.some((v) => v.key === 'setup')) {
-            headline = `:yellow_circle: **${title}**${on}: setup problem${testTag}`;
-        } else if (testGroups.length) {
-            headline = `:green_circle: **${title}**${on}: no product bugs found${testTag}`;
-        } else if (failed > 0 || flakyParts.length) {
-            headline = `:green_circle: **${title}**${on}: no product bugs found`;
-        } else {
-            headline = `:green_circle: **${title}**${on}: all tests passed`;
-        }
-
-        const lines = [headline];
-        const pushGroup = (heading, groups) => {
-            if (!groups.length) {
-                return;
-            }
-            lines.push(`${heading} (${groups.length})`, ...groups.slice(0, MAX_NAMED_BUGS).map(formatCmtTestLine));
-            if (groups.length > MAX_NAMED_BUGS) {
-                lines.push(`…and ${groups.length - MAX_NAMED_BUGS} more in the run`);
-            }
-        };
-        pushGroup('🐞 **Product bugs**', productGroups);
-        if (unconfirmedGroups.length || unnamedUnconfirmed.length) {
-            const totalUnconfirmed = unconfirmedGroups.length + unnamedUnconfirmed.length;
-            lines.push(`🔎 **Needs a look** (${totalUnconfirmed})`);
-            for (const g of unconfirmedGroups.slice(0, MAX_NAMED_BUGS)) {
-                lines.push(formatCmtTestLine(g));
-            }
-            if (unconfirmedGroups.length > MAX_NAMED_BUGS) {
-                lines.push(`…and ${unconfirmedGroups.length - MAX_NAMED_BUGS} more in the run`);
-            }
-            if (unnamedUnconfirmed.length) {
-                lines.push(`• ${perRun(unnamedUnconfirmed)}`);
-            }
-        }
-        pushGroup('🧪 **Test bugs**', testGroups);
-        if (unexplained) {
-            lines.push('🔎 TSIO reported failed runs that are not in the test totals; see the report.');
-        }
-        if (flakyParts.length) {
-            lines.push(`🔁 **Flaky / Infra:** ${flakyParts.join(' · ')}`);
-        }
-        lines.push(...setupLines);
-
-        const hasBrief = productGroups.length + testGroups.length + unconfirmedGroups.length > 0;
-        const links = [
-            reportUrl && `[Report](${reportUrl})`,
-            runUrl && `[${hasBrief ? 'Run & Fix Brief' : 'Run'}](${runUrl})`,
-        ].filter(Boolean);
-        lines.push([`${passed} passed`, `${failed} failed`, `${skipped} skipped`, ...links].join(' · '));
-        return lines.join('\n') + '\n';
+        return formatMobileCmtMessage({
+            title, on, legs, verdicts, confirmed, unconfirmed, setupLines, unexplained, perRun, retried, rerun, passed, failed, skipped, reportUrl, runUrl,
+        });
     }
 
     let header;
@@ -1066,7 +1080,7 @@ function formatCmtChannelMessage(params) {
 
     // The triage job's verdicts when it ran; without triage, name failing tests neutrally without legacy heuristics.
     if (triage?.length) {
-        lines.push(...formatTriageVerdict({triage, legs, failures}));
+        lines.push(...formatTriageVerdict({triage, legs}));
     } else if ((failures || []).length > 0) {
         const active = failures.filter((f) => !f.passedOnRetry);
         if (active.length) {
