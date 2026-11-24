@@ -1340,6 +1340,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      actions: read
     steps:
       # Always check out channel reporting helpers from the workflow dispatch ref (main), never stale branch refs.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -1367,6 +1368,34 @@ jobs:
         with:
           pattern: e2e-rerun-results-*-a${{ github.run_attempt }}
           path: rerun-results
+      # download-artifact extracts a single match straight into the path, without the artifact-named folder.
+      - name: Keep a single result in its artifact folder
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          file=""
+          for f in rerun-results/jest-results-merged.json rerun-results/maestro-report.xml; do
+            if [ -f "$f" ]; then
+              file="$f"
+              break
+            fi
+          done
+          if [ -z "$file" ]; then
+            exit 0
+          fi
+          name=$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[] | select(.expired | not) | .name' \
+            | grep -E "^e2e-rerun-results-.+-a${RUN_ATTEMPT}$" || true)
+          count=$(printf '%s\n' "$name" | grep -c . || true)
+          if [ "$count" != "1" ]; then
+            echo "::warning::A single result was downloaded but $count rerun artifacts are listed; leaving it unread"
+            exit 0
+          fi
+          mkdir -p "rerun-results/$name"
+          mv "$file" "rerun-results/$name/"
       - name: Aggregate per-job TSIO groups and notify channel
         env:
           JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
