@@ -3,6 +3,7 @@
 
 import {act, fireEvent, within} from '@testing-library/react-native';
 import React from 'react';
+import {StyleSheet, View} from 'react-native';
 
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -360,6 +361,15 @@ describe('AppsFormComponent grid layout', () => {
         // Cells are live inputs, so each leaf field renders an AppsFormField.
         expect(mockFieldProps.cell_order).toBeTruthy();
         expect(mockFieldProps.cell_weight).toBeTruthy();
+
+        // The text box is inset by its margins. A 100% width on top of those
+        // margins would stick out of the cell and get clipped.
+        const orderCell = getByTestId('apps_form_grid.cell.cell_order');
+        const boxed = orderCell.findAllByType(View).
+            map((node) => StyleSheet.flatten(node.props.style)).
+            find((style) => style?.borderWidth === 1);
+        expect(boxed?.marginHorizontal).toBe(6);
+        expect(boxed?.width).toBeUndefined();
 
         // Each row also has its own expand control to open the single-row view.
         expect(getByTestId('apps_form_grid.row.row1.open')).toBeTruthy();

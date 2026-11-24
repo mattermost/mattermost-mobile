@@ -1,18 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import {useDatabase} from '@nozbe/watermelondb/react';
+import React, {useEffect, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Pressable, type PressableStateCallbackType, ScrollView, Text, View} from 'react-native';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import {AppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
+import {observeCurrentUser} from '@queries/servers/user';
 import {getDateValue} from '@utils/date_utils';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
+import {getTimezone} from '@utils/user';
 
 import {gridRowKey} from './use_grid_row';
 
@@ -60,6 +65,23 @@ type Props = {
     // Opens a row in its own single-row view (from the expand column).
     onOpenRow?: (rowKey: string) => void;
 };
+
+// Account timezone for date summaries. Same fallback the row editor uses, so a
+// cell and the opened row show the same instant. Starts empty and fills in
+// once the current user is read; an empty zone falls through to the device.
+function useAccountTimezone(): string {
+    const database = useDatabase();
+    const [userTimezone, setUserTimezone] = useState('');
+
+    useEffect(() => {
+        const subscription = observeCurrentUser(database).pipe(
+            switchMap((user) => of$(getTimezone(user?.timezone))),
+        ).subscribe(setUserTimezone);
+        return () => subscription.unsubscribe();
+    }, [database]);
+
+    return userTimezone;
+}
 
 // A column is wide enough for a short value — an order number, a weight, a
 // status — without making the table scroll further than it has to. The first
@@ -200,6 +222,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         // plain text. Box it so an editable text cell looks tappable and reads
         // apart from a read-only summary cell. Selects and switches already
         // carry their own affordance, so only text gets this.
+        //
+        // No width here. A 100% width plus these horizontal margins is wider
+        // than the cell, and the cell clips the border.
         cellTextInput: {
             marginVertical: 3,
             marginHorizontal: 6,
@@ -282,7 +307,7 @@ const cellFields = (row: AppField, excludeName?: string): AppField[] =>
  * wants to read across a table; a password is never shown. The row's own screen
  * edits each of these in its real control.
  */
-export function displayCellValue(field: AppField | undefined, value: AppFormValue | undefined): string {
+export function displayCellValue(field: AppField | undefined, value: AppFormValue | undefined, userTimezone?: string): string {
     if (value === undefined || value === null || value === false || value === '') {
         return '';
     }
@@ -290,7 +315,10 @@ export function displayCellValue(field: AppField | undefined, value: AppFormValu
         return MASKED_VALUE;
     }
     if (field?.type === AppFieldTypes.DATE || field?.type === AppFieldTypes.DATETIME) {
-        const moment = getDateValue(value, field.datetime_config?.location_timezone, field.type === AppFieldTypes.DATETIME);
+        // A field timezone wins. Otherwise use the account timezone, matching
+        // the row editor. Falling through to the device zone can be a day off.
+        const timezone = field.datetime_config?.location_timezone || userTimezone;
+        const moment = getDateValue(value, timezone, field.type === AppFieldTypes.DATETIME);
         return moment ? moment.format(field.type === AppFieldTypes.DATETIME ? 'lll' : 'll') : String(value);
     }
     if (Array.isArray(value)) {
@@ -343,6 +371,7 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+    const userTimezone = useAccountTimezone();
 
     // A row keeps its place even without a name: its cells are addressed by
     // their own names, and a nameless row still needs to render so a required
@@ -426,7 +455,7 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
         const inline = Boolean(cell) && rendersInlineInCell(cell);
 
         if (!inline) {
-            const text = cell?.name ? displayCellValue(cell, secureGetFromRecord(values, cell.name)) : '';
+            const text = cell?.name ? displayCellValue(cell, secureGetFromRecord(values, cell.name), userTimezone) : '';
             return (
                 <View
                     key={key}
@@ -472,7 +501,7 @@ const AppsFormGrid = ({field, gridPath, renderCell, renderField, values, errors,
                 testID={testID}
             >
                 {Boolean(cell) && (
-                    <View style={[style.cellInput, cell.type === AppFieldTypes.TEXT && style.cellTextInput]}>
+                    <View style={cell.type === AppFieldTypes.TEXT ? style.cellTextInput : style.cellInput}>
                         {renderCell(cell)}
                     </View>
                 )}
