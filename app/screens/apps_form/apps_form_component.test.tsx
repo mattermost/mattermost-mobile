@@ -1,12 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import {act, fireEvent, within} from '@testing-library/react-native';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import Preferences from '@constants/preferences';
+import {ThemeContext} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithEverything, renderWithIntl} from '@test/intl-test-helper';
+import {changeOpacity} from '@utils/theme';
 
 import AppsFormComponent, {initValues} from './apps_form_component';
 
@@ -583,6 +587,69 @@ describe('AppsFormComponent grid layout', () => {
 
         // The row opened on its own screen (title/back header is name-independent).
         expect(getByTestId('apps_form_row_detail.title')).toBeTruthy();
+    });
+
+    // The five core themes the PR checklist requires us to verify against.
+    const CORE_THEME_KEYS = Object.keys(Preferences.THEMES) as Array<keyof typeof Preferences.THEMES>;
+
+    const themeForm: Partial<AppForm> = {
+        fields: [{
+            name: 'orders',
+            type: 'collapsible',
+            label: 'Orders',
+            collapsible_config: {
+                layout: 'grid',
+                fields: [{
+                    name: 'row1',
+                    type: 'collapsible',
+                    label: 'Row 1',
+                    collapsible_config: {fields: [
+                        {name: 'cell_order', type: 'text', label: 'Order'},
+                        {name: 'cell_status',
+                            type: 'radio',
+                            label: 'Status',
+                            value: 'shipped',
+                            options: [{label: 'Shipped', value: 'shipped'}]},
+                    ]},
+                } as AppField],
+            },
+        } as AppField],
+    };
+
+    // renderWithEverything pins the default theme, so drive each theme through context.
+    const renderGridInTheme = (theme: Theme) => renderWithIntl(
+        <DatabaseProvider database={database}>
+            <ThemeContext.Provider value={theme}>
+                <AppsFormComponent {...getProps(themeForm)}/>
+            </ThemeContext.Provider>
+        </DatabaseProvider>,
+    );
+
+    it('exercises the five core themes', () => {
+        expect(CORE_THEME_KEYS).toEqual(['denim', 'sapphire', 'quartz', 'indigo', 'onyx']);
+    });
+
+    it.each(CORE_THEME_KEYS)('paints the grid from the %s theme', (key) => {
+        const theme = Preferences.THEMES[key];
+        const {getByText, getByTestId} = renderGridInTheme(theme);
+
+        expect(StyleSheet.flatten(getByText('Order').props.style).color).toBe(changeOpacity(theme.centerChannelColor, 0.75));
+
+        const orderCell = getByTestId('apps_form_grid.cell.cell_order');
+        expect(StyleSheet.flatten(orderCell.props.style).backgroundColor).toBe(theme.centerChannelBg);
+
+        const textBox = orderCell.findAllByType(View).
+            map((node) => StyleSheet.flatten(node.props.style)).
+            find((style) => style?.borderWidth === 1);
+        expect(textBox?.borderColor).toBe(changeOpacity(theme.centerChannelColor, 0.16));
+        expect(textBox?.backgroundColor).toBe(changeOpacity(theme.centerChannelColor, 0.03));
+
+        expect(StyleSheet.flatten(getByText('Shipped').props.style).color).toBe(theme.centerChannelColor);
+
+        const expandIcon = getByTestId('apps_form_grid.row.row1.open').findAll(
+            (node) => StyleSheet.flatten(node.props.style)?.color === theme.buttonBg,
+        );
+        expect(expandIcon.length).toBeGreaterThan(0);
     });
 });
 
