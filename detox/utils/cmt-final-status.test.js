@@ -335,4 +335,69 @@ describe('cmt-final-status', () => {
         assert.equal(res.state, 'failure');
         assert.match(res.description, /1 blocking failure/);
     });
+
+    it('fails closed when findings are empty with counts.failed > 0 or verdict is ACTION_REQUIRED despite rerun clears', () => {
+        const emptyWithFailedCounts = evaluateCmtFinalStatus({
+            jobResults: {...ALL_SUCCESS_JOBS, detoxIos: 'failure', tsioTriage: 'success'},
+            expectedJobKeys: EXPECTED_KEYS,
+            triage: [
+                {
+                    schema: 2,
+                    lane: 'detox-ios-Server_11.9.0',
+                    triaged: true,
+                    verdict: 'SUCCESS',
+                    counts: {total: 10, passed: 8, failed: 2, flaky: 0, skipped: 0},
+                    findings: [],
+                },
+                {
+                    schema: 2,
+                    lane: 'detox-android-Server_11.9.0',
+                    triaged: true,
+                    verdict: 'SUCCESS',
+                    counts: {total: 10, passed: 10, failed: 0, flaky: 0, skipped: 0},
+                    findings: [],
+                },
+            ],
+            rerunResults: {},
+        });
+        assert.equal(emptyWithFailedCounts.state, 'failure');
+        assert.match(emptyWithFailedCounts.description, /1 unsettled lane/);
+
+        const actionRequiredWithClearedRerun = evaluateCmtFinalStatus({
+            jobResults: {...ALL_SUCCESS_JOBS, detoxIos: 'failure', tsioTriage: 'success', planRerun: 'success', rerunDetoxIos: 'success'},
+            expectedJobKeys: EXPECTED_KEYS,
+            triage: [
+                {
+                    schema: 2,
+                    lane: 'detox-ios-Server_11.9.0',
+                    triaged: true,
+                    verdict: 'ACTION_REQUIRED',
+                    counts: {total: 10, passed: 9, failed: 1, flaky: 0, skipped: 0},
+                    findings: [
+                        {
+                            title: 'MM-T1 - renders',
+                            full_title: 'Spec A > MM-T1 - renders',
+                            file: 'detox/e2e/test/a.e2e.ts',
+                            blocking: true,
+                        },
+                    ],
+                },
+                {
+                    schema: 2,
+                    lane: 'detox-android-Server_11.9.0',
+                    triaged: true,
+                    verdict: 'SUCCESS',
+                    counts: {total: 10, passed: 10, failed: 0, flaky: 0, skipped: 0},
+                    findings: [],
+                },
+            ],
+            rerunResults: {
+                'detox-ios-Server_11.9.0': new Map([
+                    ['detox/e2e/test/a.e2e.ts\nSpec A > MM-T1 - renders', 'passed'],
+                ]),
+            },
+        });
+        assert.equal(actionRequiredWithClearedRerun.state, 'failure');
+        assert.match(actionRequiredWithClearedRerun.description, /1 unsettled lane/);
+    });
 });

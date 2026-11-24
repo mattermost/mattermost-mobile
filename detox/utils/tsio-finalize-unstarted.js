@@ -188,7 +188,22 @@ async function readE2eOverrideLabel({token, repository, prNumber, requestFn = gi
 
 /**
  * Finalize pending run-owned lanes while re-checking live commit statuses and PR `E2E/Override`
- * immediately before each status POST so concurrent override writes are never clobbered.
+ * immediately before and after each status POST so concurrent override writes are never clobbered.
+ *
+ * @param {Object} params
+ * @param {string} params.token
+ * @param {string} params.repository
+ * @param {string} params.sha
+ * @param {string|number} params.runId
+ * @param {string} params.runUrl
+ * @param {Record<string, {status_context: string}>} params.jobConfigs
+ * @param {Record<string, string>} params.upstreamResults
+ * @param {boolean} [params.e2eOverride]
+ * @param {string|number} [params.prNumber]
+ * @param {Function} [params.readStatusesFn]
+ * @param {Function} [params.readOverrideFn]
+ * @param {Function} [params.createCommitStatusFn]
+ * @returns {Promise<Array<{context: string, state: string, description: string, target_url: string}>>}
  */
 async function finalizeUnstartedLanes({
     token,
@@ -259,8 +274,20 @@ async function finalizeUnstartedLanes({
         }
 
         await createCommitStatusFn(token, repository, sha, fresh);
-        posted.push(fresh);
-        console.log(`${fresh.context}: ${fresh.state} · ${fresh.description}`);
+        let finalPosted = fresh;
+        if (prNumber && fresh.state !== 'success') {
+            const postOverride = await readOverrideFn({token, repository, prNumber});
+            if (postOverride === true) {
+                knownOverride = true;
+                finalPosted = {
+                    ...fresh,
+                    ...overrideCommitStatus(fresh.state, fresh.description),
+                };
+                await createCommitStatusFn(token, repository, sha, finalPosted);
+            }
+        }
+        posted.push(finalPosted);
+        console.log(`${finalPosted.context}: ${finalPosted.state} · ${finalPosted.description}`);
     }
     return posted;
 }

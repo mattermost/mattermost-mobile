@@ -973,6 +973,7 @@ jobs:
           pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
 
       - name: Post per-job TSIO commit status
+        id: tsio-status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -1027,7 +1028,7 @@ jobs:
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
-          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
+          if [ "$RC" -ne 0 ] && [ "$CANCELLED" != "true" ]; then
             echo "::error::TSIO reported test failures or timed out for $CONTEXT"
             exit 1
           fi
@@ -1095,9 +1096,11 @@ jobs:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
           ERRORS: ${{ steps.summary.outputs.ERRORS }}
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          TSIO_MERGE_SKIP: ${{ steps.tsio-merge.outputs.skip }}
+          TSIO_STATUS_OUTCOME: ${{ steps.tsio-status.outcome }}
         run: |
-          # Fail on missing/empty reports (infra died before tests) and on real failures.
-          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 ]]; then
+          # Fail on missing/empty reports (infra died before tests), merge/TSIO status failure, and real failures.
+          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "$TSIO_MERGE_SKIP" == "true" || "$TSIO_STATUS_OUTCOME" == "failure" ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
@@ -1127,6 +1130,8 @@ jobs:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TSIO_MERGE_SKIP: ${{ steps.tsio-merge.outputs.skip }}
+          TSIO_STATUS_OUTCOME: ${{ steps.tsio-status.outcome }}
         run: |
-          echo "::error::Detox reported test failures (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS})"
+          echo "::error::Detox lane failed (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS}, TSIO_MERGE_SKIP=${TSIO_MERGE_SKIP}, TSIO_STATUS_OUTCOME=${TSIO_STATUS_OUTCOME})"
           exit 1

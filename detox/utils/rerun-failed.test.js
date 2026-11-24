@@ -202,6 +202,28 @@ describe('rerun-failed', () => {
         }
     });
 
+    it('detects Maestro status="FAILED"/"ERROR" without <failure> child, unescapes XML entities, and handles mixed file/bare maps', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rerun-maestro-xml-'));
+        try {
+            const folder = path.join(dir, 'e2e-rerun-results-maestro-ios-a1');
+            fs.mkdirSync(folder);
+            fs.writeFileSync(path.join(folder, 'maestro-report.xml'), [
+                '<testsuites><testsuite name="flows">',
+                '<testcase id="f1" name="login &amp; &quot;verify&quot;" file="detox/maestro/flows/a/login&amp;1.yml" time="1.0" status="FAILED"/>',
+                '<testcase id="f2" name="err" file="detox/maestro/flows/a/err.yml" time="1.0" status="ERROR"></testcase>',
+                '<testcase id="f3" name="bare-fail" classname="Suite" time="1.0" status="FAILED"/>',
+                '</testsuite></testsuites>',
+            ].join('\n'));
+            const lane = loadRerunResults(dir)['maestro-ios'];
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/a/login&1.yml', title: 'login & "verify"'}), 'failed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/a/err.yml', title: 'err'}), 'failed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/other/bare.yml', title: 'bare-fail'}), undefined);
+            assert.equal(lookupRerunResult(lane, {title: 'bare-fail'}), 'failed');
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+
     it('differsFrom compares two explicit refs so main checkout still detects release-branch stale specs', () => {
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'differs-'));
         const prev = process.cwd();

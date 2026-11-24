@@ -270,6 +270,10 @@ jobs:
   post-e2e-override-status:
     name: Publish success on required E2E contexts (override)
     runs-on: ubuntu-24.04
+    concurrency:
+      group: e2e-status-write-${{ inputs.MOBILE_VERSION }}
+      cancel-in-progress: false
+      queue: max
     needs: resolve-e2e-policy
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override == 'true'
@@ -982,6 +986,7 @@ jobs:
     concurrency:
       group: e2e-status-write-${{ inputs.MOBILE_VERSION }}
       cancel-in-progress: false
+      queue: max
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
@@ -1319,6 +1324,11 @@ jobs:
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
+      - provision-servers
+      - validate-maestro-flow-headers
+      - build-ios-simulator
+      - build-android-apk
+      - build-android-apk-maestro
       - finalize-unstarted-lanes
       - run-detox-ios
       - run-detox-android
@@ -1372,7 +1382,12 @@ jobs:
           if [ "$FINALIZE_UNSTARTED_RESULT" != "skipped" ]; then
             UPSTREAM="false"
           fi
-          for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
+          for r in "${{ needs.provision-servers.result }}" "${{ needs.validate-maestro-flow-headers.result }}"; do
+            if [ "$r" != "success" ]; then
+              UPSTREAM="false"
+            fi
+          done
+          for r in "${{ needs.build-ios-simulator.result }}" "${{ needs.build-android-apk.result }}" "${{ needs.build-android-apk-maestro.result }}" "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
             case "$r" in
               success|skipped) ;;
               *) UPSTREAM="false" ;;

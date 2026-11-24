@@ -94,6 +94,12 @@ function planRerun(triage, {isStale = () => false, stale: known = {}} = {}) {
 const isMaestro = (lane) => lane.startsWith('maestro-');
 const normalizeTestFile = (file) => String(file || '').replace(/\\/g, '/').replace(/^\.\//, '');
 const isMaestroFilePath = (value) => Boolean(value && (value.includes('/') || (/\.ya?ml$/i).test(value)));
+const unescapeXml = (s) => String(s).
+    replace(/&lt;/g, '<').
+    replace(/&gt;/g, '>').
+    replace(/&quot;/g, '"').
+    replace(/&apos;/g, "'").
+    replace(/&amp;/g, '&');
 
 /**
  * Build a stable per-test rerun map key (`<normalized file>\n<fullTitle || title>` when file is known).
@@ -228,13 +234,18 @@ function loadRerunResults(dir) {
                 const xml = fs.readFileSync(junit, 'utf8');
                 for (const match of xml.matchAll(/<testcase\b([^>]*?)(\/>|>([\s\S]*?)<\/testcase>)/g)) {
                     const attrs = match[1];
-                    const name = (/\bname="([^"]*)"/).exec(attrs)?.[1];
-                    const fileAttr = (/\bfile="([^"]*)"/).exec(attrs)?.[1];
-                    const classAttr = (/\bclassname="([^"]*)"/).exec(attrs)?.[1];
+                    const rawName = (/\bname="([^"]*)"/).exec(attrs)?.[1];
+                    const name = rawName ? unescapeXml(rawName) : rawName;
+                    const rawFile = (/\bfile="([^"]*)"/).exec(attrs)?.[1];
+                    const fileAttr = rawFile ? unescapeXml(rawFile) : '';
+                    const rawClass = (/\bclassname="([^"]*)"/).exec(attrs)?.[1];
+                    const classAttr = rawClass ? unescapeXml(rawClass) : '';
+                    const statusAttr = (/\bstatus="([^"]*)"/).exec(attrs)?.[1] || '';
                     const file = normalizeTestFile(fileAttr || (isMaestroFilePath(classAttr) ? classAttr : ''));
                     const body = match[3] || '';
                     if (!(/<skipped\b/).test(body)) {
-                        record({file, title: name}, !(/<(failure|error)\b/).test(body));
+                        const failed = (/<(failure|error)\b/).test(body) || (/^(FAILED|ERROR)$/i).test(statusAttr);
+                        record({file, title: name}, !failed);
                     }
                 }
             }

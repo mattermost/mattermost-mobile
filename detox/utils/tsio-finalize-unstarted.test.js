@@ -384,9 +384,47 @@ describe('tsio-finalize-unstarted', () => {
             });
 
             assert.equal(statusReads, 4);
-            assert.equal(labelReads, 4);
+            assert.equal(labelReads, 7);
             assert.equal(posted.length, 3);
             assert.ok(posted.every((p) => p.state === 'failure'));
+        });
+
+        it('reconciles immediately via post-POST readOverrideFn when E2E/Override lands mid-request', async () => {
+            let labelReads = 0;
+            const posted = [];
+            const result = await finalizeUnstartedLanes({
+                token: 'tok',
+                repository: REPO,
+                sha: 'abc1234',
+                runId: RUN_ID,
+                runUrl: RUN_URL,
+                jobConfigs: ALL_CONFIGS,
+                upstreamResults: upstream,
+                e2eOverride: false,
+                prNumber: '10364',
+                readStatusesFn: async () => pendingRows(),
+                readOverrideFn: async () => {
+                    labelReads += 1;
+                    return labelReads >= 3;
+                },
+                createCommitStatusFn: async (_token, _repo, _sha, payload) => {
+                    posted.push(payload);
+                },
+            });
+
+            assert.equal(labelReads, 5);
+            assert.equal(posted.length, 4);
+            assert.equal(posted[0].context, 'e2e-test/detox-ios');
+            assert.equal(posted[0].state, 'failure');
+            assert.equal(posted[1].context, 'e2e-test/detox-ios');
+            assert.equal(posted[1].state, 'success');
+            assert.ok(posted[1].description.startsWith('E2E/Override — '));
+            assert.equal(posted[2].context, 'e2e-test/detox-ipad');
+            assert.equal(posted[2].state, 'success');
+            assert.equal(posted[3].context, 'e2e-test/maestro-ios');
+            assert.equal(posted[3].state, 'success');
+            assert.equal(result.length, 3);
+            assert.ok(result.every((p) => p.state === 'success' && p.description.startsWith('E2E/Override — ')));
         });
 
         it('readE2eOverrideLabel detects E2E/Override and returns null on invalid PR or error', async () => {

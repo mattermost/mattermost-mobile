@@ -109,7 +109,7 @@ function evaluateCmtFinalStatus({jobResults, expectedJobKeys, triage, rerunResul
         }
         const findings = Array.isArray(record.findings) ? record.findings : [];
         if (findings.length === 0) {
-            if (record.verdict !== 'SUCCESS') {
+            if (record.verdict !== 'SUCCESS' || (record.counts?.failed || 0) > 0) {
                 unsettled++;
             }
             continue;
@@ -134,7 +134,7 @@ function evaluateCmtFinalStatus({jobResults, expectedJobKeys, triage, rerunResul
             }
         }
 
-        if (laneBlocking === 0 && laneRerunCleared === 0 && record.verdict !== 'SUCCESS') {
+        if (record.verdict === 'ACTION_REQUIRED' || (laneBlocking === 0 && laneRerunCleared === 0 && record.verdict !== 'SUCCESS')) {
             laneUnsettled = true;
         }
         if (laneUnsettled) {

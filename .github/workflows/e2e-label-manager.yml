@@ -396,6 +396,7 @@ jobs:
     concurrency:
       group: e2e-status-write-${{ github.event.pull_request.head.sha }}
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: read
       statuses: write
@@ -439,6 +440,7 @@ jobs:
     concurrency:
       group: e2e-status-write-${{ github.event.pull_request.head.sha }}
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: read
       statuses: write
@@ -521,10 +523,15 @@ jobs:
             });
 
   e2e-label-manager:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && (github.event.action == 'labeled' || github.event.action == 'unlabeled')
+      && (github.event.label.name == 'E2E/Override' || github.event.label.name == 'E2E/Verified')
     runs-on: ubuntu-24.04
     concurrency:
       group: e2e-status-write-${{ github.event.pull_request.head.sha }}
       cancel-in-progress: false
+      queue: max
     permissions:
       issues: write
       pull-requests: write

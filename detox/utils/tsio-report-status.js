@@ -558,7 +558,7 @@ async function reportTsioStatus(options) {
 
     // Under override the commit status is green; failing the step too would only
     // turn the run red again for a result the maintainer chose to waive.
-    const shouldFailStep = (bothTerminal && (result.test_stats.failed || 0) > 0) || result.timed_out;
+    const shouldFailStep = !cancelled && ((bothTerminal && (result.test_stats.failed || 0) > 0) || result.timed_out);
     if (failOnTestFailures && !result.override_applied && shouldFailStep) {
         const err = new Error(
             result.timed_out ?

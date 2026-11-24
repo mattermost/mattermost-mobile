@@ -434,9 +434,8 @@ describe('tsio-report-status', () => {
             gh_pr_number: '10368',
         };
 
-        async function runWithMockFetch(pollDetail, overrides = {}) {
+        async function runWithMockFetch(pollDetail, overrides = {}, posted = []) {
             const origFetch = globalThis.fetch;
-            const posted = [];
             globalThis.fetch = async (url, init) => {
                 if (url.endsWith('/api/v1/reports/begin')) {
                     return {ok: true, status: 200, json: async () => ({report_id: 'gid-1'})};
@@ -468,36 +467,37 @@ describe('tsio-report-status', () => {
         }
 
         it('posts failure and rejects with exitCode 1 on un-overridden TSIO timeout', async () => {
-            const origFetch = globalThis.fetch;
             const posted = [];
-            globalThis.fetch = async (url, init) => {
-                if (url.endsWith('/api/v1/reports/begin')) {
-                    return {ok: true, status: 200, json: async () => ({report_id: 'gid-1'})};
-                }
-                if (url.endsWith('/api/v1/reports/gid-1')) {
-                    return {ok: true, status: 200, json: async () => ({status: 'in_progress', test_stats: {passed: 5, failed: 0}})};
-                }
-                posted.push(JSON.parse(init.body));
-                return {ok: true, status: 201, text: async () => ''};
-            };
-            try {
-                await assert.rejects(
-                    reportTsioStatus({
-                        compositeIdentity: identity,
-                        totalReportsExpected: 1,
-                        commitStatusContext: 'e2e-test/detox-ios',
-                        githubToken: 'ghp-test',
-                        pollAttempts: 1,
-                        baseUrl: 'https://tsio.example',
-                        mintOidcTokenFn: async () => 'oidc-token',
-                    }),
-                    (err) => err.exitCode === 1 && (/timed out/).test(err.message),
-                );
-                assert.equal(posted.length, 1);
-                assert.equal(posted[0].state, 'failure');
-            } finally {
-                globalThis.fetch = origFetch;
-            }
+            await assert.rejects(
+                runWithMockFetch({status: 'in_progress', test_stats: {passed: 5, failed: 0}}, {}, posted),
+                (err) => err.exitCode === 1 && (/timed out/).test(err.message),
+            );
+            assert.equal(posted.length, 1);
+            assert.equal(posted[0].state, 'failure');
+        });
+
+        it('posts failure and rejects with exitCode 1 when upstreamJobsSucceeded is false on TSIO timeout', async () => {
+            const posted = [];
+            await assert.rejects(
+                runWithMockFetch(
+                    {status: 'in_progress', test_stats: {passed: 5, failed: 0}},
+                    {upstreamJobsSucceeded: false, cancelled: false, e2eOverride: false},
+                    posted,
+                ),
+                (err) => err.exitCode === 1 && (/timed out/).test(err.message),
+            );
+            assert.equal(posted.length, 1);
+            assert.equal(posted[0].state, 'failure');
+        });
+
+        it('posts error and resolves cleanly when cancelled even if TSIO reports terminal failures', async () => {
+            const {res, posted} = await runWithMockFetch(
+                {status: 'completed', test_stats: {passed: 5, failed: 3, skipped: 0}},
+                {cancelled: true, upstreamJobsSucceeded: false},
+            );
+            assert.equal(res.state, 'error');
+            assert.equal(posted.length, 1);
+            assert.equal(posted[0].state, 'error');
         });
 
         it('posts E2E/Override success and resolves when timeout is overridden', async () => {

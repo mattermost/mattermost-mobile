@@ -841,6 +841,7 @@ jobs:
           pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
 
       - name: Post per-job TSIO commit status
+        id: tsio-status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -874,10 +875,10 @@ jobs:
           fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-ios"')
-          TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
+          TOTAL_REPORTS=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \
-            --total-reports-expected="$TOTAL" \
+            --total-reports-expected="$TOTAL_REPORTS" \
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
@@ -887,7 +888,7 @@ jobs:
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
-          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
+          if [ "$RC" -ne 0 ] && [ "$CANCELLED" != "true" ]; then
             echo "::error::TSIO reported test failures or timed out for $CONTEXT"
             exit 1
           fi
@@ -959,10 +960,11 @@ jobs:
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
+          TSIO_STATUS_OUTCOME: ${{ steps.tsio-status.outcome }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" || "${TSIO_STATUS_OUTCOME:-}" == "failure" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
@@ -1672,6 +1674,7 @@ jobs:
           pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
 
       - name: Post per-job TSIO commit status
+        id: tsio-status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -1705,10 +1708,10 @@ jobs:
           fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-android"')
-          TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
+          TOTAL_REPORTS=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \
-            --total-reports-expected="$TOTAL" \
+            --total-reports-expected="$TOTAL_REPORTS" \
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
@@ -1718,7 +1721,7 @@ jobs:
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
-          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
+          if [ "$RC" -ne 0 ] && [ "$CANCELLED" != "true" ]; then
             echo "::error::TSIO reported test failures or timed out for $CONTEXT"
             exit 1
           fi
@@ -1788,10 +1791,11 @@ jobs:
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
+          TSIO_STATUS_OUTCOME: ${{ steps.tsio-status.outcome }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" || "${TSIO_STATUS_OUTCOME:-}" == "failure" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
