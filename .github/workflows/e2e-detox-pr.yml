@@ -182,6 +182,7 @@ jobs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
       skip_reason: ${{ steps.policy.outputs.skip_reason }}
       trusted: ${{ steps.policy.outputs.trusted }}
+      pr_number: ${{ steps.policy.outputs.pr_number }}
     steps:
       # Per-branch cancellation used to happen here via cancel-e2e-runs (removed —
       # see the workflow-level `concurrency:` group above, which supersedes it via
@@ -228,8 +229,10 @@ jobs:
               core.setOutput('e2e_override', 'false');
               core.setOutput('skip_reason', '');
               core.setOutput('trusted', isBaseRun ? 'true' : 'false');
+              core.setOutput('pr_number', '');
               return;
             }
+            core.setOutput('pr_number', String(prNumber));
 
             const {data: pr} = await github.rest.pulls.get({
               owner: context.repo.owner,
@@ -973,6 +976,78 @@ jobs:
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
+  finalize-unstarted-lanes:
+    name: Finalize unstarted E2E statuses
+    runs-on: ubuntu-24.04
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - update-initial-tsio-status
+      - build-ios-simulator
+      - build-android-apk
+      - build-android-apk-maestro
+      - provision-servers
+      - validate-maestro-flow-headers
+    if: >-
+      !cancelled() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (needs.provision-servers.result != 'success' ||
+       needs.validate-maestro-flow-headers.result != 'success' ||
+       (needs.build-ios-simulator.result != 'success' && needs.build-ios-simulator.result != 'skipped') ||
+       (needs.build-android-apk.result != 'success' && needs.build-android-apk.result != 'skipped') ||
+       (needs.build-android-apk-maestro.result != 'success' && needs.build-android-apk-maestro.result != 'skipped'))
+    permissions:
+      contents: read
+      statuses: write
+      issues: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/e2e-override-label/
+            detox/utils/tsio-finalize-unstarted.js
+            detox/utils/tsio-triage-settle.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cli-args.js
+          sparse-checkout-cone-mode: false
+      - name: Check E2E/Override on the PR
+        id: e2e-override
+        uses: ./.github/actions/e2e-override-label
+        with:
+          pr_number: ${{ needs.resolve-e2e-policy.outputs.pr_number || inputs.pr_number }}
+      - name: Finalize unstarted per-job TSIO statuses
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+          SHA: ${{ inputs.MOBILE_VERSION }}
+          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          PROVISION_SERVERS: ${{ needs.provision-servers.result }}
+          VALIDATE_MAESTRO_FLOW_HEADERS: ${{ needs.validate-maestro-flow-headers.result }}
+          BUILD_IOS_SIMULATOR: ${{ needs.build-ios-simulator.result }}
+          BUILD_ANDROID_APK: ${{ needs.build-android-apk.result }}
+          BUILD_ANDROID_APK_MAESTRO: ${{ needs.build-android-apk-maestro.result }}
+        run: |
+          UPSTREAM_RESULTS=$(jq -nc \
+            --arg provision "$PROVISION_SERVERS" \
+            --arg validate "$VALIDATE_MAESTRO_FLOW_HEADERS" \
+            --arg ios "$BUILD_IOS_SIMULATOR" \
+            --arg android "$BUILD_ANDROID_APK" \
+            --arg maestro_android "$BUILD_ANDROID_APK_MAESTRO" \
+            '{
+              "provision-servers": $provision,
+              "validate-maestro-flow-headers": $validate,
+              "build-ios-simulator": $ios,
+              "build-android-apk": $android,
+              "build-android-apk-maestro": $maestro_android
+            }')
+          export UPSTREAM_RESULTS
+          node detox/utils/tsio-finalize-unstarted.js
+
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-24.04
@@ -1240,6 +1315,7 @@ jobs:
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
+      - finalize-unstarted-lanes
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios
@@ -1282,12 +1358,16 @@ jobs:
           JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
           TRIAGE_FINDINGS_DIR: triage-findings
           RERUN_RESULTS_DIR: rerun-results
+          FINALIZE_UNSTARTED_RESULT: ${{ needs.finalize-unstarted-lanes.result }}
           GITHUB_TOKEN: ${{ github.token }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
         run: |
           UPSTREAM="true"
+          if [ "$FINALIZE_UNSTARTED_RESULT" != "skipped" ]; then
+            UPSTREAM="false"
+          fi
           for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
             case "$r" in
               success|skipped) ;;
@@ -1323,14 +1403,16 @@ jobs:
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       needs.calculate-tsio-identity.result == 'success' &&
-      (!contains(fromJSON('["success", "skipped"]'), needs.run-detox-ios.result) ||
+      (needs.finalize-unstarted-lanes.result != 'skipped' ||
+       !contains(fromJSON('["success", "skipped"]'), needs.run-detox-ios.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.run-detox-android.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-ios.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.run-maestro-android.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.build-ios-simulator.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk.result) ||
        !contains(fromJSON('["success", "skipped"]'), needs.build-android-apk-maestro.result) ||
-       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result))
+       !contains(fromJSON('["success", "skipped"]'), needs.provision-servers.result) ||
+       !contains(fromJSON('["success", "skipped"]'), needs.validate-maestro-flow-headers.result))
     # A failed build or server leaves its lanes "skipped", which reads as not requested, and the lanes pending with no
     # verdict (PR 10306, run 42193427343: npm ci refused a package.json the lock file did not match). Triage judges such
     # a lane from the run's jobs: the change's (a build or install it broke) or the machine's, re-run.
@@ -1341,6 +1423,8 @@ jobs:
       - build-android-apk
       - build-android-apk-maestro
       - provision-servers
+      - validate-maestro-flow-headers
+      - finalize-unstarted-lanes
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios
@@ -1351,8 +1435,12 @@ jobs:
       pull-requests: read
       # Triage reads the run's failed jobs before it asks for an automatic re-run.
       actions: read
+    concurrency:
+      group: e2e-test-triage-${{ inputs.MOBILE_VERSION }}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         job-key: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-keys-json) }}
     steps:

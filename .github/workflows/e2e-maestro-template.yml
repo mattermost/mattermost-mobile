@@ -846,6 +846,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          JOB_STATUS: ${{ job.status }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
           # says triage is coming instead of looking final.
           ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce' && steps.e2e-override.outputs.triage_report_only == 'false' }}
@@ -856,7 +861,17 @@ jobs:
           set +e
           UPSTREAM="true"
           CANCELLED="false"
-          if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; CANCELLED="true"; fi
+          if [ "$JOB_STATUS" = "cancelled" ]; then
+            UPSTREAM="false"
+            CANCELLED="true"
+          elif [ "$JOB_STATUS" != "success" ] ||
+               [ "${NO_REPORT:-}" = "true" ] ||
+               [ "${FAILURES:-0}" = "-1" ] ||
+               [ "${FAILURES:-0}" -gt 0 ] ||
+               [ "${ERRORS:-0}" -gt 0 ] ||
+               [ "${TOTAL:-0}" -eq 0 ]; then
+            UPSTREAM="false"
+          fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-ios"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
@@ -1662,6 +1677,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          JOB_STATUS: ${{ job.status }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
           # says triage is coming instead of looking final.
           ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce' && steps.e2e-override.outputs.triage_report_only == 'false' }}
@@ -1672,7 +1692,17 @@ jobs:
           set +e
           UPSTREAM="true"
           CANCELLED="false"
-          if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; CANCELLED="true"; fi
+          if [ "$JOB_STATUS" = "cancelled" ]; then
+            UPSTREAM="false"
+            CANCELLED="true"
+          elif [ "$JOB_STATUS" != "success" ] ||
+               [ "${NO_REPORT:-}" = "true" ] ||
+               [ "${FAILURES:-0}" = "-1" ] ||
+               [ "${FAILURES:-0}" -gt 0 ] ||
+               [ "${ERRORS:-0}" -gt 0 ] ||
+               [ "${TOTAL:-0}" -eq 0 ]; then
+            UPSTREAM="false"
+          fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-android"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')

@@ -39,6 +39,14 @@ inputs:
     description: Optional comma-separated substrings scoping lane job reads in flat-job workflows; empty derives from job-key
     required: false
     default: ""
+  history-lane:
+    description: Optional TSIO lane name whose history is queried when the tested branch has too few runs
+    required: false
+    default: ""
+  history-report:
+    description: Optional TSIO report_name prefix whose history is queried (defaults to report_name)
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -77,7 +85,9 @@ runs:
         triage-status-context: e2e-test/triage
         triage-lanes: ${{ inputs.triage-lanes }}
         lane: ${{ inputs.job-key }}
-        lane-job-filter: ${{ inputs.lane-job-filter || (contains(inputs.job-key, 'maestro-ios') && 'maestro-ios,Maestro iOS,build-ios-simulator,provision' || (contains(inputs.job-key, 'maestro-android') && 'maestro-android,Maestro Android,build-android-apk-maestro,provision' || (contains(inputs.job-key, 'detox-ios') && 'detox-ios,Detox iOS,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-ipad') && 'detox-ipad,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-android') && 'detox-android,Detox Android,build-android-apk,provision,!maestro' || inputs.job-key))))) }}
+        lane-job-filter: ${{ inputs.lane-job-filter || (contains(inputs.job-key, 'maestro-ios') && 'maestro-ios,Maestro iOS,build-ios-simulator,provision,Validate Maestro' || (contains(inputs.job-key, 'maestro-android') && 'maestro-android,Maestro Android,build-android-apk-maestro,provision,Validate Maestro' || (contains(inputs.job-key, 'detox-ios') && 'detox-ios,Detox iOS,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-ipad') && 'detox-ipad,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-android') && 'detox-android,Detox Android,build-android-apk,provision,!maestro' || inputs.job-key))))) }}
+        history-lane: ${{ inputs.history-lane }}
+        history-report: ${{ inputs.history-report }}
         evidence-dir: triage-evidence
         test-root: .
         # A failure in an unchanged spec is "merge main" when main changed the code it runs through.

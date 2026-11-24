@@ -130,14 +130,52 @@ describe('tsio-report-status', () => {
             );
         });
 
-        it('uses timeout path for non-terminal status', () => {
+        it('uses timeout path for non-terminal status and fails closed even when upstream succeeded', () => {
             assert.deepEqual(
                 decideStatus({status: 'processing', test_stats: {passed: 1, failed: 0}}, true),
                 {
-                    state: 'success',
-                    description: 'TSIO poll timed out (status=processing) — using CI job status',
+                    state: 'failure',
+                    description: 'TSIO poll timed out (status=processing) — results not confirmed',
                     both_terminal: false,
                     timed_out: true,
+                },
+            );
+        });
+
+        it('never fails open to success on build-release-838 run 44709613504 timeout shape and supports E2E/Override', () => {
+            const timeoutNoStats = decideStatus(
+                {status: 'in_progress', test_stats: {passed: 0, failed: 0, skipped: 0}},
+                true,
+            );
+            assert.deepEqual(timeoutNoStats, {
+                state: 'failure',
+                description: 'TSIO poll timed out (status=in_progress) — results not confirmed',
+                both_terminal: false,
+                timed_out: true,
+            });
+            assert.deepEqual(
+                decideStatus({status: 'in_progress', test_stats: {}}, false),
+                {
+                    state: 'failure',
+                    description: 'TSIO poll timed out (status=in_progress) — CI job failed',
+                    both_terminal: false,
+                    timed_out: true,
+                },
+            );
+            assert.deepEqual(
+                decideStatus({status: 'in_progress', test_stats: {failed: 11}}, false),
+                {
+                    state: 'failure',
+                    description: 'TSIO poll timed out (status=in_progress) — 11 failed',
+                    both_terminal: false,
+                    timed_out: true,
+                },
+            );
+            assert.deepEqual(
+                overrideCommitStatus(timeoutNoStats.state, timeoutNoStats.description),
+                {
+                    state: 'success',
+                    description: 'E2E/Override — TSIO poll timed out (status=in_progress) — results not confirmed',
                 },
             );
         });
@@ -245,7 +283,7 @@ describe('tsio-report-status', () => {
 
         it('returns run URL when not both terminal', () => {
             assert.equal(
-                decideTargetUrl('success', false, display, 'gid-1', runUrl),
+                decideTargetUrl('failure', false, display, 'gid-1', runUrl),
                 runUrl,
             );
         });

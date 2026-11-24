@@ -998,6 +998,19 @@ jobs:
              [ "$JOB_STATUS" = "cancelled" ]; then
             UPSTREAM="false"
             CANCELLED="true"
+          elif [ "$SPECS_RESULT" != "success" ] ||
+               [ "$E2E_RESULT" != "success" ] ||
+               [ "$JOB_STATUS" != "success" ]; then
+            UPSTREAM="false"
+          elif [ ! -f detox/artifacts/jest-results-merged.json ] || ! node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("detox/artifacts/jest-results-merged.json", "utf8"));
+            const cases = (data.testResults || []).flatMap((s) => s.testResults || []);
+            if (cases.length === 0 || cases.some((c) => c.status === "failed")) {
+              process.exit(1);
+            }
+          '; then
+            UPSTREAM="false"
           fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-android"')
