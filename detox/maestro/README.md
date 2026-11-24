@@ -348,14 +348,20 @@ settings map, so merge the current settings into it. Those settings can hold sec
 patch is piped rather than written to a file:
 
 ```bash
-docker exec <container> mmctl --local config show --json \
-  | jq '{PluginSettings: {Plugins: {"com.mattermost.calls": ((.PluginSettings.Plugins["com.mattermost.calls"] // {}) + {icehostoverride: "10.0.2.2"})}}}' \
-  | docker exec -i <container> mmctl --local config patch /dev/stdin
-docker exec <container> mmctl --local plugin disable com.mattermost.calls
-docker exec <container> mmctl --local plugin enable com.mattermost.calls
-```
+set_calls_ice_host() {
+  docker exec <container> mmctl --local config show --json \
+    | jq --arg host "$1" '{PluginSettings: {Plugins: {"com.mattermost.calls": ((.PluginSettings.Plugins["com.mattermost.calls"] // {}) + {icehostoverride: $host})}}}' \
+    | docker exec -i <container> mmctl --local config patch /dev/stdin
+  docker exec <container> mmctl --local plugin disable com.mattermost.calls
+  docker exec <container> mmctl --local plugin enable com.mattermost.calls
+}
 
-To undo, rerun the same steps with `icehostoverride: ""`.
+PREVIOUS_ICE_HOST=$(docker exec <container> mmctl --local config show --json \
+  | jq -r '.PluginSettings.Plugins["com.mattermost.calls"].icehostoverride // ""')
+set_calls_ice_host 10.0.2.2
+# ... run the calls flows ...
+set_calls_ice_host "$PREVIOUS_ICE_HOST"
+```
 
 ---
 
