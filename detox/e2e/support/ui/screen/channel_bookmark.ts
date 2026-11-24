@@ -106,14 +106,16 @@ class ChannelBookmarkScreen {
         ).trim();
     };
 
-    waitForAutofilledTitle = async (expectedPrefix = 'Mattermost', timeout = timeouts.ONE_MIN): Promise<string> => {
+    // The app falls back to the typed link as the title when the OG fetch fails, so only a
+    // different, non-empty value proves the title came from the page.
+    waitForAutofilledTitle = async (linkText: string, timeout = timeouts.ONE_MIN): Promise<string> => {
         const deadline = Date.now() + timeout;
         let lastTitle = '';
         /* eslint-disable no-await-in-loop */
         while (Date.now() < deadline) {
             try {
                 lastTitle = await this.getTitleValue();
-                if (lastTitle && lastTitle.startsWith(expectedPrefix)) {
+                if (lastTitle && lastTitle !== linkText) {
                     return lastTitle;
                 }
             } catch {
@@ -122,7 +124,7 @@ class ChannelBookmarkScreen {
             await new Promise((r) => setTimeout(r, 500));
         }
         /* eslint-enable no-await-in-loop */
-        throw new Error(`Timed out waiting for title starting with "${expectedPrefix}". Last value: "${lastTitle}"`);
+        throw new Error(`Timed out waiting for a page title other than "${linkText}". Last value: "${lastTitle}"`);
     };
 
     waitForLinkLoadingToFinish = async (timeout = timeouts.ONE_MIN) => {

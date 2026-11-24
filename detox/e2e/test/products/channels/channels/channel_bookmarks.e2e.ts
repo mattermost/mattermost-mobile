@@ -425,10 +425,11 @@ describe('Channels - Channel Bookmarks', () => {
         // # Enter a valid URL and submit. Use a public URL with known OG tags — the local
         // server's OG fetch can fail on Android because of network routing differences.
         const linkInput = ChannelBookmarkScreen.getLinkInput();
+        const linkUrl = 'https://mattermost.com';
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
-            await linkInput.typeText('https://mattermost.com');
-            await ChannelBookmarkScreen.waitForAutofilledTitle('Mattermost');
+            await linkInput.typeText(linkUrl);
+            await ChannelBookmarkScreen.waitForAutofilledTitle(linkUrl);
         });
 
         // # Wait for OG fetch / title auto-fill

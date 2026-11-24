@@ -333,6 +333,36 @@ When multiple simulators are booted, pass `--device <UDID>` (same as CI). After
    ```
    Use `--platform android` when both an iOS simulator and Android emulator are running.
 
+### Calls flows need a reachable RTC port
+
+`flows/calls/` joins a real WebRTC call, so the emulator must reach the server's Calls RTC
+port (UDP/TCP 8443) at an address the plugin advertises as an ICE candidate. If it cannot,
+ICE stays in `checking`, the app shows "unable to connect to the voice call: timed out
+waiting for peer connection", and the flow fails on `mute-unmute is visible`. Check
+`RTCPeer.signal` candidates and `ICE connection state` lines in the device logcat.
+
+For a local Docker server on the emulator's host, advertise the host alias. The container must
+expose the RTC port (`--network host`, or `-p 8443:8443/udp -p 8443:8443/tcp`) and run with
+`MM_SERVICESETTINGS_ENABLELOCALMODE=true` for `mmctl --local`. The patch replaces the Calls
+settings map, so merge the current settings into it. Those settings can hold secrets, so the
+patch is piped rather than written to a file:
+
+```bash
+set_calls_ice_host() {
+  docker exec <container> mmctl --local config show --json \
+    | jq --arg host "$1" '{PluginSettings: {Plugins: {"com.mattermost.calls": ((.PluginSettings.Plugins["com.mattermost.calls"] // {}) + {icehostoverride: $host})}}}' \
+    | docker exec -i <container> mmctl --local config patch /dev/stdin
+  docker exec <container> mmctl --local plugin disable com.mattermost.calls
+  docker exec <container> mmctl --local plugin enable com.mattermost.calls
+}
+
+PREVIOUS_ICE_HOST=$(docker exec <container> mmctl --local config show --json \
+  | jq -r '.PluginSettings.Plugins["com.mattermost.calls"].icehostoverride // ""')
+set_calls_ice_host 10.0.2.2
+# ... run the calls flows ...
+set_calls_ice_host "$PREVIOUS_ICE_HOST"
+```
+
 ---
 
 ## Sub-flow Conventions
