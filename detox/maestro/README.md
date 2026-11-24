@@ -341,10 +341,14 @@ ICE stays in `checking`, the app shows "unable to connect to the voice call: tim
 waiting for peer connection", and the flow fails on `mute-unmute is visible`. Check
 `RTCPeer.signal` candidates and `ICE connection state` lines in the device logcat.
 
-For a local Docker server on the emulator's host, advertise the host alias:
+For a local Docker server on the emulator's host, advertise the host alias. The container must
+expose the RTC port (`--network host`, or `-p 8443:8443/udp -p 8443:8443/tcp`) and run with
+`MM_SERVICESETTINGS_ENABLELOCALMODE=true` for `mmctl --local`. The patch replaces the Calls
+settings map, so merge the current settings into it:
 
 ```bash
-echo '{"PluginSettings":{"Plugins":{"com.mattermost.calls":{"icehostoverride":"10.0.2.2"}}}}' > calls.json
+docker exec <container> mmctl --local config show --json \
+  | jq '{PluginSettings: {Plugins: {"com.mattermost.calls": ((.PluginSettings.Plugins["com.mattermost.calls"] // {}) + {icehostoverride: "10.0.2.2"})}}}' > calls.json
 docker cp calls.json <container>:/tmp/calls.json
 docker exec <container> mmctl --local config patch /tmp/calls.json
 docker exec <container> mmctl --local plugin disable com.mattermost.calls
