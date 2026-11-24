@@ -13,6 +13,7 @@ import IntuneManager from '@managers/intune_manager';
 import {
     IntuneConditionalLaunchBlockedReasons,
     type IntuneAuthRequiredEvent,
+    type IntuneCompanyPortalRequiredEvent,
     type IntuneConditionalLaunchBlockedEvent,
     type IntuneEnrollmentChangedEvent,
     type IntuneIdentitySwitchRequiredEvent,
@@ -23,6 +24,8 @@ import {
 import TestHelper from '@test/test_helper';
 import * as alerts from '@utils/alerts';
 import {toMilliseconds} from '@utils/datetime';
+import {logError} from '@utils/log';
+import {tryOpenURL} from '@utils/url';
 
 import SecurityManager from './index';
 
@@ -57,6 +60,7 @@ jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
 }));
 jest.mock('@utils/datetime', () => ({toMilliseconds: jest.fn(() => 25000)}));
+jest.mock('@utils/url', () => ({...jest.requireActual('@utils/url'), tryOpenURL: jest.fn()}));
 jest.mock('@init/credentials', () => ({getServerCredentials: jest.fn().mockResolvedValue({token: 'token'})}));
 jest.mock('@database/manager', () => ({
     getActiveServerUrl: jest.fn(),
@@ -487,8 +491,12 @@ describe('SecurityManager - Event Handlers', () => {
         });
 
         describe('onIdentitySwitchRequired', () => {
-            test('should trigger wipe and show alert', async () => {
-                const showAlertSpy = jest.spyOn(alerts, 'showIdentitySwitchRequiredAlert').mockResolvedValue(undefined);
+            test('should apply blur screen and trigger wipe', async () => {
+                const showAlertSpy = jest.spyOn(alerts, 'showIdentitySwitchRequiredAlert').mockImplementation(async (_locale, callback) => {
+                    if (callback) {
+                        callback();
+                    }
+                });
                 const performWipeSpy = jest.spyOn(SecurityManager as any, 'performSelectiveWipe').mockResolvedValue(undefined);
 
                 const event: IntuneIdentitySwitchRequiredEvent = {
@@ -499,12 +507,56 @@ describe('SecurityManager - Event Handlers', () => {
 
                 await SecurityManager.onIdentitySwitchRequired(event);
 
+                expect(Emm.applyBlurEffect).toHaveBeenCalled();
                 expect(showAlertSpy).toHaveBeenCalled();
                 await TestHelper.wait(10);
                 expect(performWipeSpy).toHaveBeenCalledWith(serverUrl1, true);
+                expect(Emm.removeBlurEffect).toHaveBeenCalled();
 
                 showAlertSpy.mockRestore();
                 performWipeSpy.mockRestore();
+            });
+        });
+
+        describe('onCompanyPortalRequired', () => {
+            const event: IntuneCompanyPortalRequiredEvent = {oid: 'object-id', serverUrls: [serverUrl1]};
+
+            test('should exit the app once the Company Portal store page is opened', async () => {
+                const showAlertSpy = jest.spyOn(alerts, 'showCompanyPortalRequiredAlert').mockImplementation(async (_locale, goToStore) => {
+                    goToStore();
+                });
+                jest.mocked(tryOpenURL).mockImplementation((_url, _onError, onSuccess) => {
+                    onSuccess?.();
+                });
+
+                SecurityManager.onCompanyPortalRequired(event);
+                await TestHelper.wait(600);
+
+                expect(tryOpenURL).toHaveBeenCalled();
+                expect(Emm.exitApp).toHaveBeenCalled();
+
+                showAlertSpy.mockRestore();
+            });
+
+            test('should show the prompt again when the Company Portal store page cannot be opened', async () => {
+                const showAlertSpy = jest.spyOn(alerts, 'showCompanyPortalRequiredAlert').
+                    mockImplementationOnce(async (_locale, goToStore) => {
+                        goToStore();
+                    }).
+                    mockImplementation(async () => undefined);
+                const openError = new Error('cannot open');
+                jest.mocked(tryOpenURL).mockImplementation((_url, onError) => {
+                    onError?.(openError);
+                });
+
+                SecurityManager.onCompanyPortalRequired(event);
+                await TestHelper.wait(600);
+
+                expect(logError).toHaveBeenCalledWith('SecurityManager: Could not open Company Portal', openError);
+                expect(showAlertSpy).toHaveBeenCalledTimes(2);
+                expect(Emm.exitApp).not.toHaveBeenCalled();
+
+                showAlertSpy.mockRestore();
             });
         });
 

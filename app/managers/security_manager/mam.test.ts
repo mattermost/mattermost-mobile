@@ -474,7 +474,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
             jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
             jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
             jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
-            jest.mocked(IntuneManager.enrollServer).mockReturnValue(undefined);
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue('enrolled');
 
             const showAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
                 // User accepts enrollment
@@ -485,7 +485,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(true);
             expect(IntuneManager.login).toHaveBeenCalledWith(serverUrl, [mockConfig.IntuneScope]);
-            expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
             expect(Emm.removeBlurEffect).toHaveBeenCalled();
             expect(SecurityManager.isEnrolling).toBe(false);
 
@@ -496,7 +496,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
             jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
             jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
             jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
-            jest.mocked(IntuneManager.enrollServer).mockReturnValue(undefined);
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue('enrolled');
 
             const showAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
                 onAccept();
@@ -526,9 +526,79 @@ describe('SecurityManager - Intune MAM Integration', () => {
             const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
 
             expect(result).toBe(false);
-            expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function));
-            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: true});
+            expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), expect.any(Function));
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
             expect(logError).toHaveBeenCalled();
+
+            enrollmentAlertSpy.mockRestore();
+            failedAlertSpy.mockRestore();
+        });
+
+        test.each(['not_protected', 'not_licensed'] as const)('should end the session without a retry when enrollment ends as %s', async (outcome) => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue(outcome);
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            const failedAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentFailedAlert').mockImplementation(async (_locale, onDismiss) => {
+                onDismiss?.();
+            });
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(false);
+            expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), undefined, outcome);
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
+            expect(SecurityManager.isEnrolling).toBe(false);
+
+            enrollmentAlertSpy.mockRestore();
+            failedAlertSpy.mockRestore();
+        });
+
+        test('should treat a protection policy required login error as a denial', async () => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.login).mockRejectedValue({userInfo: {domain: 'Intune', code: 1004, reason: 'not_compliant'}});
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            const failedAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentFailedAlert').mockImplementation(async (_locale, onDismiss) => {
+                onDismiss?.();
+            });
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(false);
+            expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), undefined, 'not_protected');
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
+
+            enrollmentAlertSpy.mockRestore();
+            failedAlertSpy.mockRestore();
+        });
+
+        test.each(['failed', 'timeout'] as const)('should offer a retry and keep the session when enrollment ends as %s', async (outcome) => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValueOnce(outcome).mockResolvedValueOnce('enrolled');
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            const failedAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentFailedAlert').mockImplementation(async (_locale, _onDismiss, onRetry) => {
+                onRetry?.();
+            });
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(true);
+            expect(failedAlertSpy).toHaveBeenCalledTimes(1);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledTimes(2);
+            expect(logout).not.toHaveBeenCalled();
 
             enrollmentAlertSpy.mockRestore();
             failedAlertSpy.mockRestore();
@@ -585,7 +655,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
             jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
             jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
             jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
-            jest.mocked(IntuneManager.enrollServer).mockReturnValue(undefined);
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue('enrolled');
 
             const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, _onAccept, onCancel) => {
                 // User cancels first
@@ -600,7 +670,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(true);
             expect(IntuneManager.login).toHaveBeenCalled();
-            expect(IntuneManager.enrollServer).toHaveBeenCalled();
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalled();
 
             enrollmentAlertSpy.mockRestore();
             declinedAlertSpy.mockRestore();
@@ -610,7 +680,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
             jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
             jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
             jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
-            jest.mocked(IntuneManager.enrollServer).mockReturnValue(undefined);
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue('enrolled');
 
             const showAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
                 onAccept();

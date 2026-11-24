@@ -9,6 +9,7 @@ import {Platform, type EventSubscription} from 'react-native';
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getConfig, getLicense} from '@queries/servers/system';
+import {showBiometricFailureAlertForOrganization} from '@utils/alerts';
 import {isMinimumLicenseTier} from '@utils/helpers';
 
 import IntuneManager from './index';
@@ -149,16 +150,137 @@ describe('IntuneManager', () => {
         });
     });
 
+    describe('enrollAndWait', () => {
+        const mockIdentity: MSALIdentity = {
+            upn: 'user@example.com',
+            tid: 'tenant_id',
+            oid: 'object_id',
+        };
+        const mockPolicy = {} as IntunePolicy;
+        let emit: (event: {enrolled: boolean; oid: string; serverUrls: string[]; reason?: string}) => void;
+        let remove: jest.Mock;
+
+        beforeEach(() => {
+            remove = jest.fn();
+            jest.mocked(Intune.enrollInMAM).mockReset();
+            jest.mocked(Intune.getPolicy).mockReset();
+            jest.mocked(Intune.onIntuneEnrollmentChanged).mockImplementation((handler: typeof emit) => {
+                emit = handler;
+                return {remove};
+            });
+        });
+
+        afterEach(() => {
+            jest.mocked(Intune.getPolicy).mockReset().mockResolvedValue(null);
+            jest.mocked(Intune.onIntuneEnrollmentChanged).mockReset().mockImplementation(() => ({remove: jest.fn()}));
+        });
+
+        it('subscribes before enrolling', async () => {
+            const calls: string[] = [];
+            jest.mocked(Intune.onIntuneEnrollmentChanged).mockImplementation((handler: typeof emit) => {
+                calls.push('subscribe');
+                emit = handler;
+                return {remove};
+            });
+            jest.mocked(Intune.enrollInMAM).mockImplementation(() => calls.push('enroll'));
+
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+
+            expect(calls).toEqual(['subscribe', 'enroll']);
+
+            emit({enrolled: false, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'failed'});
+            await promise;
+        });
+
+        it('resolves enrolled when enrollment succeeds with a policy', async () => {
+            jest.mocked(Intune.getPolicy).mockReturnValue(mockPolicy);
+
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: true, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'success'});
+
+            await expect(promise).resolves.toBe('enrolled');
+            expect(remove).toHaveBeenCalled();
+        });
+
+        it('resolves not_protected when enrollment succeeds without a policy', async () => {
+            jest.mocked(Intune.getPolicy).mockReturnValue(null);
+
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: true, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'success'});
+
+            await expect(promise).resolves.toBe('not_protected');
+        });
+
+        it('resolves not_licensed when the account is not licensed', async () => {
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: false, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'not_licensed'});
+
+            await expect(promise).resolves.toBe('not_licensed');
+        });
+
+        it.each(['not_targeted', 'licensed_not_targeted'])('resolves not_protected when the account is %s', async (reason) => {
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: false, oid: mockIdentity.oid, serverUrls: [serverUrl], reason});
+
+            await expect(promise).resolves.toBe('not_protected');
+        });
+
+        it('resolves failed when enrollment fails', async () => {
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: false, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'failed'});
+
+            await expect(promise).resolves.toBe('failed');
+        });
+
+        it('matches the event by oid when the server urls are empty', async () => {
+            jest.mocked(Intune.getPolicy).mockReturnValue(mockPolicy);
+
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: true, oid: mockIdentity.oid, serverUrls: [], reason: 'success'});
+
+            await expect(promise).resolves.toBe('enrolled');
+        });
+
+        it('ignores events for another account and unenroll events', async () => {
+            jest.mocked(Intune.getPolicy).mockReturnValue(mockPolicy);
+
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: false, oid: 'other_oid', serverUrls: ['https://other.example.com'], reason: 'not_licensed'});
+            emit({enrolled: false, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'unenrolled'});
+            emit({enrolled: true, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'success'});
+
+            await expect(promise).resolves.toBe('enrolled');
+        });
+
+        it('resolves timeout when no outcome arrives', async () => {
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity, 20);
+
+            await expect(promise).resolves.toBe('timeout');
+            expect(remove).toHaveBeenCalled();
+        });
+
+        it('resolves only once', async () => {
+            jest.mocked(Intune.getPolicy).mockReturnValue(mockPolicy);
+
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity, 5000);
+            emit({enrolled: true, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'success'});
+            emit({enrolled: false, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'not_licensed'});
+
+            await expect(promise).resolves.toBe('enrolled');
+            expect(remove).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('unenrollServer', () => {
-        it('should skip unenrollment when server not enrolled', async () => {
+        it('should still deregister a registered account that has no policy', async () => {
             jest.mocked(Intune.isManagedServer).mockReturnValue(false);
+            jest.mocked(Intune.deregisterAndUnenroll).mockResolvedValue();
 
             await IntuneManager.unenrollServer(serverUrl, false);
-            expect(jest.mocked(Intune.deregisterAndUnenroll)).not.toHaveBeenCalled();
+            expect(jest.mocked(Intune.deregisterAndUnenroll)).toHaveBeenCalledWith(serverUrl, false);
         });
 
         it('should clear current identity when unenrolling active server', async () => {
-            jest.mocked(Intune.isManagedServer).mockReturnValue(true);
             jest.mocked(Intune.setCurrentIdentity).mockResolvedValue();
             jest.mocked(Intune.deregisterAndUnenroll).mockResolvedValue();
 
@@ -226,6 +348,21 @@ describe('IntuneManager', () => {
 
             await IntuneManager.setCurrentIdentity(serverUrl);
             expect(jest.mocked(Intune.setCurrentIdentity)).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it.each([
+            [false, 0],
+            [true, 1],
+        ])('should show the biometric failure alert only for a managed server (managed: %s)', async (managed, calls) => {
+            mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'office365'} as ClientConfig);
+            mockedGetLicense.mockResolvedValue({} as ClientLicense);
+            mockedIsMinimumLicenseTier.mockReturnValue(true);
+            jest.mocked(Intune.isManagedServer).mockReturnValue(managed);
+            jest.mocked(Intune.setCurrentIdentity).mockRejectedValue(new Error('blocked'));
+            jest.mocked(showBiometricFailureAlertForOrganization).mockClear();
+
+            await IntuneManager.setCurrentIdentity(serverUrl);
+            expect(jest.mocked(showBiometricFailureAlertForOrganization)).toHaveBeenCalledTimes(calls);
         });
 
         it('should clear identity when server is not licensed', async () => {

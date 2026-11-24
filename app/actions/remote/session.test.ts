@@ -10,7 +10,9 @@ import {GLOBAL_IDENTIFIERS, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
+import {IntuneAccessDeniedError} from '@utils/intune_errors';
 import {logWarning} from '@utils/log';
 
 import {
@@ -69,6 +71,9 @@ jest.mock('@store/ephemeral_store', () => {
         ...original,
         getPushProxyVerificationState: mockGetPushProxyVerificationState,
         clearPendingPreauthSecret: jest.fn(),
+        getPendingPreauthSecret: jest.fn(),
+        setSilentLogout: jest.fn(),
+        clearSilentLogout: jest.fn(),
     };
 });
 
@@ -532,6 +537,7 @@ describe('Session Actions', () => {
             // Set up default implementations
             IntuneManager.login.mockResolvedValue(mockTokens);
             IntuneManager.enrollServer.mockReturnValue(undefined);
+            IntuneManager.enrollAndWait.mockResolvedValue('enrolled');
             IntuneManager.isManagedServer.mockReturnValue(false);
 
             mockClient.loginByIntune.mockReset().mockImplementation(() => Promise.resolve(user1));
@@ -550,7 +556,7 @@ describe('Session Actions', () => {
                 'apple_rn-v2:voip-token',
             );
             expect(mockClient.setCSRFToken).toHaveBeenCalledWith('csrfid');
-            expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
         });
 
         it('should handle 401 token expiration and retry with refreshed token', async () => {
@@ -642,7 +648,7 @@ describe('Session Actions', () => {
 
             expect(result.failed).toBe(false);
             expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
-            expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
         });
 
         it('should skip MAM enrollment if already managed', async () => {
@@ -652,7 +658,46 @@ describe('Session Actions', () => {
 
             expect(result.failed).toBe(false);
             expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
-            expect(IntuneManager.enrollServer).not.toHaveBeenCalled();
+            expect(IntuneManager.enrollAndWait).not.toHaveBeenCalled();
+        });
+
+        it.each(['not_protected', 'not_licensed'])('should end the session and fail with an access denied error when enrollment ends as %s', async (outcome) => {
+            IntuneManager.enrollAndWait.mockResolvedValue(outcome);
+            const mockEmit = jest.spyOn(DeviceEventEmitter, 'emit').mockImplementation(() => true);
+
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+            expect(result.failed).toBe(true);
+            expect(result.error).toBeInstanceOf(IntuneAccessDeniedError);
+            expect((result.error as IntuneAccessDeniedError).reason).toBe(outcome);
+            expect(mockEmit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl, removeServer: true});
+            expect(EphemeralStore.setSilentLogout).toHaveBeenCalledWith(serverUrl);
+            mockEmit.mockRestore();
+        });
+
+        it('should recreate the client when a previous blocked sign-in invalidated it', async () => {
+            const getClientSpy = jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(() => {
+                throw new Error(`${serverUrl} client not found`);
+            });
+            const createClientSpy = jest.spyOn(NetworkManager, 'createClient').mockResolvedValueOnce(mockClient as any);
+
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+            expect(createClientSpy).toHaveBeenCalledWith(serverUrl, undefined, undefined);
+            expect(result.failed).toBe(false);
+            getClientSpy.mockRestore();
+            createClientSpy.mockRestore();
+        });
+
+        it.each(['enrolled', 'failed', 'timeout'])('should keep the session when enrollment ends as %s', async (outcome) => {
+            IntuneManager.enrollAndWait.mockResolvedValue(outcome);
+            const mockEmit = jest.spyOn(DeviceEventEmitter, 'emit').mockImplementation(() => true);
+
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+            expect(result.failed).toBe(false);
+            expect(mockEmit).not.toHaveBeenCalledWith(Events.SERVER_LOGOUT, expect.anything());
+            mockEmit.mockRestore();
         });
 
         it('should handle generic server errors', async () => {

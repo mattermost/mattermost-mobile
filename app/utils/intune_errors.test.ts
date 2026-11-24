@@ -5,7 +5,7 @@ import {createIntl} from 'react-intl';
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
-import {getIntuneErrorMessage, isMSALUserCancellation} from './intune_errors';
+import {getIntuneErrorMessage, IntuneAccessDeniedError, isMSALUserCancellation, isProtectionPolicyRequired} from './intune_errors';
 
 const intl = createIntl({locale: DEFAULT_LOCALE, defaultLocale: DEFAULT_LOCALE, messages: getTranslations(DEFAULT_LOCALE)});
 
@@ -51,6 +51,26 @@ describe('isMSALUserCancellation', () => {
     it('should return false when code is a non-numeric string and message has no code pattern', () => {
         const error = {domain: 'MSALErrorDomain', code: 'intune_login_failed'};
         expect(isMSALUserCancellation(error)).toBe(false);
+    });
+});
+
+describe('isProtectionPolicyRequired', () => {
+    it('should be true for an Intune 1004 error with the not_compliant reason (Android userInfo shape)', () => {
+        expect(isProtectionPolicyRequired({userInfo: {domain: 'Intune', code: 1004, reason: 'not_compliant'}})).toBe(true);
+    });
+
+    it('should be true for an Intune 1004 error with the not_compliant reason (iOS shape)', () => {
+        expect(isProtectionPolicyRequired({domain: 'Intune', code: 1004, userInfo: {reason: 'not_compliant'}})).toBe(true);
+    });
+
+    it.each(['network_failure', 'service_failure', 'user_cancelled', undefined])('should be false for the %s reason', (reason) => {
+        expect(isProtectionPolicyRequired({domain: 'Intune', code: 1004, userInfo: {reason}})).toBe(false);
+    });
+
+    it('should be false for other errors', () => {
+        expect(isProtectionPolicyRequired({domain: 'MSALErrorDomain', code: -50005})).toBe(false);
+        expect(isProtectionPolicyRequired(new Error('x'))).toBe(false);
+        expect(isProtectionPolicyRequired(undefined)).toBe(false);
     });
 });
 
@@ -119,6 +139,18 @@ describe('getIntuneErrorMessage', () => {
         });
     });
 
+    describe('access denied (no app protection policy)', () => {
+        it('should return the not protected message', () => {
+            const message = getIntuneErrorMessage(new IntuneAccessDeniedError('not_protected'), intl);
+            expect(message).toBe('This app must be protected with an Intune policy before you can access company data. Please contact your IT help desk for more information.');
+        });
+
+        it('should return the not licensed message', () => {
+            const message = getIntuneErrorMessage(new IntuneAccessDeniedError('not_licensed'), intl);
+            expect(message).toBe('Your account is not licensed for Microsoft Intune. Please contact your IT help desk for more information.');
+        });
+    });
+
     describe('generic MSAL errors (MSALErrorDomain, code other than -50005)', () => {
         it('should return authFailed for a non-cancellation MSAL error with numeric code', () => {
             const error = {domain: 'MSALErrorDomain', code: -50004};
@@ -159,6 +191,28 @@ describe('getIntuneErrorMessage', () => {
 
         it('should return authFailed for an empty object without domain or message', () => {
             expect(getIntuneErrorMessage({}, intl)).toBe('Authentication failed. Please try again');
+        });
+    });
+
+    describe('Android rejections (domain and code in userInfo)', () => {
+        it('should detect MSAL user cancellation', () => {
+            const error = {code: 'intune_login_failed', message: 'Error in MSALErrorDomain (code: -50005)', userInfo: {domain: 'MSALErrorDomain', code: -50005}};
+            expect(isMSALUserCancellation(error)).toBe(true);
+            expect(getIntuneErrorMessage(error, intl)).toBe('Login was canceled. Please try again');
+        });
+
+        it('should return the SDK compliance message for code 1004', () => {
+            const error = {
+                code: 'intune_login_failed',
+                message: 'Error in Intune (code: 1004)',
+                userInfo: {domain: 'Intune', code: 1004, reason: 'not_compliant', errorTitle: 'Blocked', errorMessage: 'Install Company Portal.'},
+            };
+            expect(getIntuneErrorMessage(error, intl)).toBe('Install Company Portal.');
+        });
+
+        it('should return authFailed for other MSAL errors', () => {
+            const error = {code: 'intune_login_failed', message: 'Error in MSALErrorDomain (code: -50000)', userInfo: {domain: 'MSALErrorDomain', code: -50000}};
+            expect(getIntuneErrorMessage(error, intl)).toBe('Authentication failed. Please try again');
         });
     });
 });

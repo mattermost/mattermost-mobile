@@ -20,13 +20,13 @@ runs:
       env:
         # Manual escape hatch for build inputs that are NOT in the git tree and so
         # cannot be fingerprinted from it. BUMP THIS when any of these change:
-        #   - the build runner image / label (macos-26, ubuntu-latest-8-cores) or Xcode
+        #   - the build runner image / label (xcode-27, ubuntu-latest-8-cores) or Xcode
         #   - INTUNE_ENABLED in e2e-detox-pr.yml (switches the whole iOS build path)
         #   - the build commands inside e2e-detox-pr.yml itself
         # Mirror comments live next to those knobs in e2e-detox-pr.yml.
         # Bumping invalidates every cached binary, so the next run of each platform
         # rebuilds. Cheaper than shipping tests against a stale app.
-        CACHE_VERSION: '1'
+        CACHE_VERSION: '2'
         PLATFORM: ${{ inputs.platform }}
       run: |
         # Fingerprint = sha256 of git blob hashes for all binary-impacting paths

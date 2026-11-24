@@ -195,7 +195,7 @@
     "ios": "react-native run-ios",
     "ios-gems": "bundle install",
     "intune:disable": "./scripts/intune-disable.sh",
-    "intune:enable": "INTUNE_ENABLED=1 npm run intune:link && INTUNE_ENABLED=1 npm run pod-install",
+    "intune:enable": "INTUNE_ENABLED=1 npm run intune:link && rm -rf android/build/generated/autolinking && INTUNE_ENABLED=1 npm run pod-install",
     "intune:init": "./scripts/intune-init.sh",
     "intune:link": "npm install --install-links --no-save ./libraries/@mattermost/intune",
     "intune:status": "./scripts/intune-status.sh",
