@@ -321,6 +321,41 @@ describe('tsio-finalize-unstarted', () => {
             assert.ok(posted.every((p) => p.state === 'success' && p.description.startsWith('E2E/Override — ')));
         });
 
+        it('preserves mid-loop E2E/Override across lanes when a subsequent label check fails transiently', async () => {
+            const twoConfigs = {
+                'detox-ios': ALL_CONFIGS['detox-ios'],
+                'detox-ipad': ALL_CONFIGS['detox-ipad'],
+            };
+            const responses = [false, true, null];
+            let labelCalls = 0;
+            const posted = [];
+            const result = await finalizeUnstartedLanes({
+                token: 'tok',
+                repository: REPO,
+                sha: 'abc1234',
+                runId: RUN_ID,
+                runUrl: RUN_URL,
+                jobConfigs: twoConfigs,
+                upstreamResults: upstream,
+                e2eOverride: false,
+                prNumber: '10364',
+                readStatusesFn: async () => pendingRows(twoConfigs),
+                readOverrideFn: async () => {
+                    const value = responses[labelCalls];
+                    labelCalls += 1;
+                    return value;
+                },
+                createCommitStatusFn: async (_token, _repo, _sha, payload) => {
+                    posted.push(payload);
+                },
+            });
+
+            assert.equal(labelCalls, 3);
+            assert.equal(result.length, 2);
+            assert.deepEqual(posted.map((p) => p.context), ['e2e-test/detox-ios', 'e2e-test/detox-ipad']);
+            assert.ok(posted.every((p) => p.state === 'success' && p.description.startsWith('E2E/Override — ')));
+        });
+
         it('re-checks status and label before each POST and posts failure when un-overridden', async () => {
             let statusReads = 0;
             let labelReads = 0;

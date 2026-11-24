@@ -239,6 +239,7 @@ async function finalizeUnstartedLanes({
         if (prNumber) {
             const rechecked = await readOverrideFn({token, repository, prNumber});
             if (rechecked !== null) {
+                knownOverride = rechecked;
                 liveOverride = rechecked;
             }
         }
