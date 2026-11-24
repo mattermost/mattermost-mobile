@@ -17,6 +17,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import useNotificationProps from '@hooks/notification_props';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -100,7 +101,7 @@ const NotificationCall = ({currentUser}: Props) => {
 
     useBackNavigation(saveNotificationSettings);
 
-    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_CALL, saveNotificationSettings);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_CALL, navigateBack);
 
     return (
         <SettingContainer testID='call_notification_settings'>

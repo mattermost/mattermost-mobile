@@ -14,7 +14,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useInitialValue from '@hooks/initial_value';
 import useBackNavigation from '@hooks/navigate_back';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {navigateToSettingsScreen} from '@screens/navigation';
+import {navigateBack, navigateToSettingsScreen} from '@screens/navigation';
 import SettingsStore from '@store/settings_store';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
@@ -80,7 +80,7 @@ const DisplayTimezone = ({currentUser}: DisplayTimezoneProps) => {
 
     useBackNavigation(saveTimezone);
 
-    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_TIMEZONE, saveTimezone);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_TIMEZONE, navigateBack);
 
     const toggleDesc = useMemo(() => {
         if (userTimezone.useAutomaticTimezone) {

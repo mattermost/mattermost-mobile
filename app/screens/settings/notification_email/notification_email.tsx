@@ -18,6 +18,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useInitialValue from '@hooks/initial_value';
 import useBackNavigation from '@hooks/navigate_back';
 import useNotificationProps from '@hooks/notification_props';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getEmailInterval} from '@utils/user';
@@ -109,7 +110,7 @@ const NotificationEmail = ({currentUser, emailInterval, enableEmailBatching, isC
         }
     }, [currentUser?.id, notifyInterval, initialInterval, emailThreads, initialEmailThreads, serverUrl, notifyProps, sendEmailNotifications, isCRTEnabled]);
 
-    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_EMAIL, saveEmail);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_EMAIL, navigateBack);
 
     useBackNavigation(saveEmail);
 

@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
@@ -80,7 +81,7 @@ const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps
 
     useBackNavigation(saveAutoResponder);
 
-    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER, saveAutoResponder);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER, navigateBack);
 
     return (
         <SettingContainer testID='auto_responder_notification_settings'>

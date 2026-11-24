@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
 import ReplySettings from '@screens/settings/notification_mention/reply_settings';
 import {areBothStringArraysEqual} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -201,7 +202,7 @@ const MentionSettings = ({currentUser, isCRTEnabled}: Props) => {
     }, [mentionKeywords]);
 
     useBackNavigation(saveMention);
-    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_MENTION, saveMention);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_MENTION, navigateBack);
 
     return (
         <KeyboardAwareScrollView
