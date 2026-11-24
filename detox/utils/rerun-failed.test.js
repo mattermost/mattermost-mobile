@@ -4,12 +4,13 @@
 // CI util unit tests: run with `node --test detox/utils/rerun-failed.test.js`.
 
 const assert = require('node:assert/strict');
+const {execFileSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const {describe, it} = require('node:test');
 
-const {MAX_SPECS_PER_LANE, planRerun, mainInputs, cmtMatrices, loadRerunResults} = require('./rerun-failed');
+const {MAX_SPECS_PER_LANE, differsFrom, planRerun, mainInputs, cmtMatrices, loadRerunResults} = require('./rerun-failed');
 
 const row = (title, file, cls = 'REGRESSION', label = 'needs investigation') => ({title, full_title: title, file, class: cls, label});
 
@@ -143,6 +144,33 @@ describe('rerun-failed', () => {
             });
             assert.deepEqual(loadRerunResults(path.join(dir, 'missing')), {});
         } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+
+    it('differsFrom compares two explicit refs so main checkout still detects release-branch stale specs', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'differs-'));
+        const prev = process.cwd();
+        try {
+            const git = (...args) => execFileSync('git', args, {cwd: dir, encoding: 'utf8'}).trim();
+            git('init');
+            git('config', 'user.email', 'test@example.com');
+            git('config', 'user.name', 'Test');
+            fs.writeFileSync(path.join(dir, 'a.ts'), 'v1\n');
+            fs.writeFileSync(path.join(dir, 'b.ts'), 'same\n');
+            git('add', '.');
+            git('commit', '-m', 'release');
+            const releaseSha = git('rev-parse', 'HEAD');
+            fs.writeFileSync(path.join(dir, 'a.ts'), 'v2\n');
+            git('add', 'a.ts');
+            git('commit', '-m', 'main');
+            const mainSha = git('rev-parse', 'HEAD');
+            process.chdir(dir);
+            const isStale = differsFrom(mainSha, releaseSha);
+            assert.equal(isStale('a.ts'), true, 'file changed on main since release commit');
+            assert.equal(isStale('b.ts'), false, 'unchanged file is not stale');
+        } finally {
+            process.chdir(prev);
             fs.rmSync(dir, {recursive: true, force: true});
         }
     });

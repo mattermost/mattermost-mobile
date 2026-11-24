@@ -3,6 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {hasUnverifiedAttachmentPostsInThread} from '@actions/local/post';
 import {
     RedactionInvalidationReason,
     invalidateChannelsRedaction,
@@ -10,7 +11,7 @@ import {
     type RedactionReason,
 } from '@actions/local/redaction';
 import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
-import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
+import {fetchPostThread, fetchPostsForChannel} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
 import {DOWNLOAD_FILE_ATTACHMENT_ACTION, RenderPermissionAction} from '@constants/access_control';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
@@ -95,7 +96,11 @@ const closeFileViewersIfAffected = async (serverUrl: string, channelIds?: Set<st
     }
 };
 
-const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string>) => {
+/**
+ * @param forceReverification fetches the newest page even when no stored post with attachments is
+ * behind its epoch, for callers whose epoch write failed and so could not mark cached posts as stale.
+ */
+const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string>, forceReverification = false) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -107,21 +112,25 @@ const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string
 
         const currentChannelId = await getCurrentChannelId(database);
         if (currentChannelId && (!channelIds || channelIds.has(currentChannelId))) {
-            const {error} = await refetchPostsForRedaction(serverUrl, currentChannelId);
+            const {error} = await fetchPostsForChannel(serverUrl, currentChannelId, false, false, undefined, forceReverification);
             if (error) {
                 logError('refreshVisibleSurfaces: failed to re-fetch channel posts', currentChannelId, getFullErrorMessage(error));
             }
         }
 
-        // No fromCreateAt: an incremental thread fetch cannot re-deliver replies whose only change
-        // was their redaction state. A thread lives in one channel, so a scoped change elsewhere
-        // leaves it alone.
+        // A thread lives in one channel, so a scoped change elsewhere leaves it alone. When it is
+        // affected, only a full page re-delivers replies whose only change was their redaction state,
+        // and only replies with attachments render differently once re-verified.
         const threadId = EphemeralStore.getCurrentThreadId();
         const threadRoot = threadId && channelIds ? await getPostById(database, threadId) : undefined;
         if (threadId && (!channelIds || !threadRoot || channelIds.has(threadRoot.channelId))) {
-            const {error} = await fetchPostThread(serverUrl, threadId);
-            if (error) {
-                logError('refreshVisibleSurfaces: failed to re-fetch thread posts', getFullErrorMessage(error));
+            if (forceReverification || await hasUnverifiedAttachmentPostsInThread(database, threadId)) {
+                const {error} = await fetchPostThread(serverUrl, threadId);
+                if (error) {
+                    logError('refreshVisibleSurfaces: failed to re-fetch thread posts', getFullErrorMessage(error));
+                }
+            } else {
+                logDebug('refreshVisibleSurfaces: thread has no unverified attachments, skipping', threadId);
             }
         }
     } catch (error) {
@@ -147,7 +156,7 @@ const scheduleAttributeViewRetry = (serverUrl: string) => {
             const next = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.AttributeViewRetry);
             logDebug('scheduleAttributeViewRetry: re-evaluated after the server attribute view refresh window', String(next));
             await closeFileViewersIfAffected(serverUrl);
-            await refreshVisibleSurfaces(serverUrl);
+            await refreshVisibleSurfaces(serverUrl, undefined, next === undefined);
         } catch (error) {
             logError('scheduleAttributeViewRetry', getFullErrorMessage(error));
         }
@@ -415,18 +424,21 @@ export const invalidateRedactionForChannelMembership = (serverUrl: string, chann
  * Raised even while ABAC is not enforced: it may have been turned off while events were lost, and a
  * denial cached before that is only re-checked once it is behind the epoch. It costs one write; with
  * enforcement off nothing without a cached denial is gated.
+ * @returns whether the epoch was raised; when it was not, cached posts were not marked as stale.
  */
-export const invalidateRedactionOnResync = async (serverUrl: string) => {
+export const invalidateRedactionOnResync = async (serverUrl: string): Promise<boolean> => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.Resync);
+        const epoch = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.Resync);
 
         // A viewer left open across a long background can hold attachments the missed events revoked.
         if (await isRedactionEnforced(database)) {
             await closeFileViewersIfAffected(serverUrl);
         }
+        return epoch !== undefined;
     } catch (error) {
         logError('invalidateRedactionOnResync', getFullErrorMessage(error));
+        return false;
     }
 };
 

@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {isIos, isOptionalElementPresent, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+import {logDebug} from '../../../../provision/log';
 
 class ThreadOptionsScreen {
     testID = {
@@ -48,6 +50,9 @@ class ThreadOptionsScreen {
 
     // Same gorhom+Reanimated path as PostOptionsScreen.tapSheetRowIos: center taps miss
     // the Save row on iOS 26, and Detox sync never idles so waitFor cannot see dismiss.
+    // A tap that landed can still outlast the first wait on a loaded runner (one probe took
+    // 4.5s in e0f851d), so the row is tapped again only while it is still there; re-tapping a
+    // row the closing sheet already removed fails with "No elements found".
     private tapSheetRowIos = async (option: Detox.NativeElement) => {
         await withSynchronizationDisabled(async () => {
             await waitForElementToExist(this.threadOptionsScreen, timeouts.TEN_SEC);
@@ -55,10 +60,16 @@ class ThreadOptionsScreen {
             await option.tap({x: 1, y: 1});
             try {
                 await waitForElementToNotExist(this.threadOptionsScreen, timeouts.FIVE_SEC);
-            } catch {
-                await option.tap({x: 1, y: 1});
-                await waitForElementToNotExist(this.threadOptionsScreen, timeouts.FIVE_SEC);
+                return;
+            } catch (error) {
+                if (!(await isOptionalElementPresent(option))) {
+                    await waitForElementToNotExist(this.threadOptionsScreen, timeouts.FIVE_SEC);
+                    return;
+                }
+                logDebug(`ThreadOptionsScreen.tapSheetRowIos: sheet still open with the row, tapping again: ${(error as Error).message}`);
             }
+            await option.tap({x: 1, y: 1});
+            await waitForElementToNotExist(this.threadOptionsScreen, timeouts.FIVE_SEC);
         });
     };
 

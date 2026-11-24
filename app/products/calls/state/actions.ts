@@ -366,6 +366,16 @@ export const stopRingback = () => {
     }
 };
 
+export const phoneCallAnswered = (channelId: string) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId !== channelId || currentCall.dmCalleeAnsweredAt) {
+        return;
+    }
+
+    setCurrentCall({...currentCall, dmCalleeAnsweredAt: Date.now()});
+    stopRingback();
+};
+
 const stopRingbackIfAnswered = (call: CurrentCall) => {
     if (hasOtherUserJoined(call.sessions, call.myUserId)) {
         stopRingback();
@@ -387,7 +397,8 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         return;
     }
 
-    if (!getCallsConfig(serverUrl).EnableRinging) {
+    // The tone is the caller's only sign that the phone is ringing, so it plays whatever EnableRinging says.
+    if (!currentCall.phone && !getCallsConfig(serverUrl).EnableRinging) {
         return;
     }
 
@@ -416,7 +427,8 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
     // The callee's phone rings from the moment the call is placed, so the tone gets the remainder
     // of that window rather than a full timeout from whenever the media connection came up. Once
     // the window is gone there's nothing left to play.
-    const remaining = Calls.RINGBACK_TONE_TIMEOUT - (Date.now() - ringbackWindowStartedAt);
+    const timeout = latestCall.phone ? Calls.PHONE_RINGBACK_TONE_TIMEOUT : Calls.RINGBACK_TONE_TIMEOUT;
+    const remaining = timeout - (Date.now() - ringbackWindowStartedAt);
     if (remaining <= 0) {
         return;
     }

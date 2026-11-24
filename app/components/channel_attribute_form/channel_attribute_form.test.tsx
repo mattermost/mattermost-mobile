@@ -48,8 +48,7 @@ const render = (
     />,
 );
 
-// The sheet renders in its own route, so what it was handed is inspected here,
-// mirroring the pattern in channel_info_attributes.test.tsx.
+// The sheet renders in its own route, so tests read the props it was handed.
 const sheetProps = () => (mockedBottomSheet.mock.calls[mockedBottomSheet.mock.calls.length - 1][0]() as ReactElement<ComponentProps<typeof ChannelAttributeEditor>>).props;
 
 beforeEach(() => {

@@ -5,9 +5,9 @@
 /* eslint-disable max-lines */
 
 import {deletePostsForChannel, markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
+import {addPostAcknowledgement, batchRecordsAndDeleteRevokedFiles, hasUnverifiedAttachmentPosts, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {captureRedactionEpoch, getRequiredRedactionEpoch} from '@actions/local/redaction';
+import {captureRedactionEpoch} from '@actions/local/redaction';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
@@ -17,9 +17,9 @@ import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {getFilesByIds, queryFilesForPost, queryFilesForPosts} from '@queries/servers/file';
+import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
-import {getCurrentUserId, isRedactionEnforced} from '@queries/servers/system';
+import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -31,14 +31,13 @@ import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {hasArrayChanged} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
-import {isPostPendingOrFailed, isPostRedactionVerified, processPostsFetched} from '@utils/post';
+import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {processChannelPostsByTeam} from './post.auxiliary';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
-import type {Database} from '@nozbe/watermelondb';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -129,7 +128,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...filesModels);
     }
 
-    const postModels = await operator.handlePosts({
+    const {models: postModels} = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [databasePost.id],
         posts: [databasePost],
@@ -181,7 +180,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         )) {
             await removePost(serverUrl, databasePost);
         } else {
-            const models = await operator.handlePosts({
+            const {models} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [errorPost.id],
                 posts: [errorPost],
@@ -199,7 +198,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         return {data: true};
     }
 
-    const models = await operator.handlePosts({
+    const {models} = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [created.id],
         posts: [created],
@@ -268,7 +267,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
 
         const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
         const created = await client.createPost(newPost);
-        const models = await operator.handlePosts({
+        const {models} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [created.id],
             posts: [created],
@@ -308,43 +307,16 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
     return {};
 };
 
-const hasPermalinkEmbed = (post: PostModel) => Boolean(post.metadata?.embeds?.some((embed) => embed.type === 'permalink'));
-
-/**
- * A policy or attribute change while the user was elsewhere leaves cached posts behind the epoch
- * they now must satisfy. Read from the stored posts rather than remembered, so it survives a restart.
- *
- * Only the newest page counts, because that is all the re-verification page can re-stamp; older
- * posts are revalidated one by one when they come on screen. Within it, only posts whose rendering
- * depends on the decision count: a text-only or pending post is never re-stamped by anything, so
- * counting it would page the channel again on every visit.
- */
-const hasUnverifiedPosts = async (database: Database, channelId: string, posts: PostModel[]) => {
-    if (!posts.length || !(await isRedactionEnforced(database))) {
-        return false;
-    }
-    const requiredEpoch = await getRequiredRedactionEpoch(database, channelId);
-    const unverified = posts.slice(0, General.POST_CHUNK_SIZE).filter((p) => !isPostPendingOrFailed(p) && !isPostRedactionVerified(p.redactionVerifiedEpoch, requiredEpoch));
-    if (!unverified.length) {
-        return false;
-    }
-    if (unverified.some((p) => (p.metadata?.redacted_file_count ?? 0) > 0 || hasPermalinkEmbed(p))) {
-        return true;
-    }
-    const files = await queryFilesForPosts(database, unverified.map((p) => p.id)).fetch();
-    return files.length > 0;
-};
-
 /**
  * Fetches posts for a channel, incrementally when the channel already has posts.
  *
  * GetPostsSince filters on UpdateAt, which an ABAC change never moves, so only a page fetch can
  * re-verify posts we already hold. But only a since-fetch carries deletions and edits, so when both
  * are needed the since-fetch still runs and a page follows it, rather than replacing it.
- * @param ignoreSince re-verifies the newest page even when no stored post is behind its epoch, for
- * callers that know a decision just changed (see refetchPostsForRedaction).
+ * @param forceReverification fetches the newest page after the since-fetch even when no stored post
+ * with attachments is behind its epoch, for callers that could not mark the cached posts as stale.
  */
-export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false, skipAuthors = false, groupLabel?: RequestGroupLabel, ignoreSince = false): Promise<PostsForChannel> {
+export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false, skipAuthors = false, groupLabel?: RequestGroupLabel, forceReverification = false): Promise<PostsForChannel> {
     try {
         if (!fetchOnly) {
             EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
@@ -356,7 +328,7 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         const postsInChannel = await getRecentPostsInChannel(database, channelId);
 
         const since = myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0;
-        const needsReverification = Boolean(since) && (ignoreSince || await hasUnverifiedPosts(database, channelId, postsInChannel));
+        const needsReverification = Boolean(since) && (forceReverification || await hasUnverifiedAttachmentPosts(database, channelId, postsInChannel.slice(0, General.POST_CHUNK_SIZE)));
         if (since) {
             postAction = fetchPostsSince(serverUrl, channelId, since, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_SINCE;
@@ -423,23 +395,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
         }
     }
-}
-
-/**
- * Re-fetches a channel's posts after an ABAC file-access decision may have changed.
- *
- * A since-fetch alone cannot do it: GetPostsSince filters on `UpdateAt > since`, and a
- * policy or user-attribute change modifies no post row, so the affected posts are never
- * returned. Only a page fetch re-runs SanitizePostListMetadataForUser over posts we already
- * hold, which is what refreshes `redacted_file_count`; the since-fetch still runs first so
- * deletions and edits are not skipped.
- *
- * Note this re-verifies the newest POST_CHUNK_SIZE posts only: older cached posts stay behind
- * the required epoch, so they render neither files nor the redacted placeholder until they
- * scroll into view and RedactionRevalidationManager fetches them one by one.
- */
-export async function refetchPostsForRedaction(serverUrl: string, channelId: string, groupLabel?: RequestGroupLabel) {
-    return fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel, true);
 }
 
 /**
@@ -552,7 +507,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled, groupLabel);
         const result = processPostsFetched(data);
         if (!fetchOnly && result.posts.length) {
-            const models = await operator.handlePosts({
+            const {models, revokedFiles} = await operator.handlePosts({
                 ...result,
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 prepareRecordsOnly: true,
@@ -576,7 +531,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
             }
 
             if (models.length) {
-                await operator.batchRecords(models, 'fetchPosts');
+                await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchPosts');
             }
         }
         return {...result, redactionVerifiedEpoch};
@@ -604,7 +559,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
         const result = processPostsFetched(data);
         if (result.posts.length && !fetchOnly) {
             try {
-                const models = await operator.handlePosts({
+                const {models, revokedFiles} = await operator.handlePosts({
                     actionType: ActionType.POSTS.RECEIVED_BEFORE,
                     ...result,
                     prepareRecordsOnly: true,
@@ -626,7 +581,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
                     }
                 }
 
-                await operator.batchRecords(models, 'fetchPostsBefore');
+                await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchPostsBefore');
             } catch (error) {
                 logError('FETCH POSTS BEFORE ERROR', error);
             }
@@ -666,7 +621,7 @@ export async function revalidatePostsBefore(serverUrl: string, channelId: string
             return {};
         }
 
-        const models = await operator.handlePosts({
+        const {models, revokedFiles} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_BEFORE,
             ...result,
             prepareRecordsOnly: true,
@@ -677,7 +632,7 @@ export async function revalidatePostsBefore(serverUrl: string, channelId: string
         if (authors?.length) {
             models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
         }
-        await operator.batchRecords(models, 'revalidatePostsBefore');
+        await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'revalidatePostsBefore');
 
         return {oldestCreateAt: Math.min(...result.posts.map((p) => p.create_at))};
     } catch (error) {
@@ -700,7 +655,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled, groupLabel);
         const result = processPostsFetched(data);
         if (!fetchOnly) {
-            const models = await operator.handlePosts({
+            const {models, revokedFiles} = await operator.handlePosts({
                 ...result,
                 actionType: ActionType.POSTS.RECEIVED_SINCE,
                 prepareRecordsOnly: true,
@@ -722,7 +677,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models, 'fetchPostsSince');
+            await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchPostsSince');
         }
         return {...result, redactionVerifiedEpoch};
     } catch (error) {
@@ -816,16 +771,13 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
             ...options,
         }, groupLabel);
         const result = processPostsFetched(data);
-        let posts: Model[] = [];
         if (result.posts.length && !fetchOnly) {
-            const models: Model[] = [];
-            posts = await operator.handlePosts({
+            const {models, revokedFiles} = await operator.handlePosts({
                 ...result,
                 actionType: ActionType.POSTS.RECEIVED_IN_THREAD,
                 prepareRecordsOnly: true,
                 redactionVerifiedEpoch,
             });
-            models.push(...posts);
 
             const {authors} = await fetchPostAuthors(serverUrl, result.posts, true, groupLabel);
             if (authors?.length) {
@@ -842,7 +794,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models, 'fetchPostThread');
+            await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchPostThread');
         }
         setFetchingThreadState(postId, false);
         return {posts: result.posts, redactionVerifiedEpoch};
@@ -880,7 +832,6 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
         };
 
         const data = processPostsFetched(preData);
-        let posts: Model[] = [];
         const models: Model[] = [];
         if (data.posts?.length) {
             try {
@@ -896,14 +847,14 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
                 logError('FETCH AUTHORS ERROR', error);
             }
 
-            posts = await operator.handlePosts({
+            const {models: postModels, revokedFiles} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_AROUND,
                 ...data,
                 prepareRecordsOnly: true,
                 redactionVerifiedEpoch,
             });
 
-            models.push(...posts);
+            models.push(...postModels);
 
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, data.posts, false);
@@ -911,7 +862,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models, 'fetchPostsAround');
+            await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchPostsAround');
         }
 
         return {posts: data.posts, redactionVerifiedEpoch};
@@ -1000,7 +951,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
         if (!fetchOnly) {
             const models: Model[] = [];
             const {authors} = await fetchPostAuthors(serverUrl, [post], true, groupLabel);
-            const posts = await operator.handlePosts({
+            const {models: postModels, revokedFiles} = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [post.id],
                 posts: [post],
@@ -1008,7 +959,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
                 skipPostsInChannel,
                 redactionVerifiedEpoch,
             });
-            models.push(...posts);
+            models.push(...postModels);
 
             if (authors?.length) {
                 const users = await operator.handleUsers({
@@ -1026,7 +977,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
                 }
             }
 
-            await operator.batchRecords(models, 'fetchPostById');
+            await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchPostById');
         }
 
         return {post, redactionVerifiedEpoch};
@@ -1214,12 +1165,13 @@ export const revealBoRPost = async (serverUrl: string, postId: string) => {
         }
 
         const revealedPost = await client.revealBoRPost(postId);
-        await operator.handlePosts({
+        const {models, revokedFiles} = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [revealedPost.id],
             posts: [revealedPost],
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
         });
+        await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'revealBoRPost');
 
         return {post};
     } catch (error) {
@@ -1270,16 +1222,14 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
             }
         }
 
-        promises.push(
-            operator.handlePosts({
-                actionType: '',
-                order: [],
-                posts: postsArray,
-                previousPostId: '',
-                prepareRecordsOnly: true,
-                redactionVerifiedEpoch,
-            }),
-        );
+        const {models: postModels, revokedFiles} = await operator.handlePosts({
+            actionType: '',
+            order: [],
+            posts: postsArray,
+            previousPostId: '',
+            prepareRecordsOnly: true,
+            redactionVerifiedEpoch,
+        });
 
         const isCRTEnabled = await getIsCRTEnabled(database);
         if (isCRTEnabled) {
@@ -1293,8 +1243,9 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
             }
             return mdls;
         });
+        models.push(...postModels);
 
-        await operator.batchRecords(models, 'fetchSavedPosts');
+        await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchSavedPosts');
 
         return {
             order,
@@ -1347,16 +1298,14 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
             }
         }
 
-        promises.push(
-            operator.handlePosts({
-                actionType: '',
-                order: [],
-                posts: postsArray,
-                previousPostId: '',
-                prepareRecordsOnly: true,
-                redactionVerifiedEpoch,
-            }),
-        );
+        const {models: postModels, revokedFiles} = await operator.handlePosts({
+            actionType: '',
+            order: [],
+            posts: postsArray,
+            previousPostId: '',
+            prepareRecordsOnly: true,
+            redactionVerifiedEpoch,
+        });
 
         if (isCRTEnabled) {
             promises.push(prepareThreadsFromReceivedPosts(operator, postsArray, false));
@@ -1369,8 +1318,9 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
             }
             return mdls;
         });
+        models.push(...postModels);
 
-        await operator.batchRecords(models, 'fetchPinnedPosts');
+        await batchRecordsAndDeleteRevokedFiles(serverUrl, models, revokedFiles, 'fetchPinnedPosts');
 
         return {
             order,

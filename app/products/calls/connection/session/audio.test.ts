@@ -1,24 +1,59 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {AudioDeviceModule, AudioEngineMuteMode} from '@livekit/react-native-webrtc';
 import CallsNative, {type AudioRoute} from '@mattermost/calls-native';
+import {Platform} from 'react-native';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
+import {logWarning} from '@utils/log';
 
 import {createAudioRouteManager, startAudioSession} from './audio';
 
 jest.mock('@calls/actions/calls', () => ({
     setPreferredAudioRoute: jest.fn(),
 }));
+jest.mock('@utils/log');
 
 describe('audio session', () => {
+    const originalOS = Platform.OS;
+
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+        Platform.OS = originalOS;
     });
 
     it('should wrap a native failure to start the audio session in a descriptive error', async () => {
         (CallsNative.startAudioSession as jest.Mock).mockRejectedValueOnce(new Error('no session'));
 
         await expect(startAudioSession()).rejects.toThrow('calls: failed to start audio session: no session');
+    });
+
+    it('should switch the audio engine to InputMixer mute on iOS', async () => {
+        Platform.OS = 'ios';
+
+        await startAudioSession();
+
+        expect(AudioDeviceModule.setMuteMode).toHaveBeenCalledWith(AudioEngineMuteMode.InputMixer);
+    });
+
+    it('should log and still resolve when the mute mode cannot be set', async () => {
+        Platform.OS = 'ios';
+        (AudioDeviceModule.setMuteMode as jest.Mock).mockRejectedValueOnce(new Error('bad mode'));
+
+        await expect(startAudioSession()).resolves.toBeUndefined();
+
+        expect(logWarning).toHaveBeenCalledWith('calls: unable to set audio engine mute mode', 'bad mode');
+    });
+
+    it('should leave the audio engine mute mode alone on Android', async () => {
+        Platform.OS = 'android';
+
+        await startAudioSession();
+
+        expect(AudioDeviceModule.setMuteMode).not.toHaveBeenCalled();
     });
 });
 

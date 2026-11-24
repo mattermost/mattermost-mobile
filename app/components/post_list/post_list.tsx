@@ -23,6 +23,7 @@ import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useClearViewableItemsOnUnmount} from '@hooks/in_viewport';
 import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gesture';
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
@@ -172,12 +173,21 @@ const PostList = ({
     const scrolledToHighlighted = useRef(false);
     const initialRenderTracked = useRef(false);
     const viewableItemsDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const viewportFrame = useRef<number | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
 
     const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
     const theme = useTheme();
+
+    // Cancel a pending viewport write so it can't re-add the entry the hook below clears on unmount
+    useEffect(() => () => {
+        if (viewportFrame.current !== null) {
+            cancelAnimationFrame(viewportFrame.current);
+        }
+    }, []);
+    useClearViewableItemsOnUnmount(location);
     const serverUrl = useServerUrl();
     const {state} = useAnimatedKeyboard();
 
@@ -374,7 +384,11 @@ const PostList = ({
             return;
         }
 
-        requestAnimationFrame(() => {
+        if (viewportFrame.current !== null) {
+            cancelAnimationFrame(viewportFrame.current);
+        }
+        viewportFrame.current = requestAnimationFrame(() => {
+            viewportFrame.current = null;
             emitPostsInViewport(location, viewableItems);
         });
 

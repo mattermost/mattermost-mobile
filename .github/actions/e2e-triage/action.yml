@@ -35,6 +35,10 @@ inputs:
     description: Automatic re-runs a lane red only on infrastructure may get (see e2e-tests-rerun.yml); 0 turns it off. The calling job needs actions read.
     required: false
     default: "0"
+  lane-job-filter:
+    description: Optional comma-separated substrings scoping lane job reads in flat-job workflows; empty derives from job-key
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -73,6 +77,7 @@ runs:
         triage-status-context: e2e-test/triage
         triage-lanes: ${{ inputs.triage-lanes }}
         lane: ${{ inputs.job-key }}
+        lane-job-filter: ${{ inputs.lane-job-filter || (contains(inputs.job-key, 'maestro-ios') && 'maestro-ios,Maestro iOS,build-ios-simulator,provision' || (contains(inputs.job-key, 'maestro-android') && 'maestro-android,Maestro Android,build-android-apk-maestro,provision' || (contains(inputs.job-key, 'detox-ios') && 'detox-ios,Detox iOS,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-ipad') && 'detox-ipad,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-android') && 'detox-android,Detox Android,build-android-apk,provision,!maestro' || inputs.job-key))))) }}
         evidence-dir: triage-evidence
         test-root: .
         # A failure in an unchanged spec is "merge main" when main changed the code it runs through.

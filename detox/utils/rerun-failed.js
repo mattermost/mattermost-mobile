@@ -12,7 +12,7 @@
  * MAX_SPECS_PER_LANE is not re-run: that many failures at once is the run's setup, and a re-run would be the
  * whole suite again.
  *
- *   node rerun-failed.js --findings-dir <dir> [--cmt-matrix <json> --compare-ref <main commit>]
+ *   node rerun-failed.js --findings-dir <dir> [--cmt-matrix <json> --compare-ref <main commit> [--target-ref <release commit>]]
  * writes to $GITHUB_OUTPUT:
  *   detox-specs, maestro-flows  JSON map of lane to space-separated files ("{}" when none), for main
  *   <framework>-<platform>-matrix  {"server":[...]} for CMT (one entry per server with failed specs, with `specs`)
@@ -45,13 +45,14 @@ const inRepo = (row) => (row.file || '').startsWith('detox/');
  * would fail again whether or not the app is broken.
  *
  * @param {string} ref - main's commit, fetched
+ * @param {string} [targetRef='HEAD'] - tested release commit (when checkout is on main)
  * @returns {(file: string) => boolean}
  */
-function differsFrom(ref) {
+function differsFrom(ref, targetRef = 'HEAD') {
     const {execFileSync} = require('child_process');
     return (file) => {
         try {
-            execFileSync('git', ['diff', '--quiet', ref, 'HEAD', '--', file], {stdio: 'ignore'});
+            execFileSync('git', ['diff', '--quiet', ref, targetRef, '--', file], {stdio: 'ignore'});
             return false;
         } catch (err) {
             return err.status === 1;
@@ -190,7 +191,8 @@ function main() {
     const {loadTriageFindings} = require('./tsio-channel-notify-rollup');
     const args = parseArgs(process.argv);
     const ref = args['compare-ref'];
-    const plan = planRerun(loadTriageFindings(args['findings-dir'] || ''), ref ? {isStale: differsFrom(ref)} : {});
+    const targetRef = args['target-ref'] || 'HEAD';
+    const plan = planRerun(loadTriageFindings(args['findings-dir'] || ''), ref ? {isStale: differsFrom(ref, targetRef)} : {});
     const lines = [];
     if (args['cmt-matrix']) {
         const matrices = cmtMatrices(plan, JSON.parse(args['cmt-matrix']));
@@ -216,4 +218,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = {MAX_SPECS_PER_LANE, planRerun, mainInputs, cmtMatrices, loadRerunResults};
+module.exports = {MAX_SPECS_PER_LANE, differsFrom, planRerun, mainInputs, cmtMatrices, loadRerunResults};

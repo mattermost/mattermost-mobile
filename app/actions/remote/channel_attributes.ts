@@ -15,9 +15,7 @@ import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-// Keys the per-target write serialization shared with the websocket value
-// handlers, so a REST reconciliation and a websocket write for the same
-// channel can never interleave their read-modify-write sequence.
+// Shared with the websocket value handlers so writes to one channel never interleave.
 export function channelAttributeWriteLockKey(serverUrl: string, channelId: string): string {
     return `channel-attributes:${serverUrl}:${channelId}`;
 }
@@ -25,18 +23,9 @@ export function channelAttributeWriteLockKey(serverUrl: string, channelId: strin
 export type ChannelAttributeValueInput = string | string[] | null;
 
 /**
- * Sets or clears one channel attribute value.
- *
- * Not optimistic. A 403 is an ordinary outcome here — the field's change policy
- * or its permission tier can refuse the write — and a chip that flips back is
- * worse than one that takes a moment to settle.
- *
- * A clear is the field type's empty value (see getEmptyPropertyValue), never
- * null: the iOS native bridge drops null-valued keys from the request body. The
- * server answers a clear with an upserted empty row rather than a delete event,
- * and an empty value already reads as unset everywhere downstream, so the row is
- * persisted like any other. The webapp has to synthesise a delete only because
- * its reducer keys on presence.
+ * Sets or clears one channel attribute value. Not optimistic: the server can
+ * refuse the write with a 403. A clear sends the type's empty value (see
+ * getEmptyPropertyValue), never null, because the iOS bridge drops null keys.
  */
 export async function setChannelAttributeValue(
     serverUrl: string,
@@ -47,16 +36,10 @@ export async function setChannelAttributeValue(
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        // Checked independently of any UI gating: this is a network-writing action
-        // reachable from more than one screen, and it must not depend on a caller
-        // having already checked the flag.
         if ((await getConfigValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES)) !== 'true') {
             return {error: 'channel attributes are disabled'};
         }
 
-        // Every value is addressed by group, and nothing maps the group name to an
-        // id locally until the fields have been fetched. Writing without it would
-        // address the wrong group, so this fails rather than guessing.
         const groupId = await getAccessControlGroupId(database);
         if (!groupId) {
             logDebug('setChannelAttributeValue', 'skipped; access_control group id is not known yet', channelId, fieldId);
@@ -72,14 +55,8 @@ export async function setChannelAttributeValue(
                 [{field_id: fieldId, value}],
             );
 
-            // Deliberately no targetId: it makes the write authoritative for the
-            // whole channel, so a single-field response would delete every other
-            // attribute's value on this channel. targetId belongs only to the
-            // full-channel read.
-            //
-            // prepareRecordsOnly + a propagated batch: a failed write must throw
-            // here rather than silently succeed, so the caller never reports
-            // {data} for a value that was never actually persisted.
+            // No targetId: it would make this single-field response delete every
+            // other value on the channel. targetId is only for the full-channel read.
             const models = await operator.handlePropertyValues({values: response, prepareRecordsOnly: true});
             await operator.batchRecords(models, 'setChannelAttributeValue', true);
             return response;
@@ -87,8 +64,6 @@ export async function setChannelAttributeValue(
 
         return {data: values};
     } catch (error) {
-        // The channel and field ids are safe to log; the value is a marking and is
-        // not.
         logError('error on setChannelAttributeValue', channelId, fieldId, getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};

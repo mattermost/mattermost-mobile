@@ -544,7 +544,7 @@ export const convertProfileAttributesToCustomAttributes = (
     fields?.forEach((field) => {
         const customType = useDisplayType ? getDisplayType(field) : field.type;
         fieldsMap.set(field.id, {
-            name: field.name,
+            name: (field.attrs?.display_name as string | undefined) || field.name,
             type: customType,
             sort_order: field.attrs?.sort_order ?? Number.MAX_SAFE_INTEGER,
             originalField: field,

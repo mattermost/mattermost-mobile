@@ -3,10 +3,11 @@
 
 import {AGENTS_PLUGIN_ID, DEMO_PLUGIN_ID, DEMO_PLUGIN_REQUIREMENT, REQUIRED_PLUGINS} from './constants';
 import {ensureCustomProfileAttributeFields} from './custom-profile-attributes';
+import {isE2eTestStack} from './env';
 import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
 import {logInfo, logWarn} from './log';
-import {assertDemoPluginAbsent, disableStrayPlugins, ensureAgentsPlugin, ensureDemoPluginReady, ensureDemoPluginSettingsEntry, installRequiredPlugin} from './plugins';
+import {assertDemoPluginAbsent, disableStrayPlugins, ensureAgentsPlugin, ensureDemoPluginReady, ensureDemoPluginSettingsEntry, ensurePrepackagedPlugin, installRequiredPlugin} from './plugins';
 import {applyProvisionBaseline, getServerMmVersion, verifyProvisionBaseline} from './server-config';
 
 import type {MattermostClient, ProvisionCredentials} from './types';
@@ -45,10 +46,18 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
 
     await applyProvisionBaseline(client, token, serverUrl, serverMmVersion);
 
-    await ensureAgentsPlugin(client, token);
+    // e2e-test-stack servers carry the prepackaged plugins: they are enabled and checked, never installed or downloaded.
+    const e2eTestStack = isE2eTestStack();
+    if (!e2eTestStack) {
+        await ensureAgentsPlugin(client, token);
+    }
 
     /* eslint-disable no-await-in-loop -- install required plugins one at a time for clear provisioning logs */
     for (const plugin of provisioned) {
+        if (e2eTestStack && plugin.prepackaged) {
+            await ensurePrepackagedPlugin(client, token, plugin.id);
+            continue;
+        }
         if (plugin.id === AGENTS_PLUGIN_ID) {
             continue;
         }

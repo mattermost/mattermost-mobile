@@ -491,7 +491,7 @@ describe('WebSocket Channel Actions', () => {
             mockedPrepareMyChannelsForTeam.mockResolvedValue([[] as any]);
             (addChannelToDefaultCategory as jest.Mock).mockResolvedValue({models: []});
             (fetchPostsForChannel as jest.Mock).mockResolvedValue({posts: [{}], order: ['order'], authors: [{}], actionType: 'action', previousPostId: 'prev_id'});
-            (storePostsForChannel as jest.Mock).mockResolvedValue({models: []});
+            (storePostsForChannel as jest.Mock).mockResolvedValue({models: [], revokedFiles: []});
 
             await handleUserAddedToChannelEvent(serverUrl, msg);
 

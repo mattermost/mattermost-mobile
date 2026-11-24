@@ -171,8 +171,9 @@ export const CurrentCallBar = ({
     const mySession = currentCall?.sessions[currentCall.mySessionId];
 
     // Placing the call and waiting for it to be answered look the same here; only the status differs.
-    const showCallee = isDMConnecting || isDMCalling;
-    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(showCallee);
+    // Speech isn't tracked for the SIP participant, so keep showing the number.
+    const showCallee = isDMConnecting || isDMCalling || Boolean(currentCall?.phone);
+    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isDMConnecting || isDMCalling);
 
     // Muting and hanging up both go through the connection, which doesn't exist while we're still
     // placing the call. Same predicate as the full-screen view, so the two never disagree.
@@ -243,6 +244,7 @@ export const CurrentCallBar = ({
                             teammateNameDisplay={teammateNameDisplay}
                             showCallee={showCallee}
                             dmCallee={dmCallee}
+                            phoneNumber={currentCall?.phone}
                         />
                         <Text
                             style={style.channelAndTime}

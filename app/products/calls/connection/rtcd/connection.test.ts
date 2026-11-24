@@ -50,6 +50,8 @@ const mockAudioRouteManager = {
 };
 
 describe('newRtcdConnection', () => {
+    const onChannelResolved = jest.fn(() => Promise.resolve());
+
     const mockClient = {
         getWebSocketUrl: jest.fn(() => 'ws://localhost:8065'),
         getCallsConfig: jest.fn(() => ({
@@ -168,10 +170,7 @@ describe('newRtcdConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             true,
             mockIntl,
@@ -210,10 +209,7 @@ describe('newRtcdConnection', () => {
             close: jest.fn(),
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             false,
             mockIntl,
@@ -244,10 +240,7 @@ describe('newRtcdConnection', () => {
             close: jest.fn(),
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             false,
             mockIntl,
@@ -289,10 +282,7 @@ describe('newRtcdConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             true,
             mockIntl,
@@ -320,10 +310,7 @@ describe('newRtcdConnection', () => {
         }));
         newCurrentCall('http://localhost:8065', 'channelID', 'myUserId', CallsTransport.Rtcd, {startUnmuted: true});
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             false,
             mockIntl,
@@ -343,10 +330,7 @@ describe('newRtcdConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             false,
             mockIntl,
@@ -369,10 +353,7 @@ describe('newRtcdConnection', () => {
             send: wsSend,
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             false,
             mockIntl,
@@ -401,10 +382,7 @@ describe('newRtcdConnection', () => {
             close: jest.fn(),
         }));
 
-        await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            mockCloseCb,
+        await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, mockCloseCb, onChannelResolved,
             () => {},
             false,
             mockIntl,
@@ -434,10 +412,7 @@ describe('newRtcdConnection', () => {
             send: jest.fn(),
         }));
 
-        await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            mockCloseCb,
+        await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, mockCloseCb, onChannelResolved,
             () => {},
             false,
             mockIntl,
@@ -451,10 +426,7 @@ describe('newRtcdConnection', () => {
     it('voice track', async () => {
         const getUserMedia = require('@livekit/react-native-webrtc').mediaDevices.getUserMedia;
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             true,
             mockIntl,
@@ -509,10 +481,7 @@ describe('newRtcdConnection', () => {
             close: wsClose,
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             true,
             mockIntl,
@@ -594,10 +563,7 @@ describe('newRtcdConnection', () => {
             close: wsClose,
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             true,
             mockIntl,
@@ -657,19 +623,31 @@ describe('newRtcdConnection', () => {
         // @ts-ignore
         parseRTCStats.mockImplementation(() => mockRTCStats);
 
-        const connection = await newRtcdConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false, mockIntl);
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved, () => {}, false, mockIntl);
         expect(connection).toBeDefined();
         expect(joinHandler).toHaveBeenCalled();
         await joinPromise;
     });
 
+    it('should reject a phone target without resolving a channel', async () => {
+        await expect(newRtcdConnection(
+            'http://localhost:8065', {type: 'phone', phone: {number: '+15551234567'}}, () => {}, onChannelResolved, () => {}, true, mockIntl,
+        )).rejects.toThrow('does not support phone targets');
+        expect(onChannelResolved).not.toHaveBeenCalled();
+    });
+
+    it('should resolve the channel target before connecting', async () => {
+        await newRtcdConnection(
+            'http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved, () => {}, false, mockIntl,
+        );
+
+        expect(onChannelResolved).toHaveBeenCalledWith('channelID');
+    });
+
     it('waitForPeerConnection', async () => {
         // Default mock: ws.on('join') never fires → peer never created →
         // onPeerConnected resolver never called → timeout fires.
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             true,
             mockIntl,
@@ -714,10 +692,7 @@ describe('newRtcdConnection', () => {
             sessionID: 'sessionID',
         }));
 
-        const connection = await newRtcdConnection(
-            'http://localhost:8065',
-            'channelID',
-            () => {},
+        const connection = await newRtcdConnection('http://localhost:8065', {type: 'channel', channelID: 'channelID'}, () => {}, onChannelResolved,
             () => {},
             true,
             mockIntl,

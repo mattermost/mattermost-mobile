@@ -207,6 +207,35 @@ describe('ClientCalls', () => {
         });
     });
 
+    describe('phoneCall', () => {
+        const session = {
+            session_id: 'session-id',
+            token: 'jwt-token',
+            url: 'wss://livekit.example/',
+            call_state: {id: 'call-id', sessions: []},
+            channel_id: 'channel-id',
+        };
+
+        it('should post the number with the optional target user and label', async () => {
+            mockDoFetch.mockResolvedValueOnce(session);
+            await client.phoneCall({number: '+15551234567', targetUserId: 'user-id', displayLabel: 'Mom'});
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/com.plugins.calls/phone-call',
+                {method: 'post', body: {number: '+15551234567', target_user_id: 'user-id', display_label: 'Mom'}},
+            );
+        });
+
+        it('should reject a session whose room url is not secure', async () => {
+            mockDoFetch.mockResolvedValueOnce({...session, url: 'ws://evil.example/'});
+            await expect(client.phoneCall({number: '+15551234567'})).rejects.toThrow('Invalid phone call response');
+        });
+
+        it('should reject a session without a channel id', async () => {
+            mockDoFetch.mockResolvedValueOnce({...session, channel_id: undefined});
+            await expect(client.phoneCall({number: '+15551234567'})).rejects.toThrow('Invalid phone call response');
+        });
+    });
+
     describe('genTURNCredentials', () => {
         it('makes correct API call', async () => {
             await client.genTURNCredentials();

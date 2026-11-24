@@ -24,8 +24,8 @@ export const PLUGIN_STATE_FAILED = 3;
 export const CALLS_PLUGIN_URL = 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.11.5/mattermost-plugin-calls-v1.11.5-linux-amd64.tar.gz';
 
 export const REQUIRED_PLUGINS: RequiredPlugin[] = [
-    {id: AGENTS_PLUGIN_ID, url: null, fixture: null},
-    {id: 'com.mattermost.calls', url: CALLS_PLUGIN_URL, fixture: null},
+    {id: AGENTS_PLUGIN_ID, url: null, fixture: null, prepackaged: true},
+    {id: 'com.mattermost.calls', url: CALLS_PLUGIN_URL, fixture: null, prepackaged: true},
 ];
 
 // Only servers provisioned with --demo-plugin (the full-suite pool and mutation servers). url is null on purpose: origin-side install_from_url 524s behind Cloudflare.

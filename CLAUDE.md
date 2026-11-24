@@ -172,6 +172,7 @@ E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit 
 | PR E2E | `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android` | `mobile-pr-<job>` (e.g. `mobile-pr-detox-ios`) |
 | Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | same per-job contexts | `mobile-main-<job>` |
 | Compatibility matrix | per shard `e2e-test/<tsio-shard-name>` + umbrella `e2e-test/compatibility-matrix-testing` | `mobile-release-<tsio-shard-name>` |
+| E2E Tests by hand on e2e-test-stack (`e2e-tests-ci.yml`) | `e2e-test-stack/<lane>` (e.g. `e2e-test-stack/detox-ios`), not required | `mobile-e2e-test-stack-pr-<job>` with `pr_number`, else `mobile-e2e-test-stack-main-<job>` on main or `mobile-e2e-test-stack-release-<job>` on a release branch |
 
 ### Testing Patterns
 

@@ -1,0 +1,126 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+name: E2E test stack sites
+description: >-
+  Points a Detox shard at its e2e-test-stack servers: SITE_1 is the shard's own server,
+  or the shared SITE_3 for a site3 mutation shard; SITE_2 is the batch's shared second-to-last server; SITE_3, for a
+  pool shard only, the shared last one; ADMIN_* is the batch's one admin. Opens this run's batch with the toolkit's
+  open action, which reads its create response from whichever attempt created it and accepts only this run's batch,
+  so the job needs actions: read. Writes the sites, the admin, E2E_SERVER_ROLE and E2E_POOL_GUARD to GITHUB_ENV.
+  Leaves Node 26 set up.
+
+inputs:
+  batch:
+    description: The batch create named, e.g. dt-ios-pr
+    required: true
+  shard:
+    description: The shard's 1-based run id; its own server is index shard - 1
+    required: true
+  role:
+    description: The shard's role, pool or mutation
+    required: true
+  target:
+    description: A mutation shard's server target, B (its own server) or site3 (the shared SITE_3)
+    required: false
+    default: ""
+  credentials-key:
+    description: The repository's credentials key, which opens the batch's sealed server credentials
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Before the batch is opened: the shard and its role are this run's own settings.
+    - name: check-shard
+      shell: bash
+      env:
+        SHARD: ${{ inputs.shard }}
+        ROLE: ${{ inputs.role }}
+        TARGET: ${{ inputs.target }}
+      run: |
+        set -euo pipefail
+        if ! [[ "$SHARD" =~ ^[1-9][0-9]*$ ]]; then
+          echo "::error::shard must be a positive integer"
+          exit 1
+        fi
+        case "${ROLE}:${TARGET}" in
+          pool:A | mutation:B | mutation:site3) ;;
+          *) echo "::error::unknown shard role and target '${ROLE}:${TARGET}': pool:A, mutation:B or mutation:site3"; exit 1 ;;
+        esac
+
+    - name: setup-node
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: "26"
+        package-manager-cache: false
+
+    # Every ready server of the batch is in instances, index-aligned; the shard's own is picked from it below.
+    - name: open
+      id: open
+      uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/open@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+      with:
+        caller-key: mobile
+        batch: ${{ inputs.batch }}
+        index: "0"
+        credentials-key: ${{ inputs.credentials-key }}
+
+    # The batch is a server per shard, then the shared SITE_2 and SITE_3: the last two. One admin across the batch, so
+    # ADMIN_* is one set as the specs expect.
+    - name: assign-sites
+      shell: bash
+      env:
+        BATCH: ${{ inputs.batch }}
+        SHARD: ${{ inputs.shard }}
+        ROLE: ${{ inputs.role }}
+        TARGET: ${{ inputs.target }}
+        INSTANCES: ${{ steps.open.outputs.instances }}
+      run: |
+        set -euo pipefail
+        count=$(jq 'length' <<< "$INSTANCES")
+        if [ "$count" -lt 3 ]; then
+          echo "::error::the ${BATCH} batch of ${count} has no shared servers"
+          exit 1
+        fi
+        site2_index=$((count - 2))
+        site3_index=$((count - 1))
+        if [ "$ROLE" = mutation ] && [ "$TARGET" = site3 ]; then
+          # The site3 mutation specs run on the shared SITE_3.
+          server=$site3_index
+        else
+          server=$((SHARD - 1))
+          if [ "$server" -ge "$site2_index" ]; then
+            echo "::error::shard ${SHARD} has no server of its own in a batch of ${count}"
+            exit 1
+          fi
+        fi
+        field() { jq -r --argjson i "$1" --arg f "$2" '.[$i][$f] // ""' <<< "$INSTANCES"; }
+        site1=$(field "$server" site_url)
+        site2=$(field "$site2_index" site_url)
+        site3=$(field "$site3_index" site_url)
+        username=$(field "$server" admin_username)
+        password=$(field "$server" admin_password)
+        email=$(field "$server" admin_email)
+        if [ -z "$site1" ] || [ -z "$site2" ] || [ -z "$site3" ]; then
+          echo "::error::the batch has no site for this shard or its shared servers"
+          exit 1
+        fi
+        if [ -z "$username" ] || [ -z "$password" ]; then
+          echo "::error::the batch has no admin for server ${server}"
+          exit 1
+        fi
+        # A mutation shard gets no SITE_3.
+        GUARD=enforce
+        [ "$ROLE" = pool ] || GUARD=off
+        {
+          echo "SITE_1_URL=$site1"
+          echo "SITE_2_URL=$site2"
+          if [ "$ROLE" = pool ]; then echo "SITE_3_URL=$site3"; else echo "SITE_3_URL="; fi
+          echo "ADMIN_USERNAME=$username"
+          echo "ADMIN_PASSWORD=$password"
+          echo "ADMIN_EMAIL=$email"
+          echo "E2E_SERVER_ROLE=$ROLE"
+          echo "E2E_POOL_GUARD=$GUARD"
+        } >> "$GITHUB_ENV"
+        site3_label="server $site3_index"
+        [ "$ROLE" = pool ] || site3_label="unset"
+        echo "role=$ROLE: SITE_1=server $server, SITE_2=server $site2_index, SITE_3=${site3_label}, pool_guard=$GUARD"

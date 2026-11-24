@@ -8,6 +8,7 @@ import NetworkManager from '@managers/network_manager';
 import {getThreadById} from '@queries/servers/thread';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {deleteDownloadedFiles} from '@utils/file';
 
 import {
     fetchThread,
@@ -73,6 +74,11 @@ const partialClient: Partial<Client> = {
     getThreads: jest.fn(() => Promise.resolve({threads, total: threads.length, total_unread_mentions: 0, total_unread_threads: 0})),
 };
 const mockClient = partialClient as Client;
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
+}));
 
 let mockGetIsCRTEnabled: jest.Mock;
 jest.mock('@queries/servers/thread', () => {
@@ -180,6 +186,27 @@ describe('thread remote actions', () => {
             expect(result.error).toBeFalsy();
             expect(result.models).toBeDefined();
             expect(result.models?.length).toBe(4); // 1 thread, 1 thread participant, 1 latest thread in team, 1 team thread sync (the unread thread is actually the latest so it the duplicate is removed)
+        });
+
+        it('syncThreadsIfNeeded - should hand revoked files to the caller in fetchOnly mode and delete them only after its own batch otherwise', async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+            await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+            const cachedFile = TestHelper.fakeFileInfo({id: 'revokedfileid', post_id: thread1.id});
+            const redactedThread = {...thread1, post: {...thread1.post, metadata: {redacted_file_count: 1}}};
+            jest.mocked(mockClient.getThreads).mockResolvedValue({threads: [redactedThread], total: 1, total_unread_mentions: 0, total_unread_threads: 0});
+            jest.mocked(deleteDownloadedFiles).mockClear();
+
+            await operator.handleFiles({files: [cachedFile], prepareRecordsOnly: false});
+            const fetchOnly = await syncThreadsIfNeeded(serverUrl, true, [team], true);
+            expect(fetchOnly.revokedFiles?.map((f) => f.id)).toEqual([cachedFile.id]);
+            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+
+            const saved = await syncThreadsIfNeeded(serverUrl, true, [team]);
+            expect(saved.error).toBeFalsy();
+            expect(deleteDownloadedFiles).toHaveBeenCalledWith(serverUrl, saved.revokedFiles);
+            expect(saved.revokedFiles?.map((f) => f.id)).toEqual([cachedFile.id]);
+
+            jest.mocked(mockClient.getThreads).mockImplementation(() => Promise.resolve({threads, total: threads.length, total_unread_mentions: 0, total_unread_threads: 0}));
         });
 
         it('loadEarlierThreads - handle error', async () => {

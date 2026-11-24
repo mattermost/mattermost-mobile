@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getChannelAttributeEditorSnapPoints, SHEET_MAX_ROWS} from './utils';
+import {getChannelAttributeEditorSnapPoints, SHEET_MAX_ROWS, toggleSelection} from './utils';
 
-// Mirrors the one mutation GenericBottomSheetRoute performs on whatever this
-// helper returns, so ordering can be asserted the way it will actually be
-// consumed rather than on the helper's raw output.
+// Applies the margin GenericBottomSheetRoute adds, so ordering is checked as consumed.
 function applyRouteMargin(points: number[], margin: number): number[] {
     const withMargin = [...points];
     if (typeof withMargin[1] === 'number') {
@@ -70,9 +68,6 @@ describe('getChannelAttributeEditorSnapPoints', () => {
     });
 
     it('should stay ordered after GenericBottomSheetRoute applies its margin, for every window height that offers a third point', () => {
-        // Scans rather than hand-picking one windowHeight: what matters is that
-        // no window size in range ever produces an inversion once the route's
-        // margin lands on the second point, not that one particular value does.
         let sawThreePoints = false;
         for (let windowHeight = 300; windowHeight <= 1200; windowHeight += 10) {
             const points = getChannelAttributeEditorSnapPoints({...base, windowHeight, bottomInset: 34, fieldType: 'multiselect', totalRows: SHEET_MAX_ROWS + 10});
@@ -89,9 +84,6 @@ describe('getChannelAttributeEditorSnapPoints', () => {
     });
 
     it('should drop the taller point rather than risk an inversion when the collapsed estimate lands within the route margin of the cap', () => {
-        // Scans for a windowHeight where the collapsed point ends up close
-        // enough to the cap that adding the route's margin would invert it, and
-        // asserts the helper falls back to two points there instead.
         let sawDroppedPoint = false;
         for (let windowHeight = 300; windowHeight <= 1200; windowHeight += 10) {
             const uncapped = getChannelAttributeEditorSnapPoints({...base, windowHeight, bottomInset: 0, fieldType: 'multiselect', totalRows: SHEET_MAX_ROWS + 10});
@@ -127,5 +119,12 @@ describe('getChannelAttributeEditorSnapPoints', () => {
         const tablet = getChannelAttributeEditorSnapPoints({...base, fieldType: 'select', totalRows: 1, isTablet: true});
 
         expect(tablet[1]).toBeGreaterThan(phone[1]);
+    });
+});
+
+describe('toggleSelection', () => {
+    it('should add an unselected id and remove a selected one', () => {
+        expect(toggleSelection(['a'], 'b')).toEqual(['a', 'b']);
+        expect(toggleSelection(['a', 'b'], 'a')).toEqual(['b']);
     });
 });

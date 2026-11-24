@@ -5,6 +5,7 @@ import RNUtils from '@mattermost/rnutils';
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
+import {hasUnverifiedAttachmentPostsInThread} from '@actions/local/post';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
@@ -102,9 +103,9 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         // Every path here may have lost websocket events, so any ABAC change they carried is gone.
         // Awaited so the epoch is raised before the fetch below captures it, and placed after
         // entry() commits its config models so the predicate reads the server's current state.
-        await invalidateRedactionOnResync(serverUrl);
+        const epochRaised = await invalidateRedactionOnResync(serverUrl);
 
-        await fetchPostDataIfNeeded(serverUrl, groupLabel);
+        await fetchPostDataIfNeeded(serverUrl, epochRaised, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
         const license = await getLicense(database);
@@ -163,7 +164,7 @@ async function doCleanup(serverUrl: string) {
     }
 }
 
-async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGroupLabel) {
+async function fetchPostDataIfNeeded(serverUrl: string, epochRaised: boolean, groupLabel?: RequestGroupLabel) {
     try {
         const isActiveServer = (await getActiveServerUrl()) === serverUrl;
         if (!isActiveServer) {
@@ -175,8 +176,9 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         const isCRTEnabled = await getIsCRTEnabled(database);
 
         // Neither a since-fetch nor a fromCreateAt thread fetch can re-deliver a post whose only
-        // change was its redaction state, so with policies active the visible surfaces need a page.
-        const abacEnforced = await isRedactionEnforced(database);
+        // change was its redaction state. A page follows only when stored posts with attachments
+        // are behind the raised epoch, or always when the epoch could not be raised to mark them.
+        const forceReverification = !epochRaised && await isRedactionEnforced(database);
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
@@ -188,8 +190,9 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
             const rootId = EphemeralStore.getCurrentThreadId();
             if (rootId) {
                 const lastPost = await getLastPostInThread(database, rootId);
+                const needsPage = forceReverification || await hasUnverifiedAttachmentPostsInThread(database, rootId);
                 const options: FetchPaginatedThreadOptions = {};
-                if (lastPost && !abacEnforced) {
+                if (lastPost && !needsPage) {
                     options.fromCreateAt = lastPost.createAt;
                     options.fromPost = lastPost.id;
                     options.direction = 'down';
@@ -199,7 +202,7 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel, abacEnforced);
+            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel, forceReverification);
             markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
             if (!EphemeralStore.wasNotificationTapped()) {
                 markChannelAsViewed(serverUrl, currentChannelId, true);

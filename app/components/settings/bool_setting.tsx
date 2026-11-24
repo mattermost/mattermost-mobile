@@ -28,6 +28,7 @@ type Props = {
     onChange: (value: boolean) => void;
     testID: string;
     location: AvailableScreens;
+    labelPosition?: 'before' | 'after';
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -36,6 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'space-between',
             paddingHorizontal: 15,
             paddingVertical: 10,
             minHeight: 40,
@@ -48,10 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 15,
             width: '80%',
             flexWrap: 'wrap',
-        },
-        inputSwitch: {
-            position: 'absolute',
-            right: 12,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -74,11 +72,27 @@ function BoolSetting({
     onChange,
     testID,
     location,
+    labelPosition,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     const inputContainerStyle = useMemo(() => (disabled ? [style.inputContainer, style.disabled] : style.inputContainer), [style, disabled]);
+
+    const placeholderTextEl = (
+        <Text style={style.placeholderText}>
+            {placeholder}
+        </Text>
+    );
+    const switchEl = (
+        <Switch
+            accessibilityLabel={accessibilityLabel}
+            onValueChange={onChange}
+            value={value}
+            disabled={disabled}
+            testID={`${testID}.toggled.${value}.button`}
+        />
+    );
 
     return (
         <>
@@ -93,17 +107,17 @@ function BoolSetting({
                 </>
             )}
             <View style={inputContainerStyle}>
-                <Text style={style.placeholderText}>
-                    {placeholder}
-                </Text>
-                <Switch
-                    accessibilityLabel={accessibilityLabel}
-                    onValueChange={onChange}
-                    value={value}
-                    style={style.inputSwitch}
-                    disabled={disabled}
-                    testID={`${testID}.toggled.${value}.button`}
-                />
+                {labelPosition === 'after' ? (
+                    <>
+                        {switchEl}
+                        {placeholderTextEl}
+                    </>
+                ) : (
+                    <>
+                        {placeholderTextEl}
+                        {switchEl}
+                    </>
+                )}
             </View>
             <View style={style.separator}/>
             <View>

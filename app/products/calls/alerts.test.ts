@@ -5,6 +5,7 @@ import {Alert} from 'react-native';
 
 import {hostRemove} from '@calls/actions/calls';
 import {EndCallReturn} from '@calls/types/calls';
+import ClientError from '@client/rest/error';
 import DatabaseManager from '@database/manager';
 import {dismissBottomSheet} from '@screens/navigation';
 
@@ -20,12 +21,16 @@ import {
     needsRecordingWillBePostedAlert,
     needsRecordingErrorAlert,
     leaveAndJoinWithAlert,
+    startPhoneCall,
+    expectPhoneCallOutcome,
+    showPhoneCallOutcome,
 } from './alerts';
 
 jest.mock('@calls/actions', () => ({
     leaveCall: jest.fn(),
     joinCall: jest.fn().mockResolvedValue({}),
     hasMicrophonePermission: jest.fn().mockResolvedValue(true),
+    muteMyself: jest.fn(),
     unmuteMyself: jest.fn(),
     dismissIncomingCall: jest.fn(),
     removeIncomingCall: jest.fn(),
@@ -43,6 +48,7 @@ jest.mock('@calls/state', () => ({
 jest.mock('@calls/actions/calls');
 jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/user', () => ({
@@ -388,6 +394,26 @@ describe('alerts', () => {
             expect(result).toBe(true);
         });
 
+        it.each([
+            ['public', 'O', true],
+            ['direct message', 'D', false],
+        ])('syncs the starting mute state after joining a %s channel (muted: %s)', async (_label, type, muted) => {
+            const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted} = require('@calls/state');
+            const {getChannelById} = require('@queries/servers/channel');
+            const {muteMyself, unmuteMyself} = require('@calls/actions');
+            getChannelById.mockImplementation(() => ({displayName: 'join-channel', type}));
+            getCallsState.mockReturnValue({enabled: {'join-channel': true}});
+            getChannelsWithCalls.mockReturnValue({});
+            getCurrentCall.mockReturnValue(null);
+            getCallsConfig.mockReturnValue({});
+            setMicPermissionsGranted.mockReturnValue(true);
+
+            await leaveAndJoinWithAlert(intl as any, 'server1', 'join-channel');
+
+            expect(muteMyself).toHaveBeenCalledTimes(muted ? 1 : 0);
+            expect(unmuteMyself).toHaveBeenCalledTimes(muted ? 0 : 1);
+        });
+
         it('does not ask to switch calls when the current call is the one being joined', async () => {
             // The outgoing call is already the current call by the time we get here, since the call
             // screen is opened as soon as the user taps.
@@ -483,6 +509,107 @@ describe('alerts', () => {
                 'You are already on a channel call in ~leave-channel. Do you want to leave your current call and start a new call in ~join-channel?',
                 expect.any(Array),
             );
+        });
+    });
+
+    describe('startPhoneCall', () => {
+        const intl = {
+            formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage,
+        };
+
+        beforeEach(() => {
+            const {getCallsConfig, getCurrentCall} = require('@calls/state');
+            getCallsConfig.mockReturnValue({DefaultEnabled: true});
+            getCurrentCall.mockReturnValue(null);
+        });
+
+        it('shows the mapped alert for a server error ID', async () => {
+            const {joinCall} = require('@calls/actions');
+            joinCall.mockResolvedValueOnce({error: {server_error_id: 'sip_number_not_allowed'}});
+            const mockAlert = jest.spyOn(Alert, 'alert');
+
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+
+            expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'Calling this number isn\'t permitted.');
+        });
+
+        it('shows the network error when the phone call request gets no response', async () => {
+            const {joinCall} = require('@calls/actions');
+            joinCall.mockResolvedValueOnce({error: new ClientError('http://localhost', {message: 'no response', url: '/phone-call'})});
+            const mockAlert = jest.spyOn(Alert, 'alert');
+
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+
+            expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'Couldn\'t reach the server. Check your connection and try again.');
+        });
+
+        it('shows the generic failure when the call fails after the server accepted it', async () => {
+            const {joinCall} = require('@calls/actions');
+            joinCall.mockResolvedValueOnce({error: 'unable to connect to the voice call: Error: failed to connect'});
+            const mockAlert = jest.spyOn(Alert, 'alert');
+
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+
+            expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'The call couldn\'t be placed. Please try again.');
+        });
+
+        it('alerts instead of dropping the current call when one started after the menu opened', async () => {
+            const {joinCall} = require('@calls/actions');
+            const {getCurrentCall} = require('@calls/state');
+            getCurrentCall.mockReturnValue({channelId: 'channel1'});
+            const mockAlert = jest.spyOn(Alert, 'alert');
+
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+
+            expect(joinCall).not.toHaveBeenCalled();
+            expect(mockAlert).toHaveBeenCalledWith('Unable to place phone call', 'You\'re already in a call. Leave it before placing a phone call.');
+        });
+
+        it('ignores a second call while the first is still being placed', async () => {
+            const {joinCall} = require('@calls/actions');
+            let finishJoin: (value: object) => void = () => {};
+            joinCall.mockReturnValueOnce(new Promise((resolve) => {
+                finishJoin = resolve;
+            }));
+
+            const first = startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+            await startPhoneCall(intl as any, 'server1', {number: '+15551234567'});
+            finishJoin({});
+            await first;
+
+            expect(joinCall).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('phone call outcome', () => {
+        const intl = {
+            formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage,
+        };
+
+        it('shows the no-answer outcome once, only for the phone call this device placed', () => {
+            const mockAlert = jest.spyOn(Alert, 'alert');
+            mockAlert.mockClear();
+            expectPhoneCallOutcome('server1', 'call-a', intl as any);
+
+            showPhoneCallOutcome('server1', 'other-call', 'no_answer');
+            expect(mockAlert).not.toHaveBeenCalled();
+
+            showPhoneCallOutcome('server1', 'call-a', 'no_answer');
+            expect(mockAlert).toHaveBeenCalledTimes(1);
+            expect(mockAlert).toHaveBeenCalledWith('No answer', 'Nobody answered the call.');
+
+            showPhoneCallOutcome('server1', 'call-a', 'no_answer');
+            expect(mockAlert).toHaveBeenCalledTimes(1);
+        });
+
+        it('shows no outcome when the caller hung up', () => {
+            const mockAlert = jest.spyOn(Alert, 'alert');
+            mockAlert.mockClear();
+            expectPhoneCallOutcome('server1', 'call-b', intl as any);
+
+            showPhoneCallOutcome('server1', 'call-b', 'canceled_by_caller');
+
+            expect(mockAlert).not.toHaveBeenCalled();
         });
     });
 

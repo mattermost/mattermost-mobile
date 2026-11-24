@@ -38,9 +38,6 @@ const enhanced = withObservables([], ({database, channelId}: WithDatabaseArgs & 
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.CREATE_PRIVATE_CHANNEL, false)),
     );
 
-    // Editing an existing channel never offers this section (decision: no
-    // attribute editing from the Edit Channel screen), so there is nothing to
-    // gain from subscribing to it there.
     const attributesEnabled = channelId ? of$(false) : observeChannelAttributesEnabled(database);
 
     const attributeFields = channelId ? of$(EMPTY_FIELDS) : attributesEnabled.pipe(

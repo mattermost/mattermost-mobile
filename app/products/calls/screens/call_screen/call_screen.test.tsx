@@ -332,6 +332,32 @@ describe('CallScreen', () => {
         expect(getByTestId('calls.calling_participant')).toHaveTextContent('callee');
     });
 
+    it('shows the dialed number in the header and on a ringing card while a phone call rings', () => {
+        const props = getCallingProps();
+        const {getByTestId, getAllByText} = renderScreen({
+            ...props,
+            currentCall: {...props.currentCall!, phone: '+15551234567'},
+            dmCallee: undefined,
+        });
+
+        expect(getAllByText('+15551234567')).toHaveLength(2);
+        expect(getByTestId('calls.calling_participant')).toHaveTextContent('+15551234567');
+    });
+
+    it('keeps the phone card, no longer ringing, after the phone call is answered', () => {
+        const props = getBaseProps();
+        const {getByText, getAllByText, queryByTestId} = renderScreen({
+            ...props,
+            isDM: true,
+            currentCall: {...props.currentCall!, phone: '+15551234567'},
+            dmCallee: undefined,
+        });
+
+        expect(getAllByText('+15551234567')).toHaveLength(2);
+        expect(queryByTestId('calls.calling_participant')).toBeNull();
+        expect(getByText('00:05')).toBeVisible();
+    });
+
     it('should show no mic state for the callee until they answer', () => {
         // They have no session yet, so they have no mic to report on.
         const screen = renderScreen(getCallingProps());

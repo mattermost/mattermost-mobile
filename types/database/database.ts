@@ -104,6 +104,13 @@ export type HandlePostsArgs = {
 // arguments beyond the record pair. Not part of the server-facing Post contract.
 export type PostWithRedactionEpoch = Post & {redaction_verified_epoch?: number};
 
+export type RevokedFile = Pick<FileInfo, 'id' | 'name' | 'extension' | 'mime_type' | 'localPath'>;
+
+export type HandlePostsResult = {
+  models: Model[];
+  revokedFiles: RevokedFile[];
+};
+
 export type HandleThreadsArgs = {
   threads?: ThreadWithLastFetchedAt[];
   prepareRecordsOnly?: boolean;
@@ -331,11 +338,8 @@ export type HandlePropertyFieldsArgs = PrepareOnly & {
   fields?: PropertyField[];
   groupId?: string;
 
-  // Restricts groupId-driven pruning to fields whose object_type is in this
-  // list. The access_control group also holds user/session fields owned by
-  // other features; a groupId-only prune would delete those too whenever a
-  // caller's fetch only covers a subset of object types. Optional so callers
-  // that genuinely fetch every object type in the group are unaffected.
+  // Limits groupId pruning to these object_types. The access_control group also
+  // holds other features' user/session fields, which a group-wide prune would delete.
   objectTypes?: PropertyFieldObjectType[];
 };
 

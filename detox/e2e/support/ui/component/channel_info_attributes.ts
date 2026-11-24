@@ -15,7 +15,6 @@ class ChannelInfoAttributes {
 
     container = element(by.id(this.testID.container));
 
-    // The row for one attribute, by the field's machine name.
     getRow = (fieldName: string) => element(by.id(`channel_info.attributes.${fieldName}`));
 
     // Only present when the row is editable.
@@ -23,17 +22,14 @@ class ChannelInfoAttributes {
 
     getChip = (fieldName: string) => element(by.id(`channel_info.attributes.${fieldName}.chip`));
 
-    // The value text sits inside the chip, so its testID nests under the chip's.
     getChipValue = (fieldName: string) => element(by.id(`channel_info.attributes.${fieldName}.chip.value`));
 
     getNotSet = (fieldName: string) => element(by.id(`channel_info.attributes.${fieldName}.not_set`));
 
-    // The explanation shown when the row cannot be edited.
     getLockReason = (fieldName: string) => element(by.id(`channel_info.attributes.${fieldName}.lock`));
 
     getError = (fieldName: string) => element(by.id(`channel_info.attributes.${fieldName}.error`));
 
-    // The Set {attribute} sheet, opened by tapping an editable row.
     getEditorSheet = (fieldName: string) => element(by.id(`channel_attribute_editor.${fieldName}.screen`));
 
     getEditorOption = (fieldName: string, optionId: string) => element(by.id(`channel_attribute_editor.${fieldName}.option.${optionId}`));
@@ -51,22 +47,13 @@ class ChannelInfoAttributes {
         await waitFor(this.container).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
-    /**
-     * Opens the Set {attribute} sheet for one row and waits for it to settle.
-     *
-     * Fails rather than silently doing nothing when the row is not editable: the
-     * `.edit` testID only exists on a pressable row.
-     */
     openEditor = async (fieldName: string) => {
         await waitFor(this.getEditableRow(fieldName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.getEditableRow(fieldName).tap();
         await waitFor(this.getEditorSheet(fieldName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
-    /**
-     * Picks an option in the sheet. The sheet commits on choice for a single-select
-     * field, so there is no save step to follow.
-     */
+    // Single-select commits on tap; there is no save step.
     selectOption = async (fieldName: string, optionId: string) => {
         await waitFor(this.getEditorOption(fieldName, optionId)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.getEditorOption(fieldName, optionId).tap();

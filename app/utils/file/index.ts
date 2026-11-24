@@ -18,6 +18,7 @@ import {urlSafeBase64Encode} from '@utils/security';
 
 import type {PastedFile} from '@mattermost/react-native-paste-input';
 import type {DocumentPickerResponse} from '@react-native-documents/picker';
+import type {RevokedFile} from '@typings/database/database';
 import type FileModel from '@typings/database/models/servers/file';
 import type {IntlShape} from 'react-intl';
 import type {Asset} from 'react-native-image-picker';
@@ -166,12 +167,12 @@ export function deleteFileCacheByDir(dir: string) {
 }
 
 /**
- * Per-file eviction, for when the server confirms a denial: the FileModel rows are destroyed, but the
- * downloaded bytes would stay readable on disk. Each file is looked for both where its row says it
- * was saved and where downloads land by default, because opening a document never records its path.
+ * Per-file eviction, for when the server confirms a denial: removing the file records does not
+ * remove the downloaded bytes, which would stay readable on disk. Each file is looked for both where
+ * it was saved and where downloads land by default, because opening a document never records its path.
  * Failures are swallowed: a file that cannot be removed must not stop the denial being recorded.
  */
-export function deleteDownloadedFiles(serverUrl: string | undefined, files: FileModel[]) {
+export function deleteDownloadedFiles(serverUrl: string, files: RevokedFile[]) {
     for (const f of files) {
         const paths = new Set<string>();
         if (f.localPath) {
@@ -181,9 +182,7 @@ export function deleteDownloadedFiles(serverUrl: string | undefined, files: File
                 paths.add(f.localPath);
             }
         }
-        if (serverUrl) {
-            paths.add(getLocalFilePathFromFile(serverUrl, f));
-        }
+        paths.add(getLocalFilePathFromFile(serverUrl, f));
 
         for (const path of paths) {
             try {
@@ -414,7 +413,7 @@ export function getFileType(file: FileInfo | ExtractedFileInfo): string {
     }) || 'other';
 }
 
-export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
+export function getLocalFilePathFromFile(serverUrl: string, file: Pick<FileInfo, 'id' | 'name' | 'extension' | 'mime_type'> | FileModel) {
     const fileIdPath = file.id?.replace(/[^0-9a-z]/g, '');
     if (serverUrl) {
         const server = urlSafeBase64Encode(serverUrl);
