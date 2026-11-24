@@ -1441,7 +1441,7 @@ jobs:
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
           if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
-            echo "::error::TSIO reported test failures for $CONTEXT"
+            echo "::error::TSIO reported test failures or timed out for $CONTEXT"
             exit 1
           fi
           exit 0

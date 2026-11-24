@@ -282,4 +282,57 @@ describe('cmt-final-status', () => {
         assert.equal(emptyKeys.state, 'failure');
         assert.match(emptyKeys.description, /triage findings unavailable/);
     });
+
+    it('matches rerun results by test identity so a pass in one spec does not clear a same-title failure in another spec', () => {
+        const res = evaluateCmtFinalStatus({
+            jobResults: {
+                ...ALL_SUCCESS_JOBS,
+                detoxIos: 'failure',
+                tsioTriage: 'success',
+                planRerun: 'success',
+                rerunDetoxIos: 'success',
+            },
+            expectedJobKeys: EXPECTED_KEYS,
+            triage: [
+                {
+                    schema: 2,
+                    lane: 'detox-ios-Server_11.9.0',
+                    triaged: true,
+                    verdict: 'FAILURE',
+                    counts: {total: 100, passed: 98, failed: 2, flaky: 0, skipped: 0},
+                    findings: [
+                        {
+                            title: 'MM-T1 - renders',
+                            full_title: 'Spec A > MM-T1 - renders',
+                            file: 'detox/e2e/test/a.e2e.ts',
+                            blocking: true,
+                        },
+                        {
+                            title: 'MM-T1 - renders',
+                            full_title: 'Spec B > MM-T1 - renders',
+                            file: 'detox/e2e/test/b.e2e.ts',
+                            blocking: true,
+                        },
+                    ],
+                },
+                {
+                    schema: 2,
+                    lane: 'detox-android-Server_11.9.0',
+                    triaged: true,
+                    verdict: 'SUCCESS',
+                    counts: {total: 100, passed: 100, failed: 0, flaky: 0, skipped: 0},
+                    findings: [],
+                },
+            ],
+            rerunResults: {
+                'detox-ios-Server_11.9.0': new Map([
+                    ['detox/e2e/test/a.e2e.ts\nSpec A > MM-T1 - renders', 'passed'],
+                    ['detox/e2e/test/b.e2e.ts\nSpec B > MM-T1 - renders', 'failed'],
+                ]),
+            },
+        });
+        assert.equal(res.upstreamSucceeded, false);
+        assert.equal(res.state, 'failure');
+        assert.match(res.description, /1 blocking failure/);
+    });
 });

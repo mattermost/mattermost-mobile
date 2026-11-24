@@ -376,6 +376,7 @@ async function reportTsioStatus(options) {
         // Per-job finalize leaves this false so N platform legs do not spam the channel.
         channelNotify = false,
         announceTriage = false,
+        mintOidcTokenFn = mintOidcToken,
     } = options;
 
     const baseUrl = baseUrlOverride || (useStaging ? STAGING_URL : PRODUCTION_URL);
@@ -417,7 +418,7 @@ async function reportTsioStatus(options) {
 
     let idToken;
     try {
-        idToken = await mintOidcToken(audience);
+        idToken = await mintOidcTokenFn(audience);
     } catch (err) {
         console.error('tsio-report-status (OIDC):', err.message);
         await postStatus({
@@ -557,8 +558,13 @@ async function reportTsioStatus(options) {
 
     // Under override the commit status is green; failing the step too would only
     // turn the run red again for a result the maintainer chose to waive.
-    if (failOnTestFailures && !result.override_applied && bothTerminal && (result.test_stats.failed || 0) > 0) {
-        const err = new Error('TSIO reported test failures');
+    const shouldFailStep = (bothTerminal && (result.test_stats.failed || 0) > 0) || result.timed_out;
+    if (failOnTestFailures && !result.override_applied && shouldFailStep) {
+        const err = new Error(
+            result.timed_out ?
+                'TSIO poll timed out before group reached terminal status' :
+                'TSIO reported test failures',
+        );
         err.exitCode = 1;
         throw err;
     }

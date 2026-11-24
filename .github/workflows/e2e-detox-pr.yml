@@ -979,6 +979,9 @@ jobs:
   finalize-unstarted-lanes:
     name: Finalize unstarted E2E statuses
     runs-on: ubuntu-24.04
+    concurrency:
+      group: e2e-status-write-${{ inputs.MOBILE_VERSION }}
+      cancel-in-progress: false
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
@@ -1025,6 +1028,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
           SHA: ${{ inputs.MOBILE_VERSION }}
+          PR_NUMBER: ${{ needs.resolve-e2e-policy.outputs.pr_number || inputs.pr_number }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
           PROVISION_SERVERS: ${{ needs.provision-servers.result }}
           VALIDATE_MAESTRO_FLOW_HEADERS: ${{ needs.validate-maestro-flow-headers.result }}

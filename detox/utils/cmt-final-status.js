@@ -13,7 +13,7 @@
 
 const fs = require('fs');
 
-const {loadRerunResults} = require('./rerun-failed');
+const {loadRerunResults, lookupRerunResult} = require('./rerun-failed');
 const {loadTriageFindings} = require('./tsio-channel-notify-rollup');
 
 const UPSTREAM_NON_MATRIX_KEYS = [
@@ -40,7 +40,7 @@ const MATRIX_KEYS = [
  * @param {Object} params
  * @param {Record<string, string>} params.jobResults
  * @param {string[]} params.expectedJobKeys
- * @param {Array<{lane: string, triaged?: boolean, verdict?: string|null, counts?: {failed?: number}|null, findings?: Array<{title: string, blocking: boolean}>}>} params.triage
+ * @param {Array<{lane: string, triaged?: boolean, verdict?: string|null, counts?: {failed?: number}|null, findings?: Array<{title: string, full_title?: string|null, file?: string, blocking: boolean}>}>} params.triage
  * @param {Record<string, Map<string, 'passed'|'failed'>>} params.rerunResults
  * @returns {{upstreamSucceeded: boolean, state: 'success'|'failure'|'error', description: string}}
  */
@@ -125,7 +125,7 @@ function evaluateCmtFinalStatus({jobResults, expectedJobKeys, triage, rerunResul
         for (const finding of findings) {
             if (!finding.blocking) {
                 clearedByTriage++;
-            } else if (rerunResults?.[key]?.get(finding.title) === 'passed') {
+            } else if (lookupRerunResult(rerunResults?.[key], finding) === 'passed') {
                 clearedByRerun++;
                 laneRerunCleared++;
             } else {

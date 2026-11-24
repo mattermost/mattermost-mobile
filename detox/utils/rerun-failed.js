@@ -92,6 +92,62 @@ function planRerun(triage, {isStale = () => false, stale: known = {}} = {}) {
 }
 
 const isMaestro = (lane) => lane.startsWith('maestro-');
+const normalizeTestFile = (file) => String(file || '').replace(/\\/g, '/').replace(/^\.\//, '');
+const isMaestroFilePath = (value) => Boolean(value && (value.includes('/') || (/\.ya?ml$/i).test(value)));
+
+/**
+ * Build a stable per-test rerun map key (`<normalized file>\n<fullTitle || title>` when file is known).
+ *
+ * @param {{file?: string, fullTitle?: string|null, title?: string}} identity
+ * @returns {string}
+ */
+function rerunIdentityKey({file, fullTitle, title}) {
+    const normFile = normalizeTestFile(file);
+    const name = fullTitle || title || '';
+    if (!name) {
+        return '';
+    }
+    return normFile ? `${normFile}\n${name}` : name;
+}
+
+/**
+ * Look up a finding's rerun result by test identity (`file` + `full_title`, then `file` + `title`
+ * for Maestro/legacy fixtures), falling back to bare `title` only when the lane's results map
+ * uses legacy title-only keys (no `\n` file separator).
+ *
+ * @param {Map<string, 'passed'|'failed'> | undefined} laneResults
+ * @param {{file?: string, full_title?: string|null, title?: string} | undefined} finding
+ * @returns {'passed'|'failed'|undefined}
+ */
+function lookupRerunResult(laneResults, finding) {
+    if (!(laneResults instanceof Map) || !finding) {
+        return undefined;
+    }
+    const file = normalizeTestFile(finding.file);
+    const fullTitle = finding.full_title || '';
+    const title = finding.title || '';
+
+    if (file) {
+        if (fullTitle) {
+            const exact = laneResults.get(`${file}\n${fullTitle}`);
+            if (exact !== undefined) {
+                return exact;
+            }
+        }
+        if (title) {
+            const byFileAndTitle = laneResults.get(`${file}\n${title}`);
+            if (byFileAndTitle !== undefined) {
+                return byFileAndTitle;
+            }
+        }
+        const hasFileScopedKeys = [...laneResults.keys()].some((k) => k.includes('\n'));
+        if (hasFileScopedKeys) {
+            return undefined;
+        }
+    }
+
+    return (fullTitle && laneResults.get(fullTitle)) || (title && laneResults.get(title)) || undefined;
+}
 
 /**
  * Main run: the spec files per lane, for e2e-detox.yml (rerun-specs) and e2e-maestro-pr.yml (rerun-flows).
@@ -135,7 +191,7 @@ function cmtMatrices(plan, cmtMatrix) {
  * or Maestro's JUnit report. A test that passed on any try of the re-run passed.
  *
  * @param {string} dir - where the artifacts were downloaded, one folder each
- * @returns {Record<string, Map<string, 'passed'|'failed'>>} lane → test title → result
+ * @returns {Record<string, Map<string, 'passed'|'failed'>>} lane → test identity → result
  */
 function loadRerunResults(dir) {
     const out = {};
@@ -147,10 +203,11 @@ function loadRerunResults(dir) {
             continue;
         }
         const lane = entry.name.slice(ARTIFACT_PREFIX.length).replace(/-a\d+$/, '');
-        const results = new Map();
-        const record = (title, passed) => {
-            if (title && results.get(title) !== 'passed') {
-                results.set(title, passed ? 'passed' : 'failed');
+        const results = out[lane] || new Map();
+        const record = (identity, passed) => {
+            const key = rerunIdentityKey(identity);
+            if (key && results.get(key) !== 'passed') {
+                results.set(key, passed ? 'passed' : 'failed');
             }
         };
         const folder = path.join(dir, entry.name);
@@ -158,9 +215,10 @@ function loadRerunResults(dir) {
             const jest = path.join(folder, 'jest-results-merged.json');
             if (fs.existsSync(jest)) {
                 for (const suite of JSON.parse(fs.readFileSync(jest, 'utf8')).testResults || []) {
+                    const file = normalizeTestFile(suite.testFilePath || suite.name);
                     for (const test of suite.testResults || []) {
                         if (test.status === 'passed' || test.status === 'failed') {
-                            record(test.title, test.status === 'passed');
+                            record({file, fullTitle: test.fullName, title: test.title}, test.status === 'passed');
                         }
                     }
                 }
@@ -169,10 +227,14 @@ function loadRerunResults(dir) {
             if (fs.existsSync(junit)) {
                 const xml = fs.readFileSync(junit, 'utf8');
                 for (const match of xml.matchAll(/<testcase\b([^>]*?)(\/>|>([\s\S]*?)<\/testcase>)/g)) {
-                    const name = (/\bname="([^"]*)"/).exec(match[1])?.[1];
+                    const attrs = match[1];
+                    const name = (/\bname="([^"]*)"/).exec(attrs)?.[1];
+                    const fileAttr = (/\bfile="([^"]*)"/).exec(attrs)?.[1];
+                    const classAttr = (/\bclassname="([^"]*)"/).exec(attrs)?.[1];
+                    const file = normalizeTestFile(fileAttr || (isMaestroFilePath(classAttr) ? classAttr : ''));
                     const body = match[3] || '';
                     if (!(/<skipped\b/).test(body)) {
-                        record(name, !(/<(failure|error)\b/).test(body));
+                        record({file, title: name}, !(/<(failure|error)\b/).test(body));
                     }
                 }
             }
@@ -218,4 +280,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = {MAX_SPECS_PER_LANE, differsFrom, planRerun, mainInputs, cmtMatrices, loadRerunResults};
+module.exports = {MAX_SPECS_PER_LANE, differsFrom, planRerun, mainInputs, cmtMatrices, loadRerunResults, rerunIdentityKey, lookupRerunResult};

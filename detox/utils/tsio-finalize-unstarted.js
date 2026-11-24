@@ -15,7 +15,12 @@
  */
 
 const {parseArgs} = require('./cli-args');
-const {createCommitStatus, overrideCommitStatus} = require('./tsio-report-status');
+const {
+    createCommitStatus,
+    githubRequestWithRetry,
+    OVERRIDE_LABEL,
+    overrideCommitStatus,
+} = require('./tsio-report-status');
 const {ownedByRun, readStatuses} = require('./tsio-triage-settle');
 
 const BUILD_OK_STATES = new Set(['success', 'skipped']);
@@ -130,6 +135,135 @@ function planUnstartedFinalizations({
     return updates;
 }
 
+/**
+ * Check whether `E2E/Override` is currently applied to the PR.
+ * Returns `null` when PR number is unavailable or a transient read fails so callers
+ * retain their prior known state instead of clearing an active override.
+ *
+ * @param {Object} params
+ * @param {string} params.token
+ * @param {string} params.repository
+ * @param {string|number} params.prNumber
+ * @param {Function} [params.requestFn]
+ * @returns {Promise<boolean|null>}
+ */
+async function readE2eOverrideLabel({token, repository, prNumber, requestFn = githubRequestWithRetry}) {
+    const pr = Number.parseInt(prNumber, 10);
+    if (!Number.isFinite(pr) || pr <= 0) {
+        return null;
+    }
+    const [owner, repo] = String(repository || '').split('/');
+    if (!owner || !repo) {
+        return null;
+    }
+    try {
+        for (let page = 1; page <= 10; page++) {
+            const labels = await requestFn(
+                `https://api.github.com/repos/${owner}/${repo}/issues/${pr}/labels?per_page=100&page=${page}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/vnd.github+json',
+                        'X-GitHub-Api-Version': '2022-11-28',
+                    },
+                },
+                {what: 'reading PR labels', readBody: (res) => res.json()},
+            );
+            if (!Array.isArray(labels) || labels.length === 0) {
+                return false;
+            }
+            if (labels.some((label) => label?.name === OVERRIDE_LABEL)) {
+                return true;
+            }
+            if (labels.length < 100) {
+                return false;
+            }
+        }
+        return false;
+    } catch (err) {
+        console.warn(`tsio-finalize-unstarted: could not read PR #${pr} labels (${err.message})`);
+        return null;
+    }
+}
+
+/**
+ * Finalize pending run-owned lanes while re-checking live commit statuses and PR `E2E/Override`
+ * immediately before each status POST so concurrent override writes are never clobbered.
+ */
+async function finalizeUnstartedLanes({
+    token,
+    repository,
+    sha,
+    runId,
+    runUrl,
+    jobConfigs,
+    upstreamResults,
+    e2eOverride = false,
+    prNumber = '',
+    readStatusesFn = readStatuses,
+    readOverrideFn = readE2eOverrideLabel,
+    createCommitStatusFn = createCommitStatus,
+}) {
+    const initialRows = await readStatusesFn({token, repository, sha});
+    let knownOverride = e2eOverride;
+    if (prNumber) {
+        const checked = await readOverrideFn({token, repository, prNumber});
+        if (checked !== null) {
+            knownOverride = checked;
+        }
+    }
+    const planned = planUnstartedFinalizations({
+        jobConfigs,
+        upstreamResults,
+        rows: initialRows,
+        repository,
+        runId,
+        runUrl,
+        e2eOverride: knownOverride,
+    });
+
+    if (!planned.length) {
+        return [];
+    }
+
+    const posted = [];
+    for (const candidate of planned) {
+        const liveRows = await readStatusesFn({token, repository, sha});
+        const latest = (liveRows || []).find((r) => r.context === candidate.context);
+        if (!latest || latest.state !== 'pending' || !ownedByRun(latest.target_url, repository, runId)) {
+            console.log(`${candidate.context}: skipped — status is now ${latest?.state || 'missing'} before POST`);
+            continue;
+        }
+
+        let liveOverride = knownOverride;
+        if (prNumber) {
+            const rechecked = await readOverrideFn({token, repository, prNumber});
+            if (rechecked !== null) {
+                liveOverride = rechecked;
+            }
+        }
+
+        const fresh = planUnstartedFinalizations({
+            jobConfigs,
+            upstreamResults,
+            rows: liveRows,
+            repository,
+            runId,
+            runUrl,
+            e2eOverride: liveOverride,
+        }).find((u) => u.context === candidate.context);
+
+        if (!fresh) {
+            continue;
+        }
+
+        await createCommitStatusFn(token, repository, sha, fresh);
+        posted.push(fresh);
+        console.log(`${fresh.context}: ${fresh.state} · ${fresh.description}`);
+    }
+    return posted;
+}
+
 async function main() {
     const args = parseArgs(process.argv);
     const token = args['github-token'] || process.env.GITHUB_TOKEN;
@@ -139,6 +273,7 @@ async function main() {
     const rawJobConfigs = args['job-configs'] || process.env.JOB_CONFIGS;
     const rawUpstreamResults = args['upstream-results'] || process.env.UPSTREAM_RESULTS;
     const e2eOverride = (args['e2e-override'] || process.env.E2E_OVERRIDE) === 'true';
+    const prNumber = args['pr-number'] || process.env.PR_NUMBER || '';
 
     if (!token || !repository || !sha || !runId || !rawJobConfigs || !rawUpstreamResults) {
         throw new Error('GITHUB_TOKEN, --repository, --sha, --run-id, --job-configs and --upstream-results are required');
@@ -152,28 +287,24 @@ async function main() {
     }
 
     const runUrl = `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${repository}/actions/runs/${runId}`;
-    const rows = await readStatuses({token, repository, sha});
-    const updates = planUnstartedFinalizations({
-        jobConfigs,
-        upstreamResults,
-        rows,
+    const posted = await finalizeUnstartedLanes({
+        token,
         repository,
+        sha,
         runId,
         runUrl,
+        jobConfigs,
+        upstreamResults,
         e2eOverride,
+        prNumber,
     });
 
-    if (!updates.length) {
+    if (!posted.length) {
         console.log('tsio-finalize-unstarted: no pending run-owned lanes to finalize');
-        return;
-    }
-    for (const payload of updates) {
-        await createCommitStatus(token, repository, sha, payload);
-        console.log(`${payload.context}: ${payload.state} · ${payload.description}`);
     }
 }
 
-module.exports = {affectedJobKeys, planUnstartedFinalizations};
+module.exports = {affectedJobKeys, planUnstartedFinalizations, readE2eOverrideLabel, finalizeUnstartedLanes};
 
 if (require.main === module) {
     main().catch((err) => {

@@ -728,19 +728,38 @@ jobs:
 
       # Umbrella context only — each matrix leg already posted <shard> from TSIO.
       - name: Finalize umbrella CMT commit status from triage and CI job results
-        if: needs.calculate-commit-hash.outputs.MOBILE_SHA != ''
+        if: always() && !cancelled() && needs.calculate-commit-hash.outputs.MOBILE_SHA != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
           COMMIT_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           REPO: ${{ github.repository }}
           TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          FINAL_OUTCOME: ${{ steps.final.outcome }}
           STATE: ${{ steps.final.outputs.state }}
           DESC: ${{ steps.final.outputs.description }}
         run: |
+          if [ "$FINAL_OUTCOME" != "success" ] || [ -z "$STATE" ] || [ -z "$DESC" ]; then
+            STATE="failure"
+            DESC="Compatibility Matrix Testing failed — final status evaluation failed"
+          fi
           gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
             -f state="$STATE" \
             -f context="e2e-test/compatibility-matrix-testing" \
             -f description="$DESC" \
+            -f target_url="$TARGET_URL"
+
+      - name: Finalize umbrella CMT commit status on cancellation
+        if: cancelled() && needs.calculate-commit-hash.outputs.MOBILE_SHA != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state="error" \
+            -f context="e2e-test/compatibility-matrix-testing" \
+            -f description="Compatibility Matrix Testing cancelled before completion" \
             -f target_url="$TARGET_URL"
 
 

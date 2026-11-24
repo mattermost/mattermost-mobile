@@ -393,6 +393,9 @@ jobs:
       && github.event.pull_request.base.ref == 'main'
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
+    concurrency:
+      group: e2e-status-write-${{ github.event.pull_request.head.sha }}
+      cancel-in-progress: false
     permissions:
       contents: read
       statuses: write
@@ -433,6 +436,9 @@ jobs:
     needs: refresh-e2e-run-label
     if: needs.refresh-e2e-run-label.outputs.e2e_override == 'true'
     runs-on: ubuntu-24.04
+    concurrency:
+      group: e2e-status-write-${{ github.event.pull_request.head.sha }}
+      cancel-in-progress: false
     permissions:
       contents: read
       statuses: write
@@ -516,6 +522,9 @@ jobs:
 
   e2e-label-manager:
     runs-on: ubuntu-24.04
+    concurrency:
+      group: e2e-status-write-${{ github.event.pull_request.head.sha }}
+      cancel-in-progress: false
     permissions:
       issues: write
       pull-requests: write

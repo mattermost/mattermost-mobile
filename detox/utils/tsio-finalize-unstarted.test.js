@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
 const {describe, it} = require('node:test');
 
 const {buildTsioJobConfigMap, jobKeysForPlatform} = require('./build-tsio-job-config');
-const {affectedJobKeys, planUnstartedFinalizations} = require('./tsio-finalize-unstarted');
+const {affectedJobKeys, finalizeUnstartedLanes, planUnstartedFinalizations, readE2eOverrideLabel} = require('./tsio-finalize-unstarted');
 
 const REPO = 'mattermost/mattermost-mobile';
 const RUN_ID = '9001';
@@ -247,6 +247,135 @@ describe('tsio-finalize-unstarted', () => {
                 assert.ok(u.description.length <= 140);
                 assert.equal(u.state, 'failure');
             }
+        });
+    });
+
+    describe('finalizeUnstartedLanes', () => {
+        const upstream = {
+            'provision-servers': 'success',
+            'validate-maestro-flow-headers': 'success',
+            'build-ios-simulator': 'failure',
+            'build-android-apk': 'success',
+            'build-android-apk-maestro': 'success',
+        };
+
+        it('skips a context whose live status changed from pending to success before POST', async () => {
+            let calls = 0;
+            const posted = [];
+            const result = await finalizeUnstartedLanes({
+                token: 'tok',
+                repository: REPO,
+                sha: 'abc1234',
+                runId: RUN_ID,
+                runUrl: RUN_URL,
+                jobConfigs: ALL_CONFIGS,
+                upstreamResults: upstream,
+                e2eOverride: false,
+                prNumber: '10364',
+                readStatusesFn: async () => {
+                    calls += 1;
+                    if (calls === 1) {
+                        return pendingRows();
+                    }
+                    return [
+                        {context: 'e2e-test/detox-ios', state: 'success', target_url: OTHER_URL},
+                        {context: 'e2e-test/detox-ipad', state: 'pending', target_url: RUN_URL},
+                        {context: 'e2e-test/maestro-ios', state: 'pending', target_url: RUN_URL},
+                    ];
+                },
+                readOverrideFn: async () => false,
+                createCommitStatusFn: async (_token, _repo, _sha, payload) => {
+                    posted.push(payload);
+                },
+            });
+
+            assert.deepEqual(posted.map((p) => p.context), ['e2e-test/detox-ipad', 'e2e-test/maestro-ios']);
+            assert.equal(result.length, 2);
+            assert.ok(posted.every((p) => p.state === 'failure'));
+        });
+
+        it('posts E2E/Override success when E2E/Override label is applied before POST while status is pending', async () => {
+            let labelChecks = 0;
+            const posted = [];
+            await finalizeUnstartedLanes({
+                token: 'tok',
+                repository: REPO,
+                sha: 'abc1234',
+                runId: RUN_ID,
+                runUrl: RUN_URL,
+                jobConfigs: ALL_CONFIGS,
+                upstreamResults: upstream,
+                e2eOverride: false,
+                prNumber: '10364',
+                readStatusesFn: async () => pendingRows(),
+                readOverrideFn: async () => {
+                    labelChecks += 1;
+                    return labelChecks >= 2;
+                },
+                createCommitStatusFn: async (_token, _repo, _sha, payload) => {
+                    posted.push(payload);
+                },
+            });
+
+            assert.equal(posted.length, 3);
+            assert.ok(posted.every((p) => p.state === 'success' && p.description.startsWith('E2E/Override — ')));
+        });
+
+        it('re-checks status and label before each POST and posts failure when un-overridden', async () => {
+            let statusReads = 0;
+            let labelReads = 0;
+            const posted = [];
+            await finalizeUnstartedLanes({
+                token: 'tok',
+                repository: REPO,
+                sha: 'abc1234',
+                runId: RUN_ID,
+                runUrl: RUN_URL,
+                jobConfigs: ALL_CONFIGS,
+                upstreamResults: upstream,
+                e2eOverride: false,
+                prNumber: '10364',
+                readStatusesFn: async () => {
+                    statusReads += 1;
+                    return pendingRows();
+                },
+                readOverrideFn: async () => {
+                    labelReads += 1;
+                    return false;
+                },
+                createCommitStatusFn: async (_token, _repo, _sha, payload) => {
+                    posted.push(payload);
+                },
+            });
+
+            assert.equal(statusReads, 4);
+            assert.equal(labelReads, 4);
+            assert.equal(posted.length, 3);
+            assert.ok(posted.every((p) => p.state === 'failure'));
+        });
+
+        it('readE2eOverrideLabel detects E2E/Override and returns null on invalid PR or error', async () => {
+            assert.equal(await readE2eOverrideLabel({token: 'tok', repository: REPO, prNumber: ''}), null);
+            assert.equal(
+                await readE2eOverrideLabel({
+                    token: 'tok',
+                    repository: REPO,
+                    prNumber: '10364',
+                    requestFn: async () => [{name: 'E2E/Run'}, {name: 'E2E/Override'}],
+                }),
+                true,
+            );
+            assert.equal(
+                await readE2eOverrideLabel({
+                    token: 'tok',
+                    repository: REPO,
+                    prNumber: '10364',
+                    requestFn: async () => {
+                        throw new Error('503');
+                    },
+                }),
+                null,
+            );
         });
     });
 });
