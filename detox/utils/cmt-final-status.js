@@ -159,9 +159,10 @@ function evaluateCmtFinalStatus({jobResults, expectedJobKeys, triage, rerunResul
         clearedByTriage ? `${clearedByTriage} cleared by triage` : null,
         clearedByRerun ? `${clearedByRerun} passed on rerun` : null,
     ].filter(Boolean);
-    const description = clearedParts.length ?
-        `Compatibility Matrix Testing passed (${clearedParts.join(', ')})`.slice(0, 140) :
-        'Compatibility Matrix Testing passed — triage cleared failures';
+    let description = 'Compatibility Matrix Testing passed — triage cleared failures';
+    if (clearedParts.length) {
+        description = `Compatibility Matrix Testing passed (${clearedParts.join(', ')})`.slice(0, 140);
+    }
 
     return {
         upstreamSucceeded: false,

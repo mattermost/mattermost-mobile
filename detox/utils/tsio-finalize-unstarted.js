@@ -116,9 +116,10 @@ function planUnstartedFinalizations({
         }
         const allFailed = reasons.every((job) => upstreamResults[job] === 'failure');
         const rawDescription = `Upstream ${reasons.join(', ')} ${allFailed ? 'failed' : 'did not succeed'}; tests did not run`.slice(0, 140);
-        const final = e2eOverride ?
-            overrideCommitStatus('failure', rawDescription) :
-            {state: 'failure', description: rawDescription};
+        let final = {state: 'failure', description: rawDescription};
+        if (e2eOverride) {
+            final = overrideCommitStatus('failure', rawDescription);
+        }
         updates.push({
             context: config.status_context,
             state: final.state,

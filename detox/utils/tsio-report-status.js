@@ -124,9 +124,14 @@ function decideStatus(detail, upstreamSucceeded, cancelled = false) {
         return {state, description: description.slice(0, 140), both_terminal: true, timed_out: false};
     }
     const failed = stats.failed || 0;
-    const suffix = failed > 0 ?
-        `${failed} failed` :
-        (!upstreamSucceeded ? 'CI job failed' : 'results not confirmed');
+    let suffix;
+    if (failed > 0) {
+        suffix = `${failed} failed`;
+    } else if (upstreamSucceeded) {
+        suffix = 'results not confirmed';
+    } else {
+        suffix = 'CI job failed';
+    }
     return {
         state: 'failure',
         description: `TSIO poll timed out (status=${detail.status}) — ${suffix}`.slice(0, 140),

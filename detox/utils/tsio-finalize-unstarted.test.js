@@ -173,6 +173,7 @@ describe('tsio-finalize-unstarted', () => {
             const rows = [
                 {context: 'e2e-test/detox-ios', state: 'success', target_url: RUN_URL},
                 {context: 'e2e-test/detox-ipad', state: 'pending', target_url: OTHER_URL},
+
                 // e2e-test/maestro-ios missing from rows
             ];
             const updates = planUnstartedFinalizations({
