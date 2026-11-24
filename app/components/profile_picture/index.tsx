@@ -21,6 +21,8 @@ type ProfilePictureProps = {
     author?: UserModel | UserProfile;
     forwardRef?: React.RefObject<any>;
     iconSize?: number;
+    imageBackgroundColor?: string;
+    isOnCenterBg?: boolean;
     showStatus?: boolean;
     size: number;
     statusSize?: number;
@@ -61,6 +63,8 @@ const ProfilePicture = ({
     author,
     forwardRef,
     iconSize,
+    imageBackgroundColor,
+    isOnCenterBg = true,
     showStatus = true,
     size = 64,
     statusSize = 14,
@@ -97,6 +101,8 @@ const ProfilePicture = ({
                 author={author}
                 forwardRef={forwardRef}
                 iconSize={iconSize}
+                imageBackgroundColor={imageBackgroundColor}
+                isOnCenterBg={isOnCenterBg}
                 size={size}
                 source={source}
                 url={serverUrl}

@@ -64,6 +64,7 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
                 statusStyle={styles.statusStyle}
                 statusSize={24}
                 testID={`${accountUserInfoTestId}.profile_picture`}
+                isOnCenterBg={false}
             />
             {showFullName &&
             <Text

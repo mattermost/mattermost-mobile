@@ -12,7 +12,7 @@ import {ExpoImageAnimated} from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, getProfileImageBackground, makeStyleSheetFromTheme} from '@utils/theme';
 import {getLastPictureUpdate} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -21,6 +21,8 @@ type Props = {
     author?: UserModel | UserProfile;
     forwardRef?: React.RefObject<any>;
     iconSize?: number;
+    imageBackgroundColor?: string;
+    isOnCenterBg?: boolean;
     size: number;
     source?: ImageSource | CompassIconName;
     url?: string;
@@ -34,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
+const Image = ({author, forwardRef, iconSize, imageBackgroundColor, isOnCenterBg = true, size, source, url}: Props) => {
     const theme = useTheme();
     let serverUrl = useServerUrl();
     serverUrl = url || serverUrl;
@@ -43,10 +45,10 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     const lastPictureUpdateAt = author ? getLastPictureUpdate(author) : 0;
     const fIStyle = useMemo(() => ({
         borderRadius: size / 2,
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: imageBackgroundColor ?? getProfileImageBackground(theme, isOnCenterBg),
         height: size,
         width: size,
-    }), [size, theme.centerChannelBg]);
+    }), [imageBackgroundColor, isOnCenterBg, size, theme]);
 
     const imgSource = useMemo(() => {
         if (!author || typeof source === 'string') {
