@@ -443,6 +443,7 @@ jobs:
       queue: max
     permissions:
       contents: read
+      issues: read
       statuses: write
     steps:
       # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
@@ -455,7 +456,21 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
+      - name: Confirm E2E/Override is still applied
+        id: override
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            core.setOutput('active', String(labels.some((label) => label.name === 'E2E/Override')));
+
       - name: Re-post E2E/Override success on new commit
+        if: steps.override.outputs.active == 'true'
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ github.event.pull_request.head.sha }}
