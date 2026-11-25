@@ -270,6 +270,7 @@ jobs:
             head_sha=$(jq -r '.head.sha' <<< "$pull")
             base=$(jq -r '.base.ref' <<< "$pull")
             state=$(jq -r '.state' <<< "$pull")
+            changed_files=$(jq -r '.changed_files // empty' <<< "$pull")
             if [ "$head_repo" != "$REPO" ]; then
               finish refuse "pull request ${pr} is from ${head_repo}; fork pull requests are not dispatched" "$([ "$EVENT" = workflow_dispatch ] && echo true || echo false)"
             fi
@@ -319,6 +320,18 @@ jobs:
                 decision=dispatch
                 reason="the file list of pull request ${pr} could not be read; running E2E"
               else
+                # The pulls files API stops at 3000 files. A short or capped list must not skip E2E.
+                listed=$(wc -l < "$files_file" | tr -d '[:space:]')
+                if ! [[ "$changed_files" =~ ^[0-9]+$ ]] || [ "$listed" -ge 3000 ] || [ "$listed" -ne "$changed_files" ]; then
+                  decision=dispatch
+                  if [ "$listed" -ge 3000 ]; then
+                    reason="the file list of pull request ${pr} reached the 3000-file API limit; running E2E"
+                  elif [[ "$changed_files" =~ ^[0-9]+$ ]]; then
+                    reason="the file list of pull request ${pr} lists ${listed} of ${changed_files} changed files; running E2E"
+                  else
+                    reason="the file list of pull request ${pr} could not be checked against its changed files; running E2E"
+                  fi
+                else
                 impact=$(python3 - "$paths_file" "$files_file" << 'PY'
           import json, re, sys
 
@@ -388,6 +401,7 @@ jobs:
                     reason="the impact filter failed; running E2E"
                     ;;
                 esac
+                fi
               fi
             fi
           else
@@ -431,6 +445,7 @@ jobs:
         if: steps.decide.outputs.start == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           REF: ${{ steps.decide.outputs.ref }}
           SHA: ${{ steps.decide.outputs.sha }}
           PR: ${{ steps.decide.outputs.pr }}
@@ -447,6 +462,10 @@ jobs:
           fi
           if ! [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
             echo "::error::refusing to dispatch commit ${SHA}"
+            exit 1
+          fi
+          if ! [[ "$GH_REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "::error::refusing to dispatch without a repository"
             exit 1
           fi
           if [ -n "$PR" ] && ! [[ "$PR" =~ ^[1-9][0-9]{0,6}$ ]]; then
@@ -480,7 +499,7 @@ jobs:
             fi
           fi
           args=(
-            gh workflow run e2e-tests-ci.yml --ref "$REF"
+            gh workflow run e2e-tests-ci.yml --repo "$GH_REPO" --ref "$REF"
             -f "commit_sha=${SHA}"
             -f "lanes=${LANES}"
             -f "e2e_test_stack_account=${ACCOUNT}"
