@@ -301,7 +301,7 @@ jobs:
           decision=dispatch
           reason="ci passed"
           if [ -n "$pr" ]; then
-            if ! labels=$(gh api "repos/${REPO}/issues/${pr}/labels" --jq '.[].name'); then
+            if ! labels=$(gh api --paginate "repos/${REPO}/issues/${pr}/labels?per_page=100" --jq '.[].name'); then
               decision=dispatch
               reason="labels of pull request ${pr} could not be read; running E2E"
             elif printf '%s\n' "$labels" | grep -qx 'E2E/Override'; then
