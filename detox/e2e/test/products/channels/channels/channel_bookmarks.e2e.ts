@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {enableSynchronization, isAndroid, isIos, reloadApp, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {withTransportRetry} from '@support/utils/transport_retry';
 import {expect, waitFor} from 'detox';
 
@@ -205,7 +205,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // Reload after the WebSocket-backed setup has settled.
         await wait(timeouts.TWO_SEC);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
     });
 
@@ -243,7 +243,7 @@ describe('Channels - Channel Bookmarks', () => {
             try {
                 await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TWO_SEC);
             } catch {
-                await device.reloadReactNative();
+                await reloadApp();
                 await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TEN_SEC);
             }
         }
@@ -422,20 +422,21 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
 
-        // # Enter a valid URL and submit. Use a public URL with known OG tags — the local
-        // server's OG fetch can fail on Android because of network routing differences.
+        // # Enter a valid URL and submit. Use example.com (RFC 2606 domain with a stable
+        // <title>) — the local server's OG fetch can fail on Android because of network routing
+        // differences, and marketing sites like mattermost.com rotate their page titles.
         const linkInput = ChannelBookmarkScreen.getLinkInput();
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
-            await linkInput.typeText('https://mattermost.com');
-            await ChannelBookmarkScreen.waitForAutofilledTitle('Mattermost');
+            await linkInput.typeText('https://example.com');
+            await ChannelBookmarkScreen.waitForAutofilledTitle('Example Domain');
         });
 
         // # Wait for OG fetch / title auto-fill
         const titleInput = ChannelBookmarkScreen.getTitleInput();
         await waitFor(titleInput).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the title field is auto-populated (the OG title for mattermost.com is non-empty)
+        // * Verify the title field is auto-populated (the page title for example.com is non-empty)
         await expect(titleInput).toExist();
         const titleValue = await ChannelBookmarkScreen.getTitleValue();
         if (!titleValue) {
@@ -532,7 +533,7 @@ describe('Channels - Channel Bookmarks', () => {
         await element(by.text(':smile:')).tap();
         await wait(timeouts.TWO_SEC);
         if (isAndroid()) {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
 
         // # Save the edited bookmark
@@ -834,7 +835,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelT69455.id);
 
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
 
         const getHeaderBookmark = (bookmarkId: string) => element(

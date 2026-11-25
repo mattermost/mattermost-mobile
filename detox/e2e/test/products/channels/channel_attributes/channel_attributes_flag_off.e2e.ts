@@ -12,6 +12,7 @@ import {
     openChannel,
     requireOption,
     TEST_FIELD_OPTIONS,
+    withArchivedChannel,
 } from '@support/channel_attributes_fixtures';
 import {disableChannelAttributes, enableChannelAttributes, setChannelAttributesRequired} from '@support/channel_attributes_test_helper';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
@@ -20,8 +21,8 @@ import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {device, waitFor} from 'detox';
+import {reloadApp, timeouts} from '@support/utils';
+import {waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -102,9 +103,9 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
         });
 
         it('MM-T6306_1 - should show "Not set" for a required attribute with no value in Channel Info', async () => {
-            // # Create the channel BEFORE the required attribute field exists. The server enforces
-            // # required attribute values only at channel creation time. Creating the field after the
-            // # channel means the existing channel has no value — exactly what we want to verify.
+            // # Create the channel BEFORE the required attribute field exists, then archive it
+            // # around field setup so the required-attribute backfill skips it (MM-70717), leaving
+            // # this active channel without a value after restore.
             const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
@@ -112,8 +113,8 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             // Channel Info shows a required-but-unset attribute only to channel admins.
             await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
 
-            // # Now create the required field (no value set on the channel).
-            await Properties.apiSetupChannelAttributeField(
+            // # Now create the required field while the channel is archived so backfill skips it.
+            await withArchivedChannel(siteOneUrl, channel.id, () => Properties.apiSetupChannelAttributeField(
                 siteOneUrl,
                 {
                     fieldName: TEST_FIELD_NAME,
@@ -121,8 +122,9 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
                     actions: ['display_label_info'],
                     required: true,
                 },
-            );
-            await device.reloadReactNative();
+            ));
+
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -175,7 +177,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             // # Navigate to the channel.
             await ChannelListScreen.toBeVisible();
@@ -203,7 +205,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -237,7 +239,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);
@@ -263,7 +265,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
-            await device.reloadReactNative();
+            await reloadApp();
 
             await ChannelListScreen.toBeVisible();
             await openChannel(channel.name);

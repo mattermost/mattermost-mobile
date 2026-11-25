@@ -30,8 +30,8 @@ import {
     openArchivedChannel,
     postArchivedChannelSentinel,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {reloadApp, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Permissions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -78,12 +78,20 @@ describe('Channels - Channel Bookmarks Permissions', () => {
             throw new Error('[beforeAll] Failed to create regularUser');
         }
         regularUser = rUser;
-        await Team.apiAddUserToTeam(siteOneUrl, regularUser.id, testTeam.id);
+
+        // Checked: an unchecked add that timed out (96a33da) left the user teamless, and every retry then saw "No teams are available to join".
+        const {error: teamError} = await Setup.retryTransient(() => Team.apiAddUserToTeam(siteOneUrl, regularUser.id, testTeam.id), 'apiAddUserToTeam');
+        if (teamError) {
+            throw new Error(`[beforeAll] Failed to add regularUser to the team: ${JSON.stringify(teamError)}`);
+        }
 
         // ── Create all test channels ──────────────────────────────────────────
         channelT5615 = await createChannel();
 
-        await Channel.apiAddUserToChannel(siteOneUrl, regularUser.id, channelT5615.id);
+        const {error: channelError} = await Setup.retryTransient(() => Channel.apiAddUserToChannel(siteOneUrl, regularUser.id, channelT5615.id), 'apiAddUserToChannel');
+        if (channelError) {
+            throw new Error(`[beforeAll] Failed to add regularUser to the channel: ${JSON.stringify(channelError)}`);
+        }
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
@@ -157,7 +165,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
     });
 

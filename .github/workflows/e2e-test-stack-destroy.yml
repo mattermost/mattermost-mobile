@@ -1,0 +1,348 @@
+---
+name: E2E Test Stack - Destroy
+
+# Collects the logs of a batch's servers still up, then destroys it, with the
+# toolkit's logs and destroy actions. A run calls it for each lane's batch once
+# it is done with it: destroy releases every attempt's batch of the run,
+# reports any site, mail or SSO host the router still serves after 30 seconds,
+# and destroys again expecting "not found".
+#
+# By hand, it takes one batch id and its account, from a run's create summary.
+# In another account the batch is not found, and the run passes with the batch
+# still up: give the account the summary names. Another run's batch is collected
+# and destroyed only when that run was started by hand, by the same person, and
+# has completed; any other batch is left to its run's own destroy, or to the
+# reaper at its TTL. A batch already gone has no logs, is "not found", and
+# passes.
+#
+# It runs as the account input's CI role, which trusts only jobs in this file
+# and e2e-test-stack-create.yml, on main and release-*.*. The on_cancel call is a job
+# in this file for that reason: a cancel from the caller would not be trusted.
+
+on:
+  workflow_call:
+    inputs:
+      batch:
+        description: "The batch within the run, as create was given it, e.g. dt-ios-pr"
+        type: string
+        required: true
+      account:
+        description: "AWS account the batch was created in: prod or dev"
+        type: string
+        default: "prod"
+      channel:
+        description: "Control plane channel the batch was created on: v1 or edge"
+        type: string
+        default: "v1"
+      on_cancel:
+        description: "Wait while the caller runs, and destroy lanes' batches only if that run is cancelled"
+        type: boolean
+        default: false
+      lanes:
+        description: "With on_cancel: JSON array of lane names from setup"
+        type: string
+        default: ""
+      batches:
+        description: "With on_cancel: JSON object of lane to batch name from setup"
+        type: string
+        default: ""
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY:
+        description: "The repository's credentials key, which opens the batch's sealed token"
+        required: true
+  workflow_dispatch:
+    inputs:
+      batch_id:
+        description: "The batch to destroy, from its run's create summary, e.g. mobile-1234-dt-ios-pr-1-a1b2c3"
+        required: true
+        type: string
+      account:
+        description: "AWS account the batch was created in, as its run's create summary says; in another, it is not found and stays up"
+        required: false
+        type: choice
+        options: ["prod", "dev"]
+        default: "prod"
+      channel:
+        description: "Control plane channel the batch was created on"
+        required: false
+        type: choice
+        options: ["v1", "edge"]
+        default: "v1"
+
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
+env:
+  CALLER_KEY: mobile
+  # Called: the batch, and no id. By hand: the id, and no batch.
+  BATCH: ${{ inputs.batch }}
+  BATCH_ID: ${{ inputs.batch_id }}
+  # Empty, and refused, for an account that is neither or whose variable is unset.
+  ROLE_ARN: ${{ inputs.account == 'dev' && vars.E2E_TEST_STACK_ROLE_ARN_DEV || inputs.account == 'prod' && vars.E2E_TEST_STACK_ROLE_ARN_PROD || '' }}
+
+jobs:
+  logs:
+    # Also in a cancelled run, so a batch destroyed then still has its logs.
+    # The on_cancel job is the one already running in that mode; these two stay idle.
+    if: always() && !inputs.on_cancel
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: ci/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      # Every server still up, ready or not, into one artifact, e2e-test-stack-logs-<batch>-<attempt>.
+      - name: ci/logs
+        id: logs
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ env.BATCH }}
+          batch-id: ${{ env.BATCH_ID }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      # Every server whose full log was saved names the containers it ran.
+      - name: ci/assert-logs
+        env:
+          SERVERS: ${{ steps.logs.outputs.servers }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SERVERS" ] || [ "$SERVERS" = '[]' ]; then
+            echo "no server is up, so no logs were collected"
+            exit 0
+          fi
+          bad=$(jq -r '[.[] | select(.full and (.containers | length) == 0) | .index] | join(", ")' <<< "$SERVERS")
+          if [ -n "$bad" ]; then
+            echo "::error::the log of server(s) ${bad} names no container"
+            exit 1
+          fi
+          jq -r '.[] | "  server \(.index): \(.containers | join(" "))"' <<< "$SERVERS"
+
+  # A failed logs job never keeps the batch up.
+  destroy:
+    needs: logs
+    if: always() && !inputs.on_cancel
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: ci/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      - name: ci/destroy
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ env.BATCH }}
+          batch-id: ${{ env.BATCH_ID }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  # Already running while the caller tests, so a cancel reaches it. GitHub re-checks `if` only on a job
+  # that is running, and a cancelled run does not start one. The CI role trusts only this file and
+  # create.yml, and only for the public toolkit actions: no checkout and no local action.
+  cancel:
+    # A timeout must not turn the caller's finished test run red. GitHub-hosted jobs cap at 360m.
+    if: always() && inputs.on_cancel
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: e2e-tests/wait
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          zeros=0
+          while true; do
+            if listing=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+              --jq '.jobs[] | [.name, .status] | @tsv'); then
+              # The caller's job name is "Destroy on cancel"; this job shows up under that prefix.
+              # Results is absent until the lanes are decided, so a poll that has not listed it yet
+              # is not a finished run. Once it has completed, two quiet polls end the wait, including
+              # a first poll that already finds every other job completed.
+              parsed=$(printf '%s\n' "$listing" | awk -F '\t' '
+                index($1, "Destroy on cancel") == 0 && ($2 == "queued" || $2 == "in_progress" || $2 == "waiting" || $2 == "pending" || $2 == "requested") { c++ }
+                $1 == "Results" && $2 == "completed" { r++ }
+                END { print c+0, r+0 }
+              ')
+              count=${parsed%% *}
+              results=${parsed##* }
+              echo "other jobs still going: ${count}; results completed: ${results}"
+              if [ "$count" -gt 0 ] || [ "$results" -eq 0 ]; then
+                zeros=0
+              else
+                zeros=$((zeros + 1))
+                if [ "$zeros" -ge 2 ]; then
+                  echo "other jobs finished"
+                  exit 0
+                fi
+              fi
+            else
+              echo "job list failed, retrying"
+              zeros=0
+            fi
+            sleep 20
+          done
+
+      # Destroy reads each lane's create response. The create action uploads that response in
+      # if: always() steps, which still run after the lane is cancelled. Do not destroy while any
+      # other job is still active: a cancelled job is force-killed within five minutes, then those
+      # uploads finish and the job leaves the active states. A create cancelled before it recorded
+      # a batch id uploads nothing, and that batch is reaped at its TTL.
+      - name: e2e-tests/wait-for-shutdown
+        if: cancelled()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          zeros=0
+          while true; do
+            if listing=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+              --jq '.jobs[] | [.name, .status] | @tsv'); then
+              count=$(printf '%s\n' "$listing" | awk -F '\t' '
+                index($1, "Destroy on cancel") == 0 && ($2 == "queued" || $2 == "in_progress" || $2 == "waiting" || $2 == "pending" || $2 == "requested") { c++ }
+                END { print c+0 }
+              ')
+              echo "other jobs still going: ${count}"
+              if [ "$count" -eq 0 ]; then
+                zeros=$((zeros + 1))
+                if [ "$zeros" -ge 2 ]; then
+                  echo "other jobs finished"
+                  exit 0
+                fi
+              else
+                zeros=0
+              fi
+            else
+              echo "job list failed, retrying"
+              zeros=0
+            fi
+            sleep 20
+          done
+
+      - name: ci/setup-node
+        if: cancelled()
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      - name: ci/logs-detox-ios
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-ios')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-detox-ios
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'detox-ios')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-detox-ipad
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-ipad')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-ipad'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-detox-ipad
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'detox-ipad')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-ipad'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-detox-android
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-android')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-android'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-detox-android
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'detox-android')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-android'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-maestro-ios
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-ios')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['maestro-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-maestro-ios
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'maestro-ios')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['maestro-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-maestro-android
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-android')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['maestro-android'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-maestro-android
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'maestro-android')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['maestro-android'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}

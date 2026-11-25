@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
@@ -106,7 +106,7 @@ class ChannelBookmarkScreen {
         ).trim();
     };
 
-    waitForAutofilledTitle = async (expectedPrefix = 'Mattermost', timeout = timeouts.ONE_MIN): Promise<string> => {
+    waitForAutofilledTitle = async (expectedPrefix = 'Example Domain', timeout = timeouts.ONE_MIN): Promise<string> => {
         const deadline = Date.now() + timeout;
         let lastTitle = '';
         /* eslint-disable no-await-in-loop */
@@ -145,12 +145,12 @@ class ChannelBookmarkScreen {
             return action();
         }
 
-        await device.disableSynchronization();
+        await disableSynchronization();
 
         try {
             return await action();
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
     };
 
@@ -186,14 +186,14 @@ class ChannelBookmarkScreen {
 
             if (!iconReachable) {
                 // Sync stays off only for the back press — keyboard teardown never settles the bridge.
-                await device.disableSynchronization();
+                await disableSynchronization();
                 try {
                     await device.pressBack();
                     await wait(timeouts.HALF_SEC);
                 } catch {
                     // Keyboard may already be dismissed.
                 } finally {
-                    await safeEnableSynchronization();
+                    await enableSynchronization();
                 }
             }
 

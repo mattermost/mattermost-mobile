@@ -7,7 +7,7 @@ runs:
     # Do not use setup-ruby bundler-cache. It enables Bundler deployment mode,
     # which fails when a GitHub runner platform is missing from Gemfile.lock
     # (e.g. darwin-24 → darwin-25 image bumps). Plain bundle install does not.
-    - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
+    - uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
 
     # Arch-scoped: vendor/bundle holds compiled native extensions that are not
     # portable across arm64/x86_64. runner.os alone is just "macOS" and spans both.

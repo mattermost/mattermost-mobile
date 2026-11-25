@@ -30,7 +30,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
 
 describe('Search - Saved Messages', () => {
@@ -205,11 +205,11 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // # Open post options for saved message and tap on unsave option
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
         await PostOptionsScreen.unsavePostOption.tap();
 

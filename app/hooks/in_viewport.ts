@@ -35,3 +35,11 @@ export const useIsInViewPort = (location: string, postId: string) => {
 
     return inViewPort;
 };
+
+/**
+ * Drops the list's cached viewable items when it unmounts, so a later mount at the same location
+ * doesn't seed visibility from posts that were on screen in a list that no longer exists.
+ */
+export const useClearViewableItemsOnUnmount = (location: string) => {
+    useEffect(() => () => EphemeralStore.removeViewableItems(location), [location]);
+};

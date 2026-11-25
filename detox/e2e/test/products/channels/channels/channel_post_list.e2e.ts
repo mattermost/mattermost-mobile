@@ -22,7 +22,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToHaveText} from '@support/utils';
+import {disableSynchronization, enableSynchronization, getRandomId, isIos, timeouts, wait, waitForElementToExist, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Post List', () => {
@@ -57,7 +57,7 @@ describe('Channels - Channel Post List', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
 
         if (isIos()) {
-            await device.disableSynchronization();
+            await disableSynchronization();
             try {
                 /* eslint-disable no-await-in-loop -- bounded scroll toward the intro footer */
                 for (let i = 0; i < 6; i++) {
@@ -75,7 +75,7 @@ describe('Channels - Channel Post List', () => {
                 }
                 /* eslint-enable no-await-in-loop */
             } finally {
-                await safeEnableSynchronization();
+                await enableSynchronization();
             }
         }
         await ChannelScreen.waitForIntro(

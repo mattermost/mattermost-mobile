@@ -16,6 +16,8 @@ import {
     type CallsPostProps,
     type CallsTheme,
     CallsTransport,
+    type DialablePhone,
+    type PhoneCallPostProps,
 } from '@calls/types/calls';
 import {Calls, Post, General} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
@@ -24,6 +26,7 @@ import {ensureNumber, ensureString, isArrayOf, isRecordOf, isStringArray} from '
 import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type {RTCIceServer} from '@livekit/react-native-webrtc';
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -315,10 +318,10 @@ export function getCallPropsFromPost(post: PostModel | Post): CallsPostProps {
 /**
  * Derives which state the call post card should render. Mirrors getCallCardState in the webapp
  * (webapp/src/components/custom_post_types/post_type_event.tsx).
- * The server keeps call_status at 'calling' after the callee answers, so the number of people in
- * the call is what tells a ringing call apart from a connected one.
+ * The server keeps call_status at 'calling' after the callee answers, so callers derive `answered`
+ * from call state (the number of users in the call, or the phone leg connecting) instead.
  */
-export function getCallCardState(callProps: CallsPostProps, numUsers: number, callExists: boolean): CallCardState {
+export function getCallCardState(callProps: CallsPostProps, answered: boolean, callExists: boolean): CallCardState {
     if (callProps.end_at > 0) {
         switch (callProps.call_status) {
             case CallPostStatus.NoAnswer:
@@ -327,6 +330,8 @@ export function getCallCardState(callProps: CallsPostProps, numUsers: number, ca
                 return CallCardState.Canceled;
             case CallPostStatus.Declined:
                 return CallCardState.Declined;
+            case CallPostStatus.Failed:
+                return CallCardState.Failed;
             default:
                 return CallCardState.Ended;
         }
@@ -338,11 +343,7 @@ export function getCallCardState(callProps: CallsPostProps, numUsers: number, ca
         return CallCardState.Ended;
     }
 
-    if (callProps.call_status === CallPostStatus.Calling && numUsers <= 1) {
-        return CallCardState.Calling;
-    }
-
-    return CallCardState.Active;
+    return answered ? CallCardState.Active : CallCardState.Calling;
 }
 
 /**
@@ -351,4 +352,26 @@ export function getCallCardState(callProps: CallsPostProps, numUsers: number, ca
  */
 export function getNumUsersInCall(call?: Call): number {
     return new Set(Object.values(call?.sessions ?? {}).map((session) => session.userId)).size;
+}
+
+export function getPhoneCallPropsFromPost(post: PostModel | Post): PhoneCallPostProps | undefined {
+    if (post.props?.call_type !== 'phone') {
+        return undefined;
+    }
+
+    const number = ensureString(post.props.phone_number);
+    return {
+        number,
+        displayNumber: ensureString(post.props.display_number) || number,
+        label: ensureString(post.props.display_label),
+        targetUserId: ensureString(post.props.target_user_id),
+    };
+}
+
+export const NO_PHONES: DialablePhone[] = [];
+
+export function getDialablePhones(attributes: CustomAttribute[]): DialablePhone[] {
+    return attributes.
+        filter((attribute) => attribute.type === 'phone' && attribute.value.trim()).
+        map((attribute) => ({label: attribute.name, number: attribute.value.trim()}));
 }

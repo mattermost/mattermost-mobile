@@ -123,9 +123,18 @@ function decideStatus(detail, upstreamSucceeded, cancelled = false) {
         }
         return {state, description: description.slice(0, 140), both_terminal: true, timed_out: false};
     }
+    const failed = stats.failed || 0;
+    let suffix;
+    if (failed > 0) {
+        suffix = `${failed} failed`;
+    } else if (upstreamSucceeded) {
+        suffix = 'results not confirmed';
+    } else {
+        suffix = 'CI job failed';
+    }
     return {
-        state: upstreamSucceeded ? 'success' : 'failure',
-        description: `TSIO poll timed out (status=${detail.status}) — using CI job status`.slice(0, 140),
+        state: 'failure',
+        description: `TSIO poll timed out (status=${detail.status}) — ${suffix}`.slice(0, 140),
         both_terminal: false,
         timed_out: true,
     };
@@ -367,6 +376,7 @@ async function reportTsioStatus(options) {
         // Per-job finalize leaves this false so N platform legs do not spam the channel.
         channelNotify = false,
         announceTriage = false,
+        mintOidcTokenFn = mintOidcToken,
     } = options;
 
     const baseUrl = baseUrlOverride || (useStaging ? STAGING_URL : PRODUCTION_URL);
@@ -408,7 +418,7 @@ async function reportTsioStatus(options) {
 
     let idToken;
     try {
-        idToken = await mintOidcToken(audience);
+        idToken = await mintOidcTokenFn(audience);
     } catch (err) {
         console.error('tsio-report-status (OIDC):', err.message);
         await postStatus({
@@ -495,7 +505,7 @@ async function reportTsioStatus(options) {
             `**Display report:** [${compositeIdentity.name}](${result.display_report_url})`,
             `**Group:** [${reportId}](${result.group_url}) — ${result.status}`,
             `**Stats:** ${stats.passed || 0} passed, ${stats.failed || 0} failed, ${stats.skipped || 0} skipped (of ${stats.total || 0})`,
-            ...(timedOut ? ['', ':warning: TSIO group did not reach terminal status in time — failing open to CI job status.'] : []),
+            ...(timedOut ? ['', ':warning: TSIO group did not reach terminal status in time — reporting failure because results were not confirmed.'] : []),
             ...(result.override_applied ? ['', `:warning: ${OVERRIDE_LABEL} is set on this PR — reporting ${state} as success so the required check does not block the merge.`] : []),
         ];
         try {
@@ -548,8 +558,13 @@ async function reportTsioStatus(options) {
 
     // Under override the commit status is green; failing the step too would only
     // turn the run red again for a result the maintainer chose to waive.
-    if (failOnTestFailures && !result.override_applied && bothTerminal && (result.test_stats.failed || 0) > 0) {
-        const err = new Error('TSIO reported test failures');
+    const shouldFailStep = !cancelled && ((bothTerminal && (result.test_stats.failed || 0) > 0) || result.timed_out);
+    if (failOnTestFailures && !result.override_applied && shouldFailStep) {
+        const err = new Error(
+            result.timed_out ?
+                'TSIO poll timed out before group reached terminal status' :
+                'TSIO reported test failures',
+        );
         err.exitCode = 1;
         throw err;
     }
@@ -605,7 +620,7 @@ function selfTest() {
     assert(r.state === 'failure', 'failures -> failure');
 
     r = decideStatus({status: 'in_progress', test_stats: {passed: 3, failed: 0}}, true);
-    assert(r.timed_out === true && r.state === 'success', 'timeout fail-open upstream ok');
+    assert(r.timed_out === true && r.state === 'failure', 'timeout fail-closed upstream ok');
 
     const display = 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr';
     const actions = 'https://github.com/o/r/actions/runs/99';

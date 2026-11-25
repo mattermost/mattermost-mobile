@@ -1,0 +1,424 @@
+---
+# Mobile E2E by hand, on e2e-test-stack servers, for any of the five lanes. Run it from main or a
+# release-<major>.<minor> branch, the refs the e2e-test-stack CI role trusts, with the commit to test.
+#
+#   setup    validates the inputs, names each lane's batch, posts pending e2e-test-stack/<lane> statuses
+#   build-*  the app builds the chosen lanes need, from the S3 build cache or built
+#   lanes    each creates and provisions its own batch, runs and reports to TSIO:
+#              detox-ios        e2e-ios-template.yml      dt-ios-<type>
+#              detox-ipad       e2e-ios-template.yml      dt-ipad-<type>
+#              detox-android    e2e-android-template.yml  dt-andr-<type>
+#              maestro-ios      e2e-maestro-template.yml  ms-ios-<type>
+#              maestro-android  e2e-maestro-template.yml  ms-andr-<type>
+#            <type> is pr with pr_number, else main on main and rel on a release branch.
+#   results  settles any status a lane left pending and picks the batches to destroy
+#   destroy  collects each picked batch's logs and destroys it
+#   cancel   calls e2e-test-stack-destroy.yml, already running during the lanes. That file is what the
+#            CI role trusts, so a cancel can still destroy batches.
+#
+# One run at a time per pull request, or per ref when pr_number is empty (main, or one release branch). A newer run
+# cancels the one in progress. It does not wait for it.
+#
+# A passed lane's batch is destroyed. So is every lane's batch when the run is cancelled. A failed or timed-out lane
+# of a run that was not cancelled is kept, so "Re-run failed jobs" uses the same servers. The batch's TTL (4h from
+# create) bounds that, including time queued for a macOS runner, and is the backstop when destroy does not run.
+# After it, only "Re-run all jobs" creates a new batch. The run posts no triage verdict and no channel message; its
+# statuses are not the required e2e-test/* contexts.
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "The commit to test, a full 40-character SHA"
+        required: true
+        type: string
+      pr_number:
+        description: "The pull request the commit belongs to, if any: its TSIO report, cache scope and batch type"
+        required: false
+        type: string
+        default: ""
+      lanes:
+        description: "Comma-separated lanes: detox-ios, detox-ipad, detox-android, maestro-ios, maestro-android"
+        required: false
+        type: string
+        default: "detox-ios,detox-ipad,detox-android,maestro-ios,maestro-android"
+      e2e_test_stack_account:
+        description: "The AWS account of the e2e-test-stack control plane"
+        required: false
+        type: choice
+        options: ["prod", "dev"]
+        default: "prod"
+      e2e_test_stack_channel:
+        description: "The control plane channel"
+        required: false
+        type: choice
+        options: ["v1", "edge"]
+        default: "v1"
+      e2e_test_stack_server:
+        description: "The server under test: the master build, the latest stable release or the newest ESR"
+        required: false
+        type: choice
+        options: ["master", "latest", "esr"]
+        default: "master"
+      e2e_test_stack_server_image:
+        description: "A server image tag that replaces e2e_test_stack_server, from mattermost/ or mattermostdevelopment/ mattermost-enterprise-edition or mattermost-enterprise-fips-edition, e.g. mattermost/mattermost-enterprise-edition:10.11.3"
+        required: false
+        type: string
+        default: ""
+
+permissions: {}
+
+# Per pull request, or per ref when pr_number is empty. The ref- prefix keeps a branch name from matching a pr- group.
+# A newer run cancels the one in progress.
+concurrency:
+  group: e2e-tests-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || format('ref-{0}', github.ref_name) }}
+  cancel-in-progress: true
+
+jobs:
+  check-ref:
+    name: Check ref
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: e2e-tests/check-ref
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [ "$REF" = refs/heads/main ] || [[ "$REF" =~ ^refs/heads/release-[0-9]+\.[0-9]+$ ]]; then
+            echo "Running from ${REF}"
+            exit 0
+          fi
+          echo "::error::E2E Tests runs only from main or a release-<major>.<minor> branch, the refs the e2e-test-stack CI role trusts; this run is from ${REF}. Run it from main and give the commit to test as commit_sha."
+          exit 1
+
+  setup:
+    name: Setup
+    needs: check-ref
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    uses: ./.github/workflows/e2e-tests-setup.yml
+    with:
+      commit_sha: ${{ inputs.commit_sha }}
+      pr_number: ${{ inputs.pr_number }}
+      lanes: ${{ inputs.lanes }}
+      account: ${{ inputs.e2e_test_stack_account }}
+      channel: ${{ inputs.e2e_test_stack_channel }}
+      server: ${{ inputs.e2e_test_stack_server }}
+      server_image: ${{ inputs.e2e_test_stack_server_image }}
+
+  build-ios:
+    name: Build iOS simulator app
+    needs: setup
+    if: needs.setup.outputs.build-ios == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/e2e-tests-build.yml
+    with:
+      target: ios
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
+      pr_number: ${{ inputs.pr_number }}
+    secrets:
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_INTUNE_DEPLOY_KEY: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+      MM_MOBILE_GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+
+  build-android-detox:
+    name: Build Android Detox APKs
+    needs: setup
+    if: needs.setup.outputs.build-android-detox == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/e2e-tests-build.yml
+    with:
+      target: android-detox
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
+      pr_number: ${{ inputs.pr_number }}
+    secrets:
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+      MM_MOBILE_STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+      MM_MOBILE_STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+      MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+  build-android-maestro:
+    name: Build Android Maestro APK
+    needs: setup
+    if: needs.setup.outputs.build-android-maestro == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/e2e-tests-build.yml
+    with:
+      target: android-maestro
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
+      pr_number: ${{ inputs.pr_number }}
+    secrets:
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+      MM_MOBILE_STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+      MM_MOBILE_STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+      MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+  # The lanes run with run-type NONE: no triage announcement, no spec durations, no Zephyr and no channel message.
+  # They get no AWS keys, so no S3 report: each reports to TSIO and posts its e2e-test-stack/<lane> status. They get
+  # no admin secrets either: each batch has its own admin, which the lane reads from the batch.
+  detox-ios:
+    name: Detox iOS
+    needs: [setup, build-ios]
+    if: >-
+      !cancelled() && needs.setup.result == 'success' && needs.build-ios.result == 'success' &&
+      contains(fromJSON(needs.setup.outputs.lanes), 'detox-ios')
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      statuses: write
+      issues: read
+    uses: ./.github/workflows/e2e-ios-template.yml
+    with:
+      run-type: NONE
+      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-ios']) }}
+      tsio-shard-name: detox-ios
+      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      artifact_run_id: ${{ github.run_id }}
+      e2e_test_stack: true
+      e2e_test_stack_account: ${{ needs.setup.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
+      e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
+      e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-ios'] }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  # The iPad device, specs and Detox configuration of e2e-detox.yml's run-ios-ipad-tests.
+  detox-ipad:
+    name: Detox iPad
+    needs: [setup, build-ios]
+    if: >-
+      !cancelled() && needs.setup.result == 'success' && needs.build-ios.result == 'success' &&
+      contains(fromJSON(needs.setup.outputs.lanes), 'detox-ipad')
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      statuses: write
+      issues: read
+    uses: ./.github/workflows/e2e-ios-template.yml
+    with:
+      run-type: NONE
+      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-ipad']) }}
+      tsio-shard-name: detox-ipad
+      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      artifact_run_id: ${{ github.run_id }}
+      ios_device_name: "iPad Pro 13-inch (M5)"
+      ios_device_os_name: "iOS 26.2"
+      search_path: "detox/e2e/test/products/channels/ipad"
+      parallelism: "1"
+      detox_config: "ios.ipad.debug"
+      e2e_test_stack: true
+      e2e_test_stack_account: ${{ needs.setup.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
+      e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
+      e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-ipad'] }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  detox-android:
+    name: Detox Android
+    needs: [setup, build-android-detox]
+    if: >-
+      !cancelled() && needs.setup.result == 'success' && needs.build-android-detox.result == 'success' &&
+      contains(fromJSON(needs.setup.outputs.lanes), 'detox-android')
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      statuses: write
+      issues: read
+    uses: ./.github/workflows/e2e-android-template.yml
+    with:
+      run-android-tests: true
+      run-type: NONE
+      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-android']) }}
+      tsio-shard-name: detox-android
+      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      artifact_run_id: ${{ github.run_id }}
+      e2e_test_stack: true
+      e2e_test_stack_account: ${{ needs.setup.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
+      e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
+      e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['detox-android'] }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  maestro-ios:
+    name: Maestro iOS
+    needs: [setup, build-ios]
+    if: >-
+      !cancelled() && needs.setup.result == 'success' && needs.build-ios.result == 'success' &&
+      contains(fromJSON(needs.setup.outputs.lanes), 'maestro-ios')
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      statuses: write
+      issues: read
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: ios
+      run-type: NONE
+      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['maestro-ios-e2e']) }}
+      tsio-shard-name: maestro-ios-e2e
+      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      artifact_run_id: ${{ github.run_id }}
+      e2e_test_stack: true
+      e2e_test_stack_account: ${{ needs.setup.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
+      e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
+      e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['maestro-ios'] }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  maestro-android:
+    name: Maestro Android
+    needs: [setup, build-android-maestro]
+    if: >-
+      !cancelled() && needs.setup.result == 'success' && needs.build-android-maestro.result == 'success' &&
+      contains(fromJSON(needs.setup.outputs.lanes), 'maestro-android')
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      statuses: write
+      issues: read
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: android
+      run-type: NONE
+      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['maestro-android-e2e']) }}
+      tsio-shard-name: maestro-android-e2e
+      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      artifact_run_id: ${{ github.run_id }}
+      e2e_test_stack: true
+      e2e_test_stack_account: ${{ needs.setup.outputs.account }}
+      e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
+      e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
+      e2e_test_stack_batch: ${{ fromJSON(needs.setup.outputs.batches)['maestro-android'] }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  # Calls the destroy workflow so the job runs in the file the CI role trusts. The name is what that
+  # workflow's wait ignores. A timeout or a failed destroy must not turn a finished test run red.
+  cancel:
+    name: Destroy on cancel
+    needs: setup
+    if: always() && needs.setup.result == 'success'
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-destroy.yml
+    with:
+      batch: on-cancel
+      account: ${{ needs.setup.outputs.account }}
+      channel: ${{ needs.setup.outputs.channel }}
+      on_cancel: true
+      lanes: ${{ needs.setup.outputs.lanes }}
+      batches: ${{ needs.setup.outputs.batches }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  # Each chosen lane's batch is destroyed when the lane passed. A failed or timed-out lane is kept until its TTL
+  # for "Re-run failed jobs", which runs this job again with the re-run's results; a skipped lane created none.
+  # A cancelled run is destroyed by the cancel job, which is already running. A chosen lane's status still pending
+  # from this run (a lane skipped after a failed build, one whose servers failed, or one stopped before its report)
+  # is set to error.
+  results:
+    name: Results
+    needs: [setup, detox-ios, detox-ipad, detox-android, maestro-ios, maestro-android]
+    if: always() && needs.setup.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      statuses: write
+    outputs:
+      destroy: ${{ steps.pick.outputs.destroy }}
+    steps:
+      - name: e2e-tests/pick
+        id: pick
+        env:
+          LANES: ${{ needs.setup.outputs.lanes }}
+          BATCHES: ${{ needs.setup.outputs.batches }}
+          RESULTS: >-
+            {"detox-ios": "${{ needs.detox-ios.result }}", "detox-ipad": "${{ needs.detox-ipad.result }}",
+            "detox-android": "${{ needs.detox-android.result }}", "maestro-ios": "${{ needs.maestro-ios.result }}",
+            "maestro-android": "${{ needs.maestro-android.result }}"}
+        run: |
+          set -euo pipefail
+          destroy='[]'
+          for lane in $(jq -r '.[]' <<< "$LANES"); do
+            result=$(jq -r --arg l "$lane" '.[$l]' <<< "$RESULTS")
+            batch=$(jq -r --arg l "$lane" '.[$l]' <<< "$BATCHES")
+            case "$result" in
+              skipped) action="none: no batch" ;;
+              success) action=destroy ;;
+              *) action="kept, if it was created, for a re-run until its TTL" ;;
+            esac
+            if [ "$action" = destroy ]; then
+              destroy=$(jq -c --arg b "$batch" '. + [$b]' <<< "$destroy")
+            fi
+            echo "${lane}: ${result}; batch ${batch}: ${action}"
+            echo "- \`${lane}\` ${result}: batch \`${batch}\`, ${action}" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "destroy=${destroy}" >> "$GITHUB_OUTPUT"
+
+      # A failure here never keeps a batch up: destroy reads only the pick step's output.
+      - name: e2e-tests/settle-statuses
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LANES: ${{ needs.setup.outputs.lanes }}
+          COMMIT_SHA: ${{ needs.setup.outputs.commit-sha }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          statuses=$(gh api --paginate "repos/${REPO}/commits/${COMMIT_SHA}/status?per_page=100" --jq '.statuses[]' | jq -s -c '.')
+          for lane in $(jq -r '.[]' <<< "$LANES"); do
+            context="e2e-test-stack/${lane}"
+            state=$(jq -r --arg c "$context" --arg u "$TARGET_URL" \
+              '[.[] | select(.context == $c and .target_url == $u)][0].state // ""' <<< "$statuses")
+            if [ "$state" = pending ]; then
+              gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+                -f state=error \
+                -f context="$context" \
+                -f description="Mobile E2E on e2e-test-stack: no report; a build, the servers or provisioning failed, or it stopped" \
+                -f target_url="$TARGET_URL" > /dev/null
+              echo "${context}: pending, set to error"
+            fi
+          done
+
+  destroy:
+    name: Destroy ${{ matrix.batch }}
+    needs: [setup, results]
+    if: always() && needs.results.outputs.destroy != '' && needs.results.outputs.destroy != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        batch: ${{ fromJSON(needs.results.outputs.destroy) }}
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-destroy.yml
+    with:
+      batch: ${{ matrix.batch }}
+      account: ${{ needs.setup.outputs.account }}
+      channel: ${{ needs.setup.outputs.channel }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}

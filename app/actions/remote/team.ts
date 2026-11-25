@@ -20,6 +20,7 @@ import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
+import {deleteDownloadedFiles} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
@@ -32,6 +33,7 @@ import {syncThreadsIfNeeded} from './thread';
 
 import type {Client} from '@client/rest';
 import type {Model} from '@nozbe/watermelondb';
+import type {RevokedFile} from '@typings/database/database';
 
 export type MyTeamsRequest = {
     teams?: Team[];
@@ -349,6 +351,7 @@ export const fetchTeamsThreads = async (
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const result: Model[] = [];
+        const revokedFiles: RevokedFile[] = [];
 
         // process up to 15 teams at a time
         const chunks = chunk(teams, 15);
@@ -360,7 +363,10 @@ export const fetchTeamsThreads = async (
             }
 
             if (!fetchOnly && models.length) {
-                await operator.batchRecords(removeDuplicatesModels(models), 'fetchTeamsThreads');
+                await operator.batchRecords(removeDuplicatesModels(models), 'fetchTeamsThreads', true);
+                deleteDownloadedFiles(serverUrl, threads.revokedFiles ?? []);
+            } else if (threads.revokedFiles?.length) {
+                revokedFiles.push(...threads.revokedFiles);
             }
 
             if (models.length) {
@@ -368,7 +374,7 @@ export const fetchTeamsThreads = async (
             }
         }
 
-        return {error: undefined, models: result};
+        return {error: undefined, models: result, revokedFiles};
     } catch (error) {
         logDebug('error on fetchTeamsThreads', getFullErrorMessage(error));
         return {error};

@@ -605,56 +605,210 @@ jobs:
     permissions:
       contents: read
       statuses: write
+      actions: read
     outputs:
-      upstream-succeeded: ${{ steps.upstream.outputs.succeeded }}
+      upstream-succeeded: ${{ steps.final.outputs.upstream-succeeded }}
     needs:
-      - cmt-identity
       - calculate-commit-hash
+      - cmt-identity
+      - plan-cmt-triage
+      - prepare-maestro-matrix
       - provision-cmt-servers
+      - build-ios-simulator
+      - build-android-apk
+      - build-android-apk-maestro
       - detox-e2e
-      - detox-android-e2e
       - detox-ipad-e2e
+      - detox-android-e2e
       - maestro-ios-e2e
       - maestro-android-e2e
+      - tsio-triage
+      - plan-rerun-cmt
+      - rerun-detox-e2e
+      - rerun-detox-ipad-e2e
+      - rerun-detox-android-e2e
+      - rerun-maestro-ios-e2e
+      - rerun-maestro-android-e2e
     steps:
+      # Always check out finalizer scripts from the workflow dispatch ref (main), never old release tags.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
+          sparse-checkout: |
+            detox/utils/cmt-final-status.js
+            detox/utils/tsio-channel-notify-rollup.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
+            detox/utils/build-tsio-job-config.js
+            detox/utils/cli-args.js
+            detox/utils/rerun-failed.js
+          sparse-checkout-cone-mode: false
 
-      - name: Resolve upstream matrix outcome
-        id: upstream
+      - name: Download triage findings
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
+          path: triage-findings
+
+      - name: Download re-run results
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: e2e-rerun-results-*-a${{ github.run_attempt }}
+          path: rerun-results
+
+      # download-artifact extracts a single match straight into the path, without the artifact-named folder.
+      - name: Keep a single result in its artifact folder
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
-          UPSTREAM="true"
-          for r in "${{ needs.provision-cmt-servers.result }}" "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
-            case "$r" in
-              success|skipped) ;;
-              *) UPSTREAM="false" ;;
-            esac
+          file=""
+          for f in rerun-results/jest-results-merged.json rerun-results/maestro-report.xml; do
+            if [ -f "$f" ]; then
+              file="$f"
+              break
+            fi
           done
-          echo "succeeded=$UPSTREAM" >> "$GITHUB_OUTPUT"
+          if [ -z "$file" ]; then
+            exit 0
+          fi
+          name=$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[] | select(.expired | not) | .name' \
+            | grep -E "^e2e-rerun-results-.+-a${RUN_ATTEMPT}$" || true)
+          count=$(printf '%s\n' "$name" | grep -c . || true)
+          if [ "$count" != "1" ]; then
+            echo "::warning::A single result was downloaded but $count rerun artifacts are listed; leaving it unread"
+            exit 0
+          fi
+          mkdir -p "rerun-results/$name"
+          mv "$file" "rerun-results/$name/"
+
+      - name: Evaluate final CMT outcome
+        id: final
+        env:
+          JOB_KEYS: ${{ needs.plan-cmt-triage.outputs.failing-job-keys || '[]' }}
+          TRIAGE_FINDINGS_DIR: triage-findings
+          RERUN_RESULTS_DIR: rerun-results
+          R_CALC_HASH: ${{ needs.calculate-commit-hash.result }}
+          R_CMT_IDENTITY: ${{ needs.cmt-identity.result }}
+          R_PREPARE_MAESTRO: ${{ needs.prepare-maestro-matrix.result }}
+          R_PROVISION: ${{ needs.provision-cmt-servers.result }}
+          R_BUILD_IOS: ${{ needs.build-ios-simulator.result }}
+          R_BUILD_ANDROID_DETOX: ${{ needs.build-android-apk.result }}
+          R_BUILD_ANDROID_MAESTRO: ${{ needs.build-android-apk-maestro.result }}
+          R_DETOX_IOS: ${{ needs.detox-e2e.result }}
+          R_DETOX_IPAD: ${{ needs.detox-ipad-e2e.result }}
+          R_DETOX_ANDROID: ${{ needs.detox-android-e2e.result }}
+          R_MAESTRO_IOS: ${{ needs.maestro-ios-e2e.result }}
+          R_MAESTRO_ANDROID: ${{ needs.maestro-android-e2e.result }}
+          R_TSIO_TRIAGE: ${{ needs.tsio-triage.result }}
+          R_PLAN_RERUN: ${{ needs.plan-rerun-cmt.result }}
+          R_RERUN_DETOX_IOS: ${{ needs.rerun-detox-e2e.result }}
+          R_RERUN_DETOX_IPAD: ${{ needs.rerun-detox-ipad-e2e.result }}
+          R_RERUN_DETOX_ANDROID: ${{ needs.rerun-detox-android-e2e.result }}
+          R_RERUN_MAESTRO_IOS: ${{ needs.rerun-maestro-ios-e2e.result }}
+          R_RERUN_MAESTRO_ANDROID: ${{ needs.rerun-maestro-android-e2e.result }}
+        run: |
+          JOB_RESULTS_JSON=$(jq -nc \
+            --arg calculateCommitHash "$R_CALC_HASH" \
+            --arg cmtIdentity "$R_CMT_IDENTITY" \
+            --arg prepareMaestro "$R_PREPARE_MAESTRO" \
+            --arg provision "$R_PROVISION" \
+            --arg buildIos "$R_BUILD_IOS" \
+            --arg buildAndroidDetox "$R_BUILD_ANDROID_DETOX" \
+            --arg buildAndroidMaestro "$R_BUILD_ANDROID_MAESTRO" \
+            --arg detoxIos "$R_DETOX_IOS" \
+            --arg detoxIpad "$R_DETOX_IPAD" \
+            --arg detoxAndroid "$R_DETOX_ANDROID" \
+            --arg maestroIos "$R_MAESTRO_IOS" \
+            --arg maestroAndroid "$R_MAESTRO_ANDROID" \
+            --arg tsioTriage "$R_TSIO_TRIAGE" \
+            --arg planRerun "$R_PLAN_RERUN" \
+            --arg rerunDetoxIos "$R_RERUN_DETOX_IOS" \
+            --arg rerunDetoxIpad "$R_RERUN_DETOX_IPAD" \
+            --arg rerunDetoxAndroid "$R_RERUN_DETOX_ANDROID" \
+            --arg rerunMaestroIos "$R_RERUN_MAESTRO_IOS" \
+            --arg rerunMaestroAndroid "$R_RERUN_MAESTRO_ANDROID" \
+            '{
+              calculateCommitHash: $calculateCommitHash,
+              cmtIdentity: $cmtIdentity,
+              prepareMaestro: $prepareMaestro,
+              provision: $provision,
+              buildIos: $buildIos,
+              buildAndroidDetox: $buildAndroidDetox,
+              buildAndroidMaestro: $buildAndroidMaestro,
+              detoxIos: $detoxIos,
+              detoxIpad: $detoxIpad,
+              detoxAndroid: $detoxAndroid,
+              maestroIos: $maestroIos,
+              maestroAndroid: $maestroAndroid,
+              tsioTriage: $tsioTriage,
+              planRerun: $planRerun,
+              rerunDetoxIos: $rerunDetoxIos,
+              rerunDetoxIpad: $rerunDetoxIpad,
+              rerunDetoxAndroid: $rerunDetoxAndroid,
+              rerunMaestroIos: $rerunMaestroIos,
+              rerunMaestroAndroid: $rerunMaestroAndroid
+            }')
+          export JOB_RESULTS_JSON
+          node detox/utils/cmt-final-status.js
 
       # Umbrella context only — each matrix leg already posted <shard> from TSIO.
-      - name: Finalize umbrella CMT commit status from CI job results
+      - name: Finalize umbrella CMT commit status from triage and CI job results
+        if: always() && !cancelled() && needs.calculate-commit-hash.outputs.MOBILE_SHA != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
           COMMIT_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           REPO: ${{ github.repository }}
           TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          UPSTREAM: ${{ steps.upstream.outputs.succeeded }}
+          FINAL_OUTCOME: ${{ steps.final.outcome }}
+          STATE: ${{ steps.final.outputs.state }}
+          DESC: ${{ steps.final.outputs.description }}
         run: |
-          if [ "$UPSTREAM" = "true" ]; then
-            STATE=success
-            DESC="Compatibility Matrix Testing completed — see per-job e2e-test/* checks"
-          else
-            STATE=failure
-            DESC="Compatibility Matrix Testing failed — see per-job e2e-test/* checks"
+          if [ "$FINAL_OUTCOME" != "success" ] || [ -z "$STATE" ] || [ -z "$DESC" ]; then
+            STATE="failure"
+            DESC="Compatibility Matrix Testing failed — final status evaluation failed"
           fi
           gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
             -f state="$STATE" \
             -f context="e2e-test/compatibility-matrix-testing" \
             -f description="$DESC" \
             -f target_url="$TARGET_URL"
+
+      - name: Finalize umbrella CMT commit status on cancellation
+        if: cancelled() && needs.calculate-commit-hash.outputs.MOBILE_SHA != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state="error" \
+            -f context="e2e-test/compatibility-matrix-testing" \
+            -f description="Compatibility Matrix Testing cancelled before completion" \
+            -f target_url="$TARGET_URL"
+
+      - name: Consolidate CMT triage summary
+        if: always() && !cancelled() && needs.tsio-triage.result != 'skipped'
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-triage/consolidate@main
+        with:
+          findings-dir: triage-findings
+          summary-file: cmt-triage-summary.json
+          write-summary: "true"
+
+      - name: Upload consolidated CMT triage summary
+        if: always() && hashFiles('cmt-triage-summary.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cmt-triage-summary-a${{ github.run_attempt }}
+          path: cmt-triage-summary.json
+          retention-days: 7
 
 
   # Per-shard TSIO groups are finalized in each matrix leg, which leaves channel
@@ -668,6 +822,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: '!cancelled() && needs.tsio-triage.result != ''skipped'''
     needs:
+      - calculate-commit-hash
       - tsio-triage
     permissions:
       contents: read
@@ -679,9 +834,9 @@ jobs:
       maestro-android-matrix: ${{ steps.plan.outputs.maestro-android-matrix }}
       stale: ${{ steps.plan.outputs.stale }}
     steps:
+      # Always check out rerun/reporting helpers from the workflow dispatch ref (main), never old release tags.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
           sparse-checkout: |
             detox/utils/rerun-failed.js
@@ -697,14 +852,31 @@ jobs:
           pattern: e2e-triage-findings-*-a${{ github.run_attempt }}
           path: triage-findings
       # A spec that differs from main's is out of date on this release branch: it is not re-run on the old build.
-      - name: Fetch main to compare specs
+      - name: Fetch main and target release commit to compare specs
+        id: refs
         continue-on-error: true
-        run: git fetch --no-tags --depth=1 origin main
+        env:
+          MOBILE_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+        run: |
+          [ -n "$MOBILE_SHA" ] || exit 0
+          git fetch --no-tags --depth=1 origin main
+          MAIN_SHA=$(git rev-parse FETCH_HEAD)
+          git fetch --no-tags --depth=1 origin "$MOBILE_SHA"
+          TARGET_SHA=$(git rev-parse FETCH_HEAD)
+          echo "main_sha=$MAIN_SHA" >> "$GITHUB_OUTPUT"
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
       - name: Plan the re-run
         id: plan
         env:
           CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
-        run: node detox/utils/rerun-failed.js --findings-dir triage-findings --cmt-matrix "$CMT_MATRIX" --compare-ref FETCH_HEAD
+          MAIN_SHA: ${{ steps.refs.outputs.main_sha }}
+          TARGET_SHA: ${{ steps.refs.outputs.target_sha }}
+        run: |
+          ARGS=(--findings-dir triage-findings --cmt-matrix "$CMT_MATRIX")
+          if [ -n "$MAIN_SHA" ] && [ -n "$TARGET_SHA" ]; then
+            ARGS+=(--compare-ref "$MAIN_SHA" --target-ref "$TARGET_SHA")
+          fi
+          node detox/utils/rerun-failed.js "${ARGS[@]}"
 
   rerun-detox-e2e:
     name: rerun-mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
@@ -993,13 +1165,22 @@ jobs:
       - plan-rerun-cmt
     permissions:
       contents: read
+      actions: read
       # the channel rollup mints an OIDC token to read each shard's TSIO group.
       id-token: write
     steps:
+      # Always check out reporting scripts from the workflow dispatch ref (main), never old release tags.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-channel-notify-rollup.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
+            detox/utils/build-tsio-job-config.js
+            detox/utils/cli-args.js
+            detox/utils/rerun-failed.js
+          sparse-checkout-cone-mode: false
       # This attempt's triage verdicts (none when no shard failed, or triage did not finish).
       - name: Download triage findings
         continue-on-error: true
@@ -1014,12 +1195,41 @@ jobs:
         with:
           pattern: e2e-rerun-results-*-a${{ github.run_attempt }}
           path: rerun-results
+      # download-artifact extracts a single match straight into the path, without the artifact-named folder.
+      - name: Keep a single result in its artifact folder
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          file=""
+          for f in rerun-results/jest-results-merged.json rerun-results/maestro-report.xml; do
+            if [ -f "$f" ]; then
+              file="$f"
+              break
+            fi
+          done
+          if [ -z "$file" ]; then
+            exit 0
+          fi
+          name=$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[] | select(.expired | not) | .name' \
+            | grep -E "^e2e-rerun-results-.+-a${RUN_ATTEMPT}$" || true)
+          count=$(printf '%s\n' "$name" | grep -c . || true)
+          if [ "$count" != "1" ]; then
+            echo "::warning::A single result was downloaded but $count rerun artifacts are listed; leaving it unread"
+            exit 0
+          fi
+          mkdir -p "rerun-results/$name"
+          mv "$file" "rerun-results/$name/"
       - name: Post Mattermost CMT channel rollup
         env:
           JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
           TRIAGE_FINDINGS_DIR: triage-findings
           RERUN_RESULTS_DIR: rerun-results
           RERUN_STALE: ${{ needs.plan-rerun-cmt.outputs.stale || '{}' }}
+          HANDOFF_FILE: cmt-agent-handoff.json
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
           UPSTREAM_SUCCEEDED: ${{ needs.update-final-status.outputs.upstream-succeeded || 'false' }}
         run: |
@@ -1028,7 +1238,102 @@ jobs:
             --upstream-succeeded="$UPSTREAM_SUCCEEDED" \
             --poll-attempts=6 || true
 
+      - name: Upload CMT agent handoff
+        if: always() && hashFiles('cmt-agent-handoff.json') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cmt-agent-handoff
+          path: cmt-agent-handoff.json
+          retention-days: 7
+
+      - name: Dispatch CMT agent fix
+        if: always() && hashFiles('cmt-agent-handoff.json') != ''
+        env:
+          WEBHOOK_URL: ${{ secrets.CURSOR_MOBILE_CMT_AUTOFIX_WEBHOOK_URL }}
+          WEBHOOK_KEY: ${{ secrets.CURSOR_MOBILE_CMT_AUTOFIX_WEBHOOK_KEY }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ] || [ -z "$WEBHOOK_KEY" ]; then
+            echo "No webhook configured: fix brief is in the job summary and cmt-agent-handoff.json artifact."
+            exit 0
+          fi
+          while IFS= read -r item; do
+            title=$(jq -r '.test.title' <<<"$item")
+            mode=$(jq -r '.mode' <<<"$item")
+            status=$(printf '%s' "$item" | curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+              -X POST "$WEBHOOK_URL" -H "Authorization: Bearer $WEBHOOK_KEY" -H 'Content-Type: application/json' \
+              --data-binary @-) || true
+            echo "[$mode] $title: HTTP ${status:-000}"
+          done < <(jq -c '.items[] | select(.mode == "fix_pr" or .mode == "draft_investigation")' cmt-agent-handoff.json)
+
       # Instance cleanup is handled by matterwick on workflow_run completed.
+
+  # Filter to ONLY failing CMT suites before spinning triage runners: all-pass runs skip triage
+  # completely, and shards of passing suites are never triaged (a failing suite's matrix result is
+  # job-level, so all its shards are). Uses this run's own matrix job results (not shared SHA
+  # statuses, which another run could overwrite). Fail-closed.
+  plan-cmt-triage:
+    name: Plan CMT triage lanes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: >-
+      !cancelled() &&
+      (needs.detox-e2e.result == 'failure' ||
+       needs.detox-android-e2e.result == 'failure' ||
+       needs.detox-ipad-e2e.result == 'failure' ||
+       needs.maestro-ios-e2e.result == 'failure' ||
+       needs.maestro-android-e2e.result == 'failure')
+    needs:
+      - cmt-identity
+      - detox-e2e
+      - detox-android-e2e
+      - detox-ipad-e2e
+      - maestro-ios-e2e
+      - maestro-android-e2e
+    permissions:
+      contents: read
+    outputs:
+      failing-job-keys: ${{ steps.plan.outputs.failing-job-keys }}
+      has-failing: ${{ steps.plan.outputs.has-failing }}
+    steps:
+      - name: Select failing CMT suites from this run
+        id: plan
+        env:
+          JOB_KEYS: ${{ needs.cmt-identity.outputs.tsio-job-keys }}
+          R_DETOX_IOS: ${{ needs.detox-e2e.result }}
+          R_DETOX_IPAD: ${{ needs.detox-ipad-e2e.result }}
+          R_DETOX_ANDROID: ${{ needs.detox-android-e2e.result }}
+          R_MAESTRO_IOS: ${{ needs.maestro-ios-e2e.result }}
+          R_MAESTRO_ANDROID: ${{ needs.maestro-android-e2e.result }}
+        run: |
+          FAILING="$JOB_KEYS"
+          if FILTERED=$(jq -cn \
+            --argjson keys "$JOB_KEYS" \
+            --arg r_detox_ios "$R_DETOX_IOS" \
+            --arg r_detox_ipad "$R_DETOX_IPAD" \
+            --arg r_detox_android "$R_DETOX_ANDROID" \
+            --arg r_maestro_ios "$R_MAESTRO_IOS" \
+            --arg r_maestro_android "$R_MAESTRO_ANDROID" '
+            [
+              $keys[] | select(
+                if startswith("detox-ios-") then $r_detox_ios != "success"
+                elif startswith("detox-ipad-") then $r_detox_ipad != "success"
+                elif startswith("detox-android-") then $r_detox_android != "success"
+                elif startswith("maestro-ios-") then $r_maestro_ios != "success"
+                elif startswith("maestro-android-") then $r_maestro_android != "success"
+                else true
+                end
+              )
+            ]
+          ' 2>/dev/null); then
+            if [ "$(jq 'length' <<<"$FILTERED")" -gt 0 ]; then
+              FAILING="$FILTERED"
+            fi
+          fi
+          HAS_FAILING=$(jq -r 'length > 0' <<<"$FAILING")
+          {
+            echo "failing-job-keys=${FAILING}"
+            echo "has-failing=${HAS_FAILING}"
+          } >> "$GITHUB_OUTPUT"
 
   # Same per-test judging the PR/main lanes get in e2e-detox-pr.yml: without it
   # every CMT shard is raw any-failure-red (FAILURES > 0 in the template summary
@@ -1043,38 +1348,20 @@ jobs:
     timeout-minutes: 15
     if: >-
       !cancelled() &&
-      (needs.detox-e2e.result == 'failure' ||
-       needs.detox-android-e2e.result == 'failure' ||
-       needs.detox-ipad-e2e.result == 'failure' ||
-       needs.maestro-ios-e2e.result == 'failure' ||
-       needs.maestro-android-e2e.result == 'failure')
+      needs.plan-cmt-triage.outputs.has-failing == 'true'
     needs:
       - calculate-commit-hash
       - cmt-identity
-      - detox-e2e
-      - detox-android-e2e
-      - detox-ipad-e2e
-      - maestro-ios-e2e
-      - maestro-android-e2e
+      - plan-cmt-triage
     permissions:
       contents: read
       statuses: write
       pull-requests: read
-    # Every lane writes the shared e2e-test/triage context, and the toolkit's
-    # status publisher has no compare-and-swap: its status.ts requires every
-    # caller to hold the same non-cancelling, SHA-scoped job concurrency lock
-    # across its reads and writes. max-parallel serializes the matrix entries
-    # within this run without discarding queued entries; the concurrency group
-    # serializes against triage writers from any other run of the same commit.
-    # The workflow-level cancel-in-progress group above does neither.
-    concurrency:
-      group: e2e-test-triage-${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-      cancel-in-progress: false
+      actions: read
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
-        job-key: ${{ fromJSON(needs.cmt-identity.outputs.tsio-job-keys) }}
+        job-key: ${{ fromJSON(needs.plan-cmt-triage.outputs.failing-job-keys) }}
     steps:
       # Checked out from the workflow ref (the build-release-* branch under
       # test runs no code with the API key beyond this composite's own steps,
@@ -1091,14 +1378,56 @@ jobs:
         id: lanes
         env:
           JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
+          JOB_KEY: ${{ matrix.job-key }}
         run: |
-          echo "contexts=$(echo "$JOB_CONFIGS" | jq -r '[.[].status_context] | join(",")')" >> "$GITHUB_OUTPUT"
+          {
+            echo "contexts=$(echo "$JOB_CONFIGS" | jq -r '[.[].status_context] | join(",")')"
+            VER="${JOB_KEY#*-Server_}"
+            case "$JOB_KEY" in
+              detox-ios-Server_*)
+                FILTER="mobile-cmt-ios-full-${VER},mobile-cmt-ios-smoke-${VER},build-ios-simulator,provision"
+                HIST_LANE="mobile-main-detox-ios"
+                HIST_REPORT="detox-ios"
+                ;;
+              detox-ipad-Server_*)
+                FILTER="mobile-cmt-ipad-${VER},build-ios-simulator,provision"
+                HIST_LANE="mobile-main-detox-ipad"
+                HIST_REPORT="detox-ipad"
+                ;;
+              maestro-ios-Server_*)
+                FILTER="mobile-cmt-maestro-ios-${VER},build-ios-simulator,provision"
+                HIST_LANE="mobile-main-maestro-ios-e2e"
+                HIST_REPORT="maestro-ios-e2e"
+                ;;
+              detox-android-Server_*)
+                FILTER="mobile-cmt-android-full-${VER},mobile-cmt-android-smoke-${VER},build-android-apk,provision,!maestro"
+                HIST_LANE="mobile-main-detox-android"
+                HIST_REPORT="detox-android"
+                ;;
+              maestro-android-Server_*)
+                FILTER="mobile-cmt-maestro-android-${VER},build-android-apk-maestro,provision"
+                HIST_LANE="mobile-main-maestro-android-e2e"
+                HIST_REPORT="maestro-android-e2e"
+                ;;
+              *)
+                FILTER="${JOB_KEY}"
+                HIST_LANE=""
+                HIST_REPORT=""
+                ;;
+            esac
+            echo "lane-job-filter=${FILTER}"
+            echo "history-lane=${HIST_LANE}"
+            echo "history-report=${HIST_REPORT}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: e2e/triage
         continue-on-error: true
         uses: ./.github/actions/e2e-triage
         with:
           job-key: ${{ matrix.job-key }}
+          lane-job-filter: ${{ steps.lanes.outputs.lane-job-filter }}
+          history-lane: ${{ steps.lanes.outputs.history-lane }}
+          history-report: ${{ steps.lanes.outputs.history-report }}
           composite-identity: ${{ toJSON(fromJSON(needs.cmt-identity.outputs.tsio-job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.cmt-identity.outputs.tsio-job-configs)[matrix.job-key].status_context }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

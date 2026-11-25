@@ -25,27 +25,20 @@ import {
     openArchivedChannel,
     postArchivedChannelSentinel,
 } from '@support/ui/screen';
-import {
-    isAndroid,
-    isIos,
-    timeouts,
-    wait,
-    waitForElementToBeVisible,
-    waitForElementToExist,
-} from '@support/utils';
+import {disableSynchronization, enableSynchronization, isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 // Wait for archived channel screen after non-tap navigation (e.g. permalink).
 async function waitForArchivedChannelScreen() {
     if (isIos()) {
-        await device.disableSynchronization();
+        await disableSynchronization();
     }
     try {
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
         await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
     } finally {
         if (isIos()) {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
     }
 }
@@ -183,14 +176,14 @@ describe('Channels - Archived Channel Interactions', () => {
                 withAncestor(by.id(SearchMessagesScreen.postList.testID.flatList)),
         );
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await SearchMessagesScreen.searchInput.tapReturnKey();
 
             // Wait via text-only matcher — composed ID+text matchers are unreliable for highlighted text.
             await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
         } finally {
-            await device.enableSynchronization();
+            await enableSynchronization();
         }
 
         // # Tap the search result text directly (composed matchers unreliable when text is split).

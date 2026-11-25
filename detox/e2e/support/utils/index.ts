@@ -2,10 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
-import {waitFor} from 'detox';
+import {expect, waitFor} from 'detox';
 import {v4 as uuidv4} from 'uuid';
 
 import {logDebug} from '../../../provision/log';
+
+import {findFirst} from './converge';
+import {createSynchronization} from './synchronization';
 
 export * from './email';
 export * from './detoxhelpers';
@@ -79,13 +82,11 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
-let syncDisableDepth = 0;
-
-export async function safeEnableSynchronization(): Promise<void> {
-    if (syncDisableDepth > 0) {
-        return;
-    }
-
+/**
+ * Turns Detox synchronization on, relaunching once if the React Native instance was destroyed.
+ * Only the synchronization owner below calls it.
+ */
+async function enableDeviceSynchronization(): Promise<void> {
     const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
     let relaunched = false;
     /* eslint-disable no-await-in-loop */
@@ -109,7 +110,7 @@ export async function safeEnableSynchronization(): Promise<void> {
                 // relaunch, then the remaining retries give the fresh instance its own
                 // bounded window; if it still fails, surface the error.
                 i = -1;
-                // eslint-disable-next-line no-await-in-loop -- recovery launch, not a poll
+
                 await device.launchApp({newInstance: true, launchArgs: {detoxEnableSynchronization: 0}});
                 continue;
             }
@@ -119,19 +120,37 @@ export async function safeEnableSynchronization(): Promise<void> {
     /* eslint-enable no-await-in-loop */
 }
 
-export async function withSynchronizationDisabled<T>(fn: () => Promise<T>): Promise<T> {
-    if (syncDisableDepth === 0) {
-        await device.disableSynchronization();
-    }
-    syncDisableDepth += 1;
-    try {
-        return await fn();
-    } finally {
-        syncDisableDepth -= 1;
-        if (syncDisableDepth === 0) {
-            await safeEnableSynchronization();
+// Never matches: a synchronized expectation on it only waits for Espresso to report the app idle.
+const SETTLE_PROBE_ID = 'e2e.synchronization.settle_probe';
+
+// Every Detox synchronization toggle and React Native reload in the suite goes through these (see synchronization.ts).
+export const {
+    disableSynchronization,
+    enableSynchronization,
+    withSynchronizationDisabled,
+    reloadApp,
+} = createSynchronization({
+    disable: () => device.disableSynchronization(),
+    enable: enableDeviceSynchronization,
+    reload: () => device.reloadReactNative(),
+
+    // The unset looper idling resource is Espresso's (Android); iOS synchronization has no such window.
+    settle: async () => {
+        if (isAndroid()) {
+            await expect(element(by.id(SETTLE_PROBE_ID))).not.toExist();
         }
-    }
+    },
+});
+
+/**
+ * Runs a whole action with synchronization off on Android and synchronized on iOS. Use it for every step of the
+ * action at once, not around each tap: turning sync back on between two steps and off again is the race the
+ * synchronization owner exists to avoid.
+ * @param fn - the action
+ * @returns what fn returns
+ */
+export function withSynchronizationDisabledOnAndroid<T>(fn: () => Promise<T>): Promise<T> {
+    return isAndroid() ? withSynchronizationDisabled(fn) : fn();
 }
 
 async function screenExists(detoxElement: Detox.NativeElement, timeout: number = timeouts.THREE_SEC): Promise<boolean> {
@@ -158,13 +177,13 @@ export async function retryWithReload(
         } catch (err) {
             if (attempt < retries) {
                 // eslint-disable-next-line no-await-in-loop
-                await device.reloadReactNative();
+                await reloadApp();
                 // eslint-disable-next-line no-await-in-loop
                 await new Promise((res) => setTimeout(res, 10000));
 
                 if (serverUrl && serverDisplayName) {
                     // Lazy require avoids a utils <-> screen circular import.
-                    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+
                     const {ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, MfaScreen} = require('@support/ui/screen');
                     /* eslint-disable no-await-in-loop -- sequential recovery after reload */
 
@@ -383,7 +402,7 @@ export async function longPressWithRetry(
             continue;
         }
 
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             try {
                 await target.longPress(pressDuration);
@@ -395,7 +414,7 @@ export async function longPressWithRetry(
                 continue;
             }
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
         try {
             await waitForElementToExist(checkElement, timeouts.TEN_SEC);
@@ -523,6 +542,58 @@ export async function waitForElementToExist(
     }
     /* eslint-enable no-await-in-loop */
     await detoxExpect(detoxElement).toExist();
+}
+
+const DETOX_EXPECTATION_FAILURE = 'Test Failed:';
+
+/**
+ * Whether an element is in the hierarchy right now. It is asserted absent, which passes without a Detox failure
+ * payload while it is: a failed iOS expectation ships the whole view hierarchy (and, for toBeVisible, visibility
+ * screenshots), which took 47.5s for a 2s tooltip probe in run 43330325473. Only a failed expectation means the
+ * element exists; any other Detox error is rethrown.
+ * @param detoxElement - the element to look for
+ * @returns whether it exists
+ */
+async function isElementPresentNow(detoxElement: Detox.NativeElement): Promise<boolean> {
+    try {
+        await expect(detoxElement).not.toExist();
+        return false;
+    } catch (error) {
+        // A failed expectation comes back from the app as "Test Failed: ..."; anything else (a crash, a lost
+        // connection) is not evidence that the element exists.
+        if (String((error as Error)?.message ?? '').includes(DETOX_EXPECTATION_FAILURE)) {
+            return true;
+        }
+        throw error;
+    }
+}
+
+/**
+ * Waits up to timeoutMs for whichever candidate appears first; one check each when timeoutMs is 0. On iOS the
+ * polling runs with synchronization off, so a busy app cannot stretch a short probe. Android keeps it on: there
+ * a disable right after a reload or enable is the looper race synchronization.ts describes.
+ * @param candidates - keyed elements, earlier ones win when several exist
+ * @param timeoutMs - how long to wait for one of them
+ * @returns the key of the element found, or undefined
+ */
+export async function waitForFirstPresent<K extends string>(
+    candidates: ReadonlyArray<readonly [K, Detox.NativeElement]>,
+    timeoutMs = 0,
+): Promise<K | undefined> {
+    const probes = candidates.map(([key, detoxElement]) => [key, () => isElementPresentNow(detoxElement)] as const);
+    const probe = () => findFirst(probes, {timeoutMs, pollIntervalMs: timeouts.HALF_SEC});
+    return isIos() ? withSynchronizationDisabled(probe) : probe();
+}
+
+/**
+ * Whether an optional element (a tooltip, a one-off dialog) shows up within timeoutMs, without the cost of a
+ * failed expectation when it does not.
+ * @param detoxElement - the element to look for
+ * @param timeoutMs - how long to wait for it; 0 checks once
+ * @returns whether it appeared
+ */
+export async function isOptionalElementPresent(detoxElement: Detox.NativeElement, timeoutMs = 0): Promise<boolean> {
+    return (await waitForFirstPresent([['present', detoxElement]], timeoutMs)) !== undefined;
 }
 
 export async function waitForElementToHaveText(

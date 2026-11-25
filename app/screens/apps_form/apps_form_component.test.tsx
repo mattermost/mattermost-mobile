@@ -130,9 +130,9 @@ describe('AppsFormComponent submit button', () => {
         renderWithEverything(<AppsFormComponent {...getProps()}/>, {database, serverUrl});
 
         const headerRight = getHeaderSubmit();
-        expect(headerRight).toBeTruthy();
+        expect(headerRight).toEqual(expect.any(Function));
 
-        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
@@ -168,9 +168,9 @@ describe('AppsFormComponent submit button', () => {
         renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
 
         const headerRight = getHeaderSubmit();
-        expect(headerRight).toBeTruthy();
+        expect(headerRight).toEqual(expect.any(Function));
 
-        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
@@ -181,12 +181,58 @@ describe('AppsFormComponent submit button', () => {
         );
 
         const headerRight = getHeaderSubmit();
-        expect(headerRight).toBeTruthy();
+        expect(headerRight).toEqual(expect.any(Function));
 
         // The header submit is now a checkmark icon button, so the label is exposed
         // to assistive tech via accessibilityLabel rather than visible text.
-        const {getByLabelText} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        const {getByLabelText} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
         expect(getByLabelText('Triage')).toBeTruthy();
+    });
+
+    describe('checkbox_matrix validation on submit', () => {
+        // Goes through fieldsAsElements() so a dropped matrix_config would skip validation.
+        const matrixForm = (value: string[]): Partial<AppForm> => ({
+            fields: [{
+                name: 'permissions',
+                type: 'checkbox_matrix',
+                is_required: false,
+                value,
+                matrix_config: {
+                    rows: [{label: 'Posts', value: 'posts'}],
+                    columns: [{label: 'View', value: 'view'}],
+                    row_selection: 'multiple',
+                },
+            }] as AppField[],
+        });
+
+        const submitViaHeader = async () => {
+            const headerRight = getHeaderSubmit();
+            expect(headerRight).toEqual(expect.any(Function));
+            const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
+            await act(async () => {
+                pressSubmit(getByTestId('interactive_dialog.submit.button'));
+            });
+        };
+
+        it('should block submit when a matrix entry references an unknown row', async () => {
+            const props = getProps(matrixForm(['nope:view']));
+            renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+            await submitViaHeader();
+
+            expect(props.submit).not.toHaveBeenCalled();
+        });
+
+        // Control: proves the block above is caused by the malformed value and not by
+        // submission being broken in this harness for some unrelated reason.
+        it('should allow submit when the matrix entry is valid', async () => {
+            const props = getProps(matrixForm(['posts:view']));
+            renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+            await submitViaHeader();
+
+            expect(props.submit).toHaveBeenCalled();
+        });
     });
 });
 
@@ -198,6 +244,15 @@ describe('initValues', () => {
         ];
 
         expect(initValues(fields)).toEqual({name: 'Alice', agree: true});
+    });
+
+    it('should initialize empty-string checkbox values as empty arrays', () => {
+        const fields: AppField[] = [
+            {name: 'tags', type: 'checkbox_group', value: ''} as AppField,
+            {name: 'permissions', type: 'checkbox_matrix', value: ''} as AppField,
+        ];
+
+        expect(initValues(fields)).toEqual({tags: [], permissions: []});
     });
 });
 
@@ -230,7 +285,8 @@ describe('AppsFormComponent collapsible field data flow', () => {
         renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 
         const headerRight = getHeaderSubmit();
-        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        expect(headerRight).toEqual(expect.any(Function));
+        const {getByTestId} = renderWithEverything(<>{headerRight?.()}</>, {database, serverUrl});
 
         await act(async () => {
             const button = getByTestId('interactive_dialog.submit.button');
@@ -331,6 +387,61 @@ describe('AppsFormComponent refresh on return', () => {
             <AppsFormComponent
                 {...props}
                 form={formAfter}
+            />,
+        );
+
+        expect(mockFieldProps.notes.value).toBe('');
+    });
+
+    it('should not restore a value when a removed field returns in a later refresh', async () => {
+        const props = {...getProps(), refreshForm: jest.fn().mockResolvedValue({data: {type: 'form'}})};
+        const formWithoutNotes = {title: 'Cargo', fields: formBefore.fields.filter((f) => f.name !== 'notes')} as AppForm;
+        const {rerender} = renderWithEverything(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={0}
+            />,
+            {database, serverUrl},
+        );
+
+        act(() => {
+            mockFieldProps.notes.onChange('notes', 'my notes');
+        });
+
+        // # The first refresh removes the field
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formBefore}
+                    refreshNonce={1}
+                />,
+            );
+        });
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formWithoutNotes}
+                refreshNonce={1}
+            />,
+        );
+
+        // # The second refresh brings it back
+        await act(async () => {
+            rerender(
+                <AppsFormComponent
+                    {...props}
+                    form={formWithoutNotes}
+                    refreshNonce={2}
+                />,
+            );
+        });
+        rerender(
+            <AppsFormComponent
+                {...props}
+                form={formBefore}
+                refreshNonce={2}
             />,
         );
 

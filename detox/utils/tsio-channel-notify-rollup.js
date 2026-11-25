@@ -21,8 +21,10 @@ const path = require('path');
 const {webhookBucketForReportName} = require('./build-tsio-job-config');
 const {parseArgs} = require('./cli-args');
 const {
+    buildAgentHandoff,
     fetchFailuresFromConsolidated,
     fetchPerJobCountsFromConsolidated,
+    formatAgentFixBrief,
     notifyCmtChannel,
     resolveWebhookUrl,
 } = require('./cmt-channel-notify');
@@ -47,8 +49,8 @@ function bucketIdentity(sampleIdentity) {
 }
 
 /**
- * The triage job's findings file for each run (one artifact per run). Only schema 2, which names each test's
- * verdict, is used; anything else is skipped with a warning.
+ * The triage job's findings file for each run (one artifact per run). Schemas 2 and 3, which name each test's
+ * verdict, are used; anything else is skipped with a warning.
  *
  * @param {string} dir
  * @param {Function} [warn]
@@ -62,10 +64,10 @@ function loadTriageFindings(dir, warn = console.warn) {
     for (const file of fs.readdirSync(dir, {recursive: true}).filter((name) => name.endsWith('.json')).map((name) => path.join(dir, name))) {
         try {
             const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-            if (parsed?.schema === 2 && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
+            if ((parsed?.schema === 2 || parsed?.schema === 3) && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
                 out.push(parsed);
             } else {
-                warn(`tsio-channel-notify-rollup: ${file} is not a schema 2 findings file — skipped`);
+                warn(`tsio-channel-notify-rollup: ${file} is not a schema 2/3 findings file — skipped`);
             }
         } catch (err) {
             warn(`tsio-channel-notify-rollup: could not read ${file}: ${err.message}`);
@@ -285,8 +287,10 @@ async function main() {
 
     const sampleIdentity = entries[0].composite_identity;
     const rollupIdentity = bucketIdentity(sampleIdentity);
+    const bucket = webhookBucketForReportName(rollupIdentity.name);
     const webhookUrl = resolveWebhookUrl(rollupIdentity.name);
-    if (!webhookUrl) {
+    const handoffFile = args['handoff-file'] || process.env.HANDOFF_FILE || '';
+    if (!webhookUrl && bucket !== 'mobile-release') {
         console.log(`tsio-channel-notify-rollup: no webhook for ${rollupIdentity.name} — skipping`);
         return;
     }
@@ -366,6 +370,28 @@ async function main() {
         hasFailures,
         webhookUrl,
     });
+
+    if (bucket === 'mobile-release') {
+        const handoff = buildAgentHandoff({
+            compositeIdentity: rollupIdentity,
+            detail,
+            perJobCounts,
+            failures,
+            triage,
+            rerun,
+            runUrl,
+        });
+        if (handoff.items.length > 0) {
+            if (handoffFile) {
+                fs.writeFileSync(handoffFile, JSON.stringify(handoff, null, 2));
+                console.log(`tsio-channel-notify-rollup: wrote ${handoff.items.length} actionable items to ${handoffFile}`);
+            }
+            const brief = formatAgentFixBrief(handoff);
+            if (brief && process.env.GITHUB_STEP_SUMMARY) {
+                fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n${brief}`);
+            }
+        }
+    }
 }
 
 if (require.main === module) {

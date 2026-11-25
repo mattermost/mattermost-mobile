@@ -10,6 +10,7 @@ import {retryFailedPost} from '@actions/remote/post';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
+import {HANDLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 
@@ -64,7 +65,7 @@ const Failed = ({post, theme}: FailedProps) => {
             );
         };
 
-        bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT) + HANDLE_HEIGHT]);
     }, [intl, post, serverUrl]);
 
     return (

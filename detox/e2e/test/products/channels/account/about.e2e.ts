@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
+import {disableSynchronization, enableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
@@ -180,14 +180,14 @@ describe('Account - Settings - About', () => {
         // Footer is on-screen but Detox waitFor never idles (AsyncStorageModule spam in CI).
         // Nested FormattedText testIDs are not exposed on iOS/Android when inside <Text>,
         // so assert by visible copy rather than about.learn_more.text.
-        await device.disableSynchronization();
+        await disableSynchronization();
         try {
             await waitForElementToExist(
                 element(by.text(learnMorePrefixMatcher)),
                 timeouts.TWENTY_SEC,
             );
         } finally {
-            await safeEnableSynchronization();
+            await enableSynchronization();
         }
 
         // Nested Text may flatten the URL into the parent node (CI 30250131265:

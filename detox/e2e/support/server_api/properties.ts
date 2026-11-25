@@ -71,11 +71,9 @@ export const apiCreatePropertyField = async (baseUrl: string, groupName: string,
 };
 
 /**
- * Patch a property field. `attrs` is merged into the field's existing attrs
- * rather than replacing them (server-side PropertyField.Patch with
- * mergeAttrs=true), so only the given keys change.
+ * Patch a property field. `attrs` merges into the existing attrs; only the given keys change.
  */
-export const apiPatchPropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string, patch: {attrs?: Record<string, unknown>}) => {
+export const apiPatchPropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string, patch: {attrs?: Record<string, unknown>; permissions?: Record<string, unknown>}) => {
     try {
         const response = await client.patch(
             `${baseUrl}/api/v4/properties/groups/${groupName}/${objectType}/fields/${fieldId}`,
@@ -125,6 +123,76 @@ export const apiPatchPropertyValues = async (baseUrl: string, groupName: string,
         return {values: response.data};
     } catch (err) {
         return getResponseFromError(err);
+    }
+};
+
+/**
+ * List active channels missing a value for a channel property field.
+ */
+export const apiGetChannelsMissingAttributeValue = async (
+    baseUrl: string,
+    fieldId: string,
+    page = 0,
+    perPage = 200,
+) => {
+    try {
+        const response = await client.get(
+            `${baseUrl}/api/v4/properties/groups/${GROUP_NAME}/${CHANNEL_OBJECT_TYPE}/fields/${fieldId}/missing_values?page=${page}&per_page=${perPage}`,
+        );
+        return {
+            channels: (response.data?.channels ?? []) as Array<{channel_id: string; is_local: boolean}>,
+            totalCount: (response.data?.total_count ?? 0) as number,
+        };
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Backfill a channel attribute value on every active local channel currently missing one.
+ */
+export const apiBackfillChannelAttribute = async (
+    baseUrl: string,
+    fieldId: string,
+    value: unknown,
+): Promise<void> => {
+    const perPage = 200;
+    const localChannelIds: string[] = [];
+    let page = 0;
+    let visited = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+        // eslint-disable-next-line no-await-in-loop -- sequential pagination before backfill writes
+        const result = await apiGetChannelsMissingAttributeValue(baseUrl, fieldId, page, perPage);
+        if ('error' in result) {
+            const errResult = result as {status?: number; error?: {id?: string}};
+            if (errResult.status === 404 && errResult.error?.id === 'api.context.404.app_error') {
+                return;
+            }
+            throw new Error(`apiBackfillChannelAttribute: failed to list missing channels: ${JSON.stringify(result.error)}`);
+        }
+
+        const {channels, totalCount} = result;
+        for (const channel of channels) {
+            if (channel.is_local) {
+                localChannelIds.push(channel.channel_id);
+            }
+        }
+
+        visited += channels.length;
+        if (channels.length === 0 || visited >= totalCount || channels.length < perPage) {
+            hasMore = false;
+        } else {
+            page += 1;
+        }
+    }
+
+    // Collect every page before writing values. Updating while traversing an offset-paginated
+    // "missing" result would remove rows from earlier pages and cause later offsets to skip channels.
+    for (const channelId of localChannelIds) {
+        // eslint-disable-next-line no-await-in-loop -- sequential backfill to avoid overloading the test server
+        await apiSetChannelAttributeValue(baseUrl, channelId, fieldId, value);
     }
 };
 
@@ -370,15 +438,23 @@ type ChannelAttributeFieldOptions = {
     actions?: string[];
     required?: boolean;
 
-    // Governs which value moves the server will accept once a value is set. Omitted
-    // means 'any'; a directional policy also refuses a clear.
+    // Omitted means 'any'. A directional policy also refuses a clear.
     changePolicy?: 'any' | 'raise_only' | 'lower_only' | 'never';
 
-    // The channel field's permission tier. Defaults to 'admin', which is what the
-    // System Console writes; 'sysadmin' is how a tier the caller cannot satisfy is
-    // set up, and 'none' makes the field permanently read-only.
+    // Defaults to 'admin', as the System Console writes. 'none' makes the field read-only.
     permissionValues?: 'none' | 'sysadmin' | 'admin' | 'member';
 };
+
+function defaultBackfillValue(fieldType: string, options: PropertyFieldOption[]): unknown {
+    if (fieldType === 'select' || fieldType === 'rank' || fieldType === 'multiselect') {
+        const firstOption = options[0];
+        if (!firstOption) {
+            throw new Error(`apiSetupChannelAttributeField: cannot backfill required ${fieldType} field with no options`);
+        }
+        return fieldType === 'multiselect' ? [firstOption.id] : firstOption.id;
+    }
+    return 'e2e backfill';
+}
 
 /**
  * Create a template field and a linked channel-scoped field for channel attributes E2E testing.
@@ -386,6 +462,8 @@ type ChannelAttributeFieldOptions = {
  * Mirrors apiSetupClassificationWithBanner for channel-object fields. Polls until the channel
  * field and its propagated options are visible on the GET endpoint before returning, so that an
  * immediately-following apiSetChannelAttributeValue call does not race the write on CI.
+ * When `required` is true, creates the field optional, backfills existing active local channels,
+ * and flips `required: true` afterward to satisfy the server's required-attribute compliance gate.
  *
  * @param {string} baseUrl - the base server URL
  * @param {ChannelAttributeFieldOptions} opts - field name, options, actions, display metadata
@@ -427,7 +505,7 @@ export const apiSetupChannelAttributeField = async (
 
     const channelFieldAttrs: Record<string, unknown> = {
         actions,
-        required,
+        required: false,
     };
     if (displayName) {
         channelFieldAttrs.display_name = displayName;
@@ -442,13 +520,14 @@ export const apiSetupChannelAttributeField = async (
         }
     }
 
+    const effectiveCreatePermissionValues = required && permissionValues === 'none' ? ADMIN_PERMISSION : permissionValues;
     const channelResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, {
         name: fieldName,
         type: fieldType,
         target_type: CHANNEL_TARGET_TYPE,
         target_id: '',
         linked_field_id: templateField.id,
-        permission_values: permissionValues,
+        permission_values: effectiveCreatePermissionValues,
         attrs: channelFieldAttrs,
     });
 
@@ -486,17 +565,36 @@ export const apiSetupChannelAttributeField = async (
 
     await pollChannelFieldVisible();
 
+    if (required) {
+        await apiBackfillChannelAttribute(baseUrl, channelField.id, defaultBackfillValue(fieldType, templateOptions));
+        await apiSetChannelAttributeFieldRequired(baseUrl, channelField.id, true);
+
+        if (permissionValues === 'none') {
+            const restrictions = channelField.permissions?.restrictions;
+            const lockResult = await apiPatchPropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelField.id, {
+                permissions: {
+                    restrictions: {
+                        field: restrictions?.field ?? {write: ADMIN_PERMISSION},
+                        option: restrictions?.option ?? {read: 'everyone', write: ADMIN_PERMISSION},
+                        value: {
+                            read: restrictions?.value?.read ?? 'everyone',
+                            write: 'none',
+                        },
+                    },
+                },
+            });
+            if ('error' in lockResult) {
+                throw new Error(`apiSetupChannelAttributeField: failed to set permission_values to none: ${JSON.stringify(lockResult.error)}`);
+            }
+        }
+    }
+
     return {templateFieldId: templateField.id, channelFieldId: channelField.id, optionIdsByName};
 };
 
 /**
- * Marks an existing channel attribute field required (or not) after the fact.
- *
- * The server enforces required attributes at channel-creation time for whoever
- * can set them, so a test that wants both "required" and "channel already
- * exists with no value" has to create the channel first, while the field is
- * still optional, and only then flip it required — exactly the real-world
- * sequence an admin making an existing field mandatory would produce.
+ * Mark a channel attribute field required (or not). Required fields block channel creation,
+ * so tests create the channel first and flip the field afterward.
  */
 export const apiSetChannelAttributeFieldRequired = async (baseUrl: string, fieldId: string, required: boolean) => {
     const result = await apiPatchPropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, fieldId, {attrs: {required}});
@@ -526,9 +624,6 @@ export const apiSetChannelAttributeValue = async (
 
 /**
  * The value the server holds for one channel attribute, or undefined when unset.
- *
- * This is what proves an edit made in the app actually reached the server, rather
- * than only having repainted the row.
  */
 export const apiGetChannelAttributeValue = async (
     baseUrl: string,
@@ -670,6 +765,8 @@ export const Properties = {
     apiPatchSystemPropertyValues,
     apiSetupClassificationWithBanner,
     apiCleanupClassification,
+    apiGetChannelsMissingAttributeValue,
+    apiBackfillChannelAttribute,
     apiSetupChannelAttributeField,
     apiSetChannelAttributeFieldRequired,
     apiSetChannelAttributeValue,

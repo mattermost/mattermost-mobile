@@ -84,6 +84,28 @@ jobs:
           bash detox/maestro/scripts/validate-flow-headers.sh
           echo "::endgroup::"
 
+  android-unit-test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+      - name: ci/setup-java
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - name: ci/android-unit-test
+        shell: bash
+        working-directory: android
+        run: |
+          echo "::group::android-unit-test"
+          ./gradlew --continue :mattermost_rnshare:testDebugUnitTest :mattermost_rnutils:testDebugUnitTest
+          echo "::endgroup::"
+
   test:
     runs-on: ubuntu-22.04
     steps:

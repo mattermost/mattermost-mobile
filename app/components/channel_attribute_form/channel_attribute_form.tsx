@@ -84,10 +84,7 @@ type RowProps = {
 };
 
 /**
- * One attribute row. Always editable and never explains a lock: every field
- * reaching this form already passed observeCreatableChannelAttributeFields,
- * which drops anything the caller could not set, so there is nothing left here
- * to refuse.
+ * Always editable: observeCreatableChannelAttributeFields already dropped fields the user can't set.
  */
 const FormRow = ({attribute, onPress}: RowProps) => {
     const theme = useTheme();
@@ -149,18 +146,8 @@ type Props = {
 };
 
 /**
- * The required channel attributes offered while creating a channel.
- *
- * Reuses PR A's Set {attribute} sheet rather than building a second editor: the
- * only difference at create time is that a submit updates local state instead of
- * writing to the server, which is why onChange is a plain setter here rather than
- * setChannelAttributeValue.
- *
- * No change-policy narrowing: there is no channel yet, so nothing has been
- * written for a policy to lock. Every option is reachable and clearing is always
- * offered — the editor is told to ignore the policy via unlockOptions rather than
- * having its rawValue stripped, so reopening the sheet still pre-selects (or
- * pre-fills) whatever was chosen last, instead of discarding it.
+ * Values stay local until the channel is created. No change policy applies yet, so every
+ * option is offered and clearing is always allowed.
  */
 const ChannelAttributeForm = ({type, fields, values, onChange, onLayout}: Props) => {
     const theme = useTheme();
@@ -194,16 +181,9 @@ const ChannelAttributeForm = ({type, fields, values, onChange, onLayout}: Props)
         const totalRows = field.type === 'text' ? 1 : reachableOptions(field, undefined).length + 1;
         const snapPoints = getChannelAttributeEditorSnapPoints({totalRows, fieldType: field.type, bottomInset: bottom, isTablet, windowHeight});
 
-        // 'interactive' grows the sheet by exactly the keyboard's height instead
-        // of 'extend''s default of jumping straight to the tallest configured
-        // snap point — only the text field's editor shows a keyboard, but this
-        // is harmless to pass for every field type since it only changes
-        // anything while a keyboard is visible.
         bottomSheet(renderContent, snapPoints, undefined, 'interactive');
     }, [bottom, isTablet, resolved, onChange, windowHeight]);
 
-    // DM/GM never reach this form on mobile (no channel-attribute UI is offered
-    // there); O/P are the only channel types the create screen ever produces.
     if (fields.length === 0 || (type !== General.OPEN_CHANNEL && type !== General.PRIVATE_CHANNEL)) {
         return null;
     }

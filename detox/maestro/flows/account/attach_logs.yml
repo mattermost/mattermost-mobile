@@ -37,16 +37,6 @@ appId: ${MAESTRO_APP_ID}
 # by Save Password / notification sheets after login).
 - runFlow: ../../subflows/navigation/open_account.yml
 - runFlow: ../../subflows/navigation/open_settings_report_problem.yml
-
-# # Tap Report a Problem
-- tapOn:
-    id: "settings.report_problem.option"
-
-# * Verify the report screen opened rather than an external browser or mail composer.
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.screen"
-    timeout: 30000
 - takeScreenshot: report-problem-opened
 
 # * Verify the app logs are reachable from the screen.

@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
+import {deleteDownloadedFiles} from '@utils/file';
 
 import {fetchScheduledPosts} from './scheduled_post';
 import {
@@ -32,9 +33,23 @@ import {
     buildTeamIconUrl,
     fetchTeamsThreads,
 } from './team';
+import {syncThreadsIfNeeded} from './thread';
 
 jest.mock('./scheduled_post', () => ({
     fetchScheduledPosts: jest.fn(),
+}));
+
+jest.mock('./thread', () => {
+    const actual = jest.requireActual('./thread');
+    return {
+        ...actual,
+        syncThreadsIfNeeded: jest.fn(actual.syncThreadsIfNeeded),
+    };
+});
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
 }));
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -457,6 +472,41 @@ describe('teams', () => {
             serverUrl, 0,
             [team], true, true);
         expect(result.models).toBeDefined();
+    });
+
+    describe('fetchTeamsThreads - revoked files', () => {
+        const revokedFiles = [{id: 'revokedfileid', name: 'file.png', extension: 'png', mime_type: 'image/png'}];
+
+        beforeEach(async () => {
+            jest.mocked(deleteDownloadedFiles).mockClear();
+            const models = await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: true});
+            jest.mocked(syncThreadsIfNeeded).mockResolvedValueOnce({models, revokedFiles});
+        });
+
+        it('should delete the revoked files after the final batch succeeds', async () => {
+            const result = await fetchTeamsThreads(serverUrl, 0, [team], true, false);
+
+            expect(result.error).toBeUndefined();
+            expect(deleteDownloadedFiles).toHaveBeenCalledTimes(1);
+            expect(deleteDownloadedFiles).toHaveBeenCalledWith(serverUrl, revokedFiles);
+        });
+
+        it('should keep the revoked files when the final batch fails', async () => {
+            const batchSpy = jest.spyOn(operator, 'batchRecords').mockRejectedValueOnce(new Error('batch failed'));
+
+            const result = await fetchTeamsThreads(serverUrl, 0, [team], true, false);
+
+            expect(result.error).toBeDefined();
+            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+            batchSpy.mockRestore();
+        });
+
+        it('should return the revoked files to the caller in fetch only mode', async () => {
+            const result = await fetchTeamsThreads(serverUrl, 0, [team], true, true);
+
+            expect(result.revokedFiles).toEqual(revokedFiles);
+            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+        });
     });
 
     it('fetchTeamByName - handle not found database', async () => {

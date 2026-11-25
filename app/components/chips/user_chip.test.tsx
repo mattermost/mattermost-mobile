@@ -4,6 +4,7 @@
 import React from 'react';
 
 import ProfilePicture from '@components/profile_picture';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -50,6 +51,7 @@ describe('UserChip', () => {
         expect(profilePicture.props.size).toBe(20);
         expect(profilePicture.props.iconSize).toBe(20);
         expect(profilePicture.props.testID).toBe('user-chip.profile_picture');
+        expect(profilePicture.props.imageBackgroundColor).toBe(getDefaultThemeByAppearance().centerChannelBg);
 
         baseChip.props.onPress();
         expect(mockOnPress).toHaveBeenCalledTimes(1);

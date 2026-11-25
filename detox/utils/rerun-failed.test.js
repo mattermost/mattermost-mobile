@@ -4,12 +4,13 @@
 // CI util unit tests: run with `node --test detox/utils/rerun-failed.test.js`.
 
 const assert = require('node:assert/strict');
+const {execFileSync} = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const {describe, it} = require('node:test');
 
-const {MAX_SPECS_PER_LANE, planRerun, mainInputs, cmtMatrices, loadRerunResults} = require('./rerun-failed');
+const {MAX_SPECS_PER_LANE, differsFrom, planRerun, mainInputs, cmtMatrices, loadRerunResults, lookupRerunResult} = require('./rerun-failed');
 
 const row = (title, file, cls = 'REGRESSION', label = 'needs investigation') => ({title, full_title: title, file, class: cls, label});
 
@@ -138,11 +139,114 @@ describe('rerun-failed', () => {
             ].join('\n'));
             fs.mkdirSync(path.join(dir, 'e2e-triage-findings-detox-ios-a1'));
             assert.deepEqual(loadRerunResults(dir), {
-                'detox-android': new Map([['MM-T1 - logs in', 'failed'], ['MM-T2 - logs out', 'passed']]),
+                'detox-android': new Map([['detox/e2e/test/a.e2e.ts\nMM-T1 - logs in', 'failed'], ['detox/e2e/test/a.e2e.ts\nMM-T2 - logs out', 'passed']]),
                 'maestro-android-Server_12.1.0-rc2': new Map([['clock_display', 'passed'], ['leave_call', 'failed']]),
             });
             assert.deepEqual(loadRerunResults(path.join(dir, 'missing')), {});
         } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+
+    it('keys Detox rerun results by file and fullName so same-title tests in different specs or blocks do not collide', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rerun-id-'));
+        try {
+            const folder = path.join(dir, 'e2e-rerun-results-detox-ios-a1');
+            fs.mkdirSync(folder);
+            fs.writeFileSync(path.join(folder, 'jest-results-merged.json'), JSON.stringify({testResults: [
+                {
+                    testFilePath: 'detox/e2e/test/a.e2e.ts',
+                    testResults: [
+                        {title: 'spec did not run', fullName: 'detox/e2e/test/a.e2e.ts — spec did not run', status: 'passed'},
+                        {title: 'renders', fullName: 'Suite A > renders', status: 'passed'},
+                        {title: 'renders', fullName: 'Suite B > renders', status: 'failed'},
+                    ],
+                },
+                {
+                    testFilePath: 'detox/e2e/test/b.e2e.ts',
+                    testResults: [
+                        {title: 'spec did not run', fullName: 'detox/e2e/test/b.e2e.ts — spec did not run', status: 'failed'},
+                    ],
+                },
+            ]}));
+            const loaded = loadRerunResults(dir);
+            const lane = loaded['detox-ios'];
+            assert.equal(lookupRerunResult(lane, {file: 'detox/e2e/test/a.e2e.ts', full_title: 'detox/e2e/test/a.e2e.ts — spec did not run', title: 'spec did not run'}), 'passed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/e2e/test/b.e2e.ts', full_title: 'detox/e2e/test/b.e2e.ts — spec did not run', title: 'spec did not run'}), 'failed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/e2e/test/c.e2e.ts', full_title: 'detox/e2e/test/c.e2e.ts — spec did not run', title: 'spec did not run'}), undefined);
+            assert.equal(lookupRerunResult(lane, {file: 'detox/e2e/test/a.e2e.ts', full_title: 'Suite A > renders', title: 'renders'}), 'passed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/e2e/test/a.e2e.ts', full_title: 'Suite B > renders', title: 'renders'}), 'failed');
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+
+    it('keys Maestro rerun results by file attribute when present and falls back to title for legacy maps', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rerun-maestro-'));
+        try {
+            const folder = path.join(dir, 'e2e-rerun-results-maestro-ios-a1');
+            fs.mkdirSync(folder);
+            fs.writeFileSync(path.join(folder, 'maestro-report.xml'), [
+                '<testsuites><testsuite name="flows">',
+                '<testcase id="submit" name="submit" file="detox/maestro/flows/a/submit.yml" classname="detox/maestro/flows/a/submit.yml" time="1.0" status="SUCCESS"></testcase>',
+                '<testcase id="submit" name="submit" file="detox/maestro/flows/b/submit.yml" classname="detox/maestro/flows/b/submit.yml" time="1.0" status="ERROR"><failure>boom</failure></testcase>',
+                '</testsuite></testsuites>',
+            ].join('\n'));
+            const loaded = loadRerunResults(dir);
+            const lane = loaded['maestro-ios'];
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/a/submit.yml', full_title: 'detox/maestro/flows/a/submit.yml > submit', title: 'submit'}), 'passed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/b/submit.yml', full_title: 'detox/maestro/flows/b/submit.yml > submit', title: 'submit'}), 'failed');
+            assert.equal(lookupRerunResult(new Map([['submit', 'passed']]), {file: 'detox/maestro/flows/a/submit.yml', full_title: 'detox/maestro/flows/a/submit.yml > submit', title: 'submit'}), 'passed');
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+
+    it('detects Maestro status="FAILED"/"ERROR" without <failure> child, unescapes XML entities, and handles mixed file/bare maps', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rerun-maestro-xml-'));
+        try {
+            const folder = path.join(dir, 'e2e-rerun-results-maestro-ios-a1');
+            fs.mkdirSync(folder);
+            fs.writeFileSync(path.join(folder, 'maestro-report.xml'), [
+                '<testsuites><testsuite name="flows">',
+                '<testcase id="f1" name="login &amp; &quot;verify&quot;" file="detox/maestro/flows/a/login&amp;1.yml" time="1.0" status="FAILED"/>',
+                '<testcase id="f2" name="err" file="detox/maestro/flows/a/err.yml" time="1.0" status="ERROR"></testcase>',
+                '<testcase id="f3" name="bare-fail" classname="Suite" time="1.0" status="FAILED"/>',
+                '</testsuite></testsuites>',
+            ].join('\n'));
+            const lane = loadRerunResults(dir)['maestro-ios'];
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/a/login&1.yml', title: 'login & "verify"'}), 'failed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/a/err.yml', title: 'err'}), 'failed');
+            assert.equal(lookupRerunResult(lane, {file: 'detox/maestro/flows/other/bare.yml', title: 'bare-fail'}), undefined);
+            assert.equal(lookupRerunResult(lane, {title: 'bare-fail'}), 'failed');
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+
+    it('differsFrom compares two explicit refs so main checkout still detects release-branch stale specs', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'differs-'));
+        const prev = process.cwd();
+        try {
+            const git = (...args) => execFileSync('git', args, {cwd: dir, encoding: 'utf8'}).trim();
+            git('init');
+            git('config', 'user.email', 'test@example.com');
+            git('config', 'user.name', 'Test');
+            fs.writeFileSync(path.join(dir, 'a.ts'), 'v1\n');
+            fs.writeFileSync(path.join(dir, 'b.ts'), 'same\n');
+            git('add', '.');
+            git('commit', '-m', 'release');
+            const releaseSha = git('rev-parse', 'HEAD');
+            fs.writeFileSync(path.join(dir, 'a.ts'), 'v2\n');
+            git('add', 'a.ts');
+            git('commit', '-m', 'main');
+            const mainSha = git('rev-parse', 'HEAD');
+            process.chdir(dir);
+            const isStale = differsFrom(mainSha, releaseSha);
+            assert.equal(isStale('a.ts'), true, 'file changed on main since release commit');
+            assert.equal(isStale('b.ts'), false, 'unchanged file is not stale');
+        } finally {
+            process.chdir(prev);
             fs.rmSync(dir, {recursive: true, force: true});
         }
     });

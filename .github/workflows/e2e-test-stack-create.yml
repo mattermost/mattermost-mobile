@@ -1,0 +1,182 @@
+---
+name: E2E Test Stack - Create
+
+# Creates a batch of e2e-test-stack servers for one lane of a run with the
+# toolkit's create action, which checks every server is ready and uploads the
+# create response, whose secrets are sealed to this repository's key. The run's
+# provisioning and test jobs open their servers from it with the open action;
+# e2e-test-stack-destroy.yml collects the logs and destroys every attempt's
+# batch of the run. A run creates one batch per lane, named by the batch input,
+# e.g. dt-ios-pr or ms-andr-main.
+#
+# It runs as the account input's CI role, E2E_TEST_STACK_ROLE_ARN_PROD or
+# _DEV, which trusts only jobs in this file and e2e-test-stack-destroy.yml, on
+# main and release-*.*. A called workflow's jobs carry its file as
+# job_workflow_ref and the caller's branch as subject, so the role trusts them.
+
+on:
+  workflow_call:
+    inputs:
+      batch:
+        description: "Names this batch within the run: its artifact and instance key; lowercase letters, digits and hyphens"
+        type: string
+        required: true
+      account:
+        description: "AWS account whose control plane creates the batch: prod or dev"
+        type: string
+        default: "prod"
+      channel:
+        description: "Control plane channel: v1 or edge"
+        type: string
+        default: "v1"
+      server_image:
+        description: "Mattermost server image: master, latest, esr, or an image on Docker Hub by tag"
+        type: string
+        default: "master"
+      count:
+        description: "Servers to create: one per shard, plus the shared ones"
+        type: string
+        required: true
+      services:
+        description: "Comma-separated optional services: minio or azurite, elasticsearch or opensearch, keycloak, openldap, webhook"
+        type: string
+        default: ""
+      ttl:
+        description: "Lifetime before the reaper takes the batch - 90m, 4h"
+        type: string
+        default: "4h"
+      os:
+        description: "Operating system the servers run on"
+        type: string
+        default: "ubuntu-24.04"
+      postgres:
+        description: "Postgres version - '14' to '18'"
+        type: string
+        default: "16"
+      license:
+        description: "Licence SKU - 'enterprise-advanced'. Empty runs unlicensed."
+        type: string
+        default: "enterprise-advanced"
+      server_env:
+        description: "Server settings as a JSON object of strings; the default is mobile's E2E server settings"
+        type: string
+        # One setting per line, sorted by name. Not the ConnectedWorkspacesSettings: the stack boots every server with them
+        # on from its config file, and here they could not be switched through the config API, as the specs do.
+        default: |-
+          {
+            "MM_EMAILSETTINGS_FEEDBACKEMAIL": "test@example.com",
+            "MM_EMAILSETTINGS_REPLYTOADDRESS": "test@example.com",
+            "MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS": "true",
+            "MM_EXPERIMENTALSETTINGS_ENABLEWATERMARK": "false",
+            "MM_EXPERIMENTALSETTINGS_RESTRICTSYSTEMADMIN": "false",
+            "MM_FEATUREFLAGS_CHANNELBOOKMARKS": "true",
+            "MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES": "true",
+            "MM_FEATUREFLAGS_INTERACTIVEDIALOGAPPSFORM": "true",
+            "MM_FEATUREFLAGS_MMBLOCKSENABLED": "true",
+            "MM_FILESETTINGS_ENABLEPUBLICLINK": "true",
+            "MM_PASSWORDSETTINGS_MINIMUMLENGTH": "8",
+            "MM_PLUGINSETTINGS_ENABLEMARKETPLACE": "true",
+            "MM_PLUGINSETTINGS_ENABLEREMOTEMARKETPLACE": "true",
+            "MM_PLUGINSETTINGS_ENABLEUPLOADS": "true",
+            "MM_RATELIMITSETTINGS_ENABLE": "true",
+            "MM_RATELIMITSETTINGS_MAXBURST": "50000",
+            "MM_RATELIMITSETTINGS_MEMORYSTORESIZE": "10000",
+            "MM_RATELIMITSETTINGS_PERSEC": "10000",
+            "MM_RATELIMITSETTINGS_VARYBYREMOTEADDR": "false",
+            "MM_RATELIMITSETTINGS_VARYBYUSER": "false",
+            "MM_SERVICEENVIRONMENT": "test",
+            "MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION": "true",
+            "MM_SERVICESETTINGS_ENABLECHANNELBOOKMARKS": "true",
+            "MM_SERVICESETTINGS_ENABLEONBOARDINGFLOW": "false",
+            "MM_SERVICESETTINGS_ENABLETUTORIAL": "false",
+            "MM_SERVICESETTINGS_ENABLEUSERTYPINGMESSAGES": "false",
+            "MM_SERVICESETTINGS_MAXIMUMACTIVEUSERS": "999999",
+            "MM_SERVICESETTINGS_MAXIMUMLOGINATTEMPTS": "999999",
+            "MM_SERVICESETTINGS_SESSIONCACHEINMINUTES": "180",
+            "MM_SERVICESETTINGS_SESSIONLENGTHMOBILEINHOURS": "5000",
+            "MM_SERVICESETTINGS_SESSIONLENGTHWEBINHOURS": "4320",
+            "MM_SUPPORTSETTINGS_HELPLINK": "https://docs.mattermost.com/",
+            "MM_SUPPORTSETTINGS_REPORTAPROBLEMTYPE": "default",
+            "MM_TEAMSETTINGS_EXPERIMENTALENABLEAUTOMATICREPLIES": "true",
+            "MM_TEAMSETTINGS_MAXUSERSPERTEAM": "999999"
+          }
+      wait_for_migrations:
+        description: "Wait for server migrations before reporting ready"
+        type: boolean
+        default: false
+      shared_admin_password:
+        description: "One admin password across the batch"
+        type: boolean
+        default: true
+    outputs:
+      batch-id:
+        description: "The batch's id"
+        value: ${{ jobs.create.outputs.batch-id }}
+      indexes:
+        description: "JSON array of every server's index, the shared ones included; empty unless every server is ready"
+        value: ${{ jobs.create.outputs.indexes }}
+      sites:
+        description: "JSON array of the servers' site URLs, index-aligned"
+        value: ${{ jobs.create.outputs.sites }}
+      license:
+        description: "The licence SKU the batch was created with; empty when unlicensed"
+        value: ${{ jobs.create.outputs.license }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY:
+        description: "The repository's credentials key, which opens the batch's sealed server credentials"
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  create:
+    runs-on: ubuntu-24.04
+    outputs:
+      batch-id: ${{ steps.create.outputs.batch-id }}
+      sites: ${{ steps.create.outputs.sites }}
+      indexes: ${{ steps.create.outputs.indexes }}
+      license: ${{ inputs.license }}
+    steps:
+      - name: ci/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      # The instance key is mobile-<run id>-<batch>-<attempt>. A re-run attempt creates a batch of its own;
+      # destroy releases every attempt's.
+      - name: ci/create
+        id: create
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/create@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: mobile
+          batch: ${{ inputs.batch }}
+          # Empty, and refused, for an account that is neither or whose variable is unset.
+          role-arn: ${{ inputs.account == 'dev' && vars.E2E_TEST_STACK_ROLE_ARN_DEV || inputs.account == 'prod' && vars.E2E_TEST_STACK_ROLE_ARN_PROD || '' }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          server-image: ${{ inputs.server_image }}
+          count: ${{ inputs.count }}
+          services: ${{ inputs.services }}
+          ttl: ${{ inputs.ttl }}
+          os: ${{ inputs.os }}
+          postgres: ${{ inputs.postgres }}
+          license: ${{ inputs.license }}
+          server-env: ${{ inputs.server_env }}
+          wait-for-migrations: ${{ inputs.wait_for_migrations }}
+          shared-admin-password: ${{ inputs.shared_admin_password }}
+
+      # A destroy by hand names the account; nothing else records it.
+      - name: ci/summary
+        if: always() && steps.create.outputs.batch-id != ''
+        env:
+          ACCOUNT: ${{ inputs.account }}
+          BATCH_ID: ${{ steps.create.outputs.batch-id }}
+        run: |
+          {
+            echo "### Account"
+            echo
+            echo "Batch \`${BATCH_ID}\` is in the \`${ACCOUNT}\` account: give it to E2E Test Stack - Destroy, run by hand."
+          } >> "$GITHUB_STEP_SUMMARY"

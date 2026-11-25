@@ -22,23 +22,28 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {
-    getRandomId,
-    longPressWithScrollRetry,
-    scrollElementIntoView,
-    timeouts,
-    wait,
-} from '@support/utils';
+import {getRandomId, longPressWithScrollRetry, reloadApp, scrollElementIntoView, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+// The webhook sidecar's replies name the suite it was written for: mobile's own sidecar says "Detox",
+// e2e-test-stack's says "Playwright". Detox text matchers must match the whole text.
+const REPLY = '(?:Detox|Playwright) mm_blocks';
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export class MmBlocksTestHelper {
     static readonly SERVER_DISPLAY_NAME = 'Server 1';
     static readonly CHANNELS_CATEGORY = 'channels';
     static readonly WEBHOOK_BASE_URL = webhookBaseUrl;
     static readonly ONLY_VISIBLE_TO_YOU = '(Only visible to you)';
-    static readonly INTEGRATION_OK_MESSAGE = /.*Detox mm_blocks integration OK \(user: .+\).*/;
-    static readonly QUERY_OK_MESSAGE = /.*Detox mm_blocks query OK.*/;
-    static readonly STATIC_SELECT_OK_MESSAGE = /.*Detox mm_blocks static_select OK \(selected_option: .+\).*/;
+    static readonly INTEGRATION_OK_MESSAGE = new RegExp(`.*${REPLY} integration OK \\(user: .+\\).*`);
+    static readonly QUERY_OK_MESSAGE = new RegExp(`.*${REPLY} query OK.*`);
+    static readonly STATIC_SELECT_OK_MESSAGE = new RegExp(`.*${REPLY} static_select OK \\(selected_option: .+\\).*`);
+    static readonly UPDATED_MARKER = /(?:DETOX|PLAYWRIGHT)_MM_BLOCKS_UPDATED/;
+
+    /** The sidecar's reply "<suite> mm_blocks <text>", from either sidecar. */
+    static reply(text: string): RegExp {
+        return new RegExp(`${REPLY} ${escapeRegExp(text)}`);
+    }
 
     // Once set, remaining specs in this process abort immediately (CI 59ec6ae burned
     // ~23×300s after sidecar health passed but thread-open / callbacks stalled).
@@ -69,9 +74,12 @@ export class MmBlocksTestHelper {
 
     static assertSuiteRunnable(): void {
         if (this.suiteBlockedReason) {
+            let hint = 'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL for stable Mattermost→sidecar callbacks.';
+            if (process.env.WEBHOOK_SIDECAR === 'e2e-test-stack') {
+                hint = 'Check the batch was created with services: webhook and its sidecar answered.';
+            }
             throw new Error(
-                `[mm_blocks] Suite aborted after earlier failure: ${this.suiteBlockedReason}. ` +
-                'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL for stable Mattermost→sidecar callbacks.',
+                `[mm_blocks] Suite aborted after earlier failure: ${this.suiteBlockedReason}. ${hint}`,
             );
         }
     }
@@ -108,7 +116,7 @@ export class MmBlocksTestHelper {
 
         // Reload after login so the client picks up FeatureFlagMmBlocksEnabled;
         // reload always lands on the channel list, then re-open.
-        await device.reloadReactNative();
+        await reloadApp();
         await ChannelListScreen.toBeVisible();
         this.lastChannelName = channel.name;
         await ChannelScreen.open(this.CHANNELS_CATEGORY, channel.name);
@@ -154,7 +162,7 @@ export class MmBlocksTestHelper {
         }
     }
 
-    static async waitForTextInChannelPost(postId: string, text: string, timeout = timeouts.TEN_SEC): Promise<void> {
+    static async waitForTextInChannelPost(postId: string, text: string | RegExp, timeout = timeouts.TEN_SEC): Promise<void> {
         await waitFor(
             element(by.text(text).withAncestor(this.channelPostMatcher(postId))),
         ).toExist().withTimeout(timeout);
@@ -208,7 +216,7 @@ export class MmBlocksTestHelper {
 
     static async waitForContextOkMessage(contextMarker: string, timeout = timeouts.TWENTY_SEC): Promise<void> {
         try {
-            await this.waitForPostText(`Detox mm_blocks context OK (test_marker: ${contextMarker}).`, timeout);
+            await this.waitForTextMatching(this.reply(`context OK (test_marker: ${contextMarker}).`), timeout);
         } catch (error) {
             const detail = error instanceof Error ? error.message : String(error);
             this.blockSuite(`context OK message not received for ${contextMarker} (${detail})`);
@@ -219,10 +227,7 @@ export class MmBlocksTestHelper {
     static async waitForStaticSelectOkMessage(selectedOptionId: string, timeout = timeouts.TWENTY_SEC): Promise<void> {
         // Webhook response includes a trailing period; Detox regex matchers require a full TextView match.
         try {
-            await this.waitForPostText(
-                `Detox mm_blocks static_select OK (selected_option: ${selectedOptionId}).`,
-                timeout,
-            );
+            await this.waitForTextMatching(this.reply(`static_select OK (selected_option: ${selectedOptionId}).`), timeout);
         } catch (error) {
             const detail = error instanceof Error ? error.message : String(error);
             this.blockSuite(`static_select OK message not received for ${selectedOptionId} (${detail})`);
@@ -325,7 +330,7 @@ export class MmBlocksTestHelper {
 
     static async expectPostAuthorName(
         authorName: string,
-        postMarker: string,
+        postMarker: string | RegExp,
         location: 'channel' | 'thread' = 'thread',
     ): Promise<void> {
         const postListItemTestId = location === 'channel' ? ChannelScreen.postList.testID.postListPostItem : ThreadScreen.postList.testID.postListPostItem;

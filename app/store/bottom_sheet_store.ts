@@ -48,12 +48,8 @@ class BottomSheetStoreSingleton {
         this.snapPoints = undefined;
     }
 
-    // Every sheet opened through bottomSheet() defaults to 'extend', which snaps
-    // straight to the tallest configured snap point the instant a keyboard
-    // shows. That is the wrong shape for a sheet holding a focusable text input:
-    // it turns a compact sheet into a mostly-empty one instead of growing by
-    // just the keyboard's own height. 'interactive' is what a caller needing
-    // that should ask for instead — see channel_attribute_editor.
+    // The default 'extend' jumps to the tallest snap point when the keyboard shows.
+    // Sheets with a text input pass 'interactive' to grow by the keyboard height instead.
     public setKeyboardBehavior(behavior: KeyboardBehavior) {
         this.keyboardBehavior = behavior;
     }

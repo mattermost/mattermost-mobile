@@ -28,6 +28,7 @@ import {deleteFile, fileExists, getLocalFilePathFromFile, hasWriteStoragePermiss
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
 import {previewPdf} from '@utils/navigation';
+import {EXCLUDE_THIS_APP_FROM_FILE_SHARE} from '@utils/share_targets';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -196,6 +197,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
             Share.open({
                 url: pathWithPrefix('file://', path),
                 saveToFiles: true,
+                excludedActivityTypes: EXCLUDE_THIS_APP_FROM_FILE_SHARE,
             }).catch(() => {
                 // do nothing
             }).finally(() => {
@@ -254,6 +256,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
                     title: '',
                     url: pathWithPrefix('file://', path),
                     showAppsToView: true,
+                    excludedActivityTypes: EXCLUDE_THIS_APP_FROM_FILE_SHARE,
                 }).catch(() => {
                     // do nothing
                 }).finally(() => {
