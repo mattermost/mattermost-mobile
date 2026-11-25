@@ -618,6 +618,28 @@ describe('SecurityManager', () => {
             }
         });
 
+        it('should schedule expiry when an inactive server authenticates from false', async () => {
+            jest.useFakeTimers({doNotFake: ['nextTick']});
+            try {
+                jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+                jest.mocked(Emm.authenticate).mockResolvedValue(true);
+                await SecurityManager.addServer('server-active-9e', {MobileEnableBiometrics: 'false'} as SecurityClientConfig);
+                await SecurityManager.addServer('server-inactive-9e', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+                await SecurityManager.setActiveServer({serverUrl: 'server-active-9e', options: {skipBiometricCheck: true, skipMAMEnrollmentCheck: true, skipJailbreakCheck: true}});
+                jest.mocked(setSessionAttributesServerValues).mockClear();
+
+                await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-inactive-9e')).resolves.toBe(true);
+                expect(SecurityManager.getServerConfig('server-inactive-9e')?.authenticated).toBe(true);
+                expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-inactive-9e', {biometric_authenticated: 'true'});
+
+                jest.advanceTimersByTime(25000);
+                expect(SecurityManager.getServerConfig('server-inactive-9e')?.authenticated).toBe(false);
+                expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-inactive-9e', {biometric_authenticated: 'false'});
+            } finally {
+                jest.useRealTimers();
+            }
+        });
+
         it('should reset biometric_authenticated across all servers on resume only after the re-prompt window lapses', async () => {
             await SecurityManager.addServer('server-active', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);
             await SecurityManager.addServer('server-inactive', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);

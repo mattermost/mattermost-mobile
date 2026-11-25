@@ -233,10 +233,7 @@ class SecurityManagerSingleton {
             },
             isGateOpen: () => this.isCheckingBiometrics,
             shouldBlock: () => this.isDeviceJailbroken(server),
-            authenticate: () => {
-                this.setAuthenticated(server, false);
-                return this.authenticateWithBiometrics(server);
-            },
+            authenticate: () => this.authenticateWithBiometrics(server),
             promptWhenNotExpired: false,
             source: AuthenticationSource.SecurityManager,
         });
@@ -620,17 +617,17 @@ class SecurityManagerSingleton {
             return;
         }
         this.clearAuthenticationExpiry(server);
+        const changed = config.authenticated !== authenticated;
+        config.authenticated = authenticated;
         if (authenticated) {
             config.lastAccessed = Date.now();
             if (server !== this.activeServer || this.previousAppState === 'background') {
                 this.scheduleAuthenticationExpiry(server);
             }
         }
-        if (config.authenticated === authenticated) {
-            return;
+        if (changed) {
+            SessionAttributesManager.setBiometricAuthenticated(server, authenticated);
         }
-        config.authenticated = authenticated;
-        SessionAttributesManager.setBiometricAuthenticated(server, authenticated);
     };
 
     /**
