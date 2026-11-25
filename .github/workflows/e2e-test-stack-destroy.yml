@@ -165,23 +165,26 @@ jobs:
           RUN_ID: ${{ github.run_id }}
         run: |
           set -uo pipefail
-          seen_other=false
           zeros=0
           while true; do
             if listing=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
               --jq '.jobs[] | [.name, .status] | @tsv'); then
               # The caller's job name is "Destroy on cancel"; this job shows up under that prefix.
-              count=$(printf '%s\n' "$listing" | awk -F '\t' '
+              # Results is absent until the lanes are decided, so a poll that has not listed it yet
+              # is not a finished run. Once it has completed, two quiet polls end the wait, including
+              # a first poll that already finds every other job completed.
+              parsed=$(printf '%s\n' "$listing" | awk -F '\t' '
                 index($1, "Destroy on cancel") == 0 && ($2 == "queued" || $2 == "in_progress" || $2 == "waiting" || $2 == "pending" || $2 == "requested") { c++ }
-                END { print c+0 }
+                $1 == "Results" && $2 == "completed" { r++ }
+                END { print c+0, r+0 }
               ')
-              echo "other jobs still going: ${count}"
-              if [ "$count" -gt 0 ]; then
-                seen_other=true
+              count=${parsed%% *}
+              results=${parsed##* }
+              echo "other jobs still going: ${count}; results completed: ${results}"
+              if [ "$count" -gt 0 ] || [ "$results" -eq 0 ]; then
                 zeros=0
-              elif [ "$seen_other" = true ]; then
+              else
                 zeros=$((zeros + 1))
-                # Two empty polls, so one dropped response does not look like the run finished.
                 if [ "$zeros" -ge 2 ]; then
                   echo "other jobs finished"
                   exit 0
@@ -193,6 +196,46 @@ jobs:
             fi
             sleep 20
           done
+
+      # Destroy reads each lane's create response. The create action uploads that response in
+      # if: always() steps, which still run after the lane is cancelled, so wait until those jobs
+      # have left the active states. A create cancelled before it recorded a batch id uploads
+      # nothing, and that batch is reaped at its TTL.
+      - name: e2e-tests/wait-for-shutdown
+        if: cancelled()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          zeros=0
+          left=30
+          while [ "$left" -gt 0 ]; do
+            if listing=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+              --jq '.jobs[] | [.name, .status] | @tsv'); then
+              count=$(printf '%s\n' "$listing" | awk -F '\t' '
+                index($1, "Destroy on cancel") == 0 && ($2 == "queued" || $2 == "in_progress" || $2 == "waiting" || $2 == "pending" || $2 == "requested") { c++ }
+                END { print c+0 }
+              ')
+              echo "other jobs still going: ${count}"
+              if [ "$count" -eq 0 ]; then
+                zeros=$((zeros + 1))
+                if [ "$zeros" -ge 2 ]; then
+                  echo "other jobs finished"
+                  exit 0
+                fi
+              else
+                zeros=0
+              fi
+            else
+              echo "job list failed, retrying"
+              zeros=0
+            fi
+            left=$((left - 1))
+            sleep 20
+          done
+          echo "other jobs still going after waiting; destroying from the responses already uploaded"
 
       - name: ci/setup-node
         if: cancelled()
