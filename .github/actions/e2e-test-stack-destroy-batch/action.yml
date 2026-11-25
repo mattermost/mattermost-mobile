@@ -1,0 +1,43 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+name: E2E test stack destroy batch
+description: >-
+  Collects one e2e-test-stack batch's logs, then destroys it. A failed log collection still destroys. The caller
+  has Node 26 set up, id-token: write, and actions: read. Destroys this run's batch only.
+
+inputs:
+  batch:
+    description: The batch create named, e.g. dt-ios-pr
+    required: true
+  role-arn:
+    description: The CI role ARN for the account the batch was created in
+    required: true
+  channel:
+    description: The control plane channel, v1 or edge
+    required: true
+  credentials-key:
+    description: The repository's credentials key, which opens the batch's sealed token
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: logs
+      continue-on-error: true
+      uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+      with:
+        caller-key: mobile
+        batch: ${{ inputs.batch }}
+        role-arn: ${{ inputs.role-arn }}
+        channel: ${{ inputs.channel }}
+        credentials-key: ${{ inputs.credentials-key }}
+
+    - name: destroy
+      if: always()
+      uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+      with:
+        caller-key: mobile
+        batch: ${{ inputs.batch }}
+        role-arn: ${{ inputs.role-arn }}
+        channel: ${{ inputs.channel }}
+        credentials-key: ${{ inputs.credentials-key }}

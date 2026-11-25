@@ -13,11 +13,17 @@
 #            <type> is pr with pr_number, else main on main and rel on a release branch.
 #   results  settles any status a lane left pending and picks the batches to destroy
 #   destroy  collects each picked batch's logs and destroys it
+#   cancel   calls e2e-test-stack-destroy.yml, already running during the lanes. That file is what the
+#            CI role trusts, so a cancel can still destroy batches.
 #
-# A failed or cancelled lane keeps its batch, so "Re-run failed jobs" runs its failed jobs again on the same servers;
-# the batch's TTL (2h from create) bounds its life when nobody re-runs it, and after it only "Re-run all jobs" creates
-# a new one. A passed lane's batch is destroyed. The run posts no triage verdict and no channel message; its statuses
-# are not the required e2e-test/* contexts.
+# One run at a time per pull request, or per ref when pr_number is empty (main, or one release branch). A newer run
+# cancels the one in progress. It does not wait for it.
+#
+# A passed lane's batch is destroyed. So is every lane's batch when the run is cancelled. A failed or timed-out lane
+# of a run that was not cancelled is kept, so "Re-run failed jobs" uses the same servers. The batch's TTL (4h from
+# create) bounds that, including time queued for a macOS runner, and is the backstop when destroy does not run.
+# After it, only "Re-run all jobs" creates a new batch. The run posts no triage verdict and no channel message; its
+# statuses are not the required e2e-test/* contexts.
 name: E2E Tests
 
 on:
@@ -63,10 +69,11 @@ on:
 
 permissions: {}
 
-# One run at a time per PR, else per commit; a newer run waits for the one in progress instead of cancelling it.
+# Per pull request, or per ref when pr_number is empty. The ref- prefix keeps a branch name from matching a pr- group.
+# A newer run cancels the one in progress.
 concurrency:
-  group: e2e-tests-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || inputs.commit_sha }}
-  cancel-in-progress: false
+  group: e2e-tests-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || format('ref-{0}', github.ref_name) }}
+  cancel-in-progress: true
 
 jobs:
   check-ref:
@@ -304,10 +311,32 @@ jobs:
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-  # Each chosen lane's batch is destroyed when the lane passed. A failed or cancelled lane's batch (a timed-out job
-  # reports cancelled too) is kept until its TTL for "Re-run failed jobs", which runs this job again with the
-  # re-run's results; a skipped lane created none. A chosen lane's status still pending from this run (a lane skipped
-  # after a failed build, one whose servers failed, or one stopped before its report) is set to error.
+  # Calls the destroy workflow so the job runs in the file the CI role trusts. The name is what that
+  # workflow's wait ignores. A timeout or a failed destroy must not turn a finished test run red.
+  cancel:
+    name: Destroy on cancel
+    needs: setup
+    if: always() && needs.setup.result == 'success'
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-destroy.yml
+    with:
+      batch: on-cancel
+      account: ${{ needs.setup.outputs.account }}
+      channel: ${{ needs.setup.outputs.channel }}
+      on_cancel: true
+      lanes: ${{ needs.setup.outputs.lanes }}
+      batches: ${{ needs.setup.outputs.batches }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  # Each chosen lane's batch is destroyed when the lane passed. A failed or timed-out lane is kept until its TTL
+  # for "Re-run failed jobs", which runs this job again with the re-run's results; a skipped lane created none.
+  # A cancelled run is destroyed by the cancel job, which is already running. A chosen lane's status still pending
+  # from this run (a lane skipped after a failed build, one whose servers failed, or one stopped before its report)
+  # is set to error.
   results:
     name: Results
     needs: [setup, detox-ios, detox-ipad, detox-android, maestro-ios, maestro-android]

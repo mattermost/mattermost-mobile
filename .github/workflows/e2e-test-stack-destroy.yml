@@ -16,7 +16,8 @@ name: E2E Test Stack - Destroy
 # passes.
 #
 # It runs as the account input's CI role, which trusts only jobs in this file
-# and e2e-test-stack-create.yml, on main and release-*.*.
+# and e2e-test-stack-create.yml, on main and release-*.*. The on_cancel call is a job
+# in this file for that reason: a cancel from the caller would not be trusted.
 
 on:
   workflow_call:
@@ -33,6 +34,18 @@ on:
         description: "Control plane channel the batch was created on: v1 or edge"
         type: string
         default: "v1"
+      on_cancel:
+        description: "Wait while the caller runs, and destroy lanes' batches only if that run is cancelled"
+        type: boolean
+        default: false
+      lanes:
+        description: "With on_cancel: JSON array of lane names from setup"
+        type: string
+        default: ""
+      batches:
+        description: "With on_cancel: JSON object of lane to batch name from setup"
+        type: string
+        default: ""
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY:
         description: "The repository's credentials key, which opens the batch's sealed token"
@@ -72,7 +85,8 @@ env:
 jobs:
   logs:
     # Also in a cancelled run, so a batch destroyed then still has its logs.
-    if: always()
+    # The on_cancel job is the one already running in that mode; these two stay idle.
+    if: always() && !inputs.on_cancel
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -114,7 +128,7 @@ jobs:
   # A failed logs job never keeps the batch up.
   destroy:
     needs: logs
-    if: always()
+    if: always() && !inputs.on_cancel
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -130,6 +144,109 @@ jobs:
           caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ env.BATCH }}
           batch-id: ${{ env.BATCH_ID }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  # Already running while the caller tests, so a cancel reaches it. GitHub re-checks `if` only on running
+  # jobs. The CI role trusts this file, which is why the wait lives here and not in the caller.
+  cancel:
+    # A timeout must not turn the caller's finished test run red. GitHub-hosted jobs cap at 360m.
+    if: always() && inputs.on_cancel
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: ci/checkout-destroy-action
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          sparse-checkout: .github/actions/e2e-test-stack-destroy-batch
+          persist-credentials: false
+
+      - name: e2e-tests/wait
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          seen_other=false
+          zeros=0
+          while true; do
+            if listing=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+              --jq '.jobs[] | [.name, .status] | @tsv'); then
+              # The caller's job name is "Destroy on cancel"; this job shows up under that prefix.
+              count=$(printf '%s\n' "$listing" | awk -F '\t' '
+                index($1, "Destroy on cancel") == 0 && ($2 == "queued" || $2 == "in_progress" || $2 == "waiting" || $2 == "pending" || $2 == "requested") { c++ }
+                END { print c+0 }
+              ')
+              echo "other jobs still going: ${count}"
+              if [ "$count" -gt 0 ]; then
+                seen_other=true
+                zeros=0
+              elif [ "$seen_other" = true ]; then
+                zeros=$((zeros + 1))
+                # Two empty polls, so one dropped response does not look like the run finished.
+                if [ "$zeros" -ge 2 ]; then
+                  echo "other jobs finished"
+                  exit 0
+                fi
+              fi
+            else
+              echo "job list failed, retrying"
+              zeros=0
+            fi
+            sleep 20
+          done
+
+      - name: ci/setup-node
+        if: cancelled()
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          package-manager-cache: false
+
+      - name: ci/destroy-detox-ios
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-ios')
+        uses: ./.github/actions/e2e-test-stack-destroy-batch
+        with:
+          batch: ${{ fromJSON(inputs.batches)['detox-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-detox-ipad
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-ipad')
+        uses: ./.github/actions/e2e-test-stack-destroy-batch
+        with:
+          batch: ${{ fromJSON(inputs.batches)['detox-ipad'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-detox-android
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-android')
+        uses: ./.github/actions/e2e-test-stack-destroy-batch
+        with:
+          batch: ${{ fromJSON(inputs.batches)['detox-android'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-maestro-ios
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-ios')
+        uses: ./.github/actions/e2e-test-stack-destroy-batch
+        with:
+          batch: ${{ fromJSON(inputs.batches)['maestro-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-maestro-android
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-android')
+        uses: ./.github/actions/e2e-test-stack-destroy-batch
+        with:
+          batch: ${{ fromJSON(inputs.batches)['maestro-android'] || 'unused' }}
           role-arn: ${{ env.ROLE_ARN }}
           channel: ${{ inputs.channel }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
