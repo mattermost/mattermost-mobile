@@ -106,7 +106,7 @@ class ChannelBookmarkScreen {
         ).trim();
     };
 
-    waitForAutofilledTitle = async (expectedPrefix = 'Mattermost', timeout = timeouts.ONE_MIN): Promise<string> => {
+    waitForAutofilledTitle = async (expectedPrefix = 'Example Domain', timeout = timeouts.ONE_MIN): Promise<string> => {
         const deadline = Date.now() + timeout;
         let lastTitle = '';
         /* eslint-disable no-await-in-loop */

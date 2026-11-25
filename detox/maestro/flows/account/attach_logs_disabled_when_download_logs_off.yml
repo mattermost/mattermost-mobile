@@ -49,15 +49,6 @@ onFlowComplete:
 - tapOn:
     id: "tab_bar.account.tab"
 - runFlow: ../../subflows/navigation/open_settings_report_problem.yml
-- tapOn:
-    id: "settings.report_problem.option"
-
-# * Verify the report screen opens even when logs cannot be downloaded.
-# The logs setting arrives with the server config, which can lag on first login.
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.screen"
-    timeout: 30000
 
 # * Wait for the app to actually hold AllowDownloadLogs=false before asserting anything is
 # absent. The app reads the flag from its own database and defaults it to true until the
