@@ -611,6 +611,7 @@ jobs:
     needs:
       - calculate-commit-hash
       - cmt-identity
+      - plan-cmt-triage
       - prepare-maestro-matrix
       - provision-cmt-servers
       - build-ios-simulator
@@ -689,7 +690,7 @@ jobs:
       - name: Evaluate final CMT outcome
         id: final
         env:
-          JOB_KEYS: ${{ needs.cmt-identity.outputs.tsio-job-keys || '[]' }}
+          JOB_KEYS: ${{ needs.plan-cmt-triage.outputs.failing-job-keys || '[]' }}
           TRIAGE_FINDINGS_DIR: triage-findings
           RERUN_RESULTS_DIR: rerun-results
           R_CALC_HASH: ${{ needs.calculate-commit-hash.result }}
@@ -791,6 +792,23 @@ jobs:
             -f context="e2e-test/compatibility-matrix-testing" \
             -f description="Compatibility Matrix Testing cancelled before completion" \
             -f target_url="$TARGET_URL"
+
+      - name: Consolidate CMT triage summary
+        if: always() && !cancelled() && needs.tsio-triage.result != 'skipped'
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-triage/consolidate@main
+        with:
+          findings-dir: triage-findings
+          summary-file: cmt-triage-summary.json
+          write-summary: "true"
+
+      - name: Upload consolidated CMT triage summary
+        if: always() && hashFiles('cmt-triage-summary.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cmt-triage-summary-a${{ github.run_attempt }}
+          path: cmt-triage-summary.json
+          retention-days: 7
 
 
   # Per-shard TSIO groups are finalized in each matrix leg, which leaves channel
@@ -1252,14 +1270,12 @@ jobs:
   # Same per-test judging the PR/main lanes get in e2e-detox-pr.yml: without it
   # every CMT shard is raw any-failure-red (FAILURES > 0 in the template summary
   # jobs), so a handful of known-flaky failures out of ~650 tests per leg turned
-  # every CMT run red. Report-only (the default) only posts the verdict;
-  # E2E_TRIAGE_MODE=enforce makes the verdict the shard's commit status, exactly
-  # as on PR/main. The workflow run itself stays red on real failures either way.
-  tsio-triage:
-    name: Triage CMT failures (${{ matrix.job-key }})
+  # Filter to ONLY failing/missing CMT shards before spinning triage runners: all-pass runs skip triage
+  # completely, and a single failing shard never wastes runner minutes triaging passing siblings. Fail-closed.
+  plan-cmt-triage:
+    name: Plan CMT triage lanes
     runs-on: ubuntu-24.04
-    # The channel message waits for this job: a hang must not hold it for hours (recent runs take under a minute).
-    timeout-minutes: 15
+    timeout-minutes: 5
     if: >-
       !cancelled() &&
       (needs.detox-e2e.result == 'failure' ||
@@ -1277,24 +1293,61 @@ jobs:
       - maestro-android-e2e
     permissions:
       contents: read
+      statuses: read
+    outputs:
+      failing-job-keys: ${{ steps.plan.outputs.failing-job-keys }}
+      has-failing: ${{ steps.plan.outputs.has-failing }}
+    steps:
+      - name: Select failing CMT shards from commit statuses
+        id: plan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+          JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
+          JOB_KEYS: ${{ needs.cmt-identity.outputs.tsio-job-keys }}
+        run: |
+          FAILING="$JOB_KEYS"
+          if [ -n "$SHA" ] && RAW=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/statuses?per_page=100" --paginate 2>/dev/null) && STATUSES=$(jq -s 'add // []' <<<"$RAW" 2>/dev/null); then
+            if FILTERED=$(jq -cn --argjson cfg "$JOB_CONFIGS" --argjson keys "$JOB_KEYS" --argjson rows "$STATUSES" '
+              ($rows | reduce .[] as $r ({}; if has($r.context) then . else .[$r.context] = $r.state end)) as $latest
+              | [$keys[] | select(($cfg[.].status_context // "") as $ctx | ($ctx == "" or ($latest[$ctx] // "missing") != "success"))]
+            ' 2>/dev/null); then
+              # Fail-closed: if at least one suite failed but all mapped keys looked green, triage all keys.
+              if [ "$(jq 'length' <<<"$FILTERED")" -gt 0 ]; then
+                FAILING="$FILTERED"
+              fi
+            fi
+          fi
+          HAS_FAILING=$(jq -r 'length > 0' <<<"$FAILING")
+          {
+            echo "failing-job-keys=${FAILING}"
+            echo "has-failing=${HAS_FAILING}"
+          } >> "$GITHUB_OUTPUT"
+
+  # every CMT run red. Report-only (the default) only posts the verdict;
+  # E2E_TRIAGE_MODE=enforce makes the verdict the shard's commit status, exactly
+  # as on PR/main. The workflow run itself stays red on real failures either way.
+  tsio-triage:
+    name: Triage CMT failures (${{ matrix.job-key }})
+    runs-on: ubuntu-24.04
+    # The channel message waits for this job: a hang must not hold it for hours (recent runs take under a minute).
+    timeout-minutes: 15
+    if: >-
+      !cancelled() &&
+      needs.plan-cmt-triage.outputs.has-failing == 'true'
+    needs:
+      - calculate-commit-hash
+      - cmt-identity
+      - plan-cmt-triage
+    permissions:
+      contents: read
       statuses: write
       pull-requests: read
       actions: read
-    # Every lane writes the shared e2e-test/triage context, and the toolkit's
-    # status publisher has no compare-and-swap: its status.ts requires every
-    # caller to hold the same non-cancelling, SHA-scoped job concurrency lock
-    # across its reads and writes. max-parallel serializes the matrix entries
-    # within this run without discarding queued entries; the concurrency group
-    # serializes against triage writers from any other run of the same commit.
-    # The workflow-level cancel-in-progress group above does neither.
-    concurrency:
-      group: e2e-test-triage-${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-      cancel-in-progress: false
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
-        job-key: ${{ fromJSON(needs.cmt-identity.outputs.tsio-job-keys) }}
+        job-key: ${{ fromJSON(needs.plan-cmt-triage.outputs.failing-job-keys) }}
     steps:
       # Checked out from the workflow ref (the build-release-* branch under
       # test runs no code with the API key beyond this composite's own steps,

@@ -27,6 +27,10 @@ inputs:
     description: report-only or enforce (vars.E2E_TRIAGE_MODE)
     required: false
     default: report-only
+  triage-status-context:
+    description: Shared PR-wide triage check context, or "off" for parallel per-lane triage consolidated at the end
+    required: false
+    default: "off"
   triage-lanes:
     description: Comma-separated commit-status contexts the one PR-wide triage check summarises
     required: false
@@ -80,9 +84,7 @@ runs:
       with:
         composite-identity: ${{ inputs.composite-identity }}
         status-context: ${{ inputs.status-context }}
-        # One triage check for the whole PR, summarising every lane; a red lane posts it
-        # as pending as soon as it finishes (detox/utils/tsio-report-status.js).
-        triage-status-context: e2e-test/triage
+        triage-status-context: ${{ inputs.triage-status-context }}
         triage-lanes: ${{ inputs.triage-lanes }}
         lane: ${{ inputs.job-key }}
         lane-job-filter: ${{ inputs.lane-job-filter || (contains(inputs.job-key, 'maestro-ios') && 'maestro-ios,Maestro iOS,build-ios-simulator,provision,Validate Maestro' || (contains(inputs.job-key, 'maestro-android') && 'maestro-android,Maestro Android,build-android-apk-maestro,provision,Validate Maestro' || (contains(inputs.job-key, 'detox-ios') && 'detox-ios,Detox iOS,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-ipad') && 'detox-ipad,build-ios-simulator,provision' || (contains(inputs.job-key, 'detox-android') && 'detox-android,Detox Android,build-android-apk,provision,!maestro' || inputs.job-key))))) }}
