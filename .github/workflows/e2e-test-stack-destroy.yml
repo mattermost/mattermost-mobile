@@ -148,8 +148,9 @@ jobs:
           channel: ${{ inputs.channel }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-  # Already running while the caller tests, so a cancel reaches it. GitHub re-checks `if` only on running
-  # jobs. The CI role trusts this file, which is why the wait lives here and not in the caller.
+  # Already running while the caller tests, so a cancel reaches it. GitHub re-checks `if` only on a job
+  # that is running, and a cancelled run does not start one. The CI role trusts only this file and
+  # create.yml, and only for the public toolkit actions: no checkout and no local action.
   cancel:
     # A timeout must not turn the caller's finished test run red. GitHub-hosted jobs cap at 360m.
     if: always() && inputs.on_cancel
@@ -157,12 +158,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
-      - name: ci/checkout-destroy-action
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          sparse-checkout: .github/actions/e2e-test-stack-destroy-batch
-          persist-credentials: false
-
       - name: e2e-tests/wait
         env:
           GH_TOKEN: ${{ github.token }}
@@ -206,46 +201,106 @@ jobs:
           node-version: "26"
           package-manager-cache: false
 
-      - name: ci/destroy-detox-ios
+      - name: ci/logs-detox-ios
         if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-ios')
-        uses: ./.github/actions/e2e-test-stack-destroy-batch
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
+          caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ fromJSON(inputs.batches)['detox-ios'] || 'unused' }}
           role-arn: ${{ env.ROLE_ARN }}
           channel: ${{ inputs.channel }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-      - name: ci/destroy-detox-ipad
-        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-ipad')
-        uses: ./.github/actions/e2e-test-stack-destroy-batch
+      - name: ci/destroy-detox-ios
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'detox-ios')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-detox-ipad
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-ipad')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ fromJSON(inputs.batches)['detox-ipad'] || 'unused' }}
           role-arn: ${{ env.ROLE_ARN }}
           channel: ${{ inputs.channel }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-      - name: ci/destroy-detox-android
-        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-android')
-        uses: ./.github/actions/e2e-test-stack-destroy-batch
+      - name: ci/destroy-detox-ipad
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'detox-ipad')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-ipad'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-detox-android
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'detox-android')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ fromJSON(inputs.batches)['detox-android'] || 'unused' }}
           role-arn: ${{ env.ROLE_ARN }}
           channel: ${{ inputs.channel }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-      - name: ci/destroy-maestro-ios
-        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-ios')
-        uses: ./.github/actions/e2e-test-stack-destroy-batch
+      - name: ci/destroy-detox-android
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'detox-android')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['detox-android'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-maestro-ios
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-ios')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ fromJSON(inputs.batches)['maestro-ios'] || 'unused' }}
           role-arn: ${{ env.ROLE_ARN }}
           channel: ${{ inputs.channel }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-      - name: ci/destroy-maestro-android
-        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-android')
-        uses: ./.github/actions/e2e-test-stack-destroy-batch
+      - name: ci/destroy-maestro-ios
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'maestro-ios')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
         with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['maestro-ios'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/logs-maestro-android
+        if: cancelled() && contains(fromJSON(inputs.lanes), 'maestro-android')
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/logs@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
+          batch: ${{ fromJSON(inputs.batches)['maestro-android'] || 'unused' }}
+          role-arn: ${{ env.ROLE_ARN }}
+          channel: ${{ inputs.channel }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/destroy-maestro-android
+        if: always() && cancelled() && contains(fromJSON(inputs.lanes), 'maestro-android')
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/destroy@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main
+        with:
+          caller-key: ${{ env.CALLER_KEY }}
           batch: ${{ fromJSON(inputs.batches)['maestro-android'] || 'unused' }}
           role-arn: ${{ env.ROLE_ARN }}
           channel: ${{ inputs.channel }}
