@@ -6,3 +6,9 @@ paths:
     ignore:
       - 'unexpected key "cache-mode" for "job" section'
       - 'unexpected key "queue" for "concurrency" section'
+  .github/workflows/e2e-label-manager.yml:
+    ignore:
+      - 'unexpected key "queue" for "concurrency" section'
+  .github/workflows/e2e-detox-pr.yml:
+    ignore:
+      - 'unexpected key "queue" for "concurrency" section'

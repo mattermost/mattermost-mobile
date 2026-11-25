@@ -49,8 +49,8 @@ function bucketIdentity(sampleIdentity) {
 }
 
 /**
- * The triage job's findings file for each run (one artifact per run). Only schema 2, which names each test's
- * verdict, is used; anything else is skipped with a warning.
+ * The triage job's findings file for each run (one artifact per run). Schemas 2 and 3, which name each test's
+ * verdict, are used; anything else is skipped with a warning.
  *
  * @param {string} dir
  * @param {Function} [warn]
@@ -64,10 +64,10 @@ function loadTriageFindings(dir, warn = console.warn) {
     for (const file of fs.readdirSync(dir, {recursive: true}).filter((name) => name.endsWith('.json')).map((name) => path.join(dir, name))) {
         try {
             const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-            if (parsed?.schema === 2 && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
+            if ((parsed?.schema === 2 || parsed?.schema === 3) && typeof parsed.lane === 'string' && Array.isArray(parsed.findings)) {
                 out.push(parsed);
             } else {
-                warn(`tsio-channel-notify-rollup: ${file} is not a schema 2 findings file — skipped`);
+                warn(`tsio-channel-notify-rollup: ${file} is not a schema 2/3 findings file — skipped`);
             }
         } catch (err) {
             warn(`tsio-channel-notify-rollup: could not read ${file}: ${err.message}`);

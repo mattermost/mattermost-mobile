@@ -139,16 +139,18 @@ describe('tsio-channel-notify-rollup', () => {
     });
 
     describe('loadTriageFindings', () => {
-        it('reads each run\'s schema 2 findings file and skips anything else', () => {
+        it('reads each run\'s schema 2 or 3 findings file and skips anything else', () => {
             const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'triage-findings-'));
             fs.mkdirSync(path.join(dir, 'e2e-triage-findings-detox-android'));
             fs.writeFileSync(path.join(dir, 'e2e-triage-findings-detox-android', 'e2e-triage-findings.json'), JSON.stringify({schema: 2, lane: 'detox-android', findings: [], counts: {flaky: 4}}));
+            fs.mkdirSync(path.join(dir, 'e2e-triage-findings-detox-ipad'));
+            fs.writeFileSync(path.join(dir, 'e2e-triage-findings-detox-ipad', 'e2e-triage-findings.json'), JSON.stringify({schema: 3, lane: 'detox-ipad', findings: [], counts: {flaky: 1}}));
             fs.mkdirSync(path.join(dir, 'e2e-triage-findings-detox-ios'));
             fs.writeFileSync(path.join(dir, 'e2e-triage-findings-detox-ios', 'e2e-triage-findings.json'), JSON.stringify({schema: 1, findings: []}));
             fs.writeFileSync(path.join(dir, 'broken.json'), '{');
             const warnings = [];
             const loaded = loadTriageFindings(dir, (msg) => warnings.push(msg));
-            assert.deepEqual(loaded.map((f) => f.lane), ['detox-android']);
+            assert.deepEqual(loaded.map((f) => f.lane).sort(), ['detox-android', 'detox-ipad']);
             assert.equal(warnings.length, 2);
             assert.deepEqual(loadTriageFindings(path.join(dir, 'missing')), [], 'no findings when no run failed');
         });
