@@ -421,4 +421,25 @@ describe('cmt-final-status', () => {
         assert.equal(res.state, 'success');
         assert.match(res.description, /1 cleared by triage/);
     });
+
+    it('fails closed when a failing matrix suite has no shards in expectedJobKeys', () => {
+        const res = evaluateCmtFinalStatus({
+            jobResults: {...ALL_SUCCESS_JOBS, detoxIos: 'failure', detoxAndroid: 'failure', tsioTriage: 'success'},
+            expectedJobKeys: ['detox-ios-Server_11.9.0'],
+            triage: [
+                {
+                    schema: 2,
+                    lane: 'detox-ios-Server_11.9.0',
+                    triaged: true,
+                    verdict: 'SUCCESS',
+                    counts: {total: 100, passed: 99, failed: 1, flaky: 0, skipped: 0},
+                    findings: [{title: 'flaky test', blocking: false}],
+                },
+            ],
+            rerunResults: {},
+        });
+        assert.equal(res.upstreamSucceeded, false);
+        assert.equal(res.state, 'failure');
+        assert.match(res.description, /1 untriaged lane/);
+    });
 });

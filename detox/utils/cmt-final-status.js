@@ -34,6 +34,14 @@ const MATRIX_KEYS = [
     'maestroAndroid',
 ];
 
+const MATRIX_KEY_PREFIXES = {
+    detoxIos: 'detox-ios-',
+    detoxIpad: 'detox-ipad-',
+    detoxAndroid: 'detox-android-',
+    maestroIos: 'maestro-ios-',
+    maestroAndroid: 'maestro-android-',
+};
+
 /**
  * Evaluate final CMT status from CI job results, triage findings, and rerun results.
  *
@@ -96,6 +104,14 @@ function evaluateCmtFinalStatus({jobResults, expectedJobKeys, triage, rerunResul
     }
 
     let missingOrUntriaged = 0;
+    for (const suite of MATRIX_KEYS) {
+        if (results[suite] === 'failure') {
+            const prefix = MATRIX_KEY_PREFIXES[suite];
+            if (!expectedJobKeys.some((key) => typeof key === 'string' && key.startsWith(prefix))) {
+                missingOrUntriaged++;
+            }
+        }
+    }
     let unsettled = 0;
     let blocking = 0;
     let clearedByTriage = 0;

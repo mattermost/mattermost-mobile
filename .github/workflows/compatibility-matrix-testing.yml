@@ -1267,11 +1267,10 @@ jobs:
 
       # Instance cleanup is handled by matterwick on workflow_run completed.
 
-  # Same per-test judging the PR/main lanes get in e2e-detox-pr.yml: without it
-  # every CMT shard is raw any-failure-red (FAILURES > 0 in the template summary
-  # jobs), so a handful of known-flaky failures out of ~650 tests per leg turned
-  # Filter to ONLY failing/missing CMT shards before spinning triage runners: all-pass runs skip triage
-  # completely, and a single failing shard never wastes runner minutes triaging passing siblings. Fail-closed.
+  # Filter to ONLY failing CMT suites before spinning triage runners: all-pass runs skip triage
+  # completely, and shards of passing suites are never triaged (a failing suite's matrix result is
+  # job-level, so all its shards are). Uses this run's own matrix job results (not shared SHA
+  # statuses, which another run could overwrite). Fail-closed.
   plan-cmt-triage:
     name: Plan CMT triage lanes
     runs-on: ubuntu-24.04
@@ -1284,7 +1283,6 @@ jobs:
        needs.maestro-ios-e2e.result == 'failure' ||
        needs.maestro-android-e2e.result == 'failure')
     needs:
-      - calculate-commit-hash
       - cmt-identity
       - detox-e2e
       - detox-android-e2e
@@ -1293,29 +1291,42 @@ jobs:
       - maestro-android-e2e
     permissions:
       contents: read
-      statuses: read
     outputs:
       failing-job-keys: ${{ steps.plan.outputs.failing-job-keys }}
       has-failing: ${{ steps.plan.outputs.has-failing }}
     steps:
-      - name: Select failing CMT shards from commit statuses
+      - name: Select failing CMT suites from this run
         id: plan
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-          JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
           JOB_KEYS: ${{ needs.cmt-identity.outputs.tsio-job-keys }}
+          R_DETOX_IOS: ${{ needs.detox-e2e.result }}
+          R_DETOX_IPAD: ${{ needs.detox-ipad-e2e.result }}
+          R_DETOX_ANDROID: ${{ needs.detox-android-e2e.result }}
+          R_MAESTRO_IOS: ${{ needs.maestro-ios-e2e.result }}
+          R_MAESTRO_ANDROID: ${{ needs.maestro-android-e2e.result }}
         run: |
           FAILING="$JOB_KEYS"
-          if [ -n "$SHA" ] && RAW=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/statuses?per_page=100" --paginate 2>/dev/null) && STATUSES=$(jq -s 'add // []' <<<"$RAW" 2>/dev/null); then
-            if FILTERED=$(jq -cn --argjson cfg "$JOB_CONFIGS" --argjson keys "$JOB_KEYS" --argjson rows "$STATUSES" '
-              ($rows | reduce .[] as $r ({}; if has($r.context) then . else .[$r.context] = $r.state end)) as $latest
-              | [$keys[] | select(($cfg[.].status_context // "") as $ctx | ($ctx == "" or ($latest[$ctx] // "missing") != "success"))]
-            ' 2>/dev/null); then
-              # Fail-closed: if at least one suite failed but all mapped keys looked green, triage all keys.
-              if [ "$(jq 'length' <<<"$FILTERED")" -gt 0 ]; then
-                FAILING="$FILTERED"
-              fi
+          if FILTERED=$(jq -cn \
+            --argjson keys "$JOB_KEYS" \
+            --arg r_detox_ios "$R_DETOX_IOS" \
+            --arg r_detox_ipad "$R_DETOX_IPAD" \
+            --arg r_detox_android "$R_DETOX_ANDROID" \
+            --arg r_maestro_ios "$R_MAESTRO_IOS" \
+            --arg r_maestro_android "$R_MAESTRO_ANDROID" '
+            [
+              $keys[] | select(
+                if startswith("detox-ios-") then $r_detox_ios != "success"
+                elif startswith("detox-ipad-") then $r_detox_ipad != "success"
+                elif startswith("detox-android-") then $r_detox_android != "success"
+                elif startswith("maestro-ios-") then $r_maestro_ios != "success"
+                elif startswith("maestro-android-") then $r_maestro_android != "success"
+                else true
+                end
+              )
+            ]
+          ' 2>/dev/null); then
+            if [ "$(jq 'length' <<<"$FILTERED")" -gt 0 ]; then
+              FAILING="$FILTERED"
             fi
           fi
           HAS_FAILING=$(jq -r 'length > 0' <<<"$FAILING")
@@ -1324,6 +1335,9 @@ jobs:
             echo "has-failing=${HAS_FAILING}"
           } >> "$GITHUB_OUTPUT"
 
+  # Same per-test judging the PR/main lanes get in e2e-detox-pr.yml: without it
+  # every CMT shard is raw any-failure-red (FAILURES > 0 in the template summary
+  # jobs), so a handful of known-flaky failures out of ~650 tests per leg turned
   # every CMT run red. Report-only (the default) only posts the verdict;
   # E2E_TRIAGE_MODE=enforce makes the verdict the shard's commit status, exactly
   # as on PR/main. The workflow run itself stays red on real failures either way.
