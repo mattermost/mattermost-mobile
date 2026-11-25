@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Channel} from '@support/server_api';
 import {ChannelListScreen, ChannelScreen} from '@support/ui/screen';
 import {getRandomId, reloadApp, timeouts, wait} from '@support/utils';
 import {waitFor} from 'detox';
@@ -86,4 +87,36 @@ export async function assertOnReloadedApp(steps: () => Promise<void>) {
     /* eslint-enable no-await-in-loop */
 
     throw lastError;
+}
+
+/**
+ * Run `fn` while `channelId` is archived so server-side required-attribute backfills skip it,
+ * then restore the channel so callers can verify an existing channel missing a required value.
+ */
+export async function withArchivedChannel<T>(baseUrl: string, channelId: string, fn: () => Promise<T>): Promise<T> {
+    const archiveResult = await Channel.apiDeleteChannel(baseUrl, channelId);
+    if (archiveResult.error) {
+        throw new Error(`Failed to archive channel ${channelId}: ${JSON.stringify(archiveResult.error)}`);
+    }
+
+    let fnError: unknown;
+    let result!: T;
+    try {
+        result = await fn();
+    } catch (error) {
+        fnError = error;
+    }
+
+    const restoreResult = await Channel.apiRestoreChannel(baseUrl, channelId);
+    if (fnError) {
+        if (restoreResult.error) {
+            throw new Error(`Failed after archiving channel ${channelId} (${String(fnError)}); restore also failed: ${JSON.stringify(restoreResult.error)}`);
+        }
+        throw fnError;
+    }
+    if (restoreResult.error) {
+        throw new Error(`Failed to restore channel ${channelId}: ${JSON.stringify(restoreResult.error)}`);
+    }
+
+    return result;
 }
