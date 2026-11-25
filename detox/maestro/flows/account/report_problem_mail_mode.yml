@@ -39,14 +39,6 @@ appId: ${MAESTRO_APP_ID}
 # Report a Problem can sit below the fold; also wait for config sync on first login.
 - runFlow: ../../subflows/navigation/open_account.yml
 - runFlow: ../../subflows/navigation/open_settings_report_problem.yml
-- tapOn:
-    id: "settings.report_problem.option"
-
-# * Verify the report screen opened
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.screen"
-    timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "report_problem.report.button"
