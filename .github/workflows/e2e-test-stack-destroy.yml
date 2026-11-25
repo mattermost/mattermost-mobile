@@ -198,9 +198,10 @@ jobs:
           done
 
       # Destroy reads each lane's create response. The create action uploads that response in
-      # if: always() steps, which still run after the lane is cancelled, so wait until those jobs
-      # have left the active states. A create cancelled before it recorded a batch id uploads
-      # nothing, and that batch is reaped at its TTL.
+      # if: always() steps, which still run after the lane is cancelled. Do not destroy while any
+      # other job is still active: a cancelled job is force-killed within five minutes, then those
+      # uploads finish and the job leaves the active states. A create cancelled before it recorded
+      # a batch id uploads nothing, and that batch is reaped at its TTL.
       - name: e2e-tests/wait-for-shutdown
         if: cancelled()
         env:
@@ -210,8 +211,7 @@ jobs:
         run: |
           set -uo pipefail
           zeros=0
-          left=30
-          while [ "$left" -gt 0 ]; do
+          while true; do
             if listing=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
               --jq '.jobs[] | [.name, .status] | @tsv'); then
               count=$(printf '%s\n' "$listing" | awk -F '\t' '
@@ -232,10 +232,8 @@ jobs:
               echo "job list failed, retrying"
               zeros=0
             fi
-            left=$((left - 1))
             sleep 20
           done
-          echo "other jobs still going after waiting; destroying from the responses already uploaded"
 
       - name: ci/setup-node
         if: cancelled()
