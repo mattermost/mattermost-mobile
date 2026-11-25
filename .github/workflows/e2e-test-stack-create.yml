@@ -44,7 +44,7 @@ on:
       ttl:
         description: "Lifetime before the reaper takes the batch - 90m, 4h"
         type: string
-        default: "2h"
+        default: "4h"
       os:
         description: "Operating system the servers run on"
         type: string

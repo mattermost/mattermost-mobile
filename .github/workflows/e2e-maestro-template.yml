@@ -206,8 +206,8 @@ jobs:
       count: "1"
       license: enterprise-advanced
       shared_admin_password: true
-      # The batch's lifetime from create: the run and any re-run of its failed jobs must end within it.
-      ttl: 2h
+      # 4h from create: the runner queue, the job timeout, and a re-run have to finish inside it.
+      ttl: 4h
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 

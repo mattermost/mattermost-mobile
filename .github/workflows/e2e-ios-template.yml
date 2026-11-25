@@ -348,8 +348,8 @@ jobs:
       services: ${{ contains(needs.generate-specs.outputs.specs, 'mm_blocks_') && 'webhook' || '' }}
       license: enterprise-advanced
       shared_admin_password: true
-      # The batch's lifetime from create: the first pass and any re-run must end within it.
-      ttl: 2h
+      # 4h from create: the macOS runner queue, the shard timeout, and a re-run have to finish inside it.
+      ttl: 4h
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
