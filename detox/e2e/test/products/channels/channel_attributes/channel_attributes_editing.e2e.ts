@@ -7,6 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {withArchivedChannel} from '@support/channel_attributes_fixtures';
 import {setChannelAttributesRequired} from '@support/channel_attributes_test_helper';
 import {Channel, Properties, Team, User} from '@support/server_api';
 import {assertServerBaseline} from '@support/server_baseline';
@@ -124,7 +125,7 @@ async function openChannel(channelName: string) {
         let cleanupError: unknown;
         if (testChannel) {
             const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
-            if (result.error) {
+            if (result.error && result.error.id !== 'api.channel.delete_channel.deleted.app_error') {
                 cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
             }
             testChannel = null;
@@ -149,29 +150,6 @@ async function openChannel(channelName: string) {
         required?: boolean;
         withEditableSibling?: boolean;
     } = {}) {
-        // Created optional: a required field would block apiCreateChannel below. It is made
-        // required once the channel exists.
-        const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
-            fieldName: FIELD_NAME,
-            options: FIELD_OPTIONS,
-            actions: DISPLAY_ACTIONS,
-            changePolicy: opts.changePolicy,
-            permissionValues: opts.permissionValues ?? 'member',
-            required: false,
-        });
-
-        let siblingFieldId: string | undefined;
-        if (opts.withEditableSibling) {
-            // Optional at creation for the same reason as above.
-            ({channelFieldId: siblingFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
-                fieldName: SIBLING_FIELD_NAME,
-                options: FIELD_OPTIONS,
-                actions: DISPLAY_ACTIONS,
-                permissionValues: 'member',
-                required: false,
-            }));
-        }
-
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
         if (!channel) {
             throw new Error('setupChannelWithAttribute failed to create its channel');
@@ -182,16 +160,37 @@ async function openChannel(channelName: string) {
         // testUser joins as a plain member; promote to channel admin.
         await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
 
+        const setupFields = async () => {
+            const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
+                fieldName: FIELD_NAME,
+                options: FIELD_OPTIONS,
+                actions: DISPLAY_ACTIONS,
+                changePolicy: opts.changePolicy,
+                permissionValues: opts.permissionValues ?? 'member',
+                required: Boolean(opts.required),
+            });
+
+            if (opts.withEditableSibling) {
+                await Properties.apiSetupChannelAttributeField(siteOneUrl, {
+                    fieldName: SIBLING_FIELD_NAME,
+                    options: FIELD_OPTIONS,
+                    actions: DISPLAY_ACTIONS,
+                    permissionValues: 'member',
+                    required: true,
+                });
+            }
+
+            return channelFieldId;
+        };
+
+        // Archive the channel while creating required fields so backfill skips it, leaving
+        // any unset attribute empty once restored.
+        const channelFieldId = (opts.required || opts.withEditableSibling) ?
+            await withArchivedChannel(siteOneUrl, channel.id, setupFields) :
+            await setupFields();
+
         if (opts.value) {
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, opts.value);
-        }
-
-        if (opts.required) {
-            await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, channelFieldId, true);
-        }
-
-        if (siblingFieldId) {
-            await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, siblingFieldId, true);
         }
 
         await reloadApp();
@@ -500,7 +499,7 @@ async function openChannel(channelName: string) {
         let cleanupError: unknown;
         if (testChannel) {
             const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
-            if (result.error) {
+            if (result.error && result.error.id !== 'api.channel.delete_channel.deleted.app_error') {
                 cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
             }
             testChannel = null;
@@ -554,21 +553,20 @@ async function openChannel(channelName: string) {
     });
 
     it('MM-T6326_2 - should hide an admin-tier required-unset attribute from a regular member', async () => {
-        const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
-            fieldName: MEMBER_FIELD_NAME,
-            options: FIELD_OPTIONS,
-            actions: DISPLAY_ACTIONS,
-            permissionValues: 'admin',
-            required: false,
-        });
-
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
         if (!channel) {
             throw new Error('MM-T6326_2 failed to create its channel');
         }
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, channel.id);
-        await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, channelFieldId, true);
+
+        await withArchivedChannel(siteOneUrl, channel.id, () => Properties.apiSetupChannelAttributeField(siteOneUrl, {
+            fieldName: MEMBER_FIELD_NAME,
+            options: FIELD_OPTIONS,
+            actions: DISPLAY_ACTIONS,
+            permissionValues: 'admin',
+            required: true,
+        }));
 
         await reloadApp();
         await ChannelListScreen.toBeVisible();
