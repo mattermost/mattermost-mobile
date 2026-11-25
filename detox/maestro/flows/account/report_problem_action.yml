@@ -38,14 +38,6 @@ appId: ${MAESTRO_APP_ID}
 # # Open the Account tab and Settings, then reveal Report a Problem.
 - runFlow: ../../subflows/navigation/open_account.yml
 - runFlow: ../../subflows/navigation/open_settings_report_problem.yml
-- tapOn:
-    id: "settings.report_problem.option"
-
-# * Verify the report screen opened.
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.screen"
-    timeout: 30000
 
 # # Tap the Report a problem button (always visible at the bottom of the screen).
 - extendedWaitUntil:

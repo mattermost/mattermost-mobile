@@ -1,4 +1,4 @@
-# Sub-flow: from the Account screen, open Settings and reveal "Report a Problem".
+# Sub-flow: from the Account screen, open Settings and navigate to "Report a Problem".
 #
 # Why the tap is retried and the screen is asserted:
 # open_account.yml already retries the account-tab tap because this runner
@@ -23,14 +23,13 @@
 #     renders settings.download_logs.option instead and this subflow will not
 #     find its element (app/screens/settings/report_problem/report_problem.tsx)
 #
-# LEAVES: Settings screen open with settings.report_problem.option visible.
-# Callers tap it themselves — attach_logs_disabled_when_download_logs_off.yml
-# asserts on the row before opening it.
+# LEAVES: Report a Problem screen open (report_problem.screen visible).
 #
 # testIDs:
 #   - account.settings.option
 #   - settings.screen
 #   - settings.report_problem.option
+#   - report_problem.screen
 appId: ${MAESTRO_APP_ID}
 ---
 - extendedWaitUntil:
@@ -86,3 +85,20 @@ appId: ${MAESTRO_APP_ID}
     visible:
       id: "settings.report_problem.option"
     timeout: 30000
+
+# # Open Report a Problem. Retried because iOS AutoFill (UIKeyboardHiddenViewController_Save)
+# can transiently set ignoreInteractionEvents=1 as the tap lands, dropping the tap while
+# Settings stays open (CI 45505997836).
+- retry:
+    maxRetries: 3
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "settings.report_problem.option"
+          timeout: 15000
+      - tapOn:
+          id: "settings.report_problem.option"
+      - extendedWaitUntil:
+          visible:
+            id: "report_problem.screen"
+          timeout: 15000
