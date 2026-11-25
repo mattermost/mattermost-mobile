@@ -422,20 +422,21 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
 
-        // # Enter a valid URL and submit. Use a public URL with known OG tags — the local
-        // server's OG fetch can fail on Android because of network routing differences.
+        // # Enter a valid URL and submit. Use example.com (RFC 2606 domain with a stable
+        // <title>) — the local server's OG fetch can fail on Android because of network routing
+        // differences, and marketing sites like mattermost.com rotate their page titles.
         const linkInput = ChannelBookmarkScreen.getLinkInput();
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
-            await linkInput.typeText('https://mattermost.com');
-            await ChannelBookmarkScreen.waitForAutofilledTitle('Mattermost');
+            await linkInput.typeText('https://example.com');
+            await ChannelBookmarkScreen.waitForAutofilledTitle('Example Domain');
         });
 
         // # Wait for OG fetch / title auto-fill
         const titleInput = ChannelBookmarkScreen.getTitleInput();
         await waitFor(titleInput).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the title field is auto-populated (the OG title for mattermost.com is non-empty)
+        // * Verify the title field is auto-populated (the page title for example.com is non-empty)
         await expect(titleInput).toExist();
         const titleValue = await ChannelBookmarkScreen.getTitleValue();
         if (!titleValue) {

@@ -29,15 +29,6 @@ appId: ${MAESTRO_APP_ID}
 # Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - runFlow: ../../subflows/navigation/open_account.yml
 - runFlow: ../../subflows/navigation/open_settings_report_problem.yml
-- tapOn:
-    id: "settings.report_problem.option"
-
-# * Verify the report screen opened.
-# The logs setting arrives with the server config, which can lag on first login.
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.screen"
-    timeout: 30000
 
 # * Verify the attach-app-logs toggle is offered.
 # The toggle is below the fold — scrollUntilVisible is required because
