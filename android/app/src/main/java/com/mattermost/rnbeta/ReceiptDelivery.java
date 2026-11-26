@@ -34,6 +34,10 @@ public class ReceiptDelivery {
         options.putMap("body", body);
 
         try (Response response = Network.postSync(serverUrl, "api/v4/notifications/ack", options)) {
+            if (!response.isSuccessful()) {
+                TurboLog.Companion.e("ReactNative", "Send receipt delivery failed with status " + response.code());
+                return null;
+            }
             String responseBody = Objects.requireNonNull(response.body()).string();
             JSONObject jsonResponse = new JSONObject(responseBody);
             return parseAckResponse(jsonResponse);
