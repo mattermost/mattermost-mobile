@@ -147,16 +147,6 @@ jobs:
 
       # The instance key is mobile-<run id>-<batch>-<attempt>. A re-run attempt creates a batch of its own;
       # destroy releases every attempt's.
-      # A fork's spec split is untrusted. 32 is the widest lane on main, plus the two shared servers.
-      - name: ci/count
-        env:
-          COUNT: ${{ inputs.count }}
-        run: |
-          if ! [[ "$COUNT" =~ ^[1-9][0-9]*$ ]] || [ "$COUNT" -gt 34 ]; then
-            echo "::error::count must be from 1 to 34, got '${COUNT}'"
-            exit 1
-          fi
-
       - name: ci/create
         id: create
         uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-test-stack/create@d6488ead2b451fe6f6ecf687c4d46467b896b514 # main

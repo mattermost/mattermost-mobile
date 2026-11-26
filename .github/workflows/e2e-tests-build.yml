@@ -36,10 +36,6 @@ on:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
         description: "AWS secret key for the S3 build cache"
         required: true
-      MM_MOBILE_INTUNE_DEPLOY_KEY:
-        required: false
-      MM_MOBILE_GITHUB_TOKEN:
-        required: false
 
 permissions:
   contents: read
@@ -147,7 +143,6 @@ jobs:
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
-          intune-ssh-private-key: ${{ inputs.fork != true && secrets.MM_MOBILE_INTUNE_DEPLOY_KEY || '' }}
 
       - name: Set .env with RUNNING_E2E=true
         if: env.SKIP_BUILD != 'true'
@@ -157,7 +152,6 @@ jobs:
         if: env.SKIP_BUILD != 'true'
         env:
           TAG: ${{ inputs.commit_sha }}
-          GITHUB_TOKEN: ${{ inputs.fork != true && secrets.MM_MOBILE_GITHUB_TOKEN || '' }}
         run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
