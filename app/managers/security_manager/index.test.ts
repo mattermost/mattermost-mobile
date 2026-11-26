@@ -557,6 +557,16 @@ describe('SecurityManager', () => {
             expect(Emm.authenticate).not.toHaveBeenCalled();
         });
 
+        it('should clear biometric_authenticated when the device secured check is interrupted', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockRejectedValue(rejectWith(AuthenticationOutcome.Indeterminate));
+            await SecurityManager.addServer('server-6c', {MobileEnableBiometrics: 'true'} as SecurityClientConfig, true);
+            jest.mocked(setSessionAttributesServerValues).mockClear();
+
+            await expect(SecurityManager.authenticateWithBiometrics('server-6c')).resolves.toBe(false);
+            expect(SecurityManager.getServerConfig('server-6c')?.authenticated).toBe(false);
+            expect(setSessionAttributesServerValues).toHaveBeenCalledWith('server-6c', {biometric_authenticated: 'false'});
+        });
+
         test('should not attempt biometric authentication if biometrics not enabled', async () => {
             await SecurityManager.addServer('server-8', {MobileEnableBiometrics: 'false'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-8')).resolves.toBe(true);

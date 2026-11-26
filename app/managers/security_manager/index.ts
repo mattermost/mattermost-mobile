@@ -862,10 +862,8 @@ class SecurityManagerSingleton {
         locale: string,
     ): Promise<AuthenticationAttemptOutcome> => {
         const secured = await probeDeviceSecured(AuthenticationSource.SecurityManager);
-        if (secured === 'notSecured') {
-            this.setAuthenticated(server, false);
-        }
         if (secured !== 'secured') {
+            this.setAuthenticated(server, false);
             return secured;
         }
 
