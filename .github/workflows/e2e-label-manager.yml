@@ -48,8 +48,8 @@
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
-# addLabels / removeLabel / run cancellation would all 403. Fork PRs are handled by
-# e2e-fork-policy.yml.
+# addLabels / removeLabel / run cancellation would all 403. Fork PRs don't run E2E,
+# so their required e2e-test/* statuses are never posted.
 #
 # Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
 # Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
