@@ -27,6 +27,7 @@ import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {removeProtocol} from '@utils/url';
 
+import type {RestoreChannel} from '@actions/remote/entry/app';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 /**
@@ -223,7 +224,18 @@ export async function determineRouteFromLaunchProps(props: LaunchProps): Promise
     };
 }
 
+async function getZeroPersistenceLastTeamId(serverUrl: string) {
+    const server = await getServer(serverUrl);
+    if (server?.persistenceFlag !== 'zero-persistence') {
+        return undefined;
+    }
+
+    const lastViewedTeam = await getLastViewedTeamIdAndServer();
+    return lastViewedTeam?.server_url === serverUrl ? lastViewedTeam.team_id : undefined;
+}
+
 async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRouterLaunchResult> {
+    const zeroPersistenceTeamId = await getZeroPersistenceLastTeamId(props.serverUrl!);
     switch (props.launchType) {
         case Launch.DeepLink: {
             if (props.extra?.type !== DeepLink.MagicLink) {
@@ -244,6 +256,7 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
         }
         case Launch.Normal:
             if (props.coldStart) {
+                let restoreChannel: RestoreChannel | undefined;
                 const lastViewedChannel = await getLastViewedChannelIdAndServer();
                 const lastViewedThread = await getLastViewedThreadIdAndServer();
 
@@ -252,21 +265,24 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
                     fetchAndSwitchToThread(props.serverUrl!, lastViewedThread.thread_id);
                 } else if (lastViewedChannel && lastViewedChannel.server_url === props.serverUrl && lastViewedChannel.channel_id) {
                     PerformanceMetricsManager.setLoadTarget('CHANNEL');
-                    switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
+
+                    // The zero persistence DB is empty, so appEntry fetches the team and channel before switching
+                    if (zeroPersistenceTeamId) {
+                        restoreChannel = {teamId: zeroPersistenceTeamId, channelId: lastViewedChannel.channel_id};
+                    } else {
+                        switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
+                    }
                 } else {
                     PerformanceMetricsManager.setLoadTarget('HOME');
                 }
 
-                appEntry(props.serverUrl!);
+                appEntry(props.serverUrl!, restoreChannel);
             }
             break;
     }
 
     // when running in zero persistence mode show last team if available
-    const server = await getServer(props.serverUrl!);
-    const isZeroPersistence = server?.persistenceFlag === 'zero-persistence';
-    const lastViewedTeam = await getLastViewedTeamIdAndServer();
-    if (isZeroPersistence && lastViewedTeam?.server_url === props.serverUrl && lastViewedTeam.team_id) {
+    if (zeroPersistenceTeamId) {
         return {route: '/(authenticated)/(home)', params: props};
     }
 
