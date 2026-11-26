@@ -1704,7 +1704,8 @@ jobs:
           exit 1
 
   # Posts the lane status from this workflow's commit. The shard checks out the
-  # commit under test, so it does not hold statuses: write.
+  # commit under test, so it does not hold statuses: write. id-token lets
+  # tsio-report-status.js read the report group. This job does not run fork code.
   e2e-maestro-status:
     name: Maestro status
     needs: [e2e-maestro-ios, e2e-maestro-android]
@@ -1716,6 +1717,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      id-token: write
       issues: read
       statuses: write
     steps:

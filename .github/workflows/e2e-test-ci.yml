@@ -159,9 +159,10 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
   # The lanes run with run-type NONE and no tsio-config: no TSIO report, no triage announcement, no spec durations,
-  # no Zephyr and no channel message. They do not post statuses. Results posts e2e-test-stack/<lane> from each lane's
-  # result. They get no AWS keys, so no S3 report. They get no admin secrets either: each batch has its own admin,
-  # which the lane reads from the batch.
+  # no Zephyr and no channel message. Results posts e2e-test-stack/<lane> from each lane's result.
+  # statuses and issues are the ceiling the template's report job declares. The shard jobs omit both, so the job
+  # that runs the commit under test does not receive them. They get no AWS keys, so no S3 report. They get no admin
+  # secrets either: each batch has its own admin, which the lane reads from the batch.
   detox-ios:
     name: Detox iOS
     needs: [setup, build-ios]
@@ -172,6 +173,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
+      statuses: write
+      issues: read
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: NONE
@@ -197,6 +200,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
+      statuses: write
+      issues: read
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: NONE
@@ -226,6 +231,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
+      statuses: write
+      issues: read
     uses: ./.github/workflows/e2e-android-template.yml
     with:
       run-android-tests: true
@@ -251,6 +258,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
+      statuses: write
+      issues: read
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
       platform: ios
@@ -276,6 +285,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
+      statuses: write
+      issues: read
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
       platform: android
