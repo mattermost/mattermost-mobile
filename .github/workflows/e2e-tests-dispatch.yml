@@ -5,7 +5,7 @@
 #                  true. Unset, Matterwick's pipeline is unchanged. A fork pull request whose ci
 #                  succeeded starts E2E Tests. The fork's own ci file is only the trigger.
 #   workflow_dispatch  the same gates, by hand, whether or not the variable is set. A hand run
-#                  dispatches the trial pipeline (e2e-test-stack/* statuses). It writes the required
+#                  dispatches E2E Tests, which posts e2e-test-stack/<lane>. It writes the required
 #                  e2e-test/* contexts only when the variable is true and the gates skip the run.
 #
 # Gate 1: ci succeeded for this commit. A run whose pull request has since moved on is skipped.

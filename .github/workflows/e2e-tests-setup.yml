@@ -2,8 +2,7 @@
 name: E2E Tests - Setup
 
 # Setup for e2e-tests-ci.yml: validates its inputs, resolves the e2e-test-stack account, channel and server image,
-# names each chosen lane's batch, builds each lane's TSIO config and posts a pending commit status for each chosen
-# lane. Statuses are under e2e-test-stack/<lane>, apart from the required e2e-test/* contexts.
+# names each chosen lane's batch and posts a pending e2e-test-stack/<lane> status for each chosen lane.
 
 on:
   workflow_call:
@@ -64,9 +63,6 @@ on:
       batches:
         description: "JSON object of each chosen lane's batch name"
         value: ${{ jobs.setup.outputs.batches }}
-      job-configs:
-        description: "JSON object of each chosen lane's TSIO config, keyed by its TSIO job key"
-        value: ${{ jobs.setup.outputs.job-configs }}
       fork:
         description: "true when the pull request head is not this repository"
         value: ${{ jobs.setup.outputs.fork }}
@@ -90,17 +86,8 @@ jobs:
       channel: ${{ steps.inputs.outputs.channel }}
       server-image: ${{ steps.inputs.outputs.server-image }}
       batches: ${{ steps.batch.outputs.batches }}
-      job-configs: ${{ steps.tsio.outputs.job-configs }}
       fork: ${{ steps.branch.outputs.fork }}
     steps:
-      # The TSIO job-config helper at this workflow's own commit.
-      - name: Checkout TSIO job-config helper
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
-          sparse-checkout: |
-            detox/utils/build-tsio-job-config.js
-
       - name: e2e-tests/inputs
         id: inputs
         env:
@@ -209,10 +196,7 @@ jobs:
             {"detox-ios": "dt-ios", "detox-ipad": "dt-ipad", "detox-android": "dt-andr",
              "maestro-ios": "ms-ios", "maestro-android": "ms-andr"} as $prefix
             | map({key: ., value: "\($prefix[.])-\($t)"}) | from_entries' <<< "$LANES")
-          {
-            echo "type=${type}"
-            echo "batches=${batches}"
-          } >> "$GITHUB_OUTPUT"
+          echo "batches=${batches}" >> "$GITHUB_OUTPUT"
 
       - name: e2e-tests/branch
         id: branch
@@ -226,7 +210,7 @@ jobs:
             const sha = process.env.COMMIT_SHA;
             const prInput = parseInt(process.env.PR_NUMBER, 10);
             if (Number.isFinite(prInput)) {
-              // The commit under test must be one of the PR's, so its results, cache scope and report name that PR.
+              // The commit under test must be one of the PR's, so its results and cache scope name that PR.
               // The API lists at most 250 commits of a PR.
               let pr, commits;
               try {
@@ -294,66 +278,22 @@ jobs:
             }
             core.setOutput('branch', process.env.REF_NAME);
 
-      # As e2e-detox-pr.yml's calculate-tsio-identity, for the chosen lanes only, with each status context moved from
-      # e2e-test/<lane> to e2e-test-stack/<lane>. The report group is mobile-e2e-test-stack-pr, -main or -release.
-      - name: e2e-tests/tsio
-        id: tsio
-        env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          MM_SHA: ${{ steps.inputs.outputs.commit-sha }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-          TYPE: ${{ steps.batch.outputs.type }}
-          BRANCH: ${{ steps.branch.outputs.branch }}
-          LANES: ${{ steps.inputs.outputs.lanes }}
-        run: |
-          set -euo pipefail
-          case "$TYPE" in
-            pr) RUN_NAME=mobile-e2e-test-stack-pr ;;
-            main) RUN_NAME=mobile-e2e-test-stack-main ;;
-            rel) RUN_NAME=mobile-e2e-test-stack-release ;;
-          esac
-          BASE=$(jq -nc \
-            --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
-            --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_NUMBER" --arg name "$RUN_NAME" \
-            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name,
-              run_group:$name, framework:"detox"} + (if $pr == "" then {} else {gh_pr_number:$pr} end)')
-          export BASE LANES
-          JOB_CONFIGS=$(node -e '
-            const {buildTsioJobConfigMap} = require("./detox/utils/build-tsio-job-config.js");
-            const keys = {
-              "detox-ios": "detox-ios",
-              "detox-ipad": "detox-ipad",
-              "detox-android": "detox-android",
-              "maestro-ios": "maestro-ios-e2e",
-              "maestro-android": "maestro-android-e2e",
-            };
-            const lanes = JSON.parse(process.env.LANES);
-            const configs = buildTsioJobConfigMap(JSON.parse(process.env.BASE), lanes.map((lane) => keys[lane]));
-            for (const lane of lanes) {
-              configs[keys[lane]].status_context = "e2e-test-stack/" + lane;
-            }
-            process.stdout.write(JSON.stringify(configs));
-          ')
-          echo "job-configs=${JOB_CONFIGS}" >> "$GITHUB_OUTPUT"
-
       - name: e2e-tests/pending-statuses
         env:
           GH_TOKEN: ${{ github.token }}
-          JOB_CONFIGS: ${{ steps.tsio.outputs.job-configs }}
+          LANES: ${{ steps.inputs.outputs.lanes }}
           COMMIT_SHA: ${{ steps.inputs.outputs.commit-sha }}
           REPO: ${{ github.repository }}
           TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          jq -c 'to_entries[]' <<< "$JOB_CONFIGS" | while read -r entry; do
-            context=$(jq -r '.value.status_context' <<< "$entry")
-            name=$(jq -r '.value.composite_identity.name' <<< "$entry")
+          for lane in $(jq -r '.[]' <<< "$LANES"); do
             gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
               -f state=pending \
-              -f context="$context" \
-              -f description="Mobile E2E on e2e-test-stack (${name}): waiting for TSIO report" \
+              -f context="e2e-test-stack/${lane}" \
+              -f description="Mobile E2E on e2e-test-stack (${lane}): running" \
               -f target_url="$TARGET_URL" > /dev/null
-            echo "pending: ${context}"
+            echo "pending: e2e-test-stack/${lane}"
           done
 
       - name: e2e-tests/summary

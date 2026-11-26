@@ -1708,7 +1708,7 @@ jobs:
   e2e-maestro-status:
     name: Maestro status
     needs: [e2e-maestro-ios, e2e-maestro-android]
-    if: always() && (needs.e2e-maestro-ios.result != 'skipped' || needs.e2e-maestro-android.result != 'skipped')
+    if: always() && inputs.tsio-config != '' && (needs.e2e-maestro-ios.result != 'skipped' || needs.e2e-maestro-android.result != 'skipped')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     outputs:
