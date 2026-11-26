@@ -229,6 +229,9 @@ env:
 jobs:
   generate-specs:
     runs-on: ubuntu-24.04
+    # The spec split runs the commit under test. It does not post a status.
+    permissions:
+      contents: read
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       shard_count: ${{ steps.generate-specs.outputs.shard_count }}
@@ -388,6 +391,10 @@ jobs:
   e2e-android:
     name: ${{ matrix.role == 'mutation' && 'mutation-' || '' }}machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
+    # The shard runs the commit under test. Statuses are posted by generate-report.
+    permissions:
+      contents: read
+      actions: read
     continue-on-error: true
     timeout-minutes: 150
     env:
@@ -806,7 +813,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          ref: ${{ inputs.fork && github.sha || inputs.MOBILE_VERSION }}
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
