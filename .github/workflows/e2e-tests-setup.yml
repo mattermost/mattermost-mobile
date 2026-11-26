@@ -67,6 +67,9 @@ on:
       job-configs:
         description: "JSON object of each chosen lane's TSIO config, keyed by its TSIO job key"
         value: ${{ jobs.setup.outputs.job-configs }}
+      fork:
+        description: "true when the pull request head is not this repository"
+        value: ${{ jobs.setup.outputs.fork }}
 
 permissions:
   contents: read
@@ -88,6 +91,7 @@ jobs:
       server-image: ${{ steps.inputs.outputs.server-image }}
       batches: ${{ steps.batch.outputs.batches }}
       job-configs: ${{ steps.tsio.outputs.job-configs }}
+      fork: ${{ steps.branch.outputs.fork }}
     steps:
       # The TSIO job-config helper at this workflow's own commit.
       - name: Checkout TSIO job-config helper
@@ -249,9 +253,28 @@ jobs:
                 core.setFailed(`commit ${sha} is not a commit of PR #${prInput}${more}`);
                 return;
               }
+              const headRepo = pr.head?.repo?.full_name || '';
+              const fork = headRepo !== `${context.repo.owner}/${context.repo.repo}`;
+              if (fork) {
+                const base = pr.base?.ref || '';
+                if (base !== 'main' && !/^release-[0-9]+\.[0-9]+$/.test(base)) {
+                  core.setFailed(`fork pull request #${pr.number} targets ${base}, not main or a release-<major>.<minor> branch`);
+                  return;
+                }
+                if (pr.state !== 'open') {
+                  core.setFailed(`fork pull request #${pr.number} is ${pr.state}`);
+                  return;
+                }
+                if (pr.head?.sha !== sha) {
+                  core.setFailed(`fork pull request #${pr.number} head is ${pr.head?.sha}, not ${sha}`);
+                  return;
+                }
+              }
+              core.setOutput('fork', fork ? 'true' : 'false');
               core.setOutput('branch', pr.head.ref);
               return;
             }
+            core.setOutput('fork', 'false');
             // Without a PR, the commit must be on the ref the run reports under: its tip or an ancestor of it.
             let onRef = false;
             try {

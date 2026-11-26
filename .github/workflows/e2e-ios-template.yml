@@ -38,6 +38,10 @@ on:
         description: "Run on e2e-test-stack servers (one batch for this platform: a server per shard, then the shared SITE_2 and SITE_3) instead of the MM_TEST_SERVER_URL servers"
         type: boolean
         default: false
+      fork:
+        description: "The commit under test is from a fork. Provisioning uses this workflow's commit."
+        type: boolean
+        default: false
       e2e_test_stack_account:
         description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
         type: string
@@ -366,6 +370,7 @@ jobs:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: ${{ needs.generate-specs.outputs.stack-slices }}
       commit_sha: ${{ needs.generate-specs.outputs.mobile_sha }}
+      fork: ${{ inputs.fork }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 

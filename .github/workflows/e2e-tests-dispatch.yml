@@ -1,8 +1,9 @@
 ---
 # Starts E2E Tests after ci, on e2e-test-stack, from main or a release-<major>.<minor> branch.
 #
-#   workflow_run   ci completed. Runs only when vars.E2E_TEST_STACK_ENABLED is true. Unset, this
-#                  does nothing and Matterwick's pipeline is unchanged.
+#   workflow_run   ci completed. A same-repo run starts only when vars.E2E_TEST_STACK_ENABLED is
+#                  true. Unset, Matterwick's pipeline is unchanged. A fork pull request whose ci
+#                  succeeded starts E2E Tests. The fork's own ci file is only the trigger.
 #   workflow_dispatch  the same gates, by hand, whether or not the variable is set. A hand run
 #                  dispatches the trial pipeline (e2e-test-stack/* statuses). It writes the required
 #                  e2e-test/* contexts only when the variable is true and the gates skip the run.
@@ -10,7 +11,7 @@
 # Gate 1: ci succeeded for this commit. A run whose pull request has since moved on is skipped.
 # Gate 2: a same-repo pull request into main or release-<major>.<minor> whose files are app-impacting
 # and which has no E2E/Override label. paths.json is read from that base ref. A push to those branches
-# is always run. A fork is refused.
+# is always run. A fork pull request into those branches is run after its ci succeeds.
 #
 # The job checks nothing out and runs no pull-request code. It does not assume the CI role.
 name: E2E Tests Dispatch
@@ -74,7 +75,11 @@ concurrency:
 jobs:
   gate:
     name: Gate
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && vars.E2E_TEST_STACK_ENABLED == 'true')
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+        (vars.E2E_TEST_STACK_ENABLED == 'true' ||
+          github.event.workflow_run.head_repository.full_name != github.repository))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -219,15 +224,36 @@ jobs:
           fi
 
           ref=""
+          fork=false
           if [ "$EVENT" = workflow_dispatch ] && [ -z "$pr" ]; then
             ref=$DISPATCH_REF
             if ! trusted_ref "$ref"; then
               finish refuse "a hand run without pr_number must be started from main or a release-<major>.<minor> branch" true
             fi
-          elif [ "$EVENT" != workflow_dispatch ]; then
-            if [ "$RUN_REPO" != "$REPO" ]; then
-              finish refuse "ci ran in ${RUN_REPO}; fork pull requests are not dispatched"
+          elif [ "$EVENT" != workflow_dispatch ] && [ "$RUN_REPO" != "$REPO" ]; then
+            # The fork's ci workflow is not this repository's file. Success only means it finished.
+            if [ "$RUN_EVENT" != pull_request ]; then
+              finish refuse "ci in ${RUN_REPO} was not a pull request"
             fi
+            if ! associated=$(gh api -H "Accept: application/vnd.github+json" "repos/${REPO}/commits/${sha}/pulls"); then
+              finish refuse "could not list pull requests for ${sha}"
+            fi
+            pr=$(jq -r --arg repo "$RUN_REPO" --arg sha "$sha" --arg branch "$RUN_BRANCH" '
+              [ .[]
+                | select(.state == "open"
+                    and .head.sha == $sha
+                    and .head.ref == $branch
+                    and ((.head.repo.full_name // "") == $repo)
+                    and (.base.ref == "main" or (.base.ref | test("^release-[0-9]+\\.[0-9]+$"))))
+              ]
+              | sort_by(.number)
+              | .[0].number // empty
+            ' <<< "$associated")
+            if [ -z "$pr" ]; then
+              finish refuse "no open fork pull request into main or a release branch has head ${sha}"
+            fi
+            fork=true
+          elif [ "$EVENT" != workflow_dispatch ]; then
             if [ "$RUN_EVENT" = pull_request ]; then
               # The workflow_run payload's pull_requests list is empty on some re-runs.
               # The commit's pull requests are the fallback, and only an open same-repo
@@ -272,7 +298,7 @@ jobs:
             state=$(jq -r '.state' <<< "$pull")
             changed_files=$(jq -r '.changed_files // empty' <<< "$pull")
             if [ "$head_repo" != "$REPO" ]; then
-              finish refuse "pull request ${pr} is from ${head_repo}; fork pull requests are not dispatched" "$([ "$EVENT" = workflow_dispatch ] && echo true || echo false)"
+              fork=true
             fi
             if ! trusted_ref "$base"; then
               finish refuse "pull request ${pr} targets ${base}, not main or a release-<major>.<minor> branch" "$([ "$EVENT" = workflow_dispatch ] && echo true || echo false)"
@@ -300,7 +326,10 @@ jobs:
 
           decision=dispatch
           reason="ci passed"
-          if [ -n "$pr" ]; then
+          if [ "$fork" = true ]; then
+            decision=dispatch
+            reason="pull request ${pr} is from a fork"
+          elif [ -n "$pr" ]; then
             if ! labels=$(gh api --paginate "repos/${REPO}/issues/${pr}/labels?per_page=100" --jq '.[].name'); then
               decision=dispatch
               reason="labels of pull request ${pr} could not be read; running E2E"

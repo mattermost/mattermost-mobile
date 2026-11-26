@@ -60,6 +60,10 @@ on:
         description: "Run on a one-server e2e-test-stack batch instead of the MM_TEST_SERVER_URL server"
         type: boolean
         default: false
+      fork:
+        description: "The commit under test is from a fork. Provisioning uses this workflow's commit."
+        type: boolean
+        default: false
       e2e_test_stack_account:
         description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
         type: string
@@ -224,6 +228,7 @@ jobs:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: '["0"]'
       commit_sha: ${{ needs.e2e-test-stack-check.outputs.commit-sha }}
+      fork: ${{ inputs.fork }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
