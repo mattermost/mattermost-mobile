@@ -291,6 +291,7 @@ describe('SecurityManager', () => {
                 JailbreakProtection: false,
                 PreventScreenCapture: false,
                 authenticated: true,
+                lastAccessed: expect.any(Number),
                 intunePolicy: null,
             });
         });
@@ -315,6 +316,7 @@ describe('SecurityManager', () => {
                 JailbreakProtection: false,
                 PreventScreenCapture: true,
                 authenticated: true,
+                lastAccessed: expect.any(Number),
                 intunePolicy: null,
             });
         });
@@ -643,7 +645,6 @@ describe('SecurityManager', () => {
         it('should reset biometric_authenticated across all servers on resume only after the re-prompt window lapses', async () => {
             await SecurityManager.addServer('server-active', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);
             await SecurityManager.addServer('server-inactive', {MobileEnableBiometrics: 'false'} as SecurityClientConfig, true);
-            SecurityManager.serverConfig['server-inactive'].lastAccessed = Date.now();
             await SecurityManager.setActiveServer({serverUrl: 'server-active', options: {skipBiometricCheck: true, skipMAMEnrollmentCheck: true, skipJailbreakCheck: true}});
             jest.mocked(setSessionAttributesServerValues).mockClear();
 

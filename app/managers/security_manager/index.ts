@@ -557,6 +557,9 @@ class SecurityManagerSingleton {
             authenticated,
             intunePolicy,
         };
+        if (authenticated) {
+            mobileConfig.lastAccessed = Date.now();
+        }
 
         this.clearAuthenticationExpiry(server);
         this.serverConfig[server] = mobileConfig;
