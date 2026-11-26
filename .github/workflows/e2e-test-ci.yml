@@ -73,7 +73,7 @@ permissions: {}
 # Per pull request, or per ref when pr_number is empty. The ref- prefix keeps a branch name from matching a pr- group.
 # A newer run cancels the one in progress.
 concurrency:
-  group: e2e-tests-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || format('ref-{0}', github.ref_name) }}
+  group: e2e-test-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || format('ref-{0}', github.ref_name) }}
   cancel-in-progress: true
 
 jobs:
@@ -100,7 +100,7 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write
-    uses: ./.github/workflows/e2e-tests-setup.yml
+    uses: ./.github/workflows/e2e-test-setup.yml
     with:
       commit_sha: ${{ inputs.commit_sha }}
       pr_number: ${{ inputs.pr_number }}
@@ -116,7 +116,7 @@ jobs:
     if: needs.setup.outputs.build-ios == 'true'
     permissions:
       contents: read
-    uses: ./.github/workflows/e2e-tests-build.yml
+    uses: ./.github/workflows/e2e-test-build.yml
     with:
       target: ios
       commit_sha: ${{ needs.setup.outputs.commit-sha }}
@@ -132,7 +132,7 @@ jobs:
     if: needs.setup.outputs.build-android-detox == 'true'
     permissions:
       contents: read
-    uses: ./.github/workflows/e2e-tests-build.yml
+    uses: ./.github/workflows/e2e-test-build.yml
     with:
       target: android-detox
       commit_sha: ${{ needs.setup.outputs.commit-sha }}
@@ -148,7 +148,7 @@ jobs:
     if: needs.setup.outputs.build-android-maestro == 'true'
     permissions:
       contents: read
-    uses: ./.github/workflows/e2e-tests-build.yml
+    uses: ./.github/workflows/e2e-test-build.yml
     with:
       target: android-maestro
       commit_sha: ${{ needs.setup.outputs.commit-sha }}

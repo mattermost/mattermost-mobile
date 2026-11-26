@@ -1,0 +1,49 @@
+---
+name: E2E Tests dispatch start
+description: >-
+  Start e2e-test-ci.yml on the ref decide chose, for the commit decide chose. Node 26 must be set up first.
+author: Mattermost
+inputs:
+  ref:
+    description: The ref to dispatch onto, main or release-<major>.<minor>
+    required: true
+  sha:
+    description: The commit under test
+    required: true
+  pr:
+    description: The pull request, or empty
+    required: false
+    default: ""
+  lanes:
+    description: Comma-separated lanes to run
+    required: true
+  account:
+    description: prod or dev
+    required: true
+  channel:
+    description: v1 or edge
+    required: true
+  server:
+    description: master, latest or esr
+    required: true
+  server-image:
+    description: A server image tag, or empty
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - id: start
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        REF: ${{ inputs.ref }}
+        SHA: ${{ inputs.sha }}
+        PR: ${{ inputs.pr }}
+        LANES: ${{ inputs.lanes }}
+        ACCOUNT: ${{ inputs.account }}
+        CHANNEL: ${{ inputs.channel }}
+        SERVER: ${{ inputs.server }}
+        IMAGE: ${{ inputs.server-image }}
+      run: bash "${{ github.action_path }}/../run.sh" start

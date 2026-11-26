@@ -1,7 +1,7 @@
 ---
 name: E2E Tests - Setup
 
-# Setup for e2e-tests-ci.yml: validates its inputs, resolves the e2e-test-stack account, channel and server image,
+# Setup for e2e-test-ci.yml: validates its inputs, resolves the e2e-test-stack account, channel and server image,
 # names each chosen lane's batch and posts a pending e2e-test-stack/<lane> status for each chosen lane.
 
 on:
@@ -173,7 +173,7 @@ jobs:
 
       # Each lane's batch name, <dt|ms>-<ios|ipad|andr>-<run type>, which create, provision, the test jobs and destroy
       # use; the run id in the instance key tells runs apart. The run type is pr with pr_number, else main on main and
-      # rel on release-<major>.<minor>, the only refs e2e-tests-ci.yml runs on.
+      # rel on release-<major>.<minor>, the only refs e2e-test-ci.yml runs on.
       - name: e2e-tests/batch
         id: batch
         env:

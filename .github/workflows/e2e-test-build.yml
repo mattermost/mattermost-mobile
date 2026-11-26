@@ -1,7 +1,7 @@
 ---
 name: E2E Tests - Build
 
-# One app build for e2e-tests-ci.yml, as e2e-detox-pr.yml builds them: its content fingerprint, the S3 build cache,
+# One app build for e2e-test-ci.yml, as e2e-detox-pr.yml builds them: its content fingerprint, the S3 build cache,
 # and the build on a miss. The artifact keeps e2e-detox-pr.yml's name, so the templates download it from this run:
 #   ios              ios-build-simulator-<run id>          the iOS simulator app (detox-ios, detox-ipad, maestro-ios)
 #   android-detox    android-build-files-<run id>          the Android Detox APKs (detox-android)

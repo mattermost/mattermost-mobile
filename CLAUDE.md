@@ -173,7 +173,7 @@ E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit 
 | Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | same per-job contexts | `mobile-main-<job>` |
 | Compatibility matrix | per shard `e2e-test/<tsio-shard-name>` + umbrella `e2e-test/compatibility-matrix-testing` | `mobile-release-<tsio-shard-name>` |
 
-E2E Tests (`e2e-tests-ci.yml`) posts `e2e-test-stack/<lane>` (for example `e2e-test-stack/detox-ios`) from its setup and results jobs. Those contexts are not required checks.
+E2E Tests (`e2e-test-ci.yml`) posts `e2e-test-stack/<lane>` (for example `e2e-test-stack/detox-ios`) from its setup and results jobs. Those contexts are not required checks.
 
 ### Testing Patterns
 

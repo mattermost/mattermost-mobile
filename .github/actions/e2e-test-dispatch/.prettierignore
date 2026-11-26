@@ -1,0 +1,3 @@
+bundle/
+# YAML is left as written. Prettier's comment spacing would fight the workflow style.
+*.yml
