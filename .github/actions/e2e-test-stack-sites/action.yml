@@ -3,8 +3,8 @@
 name: E2E test stack sites
 description: >-
   Points a Detox shard at its e2e-test-stack servers: SITE_1 is the shard's own server,
-  or the shared SITE_3 for a site3 mutation shard; SITE_2 is the batch's shared second-to-last server; SITE_3, for a
-  pool shard only, the shared last one; ADMIN_* is the batch's one admin. Opens this run's batch with the toolkit's
+  or the shared SITE_3 for a site3 mutation shard; SITE_2 is the batch's shared second-to-last server; SITE_3, unless
+  a mutation shard, the shared last one; ADMIN_* is the batch's one admin. Opens this run's batch with the toolkit's
   open action, which reads its create response from whichever attempt created it and accepts only this run's batch,
   so the job needs actions: read. Writes the sites, the admin, E2E_SERVER_ROLE and E2E_POOL_GUARD to GITHUB_ENV.
   Leaves Node 26 set up.
@@ -17,8 +17,11 @@ inputs:
     description: The shard's 1-based run id; its own server is index shard - 1
     required: true
   role:
-    description: The shard's role, pool or mutation
-    required: true
+    description: >-
+      The Matterwick shard's role, pool or mutation. Empty for a Test System IO worker, which owns its SITE_1 and
+      gets no E2E_SERVER_ROLE.
+    required: false
+    default: ""
   target:
     description: A mutation shard's server target, B (its own server) or site3 (the shared SITE_3)
     required: false
@@ -44,8 +47,8 @@ runs:
           exit 1
         fi
         case "${ROLE}:${TARGET}" in
-          pool:A | mutation:B | mutation:site3) ;;
-          *) echo "::error::unknown shard role and target '${ROLE}:${TARGET}': pool:A, mutation:B or mutation:site3"; exit 1 ;;
+          : | pool:A | mutation:B | mutation:site3) ;;
+          *) echo "::error::unknown shard role and target '${ROLE}:${TARGET}': none, pool:A, mutation:B or mutation:site3"; exit 1 ;;
         esac
 
     - name: setup-node
@@ -108,13 +111,17 @@ runs:
           echo "::error::the batch has no admin for server ${server}"
           exit 1
         fi
-        # A mutation shard gets no SITE_3.
-        GUARD=enforce
-        [ "$ROLE" = pool ] || GUARD=off
+        # A mutation shard gets no SITE_3. A worker without a role owns SITE_1, so only SITE_2 and SITE_3 are guarded.
+        case "$ROLE" in
+          pool) GUARD=enforce ;;
+          "") GUARD=shared ;;
+          *) GUARD=off ;;
+        esac
+        if [ "$ROLE" = mutation ]; then site3=""; fi
         {
           echo "SITE_1_URL=$site1"
           echo "SITE_2_URL=$site2"
-          if [ "$ROLE" = pool ]; then echo "SITE_3_URL=$site3"; else echo "SITE_3_URL="; fi
+          echo "SITE_3_URL=$site3"
           echo "ADMIN_USERNAME=$username"
           echo "ADMIN_PASSWORD=$password"
           echo "ADMIN_EMAIL=$email"
@@ -122,5 +129,5 @@ runs:
           echo "E2E_POOL_GUARD=$GUARD"
         } >> "$GITHUB_ENV"
         site3_label="server $site3_index"
-        [ "$ROLE" = pool ] || site3_label="unset"
-        echo "role=$ROLE: SITE_1=server $server, SITE_2=server $site2_index, SITE_3=${site3_label}, pool_guard=$GUARD"
+        [ -n "$site3" ] || site3_label="unset"
+        echo "role=${ROLE:-none}: SITE_1=server $server, SITE_2=server $site2_index, SITE_3=${site3_label}, pool_guard=$GUARD"

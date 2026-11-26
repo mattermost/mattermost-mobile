@@ -2,7 +2,7 @@
   "$comment": "Specs that mutate server-wide state (classification, login/MFA, ToS, upload limits, channel attributes, connected workspaces). Each target gets its own CI shard that runs in parallel with the pool shards. B is used by no pool shard; site3 (iOS only) is also every pool shard's read-only SITE_3, so specs routed there must not change login, ToS, MFA, license or plugins. 'target' applies to every platform; 'iosTarget' overrides it for iOS. Targets: B (server B), site3 (shared SITE_3). Paths are repo-relative; entries not found in the search path are ignored with a warning.",
   "mutation": [
     {"spec": "detox/e2e/test/products/channels/classification_banner/global_classification_banner.e2e.ts", "target": "B"},
-    {"spec": "detox/e2e/test/products/channels/classification_banner/classification_banner_across_screens.e2e.ts", "target": "B"},
+    {"spec": "detox/e2e/test/products/channels/classification_banner/classification_banner_across_screens.ios.e2e.ts", "target": "B"},
     {"spec": "detox/e2e/test/products/channels/classification_banner/classification_banner_offline.e2e.ts", "target": "B"},
     {"spec": "detox/e2e/test/products/channels/server_login/login_mfa.e2e.ts", "target": "B"},
     {"spec": "detox/e2e/test/products/channels/server_login/custom_terms_of_service.e2e.ts", "target": "B"},

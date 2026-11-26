@@ -17,6 +17,27 @@ describe('poolGuardMode', () => {
         assert.equal(poolGuardMode({...env, E2E_POOL_GUARD: undefined}), 'off');
         assert.equal(poolGuardMode(env), 'enforce');
     });
+
+    it('should guard the shared sites on an e2e-test-stack worker only', () => {
+        const worker = {...env, E2E_SERVER_ROLE: '', E2E_POOL_GUARD: 'shared'};
+        assert.equal(poolGuardMode(worker), 'shared');
+        assert.equal(poolGuardMode({...worker, CI: undefined}), 'off');
+        assert.equal(poolGuardMode({...env, E2E_POOL_GUARD: 'shared'}), 'off');
+        assert.equal(poolGuardMode({...worker, E2E_SERVER_ROLE: 'mutation'}), 'off');
+    });
+});
+
+describe('classifyRequest on an e2e-test-stack worker', () => {
+    const worker = {...env, E2E_SERVER_ROLE: '', E2E_POOL_GUARD: 'shared', SITE_3_URL: OTHER};
+
+    it('should allow server-wide writes to its own SITE_1', () => {
+        assert.equal(classifyRequest('put', `${POOL}/api/v4/config/patch`, {}, worker), null);
+    });
+
+    it('should flag server-wide writes to the shared SITE_2 and SITE_3', () => {
+        assert.match(classifyRequest('put', `${env.SITE_2_URL}/api/v4/config/patch`, {}, worker) ?? '', /server config/);
+        assert.match(classifyRequest('post', `${OTHER}/api/v4/remotecluster`, {}, worker) ?? '', /remote clusters/);
+    });
 });
 
 describe('classifyRequest', () => {

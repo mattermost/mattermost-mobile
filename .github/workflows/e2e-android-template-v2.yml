@@ -1,14 +1,14 @@
 name: Detox Android E2E Tests Template v2
 
-# Detox on e2e-test-stack, dispatched by Test System IO. The pool and the B
-# mutation specs are separate runs so a spec that changes server-wide state
-# cannot be leased onto a pool worker. Android has no site3 run: those specs
-# use their target and run on B. Maestro and the Matterwick template are unchanged.
+# Detox on e2e-test-stack, dispatched by Test System IO: one run per lane and one
+# worker matrix. Each worker owns its SITE_1 and shares SITE_2 and SITE_3. The
+# Detox configuration decides the specs (begin runs `detox --listTests`); specs
+# tagged @server_mutation dispatch last. Maestro and the Matterwick template are
+# unchanged.
 #
-# prepare counts the specs and the servers. create and provision are the existing
-# workflows. begin runs after provision, because the orchestrator idles a run out
-# while it waits for the first lease. Each worker boots one emulator, then
-# dispatch-run leases specs onto it.
+# create and provision are the existing workflows. begin runs after provision,
+# because the orchestrator idles a run out while it waits for the first lease.
+# Each worker boots one emulator, then dispatch-run leases specs onto it.
 
 on:
   workflow_call:
@@ -17,7 +17,7 @@ on:
         description: "Pool run name: detox-android"
         type: string
         required: true
-      MOBILE_VERSION:
+      commit_sha:
         description: "The commit under test, a full 40-character SHA"
         type: string
         required: true
@@ -50,17 +50,13 @@ on:
         type: string
         required: true
       parallelism:
-        description: "Pool workers. Each mutation run adds one worker of its own."
+        description: "Workers, each with its own server"
         type: string
         default: "32"
       detox_config:
         description: "Detox configuration, android.emu.debug"
         type: string
         default: "android.emu.debug"
-      search_path:
-        description: "Repo-relative directory of *.e2e.ts specs. The ipad child directory is skipped."
-        type: string
-        default: "detox/e2e/test"
       android_avd_name:
         description: "Android emulator name"
         type: string
@@ -71,8 +67,8 @@ on:
         default: "35"
     outputs:
       report-url:
-        description: "Test System IO report for this lane. A failing run's report when one failed."
-        value: ${{ jobs.report.outputs.report-url }}
+        description: "Test System IO report for this lane"
+        value: ${{ jobs.summary.outputs.report-url || jobs.begin.outputs.report-url }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY:
         required: true
@@ -103,47 +99,86 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      mobile-sha: ${{ steps.plan.outputs.mobile-sha }}
       branch: ${{ steps.plan.outputs.branch }}
-      pool-workers: ${{ steps.plan.outputs.pool-workers }}
-      mutation-b: ${{ steps.plan.outputs.mutation-b }}
-      mutation-site3: ${{ steps.plan.outputs.mutation-site3 }}
-      webhook: ${{ steps.plan.outputs.webhook }}
+      identity: ${{ steps.plan.outputs.identity }}
+      workers: ${{ steps.plan.outputs.workers }}
       stack-count: ${{ steps.plan.outputs.stack-count }}
       slices: ${{ steps.plan.outputs.slices }}
-      detox-search-path: ${{ steps.plan.outputs.detox-search-path }}
-      pool-identity: ${{ steps.plan.outputs.pool-identity }}
-      mutation-b-identity: ${{ steps.plan.outputs.mutation-b-identity }}
-      mutation-site3-identity: ${{ steps.plan.outputs.mutation-site3-identity }}
-      workers: ${{ steps.plan.outputs.workers }}
+      webhook: ${{ steps.plan.outputs.webhook }}
     steps:
-      - name: ci/check-sha
-        env:
-          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
-        run: |
-          if ! [[ "$COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error::MOBILE_VERSION must be a full 40-character SHA, got '${COMMIT_SHA}'"
-            exit 1
-          fi
-
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ inputs.commit_sha }}
           persist-credentials: false
           fetch-depth: 1
 
+      # A server per worker, then the shared SITE_2 and SITE_3. Provisioning runs in up to 8 jobs.
       - name: ci/plan
         id: plan
         env:
           GH_TOKEN: ${{ github.token }}
           LANE: ${{ inputs.lane }}
-          SEARCH_PATH: ${{ inputs.search_path }}
-          PLATFORM: ${{ env.PLATFORM }}
           PARALLELISM: ${{ inputs.parallelism }}
           PR_NUMBER: ${{ inputs.pr_number }}
-          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
-        run: bash .github/scripts/tsio-detox-prepare.sh
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::commit_sha must be a full 40-character SHA, got '${COMMIT_SHA}'"
+            exit 1
+          fi
+          if ! [[ "$LANE" =~ ^[a-z0-9-]+$ ]]; then
+            echo "::error::lane must be lowercase letters, digits, and hyphens"
+            exit 1
+          fi
+          if ! [[ "$PARALLELISM" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::parallelism must be a positive integer, got '${PARALLELISM}'"
+            exit 1
+          fi
+          if [ -n "$PR_NUMBER" ] && ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "::error::pr_number must be a pull request number, or empty"
+            exit 1
+          fi
+          if ! grep -rqE '^export function isE2eTestStack\(' detox/provision; then
+            echo "::error::the code under test predates e2e-test-stack provisioning; merge main into it"
+            exit 1
+          fi
+
+          branch="${GITHUB_REF_NAME}"
+          if [ -n "$PR_NUMBER" ]; then
+            head=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq .head.ref || true)
+            if [ -n "$head" ]; then
+              branch="$head"
+            else
+              echo "::warning::could not read the pull request head ref; using ${branch}"
+            fi
+          fi
+
+          identity=$(jq -nc \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg sha "$COMMIT_SHA" \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg name "$LANE" \
+            --arg branch "$branch" \
+            --arg pr "$PR_NUMBER" \
+            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, name:$name, branch:$branch}
+              + (if $pr == "" then {} else {gh_pr_number:$pr} end)')
+          count=$((PARALLELISM + 2))
+          webhook=false
+          if find detox/e2e/test -name 'mm_blocks_*.e2e.ts' | grep -q .; then
+            webhook=true
+          fi
+          {
+            echo "branch=${branch}"
+            echo "identity=${identity}"
+            echo "workers=$(jq -nc --argjson n "$PARALLELISM" '[range(1; $n + 1)]')"
+            echo "stack-count=${count}"
+            echo "slices=$(jq -nc --argjson n "$count" '[range(0; $n)] | group_by(. % 8) | map(map(tostring) | join(","))')"
+            echo "webhook=${webhook}"
+          } >> "$GITHUB_OUTPUT"
+          echo "${PARALLELISM} workers, ${count} servers, webhook=${webhook}"
 
   e2e-test-stack-create:
     name: e2e-test-stack-create
@@ -177,12 +212,12 @@ jobs:
     with:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: ${{ needs.prepare.outputs.slices }}
-      commit_sha: ${{ needs.prepare.outputs.mobile-sha }}
+      commit_sha: ${{ inputs.commit_sha }}
       fork: ${{ inputs.fork }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-  begin-pool:
+  begin:
     name: dispatch-begin
     needs: [prepare, e2e-test-stack-provision]
     if: needs.e2e-test-stack-provision.result == 'success'
@@ -197,142 +232,46 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ inputs.commit_sha }}
           persist-credentials: false
           fetch-depth: 1
 
-      - name: ci/select-specs
-        env:
-          SEARCH_PATH: ${{ inputs.search_path }}
-          PLATFORM: ${{ env.PLATFORM }}
-          ROLE: pool
-        run: |
-          set -euo pipefail
-          node .github/scripts/tsio-detox-specs.js prepare \
-            --search-path "$SEARCH_PATH" \
-            --platform "$PLATFORM" \
-            --role "$ROLE"
+      - name: ci/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
 
-      # c31c00f is the pin mattermost/mattermost uses for begin, run, and summary (2026-11-09, #132).
+      # detox --listTests only reads the Detox and Jest configuration, so install scripts are skipped.
+      - name: ci/install-detox-deps
+        run: cd detox && npm ci --ignore-scripts
+
       - name: ci/dispatch-begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@780b7b3f82c0a558bfb17967d2644ca06bea0db5 # detox-spec-list: detox-list-tests, detox-sort-last
         with:
           framework: detox
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           repo-dir: ${{ github.workspace }}
-          composite-identity: ${{ needs.prepare.outputs.pool-identity }}
-          total-reports-expected: ${{ needs.prepare.outputs.pool-workers }}
-          retest-on-fail: "false"
+          composite-identity: ${{ needs.prepare.outputs.identity }}
+          total-reports-expected: ${{ inputs.parallelism }}
+          retest-on-fail: "true"
           post-pending-commit-status: "false"
           duration-base-branch: ""
           idle-timeout-ms: "2700000"
           lease-timeout-ms: "1800000"
-          detox-search-path: ${{ needs.prepare.outputs.detox-search-path }}
-
-  begin-mutation-b:
-    name: dispatch-begin-mutation-b
-    needs: [prepare, e2e-test-stack-provision]
-    if: needs.e2e-test-stack-provision.result == 'success' && needs.prepare.outputs.mutation-b == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      report-url: ${{ steps.begin.outputs.report-url }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          fetch-depth: 1
-
-      - name: ci/select-specs
-        env:
-          SEARCH_PATH: ${{ inputs.search_path }}
-          PLATFORM: ${{ env.PLATFORM }}
-          ROLE: mutation-b
-        run: |
-          set -euo pipefail
-          node .github/scripts/tsio-detox-specs.js prepare \
-            --search-path "$SEARCH_PATH" \
-            --platform "$PLATFORM" \
-            --role "$ROLE"
-
-      - name: ci/dispatch-begin
-        id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
-        with:
-          framework: detox
-          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
-          repo-dir: ${{ github.workspace }}
-          composite-identity: ${{ needs.prepare.outputs.mutation-b-identity }}
-          total-reports-expected: "1"
-          retest-on-fail: "false"
-          post-pending-commit-status: "false"
-          duration-base-branch: ""
-          idle-timeout-ms: "2700000"
-          lease-timeout-ms: "1800000"
-          detox-search-path: ${{ needs.prepare.outputs.detox-search-path }}
-
-  begin-mutation-site3:
-    name: dispatch-begin-mutation-site3
-    needs: [prepare, e2e-test-stack-provision]
-    if: needs.e2e-test-stack-provision.result == 'success' && needs.prepare.outputs.mutation-site3 == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      report-url: ${{ steps.begin.outputs.report-url }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          fetch-depth: 1
-
-      - name: ci/select-specs
-        env:
-          SEARCH_PATH: ${{ inputs.search_path }}
-          PLATFORM: ${{ env.PLATFORM }}
-          ROLE: mutation-site3
-        run: |
-          set -euo pipefail
-          node .github/scripts/tsio-detox-specs.js prepare \
-            --search-path "$SEARCH_PATH" \
-            --platform "$PLATFORM" \
-            --role "$ROLE"
-
-      - name: ci/dispatch-begin
-        id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
-        with:
-          framework: detox
-          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
-          repo-dir: ${{ github.workspace }}
-          composite-identity: ${{ needs.prepare.outputs.mutation-site3-identity }}
-          total-reports-expected: "1"
-          retest-on-fail: "false"
-          post-pending-commit-status: "false"
-          duration-base-branch: ""
-          idle-timeout-ms: "2700000"
-          lease-timeout-ms: "1800000"
-          detox-search-path: ${{ needs.prepare.outputs.detox-search-path }}
+          detox-dir: detox
+          detox-list-tests: "true"
+          detox-config: ${{ inputs.detox_config }}
+          detox-sort-last: "@server_mutation"
 
   dispatch-run:
-    name: ${{ matrix.worker.name }}
-    needs: [prepare, e2e-test-stack-provision, begin-pool, begin-mutation-b, begin-mutation-site3]
+    name: dispatch-run-${{ inputs.lane }}-${{ matrix.worker }}
+    needs: [prepare, e2e-test-stack-provision, begin]
     if: >-
       !cancelled() &&
       needs.e2e-test-stack-provision.result == 'success' &&
-      needs.begin-pool.result == 'success' &&
-      (needs.begin-mutation-b.result == 'success' || needs.begin-mutation-b.result == 'skipped') &&
-      (needs.begin-mutation-site3.result == 'success' || needs.begin-mutation-site3.result == 'skipped')
+      needs.begin.result == 'success'
     runs-on: ubuntu-latest-8-cores
     timeout-minutes: 180
     permissions:
@@ -347,7 +286,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ inputs.commit_sha }}
           persist-credentials: false
           fetch-depth: 1
 
@@ -362,9 +301,7 @@ jobs:
         uses: ./.e2e-test-stack-actions/.github/actions/e2e-test-stack-sites
         with:
           batch: ${{ inputs.e2e_test_stack_batch }}
-          shard: ${{ matrix.worker.shard }}
-          role: ${{ matrix.worker.role }}
-          target: ${{ matrix.worker.target }}
+          shard: ${{ matrix.worker }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
       - name: ci/prepare-node-deps
@@ -515,7 +452,7 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
       - name: ci/e2e-test-stack-webhook
-        if: matrix.worker.run == 'pool' && needs.prepare.outputs.webhook == 'true'
+        if: needs.prepare.outputs.webhook == 'true'
         run: |
           {
             echo "WEBHOOK_BASE_URL=http://webhook:3000"
@@ -533,23 +470,23 @@ jobs:
 
       - name: ci/dispatch-run
         timeout-minutes: 150
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@780b7b3f82c0a558bfb17967d2644ca06bea0db5 # detox-spec-list: detox-list-tests, detox-sort-last
         with:
           framework: detox
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
-          composite-identity: ${{ (matrix.worker.run == 'pool' && needs.prepare.outputs.pool-identity) || (matrix.worker.run == 'mutation-b' && needs.prepare.outputs.mutation-b-identity) || needs.prepare.outputs.mutation-site3-identity }}
+          composite-identity: ${{ needs.prepare.outputs.identity }}
           repo-dir: ${{ github.workspace }}
           artifacts-root: ${{ github.workspace }}/worker-artifacts
           github-token: ${{ github.token }}
-          gh-job-name: ${{ matrix.worker.name }}
+          gh-job-name: dispatch-run-${{ inputs.lane }}-${{ matrix.worker }}
           detox-config: ${{ inputs.detox_config }}
           batch-size: "1"
           detox-max-workers: "1"
 
-  summary-pool:
+  summary:
     name: summary
-    needs: [prepare, begin-pool, dispatch-run]
-    if: always() && !cancelled() && needs.begin-pool.result == 'success'
+    needs: [prepare, begin, dispatch-run]
+    if: always() && !cancelled() && needs.begin.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -567,117 +504,14 @@ jobs:
 
       - name: ci/run-summary
         id: summary
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@780b7b3f82c0a558bfb17967d2644ca06bea0db5 # detox-spec-list: detox-list-tests, detox-sort-last
         with:
           framework: detox
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
-          composite-identity: ${{ needs.prepare.outputs.pool-identity }}
+          composite-identity: ${{ needs.prepare.outputs.identity }}
           commit-status-context: e2e-test-stack/${{ inputs.lane }}
           update-commit-status: "false"
           fail-on-test-failures: "true"
           pr-number: ${{ inputs.pr_number }}
           ref-branch: ${{ needs.prepare.outputs.branch }}
           image-tag: ${{ inputs.e2e_test_stack_server_image }}
-
-  summary-mutation-b:
-    name: summary-mutation-b
-    needs: [prepare, begin-mutation-b, dispatch-run]
-    if: always() && !cancelled() && needs.begin-mutation-b.result == 'success'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      report-url: ${{ steps.summary.outputs.report_url }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-          fetch-depth: 1
-
-      - name: ci/run-summary
-        id: summary
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
-        with:
-          framework: detox
-          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
-          composite-identity: ${{ needs.prepare.outputs.mutation-b-identity }}
-          commit-status-context: e2e-test-stack/${{ inputs.lane }}-mutation-b
-          update-commit-status: "false"
-          fail-on-test-failures: "true"
-          pr-number: ${{ inputs.pr_number }}
-          ref-branch: ${{ needs.prepare.outputs.branch }}
-          image-tag: ${{ inputs.e2e_test_stack_server_image }}
-
-  summary-mutation-site3:
-    name: summary-mutation-site3
-    needs: [prepare, begin-mutation-site3, dispatch-run]
-    if: always() && !cancelled() && needs.begin-mutation-site3.result == 'success'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      report-url: ${{ steps.summary.outputs.report_url }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-          fetch-depth: 1
-
-      - name: ci/run-summary
-        id: summary
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
-        with:
-          framework: detox
-          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
-          composite-identity: ${{ needs.prepare.outputs.mutation-site3-identity }}
-          commit-status-context: e2e-test-stack/${{ inputs.lane }}-mutation-site3
-          update-commit-status: "false"
-          fail-on-test-failures: "true"
-          pr-number: ${{ inputs.pr_number }}
-          ref-branch: ${{ needs.prepare.outputs.branch }}
-          image-tag: ${{ inputs.e2e_test_stack_server_image }}
-
-  report:
-    name: report
-    needs: [prepare, begin-pool, begin-mutation-b, begin-mutation-site3, summary-pool, summary-mutation-b, summary-mutation-site3]
-    if: always() && !cancelled() && needs.prepare.result == 'success'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions: {}
-    outputs:
-      report-url: ${{ steps.pick.outputs.report-url }}
-    steps:
-      - name: ci/pick-report
-        id: pick
-        env:
-          SUMMARY_POOL: ${{ needs.summary-pool.result }}
-          SUMMARY_B: ${{ needs.summary-mutation-b.result }}
-          SUMMARY_SITE3: ${{ needs.summary-mutation-site3.result }}
-          URL_POOL: ${{ needs.begin-pool.outputs.report-url }}
-          URL_B: ${{ needs.begin-mutation-b.outputs.report-url }}
-          URL_SITE3: ${{ needs.begin-mutation-site3.outputs.report-url }}
-        run: |
-          set -euo pipefail
-          url=""
-          pick() {
-            local result="$1" candidate="$2"
-            if [ -z "$url" ] && [ "$result" = "failure" ] && [ -n "$candidate" ]; then
-              url="$candidate"
-            fi
-          }
-          pick "$SUMMARY_SITE3" "$URL_SITE3"
-          pick "$SUMMARY_B" "$URL_B"
-          pick "$SUMMARY_POOL" "$URL_POOL"
-          if [ -z "$url" ]; then
-            url="$URL_POOL"
-          fi
-          echo "report-url=${url}" >> "$GITHUB_OUTPUT"
-          echo "report ${url:-none}"

@@ -58,27 +58,73 @@
   "configurations": {
     "ios.sim.debug": {
       "device": "ios.simulator",
-      "app": "ios.debug"
+      "app": "ios.debug",
+      "testRunner": {
+        "args": {
+          "testPathIgnorePatterns": [
+            "\\.ipad\\.e2e\\.ts$",
+            "\\.android\\.e2e\\.ts$"
+          ]
+        }
+      }
     },
     "ios.sim.release": {
       "device": "ios.simulator",
-      "app": "ios.release"
+      "app": "ios.release",
+      "testRunner": {
+        "args": {
+          "testPathIgnorePatterns": [
+            "\\.ipad\\.e2e\\.ts$",
+            "\\.android\\.e2e\\.ts$"
+          ]
+        }
+      }
     },
     "ios.ipad.debug": {
       "device": "ios.ipad",
-      "app": "ios.debug"
+      "app": "ios.debug",
+      "testRunner": {
+        "args": {
+          "_": [
+            "\\.ipad\\.e2e\\.ts$"
+          ]
+        }
+      }
     },
     "ios.ipad.release": {
       "device": "ios.ipad",
-      "app": "ios.release"
+      "app": "ios.release",
+      "testRunner": {
+        "args": {
+          "_": [
+            "\\.ipad\\.e2e\\.ts$"
+          ]
+        }
+      }
     },
     "android.emu.debug": {
       "device": "android.emulator",
-      "app": "android.debug"
+      "app": "android.debug",
+      "testRunner": {
+        "args": {
+          "testPathIgnorePatterns": [
+            "\\.ipad\\.e2e\\.ts$",
+            "\\.ios\\.e2e\\.ts$"
+          ]
+        }
+      }
     },
     "android.emu.release": {
       "device": "android.emulator",
-      "app": "android.release"
+      "app": "android.release",
+      "testRunner": {
+        "args": {
+          "testPathIgnorePatterns": [
+            "\\.ipad\\.e2e\\.ts$",
+            "\\.ios\\.e2e\\.ts$"
+          ]
+        }
+      }
     }
   },
   "artifacts": {

@@ -175,7 +175,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template-v2.yml
     with:
       lane: detox-ios
-      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
       pr_number: ${{ inputs.pr_number }}
       artifact_run_id: ${{ github.run_id }}
       fork: ${{ needs.setup.outputs.fork == 'true' }}
@@ -187,8 +187,7 @@ jobs:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   # The iPad device and Detox configuration of e2e-detox.yml's run-ios-ipad-tests.
-  # Its specs are the ipad directory. That directory is not tagged, so the lane
-  # still points at it instead of an @ipad_only include.
+  # Its specs are the *.ipad.e2e.ts files under products/channels.
   detox-ipad:
     name: Detox iPad
     needs: [setup, build-ios]
@@ -203,13 +202,12 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template-v2.yml
     with:
       lane: detox-ipad
-      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
       pr_number: ${{ inputs.pr_number }}
       artifact_run_id: ${{ github.run_id }}
       ios_device_name: "iPad Pro 13-inch (M5)"
       ios_device_os_name: "iOS 26.2"
-      search_path: "detox/e2e/test/products/channels/ipad"
-      parallelism: "1"
+      parallelism: "4"
       detox_config: "ios.ipad.debug"
       fork: ${{ needs.setup.outputs.fork == 'true' }}
       e2e_test_stack_account: ${{ needs.setup.outputs.account }}
@@ -233,7 +231,7 @@ jobs:
     uses: ./.github/workflows/e2e-android-template-v2.yml
     with:
       lane: detox-android
-      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
       pr_number: ${{ inputs.pr_number }}
       artifact_run_id: ${{ github.run_id }}
       fork: ${{ needs.setup.outputs.fork == 'true' }}
