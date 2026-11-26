@@ -7,8 +7,7 @@ name: E2E Tests - Build
 #   android-detox    android-build-files-<run id>          the Android Detox APKs (detox-android)
 #   android-maestro  android-maestro-build-files-<run id>  the Android Maestro APK (maestro-android)
 # The cache scope is pr-<pr_number>, else branch-<ref>: a run by hand reads the main scope but never writes it.
-# Android signs with android/app/debug.keystore. Its S3 platform is android-*-debug, so a hit is
-# never a release-signed build from e2e-detox-pr.yml, and this workflow does not write one back.
+# Android signs with android/app/debug.keystore.
 
 on:
   workflow_call:
@@ -211,7 +210,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-detox-debug
+          platform: android-detox
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build'
           mode: restore
@@ -262,7 +261,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-detox-debug
+          platform: android-detox
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build'
           mode: save
@@ -298,7 +297,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-maestro-debug
+          platform: android-maestro
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
           mode: restore
@@ -337,7 +336,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-maestro-debug
+          platform: android-maestro
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
           mode: save
