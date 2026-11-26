@@ -20,7 +20,7 @@ inputs:
     description: 'Content fingerprint (from compute-e2e-build-fingerprint)'
     required: true
   platform:
-    description: 'Platform key, for example ios, android-detox, android-maestro, android-detox-debug, android-maestro-debug'
+    description: 'Platform key: ios, android-detox, android-maestro'
     required: true
   bucket:
     description: 'S3 bucket name'
