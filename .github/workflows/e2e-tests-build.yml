@@ -7,6 +7,8 @@ name: E2E Tests - Build
 #   android-detox    android-build-files-<run id>          the Android Detox APKs (detox-android)
 #   android-maestro  android-maestro-build-files-<run id>  the Android Maestro APK (maestro-android)
 # The cache scope is pr-<pr_number>, else branch-<ref>: a run by hand reads the main scope but never writes it.
+# Android signs with android/app/debug.keystore. Its S3 platform is android-*-debug, so a hit is
+# never a release-signed build from e2e-detox-pr.yml, and this workflow does not write one back.
 
 on:
   workflow_call:
@@ -24,7 +26,7 @@ on:
         type: string
         default: ""
       fork:
-        description: "The commit is from a fork. Do not use the shared cache or the release signing secrets."
+        description: "The commit is from a fork. Do not use the shared cache."
         type: boolean
         default: false
     secrets:
@@ -37,14 +39,6 @@ on:
       MM_MOBILE_INTUNE_DEPLOY_KEY:
         required: false
       MM_MOBILE_GITHUB_TOKEN:
-        required: false
-      MM_MOBILE_STORE_FILE:
-        required: false
-      MM_MOBILE_STORE_ALIAS:
-        required: false
-      MM_MOBILE_STORE_PASSWORD:
-        required: false
-      MATTERMOST_BUILD_GH_TOKEN:
         required: false
 
 permissions:
@@ -223,7 +217,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-detox
+          platform: android-detox-debug
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build'
           mode: restore
@@ -236,12 +230,7 @@ jobs:
         if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
         with:
-          sign: ${{ inputs.fork && 'false' || 'true' }}
-        env:
-          STORE_FILE: ${{ inputs.fork != true && secrets.MM_MOBILE_STORE_FILE || '' }}
-          STORE_ALIAS: ${{ inputs.fork != true && secrets.MM_MOBILE_STORE_ALIAS || '' }}
-          STORE_PASSWORD: ${{ inputs.fork != true && secrets.MM_MOBILE_STORE_PASSWORD || '' }}
-          MATTERMOST_BUILD_GH_TOKEN: ${{ inputs.fork != true && secrets.MATTERMOST_BUILD_GH_TOKEN || '' }}
+          sign: 'false'
 
       # Same key as e2e-detox-pr.yml's build-android-apk, so the workflows share the cache.
       - name: Cache Gradle dependencies
@@ -279,7 +268,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-detox
+          platform: android-detox-debug
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build'
           mode: save
@@ -315,7 +304,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-maestro
+          platform: android-maestro-debug
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
           mode: restore
@@ -328,12 +317,7 @@ jobs:
         if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
         with:
-          sign: ${{ inputs.fork && 'false' || 'true' }}
-        env:
-          STORE_FILE: ${{ inputs.fork != true && secrets.MM_MOBILE_STORE_FILE || '' }}
-          STORE_ALIAS: ${{ inputs.fork != true && secrets.MM_MOBILE_STORE_ALIAS || '' }}
-          STORE_PASSWORD: ${{ inputs.fork != true && secrets.MM_MOBILE_STORE_PASSWORD || '' }}
-          MATTERMOST_BUILD_GH_TOKEN: ${{ inputs.fork != true && secrets.MATTERMOST_BUILD_GH_TOKEN || '' }}
+          sign: 'false'
 
       - name: Build Maestro Android APK
         if: env.SKIP_BUILD != 'true'
@@ -359,7 +343,7 @@ jobs:
         with:
           fingerprint: ${{ needs.compute-build-fingerprint.outputs.fingerprint }}
           scope: ${{ needs.compute-build-fingerprint.outputs.cache-scope }}
-          platform: android-maestro
+          platform: android-maestro-debug
           bucket: ${{ env.BUILD_CACHE_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
           mode: save
