@@ -1,0 +1,683 @@
+name: Detox Android E2E Tests Template v2
+
+# Detox on e2e-test-stack, dispatched by Test System IO. The pool and the B
+# mutation specs are separate runs so a spec that changes server-wide state
+# cannot be leased onto a pool worker. Android has no site3 run: those specs
+# use their target and run on B. Maestro and the Matterwick template are unchanged.
+#
+# prepare counts the specs and the servers. create and provision are the existing
+# workflows. begin runs after provision, because the orchestrator idles a run out
+# while it waits for the first lease. Each worker boots one emulator, then
+# dispatch-run leases specs onto it.
+
+on:
+  workflow_call:
+    inputs:
+      lane:
+        description: "Pool run name: detox-android"
+        type: string
+        required: true
+      MOBILE_VERSION:
+        description: "The commit under test, a full 40-character SHA"
+        type: string
+        required: true
+      pr_number:
+        description: "The pull request the commit belongs to; empty for none"
+        type: string
+        default: ""
+      artifact_run_id:
+        description: "Run ID of the workflow that uploaded android-build-files-*"
+        type: string
+        default: ""
+      fork:
+        description: "The commit under test is from a fork. Provisioning uses this workflow's commit."
+        type: boolean
+        default: false
+      e2e_test_stack_account:
+        description: "AWS account of the control plane, prod or dev"
+        type: string
+        default: "prod"
+      e2e_test_stack_channel:
+        description: "Control plane channel, v1 or edge"
+        type: string
+        default: "v1"
+      e2e_test_stack_server_image:
+        description: "Mattermost server image: master, latest, esr, or an image by tag"
+        type: string
+        default: "master"
+      e2e_test_stack_batch:
+        description: "This lane's batch name"
+        type: string
+        required: true
+      parallelism:
+        description: "Pool workers. Each mutation run adds one worker of its own."
+        type: string
+        default: "32"
+      detox_config:
+        description: "Detox configuration, android.emu.debug"
+        type: string
+        default: "android.emu.debug"
+      search_path:
+        description: "Repo-relative directory of *.e2e.ts specs. The ipad child directory is skipped."
+        type: string
+        default: "detox/e2e/test"
+      android_avd_name:
+        description: "Android emulator name"
+        type: string
+        default: "detox_pixel_8"
+      android_api_level:
+        description: "Android API level"
+        type: string
+        default: "35"
+    outputs:
+      report-url:
+        description: "Test System IO report for this lane. A failing run's report when one failed."
+        value: ${{ jobs.report.outputs.report-url }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY:
+        required: true
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PLATFORM: android
+  IOS: "false"
+  HEADLESS: "true"
+  RUNNING_E2E: "true"
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+  AVD_NAME: ${{ inputs.android_avd_name }}
+  SDK_VERSION: ${{ inputs.android_api_level }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+
+jobs:
+  prepare:
+    name: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      mobile-sha: ${{ steps.plan.outputs.mobile-sha }}
+      branch: ${{ steps.plan.outputs.branch }}
+      pool-workers: ${{ steps.plan.outputs.pool-workers }}
+      mutation-b: ${{ steps.plan.outputs.mutation-b }}
+      mutation-site3: ${{ steps.plan.outputs.mutation-site3 }}
+      webhook: ${{ steps.plan.outputs.webhook }}
+      stack-count: ${{ steps.plan.outputs.stack-count }}
+      slices: ${{ steps.plan.outputs.slices }}
+      detox-search-path: ${{ steps.plan.outputs.detox-search-path }}
+      pool-identity: ${{ steps.plan.outputs.pool-identity }}
+      mutation-b-identity: ${{ steps.plan.outputs.mutation-b-identity }}
+      mutation-site3-identity: ${{ steps.plan.outputs.mutation-site3-identity }}
+      workers: ${{ steps.plan.outputs.workers }}
+    steps:
+      - name: ci/check-sha
+        env:
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+        run: |
+          if ! [[ "$COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::MOBILE_VERSION must be a full 40-character SHA, got '${COMMIT_SHA}'"
+            exit 1
+          fi
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/plan
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LANE: ${{ inputs.lane }}
+          SEARCH_PATH: ${{ inputs.search_path }}
+          PLATFORM: ${{ env.PLATFORM }}
+          PARALLELISM: ${{ inputs.parallelism }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+        run: bash .github/scripts/tsio-detox-prepare.sh
+
+  e2e-test-stack-create:
+    name: e2e-test-stack-create
+    needs: prepare
+    if: needs.prepare.result == 'success'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-test-stack-create.yml
+    with:
+      batch: ${{ inputs.e2e_test_stack_batch }}
+      account: ${{ inputs.e2e_test_stack_account }}
+      channel: ${{ inputs.e2e_test_stack_channel }}
+      server_image: ${{ inputs.e2e_test_stack_server_image }}
+      count: ${{ needs.prepare.outputs.stack-count }}
+      services: ${{ needs.prepare.outputs.webhook == 'true' && 'webhook' || '' }}
+      license: enterprise-advanced
+      shared_admin_password: true
+      ttl: 2h
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  e2e-test-stack-provision:
+    name: e2e-test-stack-provision
+    needs: [prepare, e2e-test-stack-create]
+    if: needs.e2e-test-stack-create.result == 'success'
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/e2e-test-stack-provision.yml
+    with:
+      batch: ${{ inputs.e2e_test_stack_batch }}
+      slices: ${{ needs.prepare.outputs.slices }}
+      commit_sha: ${{ needs.prepare.outputs.mobile-sha }}
+      fork: ${{ inputs.fork }}
+    secrets:
+      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+  begin-pool:
+    name: dispatch-begin
+    needs: [prepare, e2e-test-stack-provision]
+    if: needs.e2e-test-stack-provision.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      report-url: ${{ steps.begin.outputs.report-url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/select-specs
+        env:
+          SEARCH_PATH: ${{ inputs.search_path }}
+          PLATFORM: ${{ env.PLATFORM }}
+          ROLE: pool
+        run: |
+          set -euo pipefail
+          node .github/scripts/tsio-detox-specs.js prepare \
+            --search-path "$SEARCH_PATH" \
+            --platform "$PLATFORM" \
+            --role "$ROLE"
+
+      # c31c00f is the pin mattermost/mattermost uses for begin, run, and summary (2026-11-09, #132).
+      - name: ci/dispatch-begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        with:
+          framework: detox
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          repo-dir: ${{ github.workspace }}
+          composite-identity: ${{ needs.prepare.outputs.pool-identity }}
+          total-reports-expected: ${{ needs.prepare.outputs.pool-workers }}
+          retest-on-fail: "false"
+          post-pending-commit-status: "false"
+          duration-base-branch: ""
+          idle-timeout-ms: "2700000"
+          lease-timeout-ms: "1800000"
+          detox-search-path: ${{ needs.prepare.outputs.detox-search-path }}
+
+  begin-mutation-b:
+    name: dispatch-begin-mutation-b
+    needs: [prepare, e2e-test-stack-provision]
+    if: needs.e2e-test-stack-provision.result == 'success' && needs.prepare.outputs.mutation-b == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      report-url: ${{ steps.begin.outputs.report-url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/select-specs
+        env:
+          SEARCH_PATH: ${{ inputs.search_path }}
+          PLATFORM: ${{ env.PLATFORM }}
+          ROLE: mutation-b
+        run: |
+          set -euo pipefail
+          node .github/scripts/tsio-detox-specs.js prepare \
+            --search-path "$SEARCH_PATH" \
+            --platform "$PLATFORM" \
+            --role "$ROLE"
+
+      - name: ci/dispatch-begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        with:
+          framework: detox
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          repo-dir: ${{ github.workspace }}
+          composite-identity: ${{ needs.prepare.outputs.mutation-b-identity }}
+          total-reports-expected: "1"
+          retest-on-fail: "false"
+          post-pending-commit-status: "false"
+          duration-base-branch: ""
+          idle-timeout-ms: "2700000"
+          lease-timeout-ms: "1800000"
+          detox-search-path: ${{ needs.prepare.outputs.detox-search-path }}
+
+  begin-mutation-site3:
+    name: dispatch-begin-mutation-site3
+    needs: [prepare, e2e-test-stack-provision]
+    if: needs.e2e-test-stack-provision.result == 'success' && needs.prepare.outputs.mutation-site3 == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      report-url: ${{ steps.begin.outputs.report-url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/select-specs
+        env:
+          SEARCH_PATH: ${{ inputs.search_path }}
+          PLATFORM: ${{ env.PLATFORM }}
+          ROLE: mutation-site3
+        run: |
+          set -euo pipefail
+          node .github/scripts/tsio-detox-specs.js prepare \
+            --search-path "$SEARCH_PATH" \
+            --platform "$PLATFORM" \
+            --role "$ROLE"
+
+      - name: ci/dispatch-begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        with:
+          framework: detox
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          repo-dir: ${{ github.workspace }}
+          composite-identity: ${{ needs.prepare.outputs.mutation-site3-identity }}
+          total-reports-expected: "1"
+          retest-on-fail: "false"
+          post-pending-commit-status: "false"
+          duration-base-branch: ""
+          idle-timeout-ms: "2700000"
+          lease-timeout-ms: "1800000"
+          detox-search-path: ${{ needs.prepare.outputs.detox-search-path }}
+
+  dispatch-run:
+    name: ${{ matrix.worker.name }}
+    needs: [prepare, e2e-test-stack-provision, begin-pool, begin-mutation-b, begin-mutation-site3]
+    if: >-
+      !cancelled() &&
+      needs.e2e-test-stack-provision.result == 'success' &&
+      needs.begin-pool.result == 'success' &&
+      (needs.begin-mutation-b.result == 'success' || needs.begin-mutation-b.result == 'skipped') &&
+      (needs.begin-mutation-site3.result == 'success' || needs.begin-mutation-site3.result == 'skipped')
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: ${{ fromJSON(needs.prepare.outputs.workers) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/e2e-test-stack-actions
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          path: .e2e-test-stack-actions
+          sparse-checkout: .github/actions/e2e-test-stack-sites
+          persist-credentials: false
+
+      - name: ci/e2e-test-stack-sites
+        uses: ./.e2e-test-stack-actions/.github/actions/e2e-test-stack-sites
+        with:
+          batch: ${{ inputs.e2e_test_stack_batch }}
+          shard: ${{ matrix.worker.shard }}
+          role: ${{ matrix.worker.role }}
+          target: ${{ matrix.worker.target }}
+          credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Install Dependencies
+        timeout-minutes: 6
+        run: |
+          APT_OPTS=(-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o DPkg::Lock::Timeout=120)
+          PACKAGES=(libpulse0 xvfb)
+          sudo apt-get "${APT_OPTS[@]}" install -y "${PACKAGES[@]}" || {
+            sudo apt-get "${APT_OPTS[@]}" update
+            sudo apt-get "${APT_OPTS[@]}" install -y "${PACKAGES[@]}"
+          }
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Cache detox node_modules
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
+      - name: Install Detox Dependencies
+        run: cd detox && npm i
+
+      - name: Set .env with RUNNING_E2E=true
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Download Detox Android build from parent workflow
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: android-build-files-${{ env.ARTIFACT_RUN_ID }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: android/app/build
+
+      - name: Verify Detox Android app from parent build
+        env:
+          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
+        run: |
+          APP_APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          TEST_APK="android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+          if [ ! -f "$APP_APK" ] || [ ! -f "$TEST_APK" ]; then
+            echo "❌ Missing a Detox APK from android-build-files-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          ls -lh "$APP_APK" "$TEST_APK"
+
+      - name: Set up Android SDK
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "PATH=$PATH" >> "$GITHUB_ENV"
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+          if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "✅ All licenses accepted successfully."
+          else
+            echo "❌ Licenses not fully accepted."
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
+
+      - name: Cache Android SDK components
+        id: android-sdk-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: .android-sdk-cache
+          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+        run: |
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
+
+      - name: Install Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          if ! [[ "$API_LEVEL" =~ ^[0-9]+$ ]]; then
+            echo "Invalid android_api_level: $API_LEVEL"
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            echo "SDK install attempt $attempt..."
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+              echo "SDK install succeeded on attempt $attempt"
+              break
+            fi
+            echo "Attempt $attempt failed, retrying..."
+            if [ "$attempt" = "3" ]; then
+              echo "SDK install failed after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
+
+      - name: Cache Android Emulator & AVD
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            detox/.android
+            detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v3
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: ci/e2e-test-stack-webhook
+        if: matrix.worker.run == 'pool' && needs.prepare.outputs.webhook == 'true'
+        run: |
+          {
+            echo "WEBHOOK_BASE_URL=http://webhook:3000"
+            echo "WEBHOOK_SIDECAR=e2e-test-stack"
+          } >> "$GITHUB_ENV"
+
+      - name: Boot Android emulator
+        env:
+          CI: "true"
+          BOOTSTRAP_ONLY: "true"
+          DETACH_SERVICES: "true"
+        run: |
+          chmod +x detox/create_android_emulator.sh
+          detox/create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME"
+
+      - name: ci/dispatch-run
+        timeout-minutes: 150
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        with:
+          framework: detox
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          composite-identity: ${{ (matrix.worker.run == 'pool' && needs.prepare.outputs.pool-identity) || (matrix.worker.run == 'mutation-b' && needs.prepare.outputs.mutation-b-identity) || needs.prepare.outputs.mutation-site3-identity }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ github.workspace }}/worker-artifacts
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ matrix.worker.name }}
+          detox-config: ${{ inputs.detox_config }}
+          batch-size: "1"
+          detox-max-workers: "1"
+
+  summary-pool:
+    name: summary
+    needs: [prepare, begin-pool, dispatch-run]
+    if: always() && !cancelled() && needs.begin-pool.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      report-url: ${{ steps.summary.outputs.report_url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/run-summary
+        id: summary
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        with:
+          framework: detox
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          composite-identity: ${{ needs.prepare.outputs.pool-identity }}
+          commit-status-context: e2e-test-stack/${{ inputs.lane }}
+          update-commit-status: "false"
+          fail-on-test-failures: "true"
+          pr-number: ${{ inputs.pr_number }}
+          ref-branch: ${{ needs.prepare.outputs.branch }}
+          image-tag: ${{ inputs.e2e_test_stack_server_image }}
+
+  summary-mutation-b:
+    name: summary-mutation-b
+    needs: [prepare, begin-mutation-b, dispatch-run]
+    if: always() && !cancelled() && needs.begin-mutation-b.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      report-url: ${{ steps.summary.outputs.report_url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/run-summary
+        id: summary
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        with:
+          framework: detox
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          composite-identity: ${{ needs.prepare.outputs.mutation-b-identity }}
+          commit-status-context: e2e-test-stack/${{ inputs.lane }}-mutation-b
+          update-commit-status: "false"
+          fail-on-test-failures: "true"
+          pr-number: ${{ inputs.pr_number }}
+          ref-branch: ${{ needs.prepare.outputs.branch }}
+          image-tag: ${{ inputs.e2e_test_stack_server_image }}
+
+  summary-mutation-site3:
+    name: summary-mutation-site3
+    needs: [prepare, begin-mutation-site3, dispatch-run]
+    if: always() && !cancelled() && needs.begin-mutation-site3.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      report-url: ${{ steps.summary.outputs.report_url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: ci/run-summary
+        id: summary
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@c31c00f723b0b1c3e1d6b45a50b938d5afae729f # 2026-11-09 (#132)
+        with:
+          framework: detox
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          composite-identity: ${{ needs.prepare.outputs.mutation-site3-identity }}
+          commit-status-context: e2e-test-stack/${{ inputs.lane }}-mutation-site3
+          update-commit-status: "false"
+          fail-on-test-failures: "true"
+          pr-number: ${{ inputs.pr_number }}
+          ref-branch: ${{ needs.prepare.outputs.branch }}
+          image-tag: ${{ inputs.e2e_test_stack_server_image }}
+
+  report:
+    name: report
+    needs: [prepare, begin-pool, begin-mutation-b, begin-mutation-site3, summary-pool, summary-mutation-b, summary-mutation-site3]
+    if: always() && !cancelled() && needs.prepare.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      report-url: ${{ steps.pick.outputs.report-url }}
+    steps:
+      - name: ci/pick-report
+        id: pick
+        env:
+          SUMMARY_POOL: ${{ needs.summary-pool.result }}
+          SUMMARY_B: ${{ needs.summary-mutation-b.result }}
+          SUMMARY_SITE3: ${{ needs.summary-mutation-site3.result }}
+          URL_POOL: ${{ needs.begin-pool.outputs.report-url }}
+          URL_B: ${{ needs.begin-mutation-b.outputs.report-url }}
+          URL_SITE3: ${{ needs.begin-mutation-site3.outputs.report-url }}
+        run: |
+          set -euo pipefail
+          url=""
+          pick() {
+            local result="$1" candidate="$2"
+            if [ -z "$url" ] && [ "$result" = "failure" ] && [ -n "$candidate" ]; then
+              url="$candidate"
+            fi
+          }
+          pick "$SUMMARY_SITE3" "$URL_SITE3"
+          pick "$SUMMARY_B" "$URL_B"
+          pick "$SUMMARY_POOL" "$URL_POOL"
+          if [ -z "$url" ]; then
+            url="$URL_POOL"
+          fi
+          echo "report-url=${url}" >> "$GITHUB_OUTPUT"
+          echo "report ${url:-none}"

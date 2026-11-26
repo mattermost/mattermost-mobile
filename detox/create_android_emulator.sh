@@ -91,6 +91,23 @@ emulator_dns_servers() {
     } | awk 'NF && !seen[$0]++' | head -4 | paste -sd, -
 }
 
+# A new session survives the GitHub Actions step. dispatch-run is a later step,
+# and the runner kills the step's process group when the step ends.
+spawn_detached() {
+    local log="$1"
+    shift
+    python3 -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' "$@" >>"$log" 2>&1 &
+    echo "detached pid $! -> $log"
+}
+
+detach_log() {
+    if [[ -n "${RUNNER_TEMP:-}" ]]; then
+        echo "$RUNNER_TEMP/$1"
+    else
+        echo "$SCRIPT_DIR/$1"
+    fi
+}
+
 start_emulator() {
     echo "Starting the emulator..."
     local emulator_opts="-avd $AVD_NAME -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
@@ -99,7 +116,11 @@ start_emulator() {
         local dns_servers
         dns_servers=$(emulator_dns_servers)
         echo "Emulator DNS servers: ${dns_servers}"
-        emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
+        if [[ "${DETACH_SERVICES:-}" == "true" ]]; then
+            spawn_detached "$(detach_log emulator.log)" emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB"
+        else
+            emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
+        fi
     else
         emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
     fi
@@ -329,7 +350,11 @@ push_e2e_fixtures() {
 start_server() {
     echo "Starting the server..."
     cd "$REPO_ROOT"
-    RUNNING_E2E=true npm run start &
+    if [[ "${DETACH_SERVICES:-}" == "true" ]]; then
+        RUNNING_E2E=true spawn_detached "$(detach_log metro.log)" npm run start
+    else
+        RUNNING_E2E=true npm run start &
+    fi
     local timeout=120 interval=5 elapsed=0
 
     until nc -z localhost 8081; do
