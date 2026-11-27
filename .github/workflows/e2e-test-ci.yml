@@ -20,9 +20,11 @@
 # cancels the one in progress. It does not wait for it.
 #
 # A passed lane's batch is destroyed. So is every lane's batch when the run is cancelled. A failed or timed-out lane
-# of a run that was not cancelled is kept, so "Re-run failed jobs" uses the same servers. The batch's TTL (4h from
-# create) bounds that, including time queued for a macOS runner, and is the backstop when destroy does not run.
-# After it, only "Re-run all jobs" creates a new batch. Each chosen lane's result is posted as e2e-test-stack/<lane>,
+# of a run that was not cancelled is kept, so "Re-run failed jobs" uses the same servers when a job failed (setup,
+# runner, timeout). Failed specs need "Re-run all jobs": re-running only the failed summary job reads the same Test
+# System IO result and runs no test. The batch's TTL (4h from create) bounds the kept batch, including time queued
+# for a macOS runner, and is the backstop when destroy does not run. After it, only "Re-run all jobs" creates a new
+# batch. Each chosen lane's result is posted as e2e-test-stack/<lane>,
 # which is not a required e2e-test/* context. Detox reports to Test System IO. Maestro does not. The run posts no
 # triage verdict and sends no channel message.
 name: E2E Tests
@@ -318,7 +320,8 @@ jobs:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   # Each chosen lane's batch is destroyed when the lane passed. A failed or timed-out lane is kept until its TTL
-  # for "Re-run failed jobs", which runs this job again with the re-run's results; a skipped lane created none.
+  # for "Re-run failed jobs" after a job failure, which runs this job again with the re-run's results; failed specs
+  # need "Re-run all jobs". A skipped lane created none.
   # A cancelled run is destroyed by the cancel job, which is already running.
   results:
     name: Results
@@ -349,7 +352,7 @@ jobs:
             case "$result" in
               skipped) action="none: no batch" ;;
               success) action=destroy ;;
-              *) action="kept, if it was created, for a re-run until its TTL" ;;
+              *) action="kept, if it was created, until its TTL for \"Re-run failed jobs\" after a job failure; failed specs need \"Re-run all jobs\"" ;;
             esac
             if [ "$action" = destroy ]; then
               destroy=$(jq -c --arg b "$batch" '. + [$b]' <<< "$destroy")

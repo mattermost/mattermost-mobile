@@ -38,7 +38,12 @@ echo "Metro is running after ${elapsed}s"
 
 # One bounded request: the first bundle builds the whole graph, so it can take minutes.
 echo "Requesting the iOS bundle..."
-if ! curl -sf --max-time 300 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false' 2>/dev/null | grep -q "__d("; then
-  fail "Metro did not serve an iOS bundle within 300s"
+bundle="$(mktemp)"
+trap 'rm -f "$bundle"' EXIT
+if ! curl -sf --max-time 300 -o "$bundle" 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false' 2>/dev/null; then
+  fail "Metro did not serve a complete iOS bundle within 300s"
+fi
+if ! grep -q "__d(" "$bundle"; then
+  fail "Metro served an iOS bundle without module definitions"
 fi
 echo "Metro is serving bundles on http://localhost:8081"
