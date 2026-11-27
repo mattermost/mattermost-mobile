@@ -291,12 +291,22 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
+      # This run's commit, not the commit under test. A fork run loads every local action, nested ones too, from it.
       - name: ci/e2e-test-stack-actions
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           path: .e2e-test-stack-actions
-          sparse-checkout: .github/actions/e2e-test-stack-sites
+          sparse-checkout: .github/actions
           persist-credentials: false
+
+      - name: ci/use-trusted-actions
+        if: inputs.fork == true
+        run: |
+          set -euo pipefail
+          if [ -L .github ]; then rm .github; fi
+          rm -rf .github/actions
+          mkdir -p .github
+          cp -R .e2e-test-stack-actions/.github/actions .github/actions
 
       - name: ci/e2e-test-stack-sites
         uses: ./.e2e-test-stack-actions/.github/actions/e2e-test-stack-sites
@@ -307,6 +317,8 @@ jobs:
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
+        with:
+          save-cache: ${{ inputs.fork != true }}
 
       - name: Install Dependencies
         timeout-minutes: 6

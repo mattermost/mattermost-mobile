@@ -1,6 +1,12 @@
 name: prepare-mobile-build
 description: Action to prepare environment for mobile build
 
+inputs:
+  save-cache:
+    description: "'false' restores caches without saving them, for a run of untrusted code"
+    required: false
+    default: "true"
+
 runs:
   using: composite
   steps:
@@ -12,7 +18,17 @@ runs:
     # Arch-scoped: vendor/bundle holds compiled native extensions that are not
     # portable across arm64/x86_64. runner.os alone is just "macOS" and spans both.
     - name: Cache Fastlane Ruby gems
+      if: inputs.save-cache != 'false'
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: fastlane/vendor/bundle
+        key: ${{ runner.os }}-${{ runner.arch }}-fastlane-gems-${{ hashFiles('fastlane/Gemfile.lock', '.ruby-version') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ runner.arch }}-fastlane-gems-
+
+    - name: Restore Fastlane Ruby gems
+      if: inputs.save-cache == 'false'
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: fastlane/vendor/bundle
         key: ${{ runner.os }}-${{ runner.arch }}-fastlane-gems-${{ hashFiles('fastlane/Gemfile.lock', '.ruby-version') }}
@@ -30,3 +46,5 @@ runs:
 
     - name: ci/prepare-node-deps
       uses: ./.github/actions/prepare-node-deps
+      with:
+        save-cache: ${{ inputs.save-cache }}
