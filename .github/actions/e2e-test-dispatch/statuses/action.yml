@@ -1,0 +1,30 @@
+---
+name: E2E Tests dispatch statuses
+description: >-
+  Post a success on each required e2e-test/* context when a same-repo pull request was skipped. Node 26 must be set up
+  first.
+author: Mattermost
+inputs:
+  sha:
+    description: The commit the statuses are posted on
+    required: true
+  pr:
+    description: The pull request, or empty
+    required: false
+    default: ""
+  reason:
+    description: The decide reason, which chooses the status description
+    required: true
+runs:
+  using: composite
+  steps:
+    - id: statuses
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+        URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        SHA: ${{ inputs.sha }}
+        PR: ${{ inputs.pr }}
+        REASON: ${{ inputs.reason }}
+      run: bash "${{ github.action_path }}/../run.sh" statuses

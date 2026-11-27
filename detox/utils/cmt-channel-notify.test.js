@@ -951,5 +951,33 @@ describe('cmt-channel-notify', () => {
             assert.match(triageBlock, /mobile-cmt-ios-full-\$\{VER\}/);
             assert.match(triageBlock, /lane-job-filter: \$\{\{ steps\.lanes\.outputs\.lane-job-filter \}\}/);
         });
+
+        it('matches rerun results by file and full_title so a pass in one spec does not clear a same-title failure in another', () => {
+            const cmtId = {repository: 'mattermost/mattermost-mobile', branch: 'build-release-838', commit_sha: 'a87cebb', name: 'mobile-release', run_group: 'mobile-release'};
+            const perJobCounts = {'detox-ios-Server_12.1.0': {passed: 600, failed: 2, skipped: 0, flaky: 0}};
+            const detail = {status: 'completed', test_stats: {passed: 600, failed: 2, skipped: 0}, reports: []};
+            const triage = [{
+                lane: 'detox-ios-Server_12.1.0',
+                counts: {passed: 600, failed: 2, flaky: 0},
+                findings: [
+                    {title: 'MM-T1 - renders', full_title: 'Spec A > MM-T1 - renders', file: 'detox/e2e/test/a.e2e.ts', class: 'REGRESSION', label: 'needs investigation'},
+                    {title: 'MM-T1 - renders', full_title: 'Spec B > MM-T1 - renders', file: 'detox/e2e/test/b.e2e.ts', class: 'REGRESSION', label: 'needs investigation'},
+                ],
+            }];
+            const rerun = {
+                lanes: {},
+                tooMany: {},
+                results: {
+                    'detox-ios-Server_12.1.0': new Map([
+                        ['detox/e2e/test/a.e2e.ts\nSpec A > MM-T1 - renders', 'passed'],
+                        ['detox/e2e/test/b.e2e.ts\nSpec B > MM-T1 - renders', 'failed'],
+                    ]),
+                },
+            };
+            const text = formatCmtChannelMessage({compositeIdentity: cmtId, detail, perJobCounts, triage, rerun});
+            assert.match(text, /^:red_circle: \*\*Mobile CMT\*\* on `build-release-838`: 1 product bug found$/m);
+            assert.match(text, /🐞 \*\*Product bugs\*\* \(1\)/);
+            assert.match(text, /🔁 \*\*Flaky \/ Infra:\*\* 1 passed on a fresh device/);
+        });
     });
 });

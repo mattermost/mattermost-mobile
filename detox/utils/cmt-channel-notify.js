@@ -507,6 +507,7 @@ function judgeFinding(row, lane, retried) {
  * Shared by formatMainChannelMessage and buildAgentHandoff so both classify identically.
  */
 function evaluateMainVerdicts({legs, failures, triage, rerun}) {
+    const {lookupRerunResult} = require('./rerun-failed');
     const verdicts = [];
     const named = new Map();
     for (const lane of triage || []) {
@@ -519,7 +520,7 @@ function evaluateMainVerdicts({legs, failures, triage, rerun}) {
             // What the error text leaves uncleared, the fresh-device re-run decides: failed again is a product
             // bug, passed is not one. Only without a re-run result does a retry of the same error clear it.
             let key = judgeFinding(row, lane);
-            const again = UNCLEARED.has(key) ? rerun?.results?.[lane.lane]?.get(row.title) : undefined;
+            const again = UNCLEARED.has(key) ? lookupRerunResult(rerun?.results?.[lane.lane], row) : undefined;
             if (again === 'failed') {
                 key = 'confirmed';
             } else if (again === 'passed') {
