@@ -374,7 +374,7 @@ jobs:
       - name: Accept Android licenses
         run: |
           mkdir -p ~/.android
-          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+          { yes || true; } | sdkmanager --licenses > sdk_licenses_output.txt || true
           if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
             echo "✅ All licenses accepted successfully."
           else
@@ -422,9 +422,10 @@ jobs:
             echo "Invalid android_api_level: $API_LEVEL"
             exit 1
           fi
+          # Under pipefail, `yes` exits 141 (SIGPIPE) once sdkmanager closes stdin.
           for attempt in 1 2 3; do
             echo "SDK install attempt $attempt..."
-            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+            if { yes || true; } | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
               echo "SDK install succeeded on attempt $attempt"
               break
             fi
