@@ -10,6 +10,7 @@
     "jenkins",
     "jira",
     "com.mattermost.calls",
+    "mattermost-ai",
     "com.mattermost.nps",
     "com.mattermost.welcomebot",
     "zoom"

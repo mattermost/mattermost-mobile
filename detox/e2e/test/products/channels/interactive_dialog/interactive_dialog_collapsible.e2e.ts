@@ -16,6 +16,7 @@ import {
     setUpDialogSuite,
 } from '@support/interactive_dialog_plugin_helper';
 import {Post} from '@support/server_api';
+import {DEMO_PLUGIN_SETUP_TIMEOUT} from '@support/server_api/server_setup';
 import {siteOneUrl} from '@support/test_config';
 import {InteractiveDialogScreen} from '@support/ui/screen';
 import {wait, timeouts} from '@support/utils';
@@ -34,7 +35,7 @@ describe('Interactive Dialog - Collapsible Sections (Plugin)', () => {
             setupFailed = true;
             throw error;
         }
-    });
+    }, DEMO_PLUGIN_SETUP_TIMEOUT);
 
     afterAll(async () => {
         await logOutAfterDialogSuite();

@@ -8,10 +8,8 @@
 // *******************************************************************
 
 import {
-    AgentsPlugin,
     Bot,
     Channel,
-    Plugin,
     Setup,
     Team,
 } from '@support/server_api';
@@ -122,9 +120,8 @@ describe('Autocomplete - Agent Mention', () => {
         testChannel = channel;
         testTeam = team;
 
-        // # Check if agents plugin is active
-        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
-        pluginActive = pluginStatus.isActive;
+        // # Ensure the agents plugin is running
+        pluginActive = await Setup.ensureAgentsPlugin(siteOneUrl);
 
         // # Create a regular bot (not an agent) for comparison testing
         const botResult = await Bot.apiCreateBot(siteOneUrl, {prefix: 'regularbot'});

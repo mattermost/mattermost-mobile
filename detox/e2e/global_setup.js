@@ -94,11 +94,7 @@ const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localh
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
-// Plugins in this set are never disabled by this setup; provisioning owns them (provision/constants.ts).
-// The demo plugin is installed on every full-suite server (pool A and mutation B), in DialogOnlyMode.
-const PROVISIONED_PLUGINS = new Set(['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
-
-// Prepackaged plugins to keep enabled (shared with provisioning).
+// Only prepackaged plugins stay enabled; a spec that needs another plugin enables it (Setup.ensureDemoPlugin).
 const PREPACKAGED_PLUGINS = new Set(require('../shared/prepackaged-plugins.json'));
 
 async function disableStrayPlugins(headers) {
@@ -106,7 +102,7 @@ async function disableStrayPlugins(headers) {
         const plugins = await axios.get(`${SITE_URL}/api/v4/plugins`, {headers});
         const active = plugins.data?.active || [];
         const toDisable = active.filter(
-            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && !PROVISIONED_PLUGINS.has(plugin.id),
+            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id),
         );
         await Promise.all(toDisable.map((plugin) => {
             process.stdout.write(`[globalSetup] Disabling plugin: ${plugin.id}\n`);
@@ -299,7 +295,7 @@ async function serverSetup() {
         process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
     }
 
-    // Server config comes from provisioning (detox/shared/server-baseline.ts); shards only probe it.
+    // Server config is the spec's: test/setup.ts applies the baseline per spec file; this only probes it.
 
     // Shared Channels needs the license feature and a running remote-cluster service; probing here
     // lets the suite report as skipped rather than passed on a server that cannot run it.

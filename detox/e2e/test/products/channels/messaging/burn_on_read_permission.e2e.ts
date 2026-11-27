@@ -12,7 +12,7 @@ import {
     convergeDepartment,
     createAbacChannel,
     createChannelMember,
-    getProvisionedDepartmentField,
+    ensureDepartmentField,
     setDepartment,
 } from '@support/abac_test_helper';
 import {
@@ -67,10 +67,10 @@ describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
             throw new Error(`Burn-on-read permission tests need an Enterprise Advanced license, got ${license?.SkuShortName}`);
         }
 
-        // # ABAC, burn-on-read and the Department attribute come from provisioning
+        // # ABAC, burn-on-read come from the server baseline; the Department attribute is created when missing
         await assertAbacBaseline(siteOneUrl);
         await assertServerBaseline(siteOneUrl, ['FeatureFlags.BurnOnRead', 'ServiceSettings.EnableBurnOnRead']);
-        const department = await getProvisionedDepartmentField(siteOneUrl);
+        const department = await ensureDepartmentField(siteOneUrl);
         departmentFieldId = department.id;
 
         const {team} = await Setup.apiInit(siteOneUrl);

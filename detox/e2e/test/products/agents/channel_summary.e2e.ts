@@ -9,7 +9,6 @@
 
 import {
     AgentsPlugin,
-    Plugin,
     Setup,
 } from '@support/server_api';
 import {
@@ -36,8 +35,7 @@ describe('Agents - Channel Summary', () => {
     let askAgentsAvailable = false;
 
     beforeAll(async () => {
-        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
-        if (!pluginStatus.isActive) {
+        if (!await Setup.ensureAgentsPlugin(siteOneUrl)) {
             // eslint-disable-next-line no-console
             console.warn(`Agents plugin (${AgentsPlugin.id}) is not active — skipping suite`);
             return;

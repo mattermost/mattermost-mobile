@@ -10,7 +10,6 @@
 import {
     AgentsPlugin,
     Channel,
-    Plugin,
     Setup,
     Team,
     User,
@@ -114,8 +113,7 @@ describe('Agents - Tool Calls in Channels', () => {
     let didLogin = false;
 
     beforeAll(async () => {
-        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
-        if (!pluginStatus.isActive) {
+        if (!await Setup.ensureAgentsPlugin(siteOneUrl)) {
             // eslint-disable-next-line no-console
             console.warn(`Agents plugin (${AgentsPlugin.id}) is not active — skipping suite`);
             return;

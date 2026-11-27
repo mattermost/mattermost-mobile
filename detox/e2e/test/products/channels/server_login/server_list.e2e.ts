@@ -9,7 +9,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {
+    User,
+    Setup,
+} from '@support/server_api';
 import {
     serverOneUrl,
     serverTwoUrl,
@@ -17,8 +20,6 @@ import {
     siteOneUrl,
     siteTwoUrl,
     siteThreeUrl,
-    siteTwoListingUser,
-    siteThreeListingUser,
     hasThreeDistinctServers,
 } from '@support/test_config';
 import {
@@ -92,7 +93,8 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
 
         // # Add a second server and log in to the second server
-        serverTwoUser = await Setup.apiSignInUser(siteTwoUrl, siteTwoListingUser);
+        await User.apiAdminLogin(siteTwoUrl);
+        ({user: serverTwoUser} = await Setup.apiInit(siteTwoUrl));
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.tapAddServerButton();
         await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
@@ -112,7 +114,8 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
 
         // # Add a third server and log in to the third server
-        serverThreeUser = await Setup.apiSignInUser(siteThreeUrl, siteThreeListingUser);
+        await User.apiAdminLogin(siteThreeUrl);
+        ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.tapAddServerButton();
         await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);

@@ -55,6 +55,11 @@ describe('Account - User Attributes', () => {
     // API-seeded values — but any new test added to this suite must not depend on
     // ordering, and anything needing a clean profile needs its own Setup.apiInit().
     beforeAll(async () => {
+        setupFailureReason = await Setup.ensureCustomProfileAttributeFields(siteOneUrl, USER_ATTRIBUTE_FIELD_NAMES);
+        if (setupFailureReason) {
+            return;
+        }
+
         const provision = await probeUserAttributesProvision(siteOneUrl);
         if (!provision.ready) {
             setupFailureReason = provision.reason;

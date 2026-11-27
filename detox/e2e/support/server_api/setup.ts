@@ -5,10 +5,9 @@ import {isTransportFailure} from '@support/utils/transport_retry';
 
 import Channel from './channel';
 import {isHtmlInterstitialError, isTransientHttpStatus, MAX_RETRY_AFTER_SEC} from './client';
+import {ensureAgentsPlugin, ensureCallsPlugin, ensureCustomProfileAttributeFields, ensureDemoPlugin, ensurePluginEnabled} from './server_setup';
 import Team from './team';
 import User from './user';
-
-import type {ListingUser} from '@support/test_config';
 
 // Retry transient CI / edge errors — not test bugs.
 const isTransientServerError = (error: any): boolean => {
@@ -146,29 +145,13 @@ export const apiInit = async (baseUrl: string, {
     };
 };
 
-/**
- * The user to sign in as on another worker's server: its listing user when CI provides one, so the spec makes no admin
- * call there; otherwise a user the admin creates, as local runs and the Matterwick layout do.
- * @param baseUrl - the server's API URL
- * @param listingUser - the server's listing user, from test_config
- * @returns a user shaped for LoginScreen.login
- */
-export const apiSignInUser = async (baseUrl: string, listingUser: ListingUser | undefined): Promise<any> => {
-    if (listingUser) {
-        // The login field takes a username as well as an email.
-        return {username: listingUser.username, newUser: {email: listingUser.username, password: listingUser.password}};
-    }
-    const {error} = await User.apiAdminLogin(baseUrl);
-    if (error) {
-        throw new Error('apiSignInUser: admin login failed');
-    }
-    const {user} = await apiInit(baseUrl);
-    return user;
-};
-
 export const Setup = {
     apiInit,
-    apiSignInUser,
+    ensureAgentsPlugin,
+    ensureCallsPlugin,
+    ensureCustomProfileAttributeFields,
+    ensureDemoPlugin,
+    ensurePluginEnabled,
     retryTransient,
 };
 

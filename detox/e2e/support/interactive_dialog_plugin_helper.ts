@@ -7,8 +7,6 @@ import path from 'path';
 
 import {
     Command,
-    DemoPlugin,
-    Plugin,
     Setup,
     User,
     Post,
@@ -285,13 +283,10 @@ export async function setUpDialogSuite(channelsCategory: string) {
 
     await User.apiAdminLogin(siteOneUrl);
 
-    // Provisioning owns these settings; the suite only checks them.
+    // The baseline owns these settings; the suite only checks them.
     await assertServerBaseline(siteOneUrl, ['ServiceSettings.EnableGifPicker', 'FileSettings.EnablePublicLink', 'FileSettings.EnableFileAttachments', 'FileSettings.EnableMobileUpload']);
 
-    const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-    if (!statusCheck.isActive) {
-        throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Provision this server with --demo-plugin (CI does that for every full-suite server).`);
-    }
+    await Setup.ensureDemoPlugin(siteOneUrl);
     await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
     await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

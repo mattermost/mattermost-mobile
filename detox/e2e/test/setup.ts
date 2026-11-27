@@ -7,6 +7,7 @@ import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {tmpdir} from 'os';
 import path from 'path';
 
+import {apiAdminLoginClearingLockout} from '@support/admin_lockout';
 import {System, User} from '@support/server_api';
 import {drainPoolGuardViolations} from '@support/server_api/pool_guard';
 import {applyServerBaseline} from '@support/server_baseline';
@@ -176,7 +177,7 @@ async function loginAdmin(): Promise<void> {
 
     const MAX_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-        const {error: loginError} = await User.apiAdminLogin(siteOneUrl);
+        const {error: loginError} = await apiAdminLoginClearingLockout(siteOneUrl);
         if (loginError) {
             if (attempt === MAX_ATTEMPTS) {
                 throw new Error(`Admin login failed after ${MAX_ATTEMPTS} attempts: ${JSON.stringify(loginError)}`);

@@ -40,6 +40,8 @@ describe('Calls - DM Call Button', () => {
     let gmChannel: any;
 
     beforeAll(async () => {
+        await Setup.ensureCallsPlugin(siteOneUrl);
+
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
