@@ -22,7 +22,7 @@ module.exports = {
     setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
     collectCoverageFrom: ['app/**/*.{js,jsx,ts,tsx}'],
     coverageReporters: ['lcov', 'text-summary', 'json-summary'],
-    testPathIgnorePatterns: ['/node_modules/', '/detox/'],
+    testPathIgnorePatterns: ['/node_modules/', '/detox/', '/.github/actions/e2e-test-dispatch/'],
     coveragePathIgnorePatterns: ['/node_modules/', '/components/', '/screens/', '/routes/'],
     transformIgnorePatterns: [
         'node_modules/(?!' +
