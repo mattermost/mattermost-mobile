@@ -26,6 +26,21 @@ export const hasThreeDistinctServers = hasSecondServer &&
     Boolean(configuredSiteThreeUrl) &&
     siteThreeUrl !== siteOneUrl &&
     siteThreeUrl !== siteTwoUrl;
+
+export type ListingUser = {username: string; password: string; team: string};
+
+// CI's v2 layout signs in to SITE_2 and SITE_3 as their provisioned listing user, never as admin. Unset, as in a
+// local run or the Matterwick layout, specs create a user there with the admin instead.
+const listingUser = (site: 'SITE_2' | 'SITE_3'): ListingUser | undefined => {
+    const username = process.env[`${site}_USER`];
+    const password = process.env[`${site}_PASSWORD`];
+    if (!username || !password) {
+        return undefined;
+    }
+    return {username, password, team: process.env[`${site}_TEAM`] ?? ''};
+};
+export const siteTwoListingUser = listingUser('SITE_2');
+export const siteThreeListingUser = listingUser('SITE_3');
 export const smtpUrl = process.env.SMTP_URL || 'http://127.0.0.1:9001';
 export const adminEmail = process.env.ADMIN_EMAIL || 'sysadmin@sample.mattermost.com';
 export const adminUsername = process.env.ADMIN_USERNAME || 'sysadmin';

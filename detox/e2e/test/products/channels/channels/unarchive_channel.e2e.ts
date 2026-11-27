@@ -8,7 +8,7 @@
 // *******************************************************************
 
 import {Setup, Team} from '@support/server_api';
-import {serverTwoUrl, siteTwoUrl} from '@support/test_config';
+import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
     ChannelScreen,
@@ -24,17 +24,17 @@ import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from 
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
-    const serverTwoDisplayName = 'Server 2';
+    const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
         // ExperimentalViewArchivedChannels is set by detox/provision at
         // server startup — no runtime admin login or config API call needed.
-        const {user, team} = await Setup.apiInit(siteTwoUrl);
+        const {user, team} = await Setup.apiInit(siteOneUrl);
 
         // Unarchive requires MANAGE_TEAM; channel creators can archive but not unarchive.
-        await Team.apiUpdateTeamMemberSchemeRoles(siteTwoUrl, team.id, user.id, true);
+        await Team.apiUpdateTeamMemberSchemeRoles(siteOneUrl, team.id, user.id, true);
 
-        await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
         await ChannelListScreen.toBeVisible();
     });

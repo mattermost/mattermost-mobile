@@ -7,15 +7,13 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    Setup,
-    User,
-} from '@support/server_api';
+import {Setup} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
     serverTwoUrl,
     siteTwoUrl,
+    siteTwoListingUser,
     hasSecondServer,
 } from '@support/test_config';
 import {Alert} from '@support/ui/component';
@@ -69,11 +67,7 @@ describe('Smoke Test - Server Login', () => {
         await ServerListScreen.toBeVisible();
 
         // # Add a second server and log in to the second server
-        const {error: adminLoginError} = await User.apiAdminLogin(siteTwoUrl);
-        if (adminLoginError) {
-            throw new Error('MM-T4675_2: Site 2 admin login failed');
-        }
-        const {user} = await Setup.apiInit(siteTwoUrl);
+        const user = await Setup.apiSignInUser(siteTwoUrl, siteTwoListingUser);
 
         // tapAddServerButton, not a bare tap: the multi-server tutorial's full-screen
         // backdrop SVG can intercept the hit-test at the button

@@ -1,12 +1,13 @@
 name: Detox Android E2E Tests Template v2
 
 # Detox on e2e-test-stack, dispatched by Test System IO: one run per lane and one
-# worker matrix. Each worker owns its SITE_1 and shares SITE_2 and SITE_3. The
-# Detox configuration decides the specs (begin runs `detox --listTests`); specs
-# tagged @server_mutation dispatch last. Maestro and the Matterwick template are
-# unchanged.
+# worker matrix. Each worker owns its SITE_1; SITE_2 and SITE_3 are two of the
+# first three workers' servers, signed in to as their listing user and never
+# administered. The Detox configuration decides the specs (begin runs
+# `detox --listTests`); specs tagged @server_mutation dispatch last. Maestro and
+# the Matterwick template are unchanged.
 #
-# create and provision are the existing workflows. begin runs after provision,
+# create is the existing workflow and provision its v2. begin runs after provision,
 # because the orchestrator idles a run out while it waits for the first lease.
 # Each worker boots one emulator, then dispatch-run leases specs onto it.
 
@@ -113,7 +114,8 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      # A server per worker, then the shared SITE_2 and SITE_3. Provisioning runs in up to 8 jobs.
+      # A server per worker, and at least 3 so every worker has a SITE_2 and SITE_3 among servers 0-2.
+      # Provisioning runs in up to 8 jobs.
       - name: ci/plan
         id: plan
         env:
@@ -140,8 +142,8 @@ jobs:
             echo "::error::pr_number must be a pull request number, or empty"
             exit 1
           fi
-          if ! grep -rqE '^export function isE2eTestStack\(' detox/provision; then
-            echo "::error::the code under test predates e2e-test-stack provisioning; merge main into it"
+          if ! grep -rqE '^export async function ensureListingUser\(' detox/provision; then
+            echo "::error::the code under test predates the v2 server layout; merge main into it"
             exit 1
           fi
 
@@ -165,7 +167,7 @@ jobs:
             --arg pr "$PR_NUMBER" \
             '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, name:$name, branch:$branch}
               + (if $pr == "" then {} else {gh_pr_number:$pr} end)')
-          count=$((PARALLELISM + 2))
+          count=$((PARALLELISM < 3 ? 3 : PARALLELISM))
           webhook=false
           if find detox/e2e/test -name 'mm_blocks_*.e2e.ts' | grep -q .; then
             webhook=true
@@ -209,10 +211,11 @@ jobs:
     permissions:
       actions: read
       contents: read
-    uses: ./.github/workflows/e2e-test-stack-provision.yml
+    uses: ./.github/workflows/e2e-test-stack-provision-v2.yml
     with:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: ${{ needs.prepare.outputs.slices }}
+      workers: ${{ inputs.parallelism }}
       # A fork's provisioning code does not run with the credentials key.
       commit_sha: ${{ inputs.fork && github.sha || inputs.commit_sha }}
     secrets:
@@ -314,6 +317,7 @@ jobs:
           batch: ${{ inputs.e2e_test_stack_batch }}
           shard: ${{ matrix.worker }}
           credentials-key: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
+          layout: v2
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps

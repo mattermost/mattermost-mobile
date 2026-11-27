@@ -6,6 +6,7 @@ import {ensureCustomProfileAttributeFields} from './custom-profile-attributes';
 import {isE2eTestStack} from './env';
 import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
+import {ensureListingUser} from './listing-user';
 import {logInfo, logWarn} from './log';
 import {assertDemoPluginAbsent, disableStrayPlugins, ensureAgentsPlugin, ensureDemoPluginReady, ensureDemoPluginSettingsEntry, ensurePrepackagedPlugin, installRequiredPlugin} from './plugins';
 import {applyProvisionBaseline, getServerMmVersion, verifyProvisionBaseline} from './server-config';
@@ -24,7 +25,9 @@ async function verifyAgentsSetup(client: MattermostClient, token: string): Promi
     return false;
 }
 
-export async function provisionServer(serverUrl: string, credentials: ProvisionCredentials, {demoPlugin}: {demoPlugin: boolean}): Promise<void> {
+type ProvisionOptions = {demoPlugin: boolean; listingUser?: boolean};
+
+export async function provisionServer(serverUrl: string, credentials: ProvisionCredentials, {demoPlugin, listingUser = false}: ProvisionOptions): Promise<void> {
     const client = createMattermostClient(serverUrl);
     const token = await login(client, credentials);
     const serverMmVersion = await getServerMmVersion(client, token);
@@ -83,6 +86,10 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
 
     if (!await ensureCustomProfileAttributeFields(client, token)) {
         logWarn('Custom profile attribute setup incomplete.');
+    }
+
+    if (listingUser) {
+        await ensureListingUser(client, token, credentials.password);
     }
 
     logInfo('Server provisioning complete.');
