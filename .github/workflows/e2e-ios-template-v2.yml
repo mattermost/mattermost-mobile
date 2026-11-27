@@ -306,8 +306,20 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
+      # A fork run restores caches and never saves them, so its files never reach the branch's shared cache.
       - name: Cache Homebrew packages
+        if: inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /opt/homebrew/Cellar/applesimutils
+          key: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-v1
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-
+
+      - name: Restore Homebrew packages
+        if: inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             ~/Library/Caches/Homebrew
@@ -343,7 +355,16 @@ jobs:
           rm -f mobile-artifacts/*.zip
 
       - name: Cache detox node_modules
+        if: inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
+      - name: Restore detox node_modules
+        if: inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: detox/node_modules
           key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
@@ -358,13 +379,22 @@ jobs:
 
       - name: Cache Detox Framework
         id: detox-framework-cache
+        if: inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/Library/Detox/ios
           key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}
 
+      - name: Restore Detox Framework
+        id: detox-framework-restore
+        if: inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/Library/Detox/ios
+          key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}
+
       - name: Build Detox Framework Cache
-        if: steps.detox-framework-cache.outputs.cache-hit != 'true'
+        if: steps.detox-framework-cache.outputs.cache-hit != 'true' && steps.detox-framework-restore.outputs.cache-hit != 'true'
         run: cd detox && npx detox build-framework-cache
 
       - name: Set .env with RUNNING_E2E=true

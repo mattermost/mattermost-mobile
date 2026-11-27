@@ -324,8 +324,18 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # A fork run restores caches and never saves them, so its files never reach the branch's shared cache.
       - name: Cache detox node_modules
+        if: inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
+      - name: Restore detox node_modules
+        if: inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: detox/node_modules
           key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
@@ -385,13 +395,22 @@ jobs:
 
       - name: Cache Android SDK components
         id: android-sdk-cache
+        if: inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: .android-sdk-cache
           key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
 
+      - name: Restore Android SDK components
+        id: android-sdk-restore
+        if: inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: .android-sdk-cache
+          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
+
       - name: Apply cached Android SDK components
-        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true' || steps.android-sdk-restore.outputs.cache-hit == 'true'
         env:
           API_LEVEL: ${{ inputs.android_api_level }}
         run: |
@@ -413,7 +432,7 @@ jobs:
           fi
 
       - name: Install Android SDK components
-        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true' && steps.android-sdk-restore.outputs.cache-hit != 'true'
         env:
           API_LEVEL: ${{ inputs.android_api_level }}
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
@@ -443,7 +462,20 @@ jobs:
           cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
 
       - name: Cache Android Emulator & AVD
+        if: inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            detox/.android
+            detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v3
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Restore Android Emulator & AVD
+        if: inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             detox/.android

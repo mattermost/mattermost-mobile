@@ -225,10 +225,19 @@ jobs:
         with:
           sign: 'false'
 
-      # Same key as e2e-detox-pr.yml's build-android-apk, so the workflows share the cache.
+      # Same key as e2e-detox-pr.yml's build-android-apk, so the workflows share the cache. A fork build restores it
+      # and never saves it: a save would put the fork's files in the branch's shared cache.
       - name: Cache Gradle dependencies
-        if: env.SKIP_BUILD != 'true'
+        if: env.SKIP_BUILD != 'true' && inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Restore Gradle dependencies
+        if: env.SKIP_BUILD != 'true' && inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: /home/runner/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
