@@ -1,12 +1,13 @@
 ---
 name: E2E Tests - Build
 
-# One app build for e2e-tests-ci.yml, as e2e-detox-pr.yml builds them: its content fingerprint, the S3 build cache,
+# One app build for e2e-test-ci.yml, as e2e-detox-pr.yml builds them: its content fingerprint, the S3 build cache,
 # and the build on a miss. The artifact keeps e2e-detox-pr.yml's name, so the templates download it from this run:
 #   ios              ios-build-simulator-<run id>          the iOS simulator app (detox-ios, detox-ipad, maestro-ios)
 #   android-detox    android-build-files-<run id>          the Android Detox APKs (detox-android)
 #   android-maestro  android-maestro-build-files-<run id>  the Android Maestro APK (maestro-android)
 # The cache scope is pr-<pr_number>, else branch-<ref>: a run by hand reads the main scope but never writes it.
+# Android signs with android/app/debug.keystore.
 
 on:
   workflow_call:
@@ -23,6 +24,10 @@ on:
         description: "The pull request the commit belongs to; empty for none"
         type: string
         default: ""
+      fork:
+        description: "The commit is from a fork. Do not use the shared cache."
+        type: boolean
+        default: false
     secrets:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
         description: "AWS access key for the S3 build cache"
@@ -30,18 +35,6 @@ on:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
         description: "AWS secret key for the S3 build cache"
         required: true
-      MM_MOBILE_INTUNE_DEPLOY_KEY:
-        required: false
-      MM_MOBILE_GITHUB_TOKEN:
-        required: false
-      MM_MOBILE_STORE_FILE:
-        required: false
-      MM_MOBILE_STORE_ALIAS:
-        required: false
-      MM_MOBILE_STORE_PASSWORD:
-        required: false
-      MATTERMOST_BUILD_GH_TOKEN:
-        required: false
 
 permissions:
   contents: read
@@ -126,6 +119,7 @@ jobs:
 
       - name: Check for cached iOS build
         id: cache-check
+        if: inputs.fork != true
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:
@@ -148,7 +142,6 @@ jobs:
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
-          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Set .env with RUNNING_E2E=true
         if: env.SKIP_BUILD != 'true'
@@ -158,7 +151,6 @@ jobs:
         if: env.SKIP_BUILD != 'true'
         env:
           TAG: ${{ inputs.commit_sha }}
-          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
         run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
@@ -173,7 +165,7 @@ jobs:
           overwrite: true
 
       - name: Save iOS build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
+        if: inputs.fork != true && env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:
@@ -209,6 +201,7 @@ jobs:
 
       - name: Check for cached Android Detox build
         id: cache-check
+        if: inputs.fork != true
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:
@@ -229,11 +222,8 @@ jobs:
       - name: Prepare Android Build
         if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
-        env:
-          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
-          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
-          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
-          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+        with:
+          sign: 'false'
 
       # Same key as e2e-detox-pr.yml's build-android-apk, so the workflows share the cache.
       - name: Cache Gradle dependencies
@@ -262,7 +252,7 @@ jobs:
           overwrite: true
 
       - name: Save Android Detox build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
+        if: inputs.fork != true && env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:
@@ -298,6 +288,7 @@ jobs:
 
       - name: Check for cached Android Maestro build
         id: cache-check
+        if: inputs.fork != true
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:
@@ -318,11 +309,8 @@ jobs:
       - name: Prepare Android Build
         if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
-        env:
-          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
-          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
-          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
-          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+        with:
+          sign: 'false'
 
       - name: Build Maestro Android APK
         if: env.SKIP_BUILD != 'true'
@@ -339,7 +327,7 @@ jobs:
           overwrite: true
 
       - name: Save Android Maestro build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
+        if: inputs.fork != true && env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:

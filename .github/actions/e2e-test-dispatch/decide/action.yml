@@ -1,0 +1,136 @@
+---
+name: E2E Tests dispatch decide
+description: >-
+  Decide whether this ci result starts E2E Tests. Compares the pull request's files with the paths document from the
+  workflow. Node 26 must be set up first.
+author: Mattermost
+inputs:
+  event:
+    description: github.event_name
+    required: true
+  enabled:
+    description: true when E2E_TEST_STACK_ENABLED is true
+    required: true
+  dry-run:
+    description: true evaluates the gates and does not dispatch or post statuses
+    required: true
+  dispatch-ref:
+    description: The ref a hand run was started from
+    required: false
+    default: ""
+  commit-sha:
+    description: commit_sha from a hand run
+    required: false
+    default: ""
+  pr-number:
+    description: pr_number from a hand run
+    required: false
+    default: ""
+  lanes:
+    description: lanes from a hand run
+    required: false
+    default: ""
+  account:
+    description: e2e_test_stack_account from a hand run
+    required: false
+    default: ""
+  channel:
+    description: e2e_test_stack_channel from a hand run
+    required: false
+    default: ""
+  server:
+    description: e2e_test_stack_server from a hand run
+    required: false
+    default: ""
+  server-image:
+    description: e2e_test_stack_server_image from a hand run
+    required: false
+    default: ""
+  run-sha:
+    description: The completed ci run's head SHA
+    required: false
+    default: ""
+  run-branch:
+    description: The completed ci run's head branch
+    required: false
+    default: ""
+  run-repo:
+    description: The completed ci run's head repository
+    required: false
+    default: ""
+  run-event:
+    description: The event that started the completed ci run
+    required: false
+    default: ""
+  run-prs:
+    description: JSON list of pull requests on the completed ci run
+    required: false
+    default: ""
+  paths:
+    description: >-
+      The fingerprintShared, fingerprintByPlatform and triggerExtra document. A same-repo pull request whose files miss
+      it is skipped.
+    required: true
+outputs:
+  decision:
+    description: dispatch, skip or refuse
+    value: ${{ steps.decide.outputs.decision }}
+  reason:
+    description: Why that decision was made
+    value: ${{ steps.decide.outputs.reason }}
+  start:
+    description: true when E2E Tests should be dispatched
+    value: ${{ steps.decide.outputs.start }}
+  post:
+    description: true when the required e2e-test/* statuses should be posted
+    value: ${{ steps.decide.outputs.post }}
+  ref:
+    description: The ref to dispatch onto
+    value: ${{ steps.decide.outputs.ref }}
+  sha:
+    description: The commit under test
+    value: ${{ steps.decide.outputs.sha }}
+  pr:
+    description: The pull request, or empty
+    value: ${{ steps.decide.outputs.pr }}
+  lanes:
+    description: Comma-separated lanes to run
+    value: ${{ steps.decide.outputs.lanes }}
+  account:
+    description: prod or dev
+    value: ${{ steps.decide.outputs.account }}
+  channel:
+    description: v1 or edge
+    value: ${{ steps.decide.outputs.channel }}
+  server:
+    description: master, latest or esr
+    value: ${{ steps.decide.outputs.server }}
+  server-image:
+    description: A server image tag, or empty
+    value: ${{ steps.decide.outputs.server-image }}
+runs:
+  using: composite
+  steps:
+    - id: decide
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+        EVENT: ${{ inputs.event }}
+        ENABLED: ${{ inputs.enabled }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        DISPATCH_REF: ${{ inputs.dispatch-ref }}
+        INPUT_SHA: ${{ inputs.commit-sha }}
+        INPUT_PR: ${{ inputs.pr-number }}
+        INPUT_LANES: ${{ inputs.lanes }}
+        INPUT_ACCOUNT: ${{ inputs.account }}
+        INPUT_CHANNEL: ${{ inputs.channel }}
+        INPUT_SERVER: ${{ inputs.server }}
+        INPUT_IMAGE: ${{ inputs.server-image }}
+        RUN_SHA: ${{ inputs.run-sha }}
+        RUN_BRANCH: ${{ inputs.run-branch }}
+        RUN_REPO: ${{ inputs.run-repo }}
+        RUN_EVENT: ${{ inputs.run-event }}
+        RUN_PRS: ${{ inputs.run-prs }}
+        PATHS: ${{ inputs.paths }}
+      run: bash "${{ github.action_path }}/../run.sh" decide

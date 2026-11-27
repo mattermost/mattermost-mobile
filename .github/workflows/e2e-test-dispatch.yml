@@ -1,0 +1,224 @@
+---
+# Starts E2E Tests after ci, on e2e-test-stack, from main or a release-<major>.<minor> branch.
+#
+#   workflow_run   ci completed. A same-repo run starts only when vars.E2E_TEST_STACK_ENABLED is
+#                  true. Unset, Matterwick's pipeline is unchanged.
+#   workflow_dispatch  the same gates, by hand, whether or not the variable is set. A hand run
+#                  dispatches E2E Tests, which posts e2e-test-stack/<lane>. It writes the required
+#                  e2e-test/* contexts only when the variable is true and the gates skip the run.
+#
+# Gate 1: ci succeeded for this commit. A run whose pull request has since moved on is skipped.
+# Gate 2: a same-repo pull request into main or release-<major>.<minor> whose files match the path
+# list in this workflow, and which has no E2E/Override label. A push to those branches is always run.
+# A fork pull request is refused: the lanes run the existing templates, which are not fork-safe.
+#
+# The job checks out the workflow's own commit, sparse to .github/actions/e2e-test-dispatch, and runs
+# no pull-request code. It does not assume the CI role.
+name: E2E Tests Dispatch
+
+on:
+  workflow_run:
+    workflows: ["ci"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "The commit to test, a full 40-character SHA"
+        required: true
+        type: string
+      pr_number:
+        description: "The pull request the commit belongs to, if any. Empty tests the commit on this ref."
+        required: false
+        type: string
+        default: ""
+      lanes:
+        description: "Comma-separated lanes: detox-ios, detox-ipad, detox-android, maestro-ios, maestro-android"
+        required: false
+        type: string
+        default: "detox-ios,detox-ipad,detox-android,maestro-ios,maestro-android"
+      e2e_test_stack_account:
+        description: "The AWS account of the e2e-test-stack control plane"
+        required: false
+        type: choice
+        options: ["prod", "dev"]
+        default: "prod"
+      e2e_test_stack_channel:
+        description: "The control plane channel"
+        required: false
+        type: choice
+        options: ["v1", "edge"]
+        default: "v1"
+      e2e_test_stack_server:
+        description: "The server under test: master, latest or esr"
+        required: false
+        type: choice
+        options: ["master", "latest", "esr"]
+        default: "master"
+      e2e_test_stack_server_image:
+        description: "A server image tag that replaces e2e_test_stack_server, from mattermost/ or mattermostdevelopment/ mattermost-enterprise-edition or mattermost-enterprise-fips-edition"
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "Evaluate the gates and do not dispatch or post statuses"
+        required: false
+        type: boolean
+        default: false
+
+permissions: {}
+
+# One decision at a time per commit. The E2E Tests run cancels an older run for the same pull request.
+concurrency:
+  group: e2e-test-dispatch-${{ github.event_name == 'workflow_dispatch' && inputs.commit_sha || github.event.workflow_run.head_sha || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Gate
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && vars.E2E_TEST_STACK_ENABLED == 'true')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
+      statuses: write
+    outputs:
+      decision: ${{ steps.decide.outputs.decision }}
+      reason: ${{ steps.decide.outputs.reason }}
+      ref: ${{ steps.decide.outputs.ref }}
+      sha: ${{ steps.decide.outputs.sha }}
+      pr: ${{ steps.decide.outputs.pr }}
+      lanes: ${{ steps.decide.outputs.lanes }}
+      account: ${{ steps.decide.outputs.account }}
+      channel: ${{ steps.decide.outputs.channel }}
+      server: ${{ steps.decide.outputs.server }}
+      server-image: ${{ steps.decide.outputs.server-image }}
+    steps:
+      - name: e2e-dispatch/checkout-action
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          sparse-checkout: .github/actions/e2e-test-dispatch
+
+      - name: e2e-dispatch/setup-node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+
+      - name: e2e-dispatch/decide
+        id: decide
+        uses: ./.github/actions/e2e-test-dispatch/decide
+        with:
+          event: ${{ github.event_name }}
+          enabled: ${{ vars.E2E_TEST_STACK_ENABLED == 'true' && 'true' || 'false' }}
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+          dispatch-ref: ${{ github.ref_name }}
+          commit-sha: ${{ inputs.commit_sha }}
+          pr-number: ${{ inputs.pr_number }}
+          lanes: ${{ inputs.lanes }}
+          account: ${{ inputs.e2e_test_stack_account }}
+          channel: ${{ inputs.e2e_test_stack_channel }}
+          server: ${{ inputs.e2e_test_stack_server }}
+          server-image: ${{ inputs.e2e_test_stack_server_image }}
+          run-sha: ${{ github.event.workflow_run.head_sha }}
+          run-branch: ${{ github.event.workflow_run.head_branch }}
+          run-repo: ${{ github.event.workflow_run.head_repository.full_name }}
+          run-event: ${{ github.event.workflow_run.event }}
+          run-prs: ${{ toJSON(github.event.workflow_run.pull_requests) }}
+          paths: |
+            {
+              "fingerprintShared": [
+                "app/",
+                "libraries/",
+                "share_extension/",
+                "patches/",
+                "types/",
+                "assets/fonts/",
+                "assets/sounds/",
+                "assets/base/",
+                "assets/override/",
+                "scripts/",
+                "package.json",
+                "package-lock.json",
+                "tsconfig.json",
+                "babel.config.js",
+                "metro.config.js",
+                "index.tsx",
+                "app.json",
+                "react-native.config.js",
+                ".nvmrc",
+                ".ruby-version",
+                ".github/actions/prepare-mobile-build/",
+                ".github/actions/prepare-node-deps/"
+              ],
+              "fingerprintByPlatform": {
+                "ios": [
+                  "ios/",
+                  "fastlane/",
+                  "Gemfile",
+                  "Gemfile.lock",
+                  ".github/actions/prepare-ios-build/"
+                ],
+                "android-detox": [
+                  "android/",
+                  "detox/.detoxrc.json",
+                  "detox/package.json",
+                  "detox/package-lock.json",
+                  "detox/scripts/",
+                  ".github/actions/prepare-android-build/"
+                ],
+                "android-maestro": [
+                  "android/",
+                  ".github/actions/prepare-android-build/",
+                  ".github/actions/build-android-maestro-apk/"
+                ]
+              },
+              "triggerExtra": [
+                "detox/e2e/**",
+                "detox/maestro/**",
+                "detox/utils/**",
+                "detox/provision/**",
+                "detox/shared/**",
+                "detox/tsconfig.json",
+                "detox/webhook_server.js",
+                "detox/create_android_emulator.sh",
+                ".github/workflows/e2e-*.yml",
+                ".github/actions/compute-e2e-build-fingerprint/**",
+                ".github/actions/s3-build-cache/**",
+                ".github/actions/s3-spec-durations/**",
+                ".github/actions/generate-specs/**",
+                ".github/actions/provision-e2e-servers/**",
+                ".github/actions/e2e-test-stack-sites/**",
+                ".github/actions/e2e-test-dispatch/**",
+                ".github/actions/prepare-low-bandwidth/**",
+                ".github/actions/bandwidth-throttling/**",
+                ".github/actions/start-proxy/**"
+              ]
+            }
+
+      - name: e2e-dispatch/start
+        if: steps.decide.outputs.start == 'true'
+        uses: ./.github/actions/e2e-test-dispatch/start
+        with:
+          ref: ${{ steps.decide.outputs.ref }}
+          sha: ${{ steps.decide.outputs.sha }}
+          pr: ${{ steps.decide.outputs.pr }}
+          lanes: ${{ steps.decide.outputs.lanes }}
+          account: ${{ steps.decide.outputs.account }}
+          channel: ${{ steps.decide.outputs.channel }}
+          server: ${{ steps.decide.outputs.server }}
+          server-image: ${{ steps.decide.outputs.server-image }}
+
+      # Required contexts, and only when the variable is on and this run is a skip.
+      # A hand run with the variable unset leaves e2e-test/* to Matterwick.
+      - name: e2e-dispatch/skip-statuses
+        if: steps.decide.outputs.post == 'true' && vars.E2E_TEST_STACK_ENABLED == 'true'
+        uses: ./.github/actions/e2e-test-dispatch/statuses
+        with:
+          sha: ${{ steps.decide.outputs.sha }}
+          pr: ${{ steps.decide.outputs.pr }}
+          reason: ${{ steps.decide.outputs.reason }}

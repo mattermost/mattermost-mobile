@@ -2,16 +2,16 @@
 # Mobile E2E by hand, on e2e-test-stack servers, for any of the five lanes. Run it from main or a
 # release-<major>.<minor> branch, the refs the e2e-test-stack CI role trusts, with the commit to test.
 #
-#   setup    validates the inputs, names each lane's batch, posts pending e2e-test-stack/<lane> statuses
+#   setup    validates the inputs, names each lane's batch and posts pending e2e-test-stack/<lane> statuses
 #   build-*  the app builds the chosen lanes need, from the S3 build cache or built
-#   lanes    each creates and provisions its own batch, runs and reports to TSIO:
+#   lanes    each creates and provisions its own batch and runs:
 #              detox-ios        e2e-ios-template.yml      dt-ios-<type>
 #              detox-ipad       e2e-ios-template.yml      dt-ipad-<type>
 #              detox-android    e2e-android-template.yml  dt-andr-<type>
 #              maestro-ios      e2e-maestro-template.yml  ms-ios-<type>
 #              maestro-android  e2e-maestro-template.yml  ms-andr-<type>
 #            <type> is pr with pr_number, else main on main and rel on a release branch.
-#   results  settles any status a lane left pending and picks the batches to destroy
+#   results  posts each lane's e2e-test-stack/<lane> status and picks the batches to destroy
 #   destroy  collects each picked batch's logs and destroys it
 #   cancel   calls e2e-test-stack-destroy.yml, already running during the lanes. That file is what the
 #            CI role trusts, so a cancel can still destroy batches.
@@ -22,8 +22,9 @@
 # A passed lane's batch is destroyed. So is every lane's batch when the run is cancelled. A failed or timed-out lane
 # of a run that was not cancelled is kept, so "Re-run failed jobs" uses the same servers. The batch's TTL (4h from
 # create) bounds that, including time queued for a macOS runner, and is the backstop when destroy does not run.
-# After it, only "Re-run all jobs" creates a new batch. The run posts no triage verdict and no channel message; its
-# statuses are not the required e2e-test/* contexts.
+# After it, only "Re-run all jobs" creates a new batch. Each chosen lane's result is posted as e2e-test-stack/<lane>,
+# which is not a required e2e-test/* context. The run does not report to TSIO, post a triage verdict or send a
+# channel message.
 name: E2E Tests
 
 on:
@@ -34,7 +35,7 @@ on:
         required: true
         type: string
       pr_number:
-        description: "The pull request the commit belongs to, if any: its TSIO report, cache scope and batch type"
+        description: "The pull request the commit belongs to, if any: its cache scope and batch type"
         required: false
         type: string
         default: ""
@@ -72,7 +73,7 @@ permissions: {}
 # Per pull request, or per ref when pr_number is empty. The ref- prefix keeps a branch name from matching a pr- group.
 # A newer run cancels the one in progress.
 concurrency:
-  group: e2e-tests-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || format('ref-{0}', github.ref_name) }}
+  group: e2e-test-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || format('ref-{0}', github.ref_name) }}
   cancel-in-progress: true
 
 jobs:
@@ -99,7 +100,7 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write
-    uses: ./.github/workflows/e2e-tests-setup.yml
+    uses: ./.github/workflows/e2e-test-setup.yml
     with:
       commit_sha: ${{ inputs.commit_sha }}
       pr_number: ${{ inputs.pr_number }}
@@ -115,16 +116,15 @@ jobs:
     if: needs.setup.outputs.build-ios == 'true'
     permissions:
       contents: read
-    uses: ./.github/workflows/e2e-tests-build.yml
+    uses: ./.github/workflows/e2e-test-build.yml
     with:
       target: ios
       commit_sha: ${{ needs.setup.outputs.commit-sha }}
       pr_number: ${{ inputs.pr_number }}
+      fork: ${{ needs.setup.outputs.fork == 'true' }}
     secrets:
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-      MM_MOBILE_INTUNE_DEPLOY_KEY: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
-      MM_MOBILE_GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
   build-android-detox:
     name: Build Android Detox APKs
@@ -132,18 +132,15 @@ jobs:
     if: needs.setup.outputs.build-android-detox == 'true'
     permissions:
       contents: read
-    uses: ./.github/workflows/e2e-tests-build.yml
+    uses: ./.github/workflows/e2e-test-build.yml
     with:
       target: android-detox
       commit_sha: ${{ needs.setup.outputs.commit-sha }}
       pr_number: ${{ inputs.pr_number }}
+      fork: ${{ needs.setup.outputs.fork == 'true' }}
     secrets:
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-      MM_MOBILE_STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
-      MM_MOBILE_STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
-      MM_MOBILE_STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
-      MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
   build-android-maestro:
     name: Build Android Maestro APK
@@ -151,22 +148,21 @@ jobs:
     if: needs.setup.outputs.build-android-maestro == 'true'
     permissions:
       contents: read
-    uses: ./.github/workflows/e2e-tests-build.yml
+    uses: ./.github/workflows/e2e-test-build.yml
     with:
       target: android-maestro
       commit_sha: ${{ needs.setup.outputs.commit-sha }}
       pr_number: ${{ inputs.pr_number }}
+      fork: ${{ needs.setup.outputs.fork == 'true' }}
     secrets:
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-      MM_MOBILE_STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
-      MM_MOBILE_STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
-      MM_MOBILE_STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
-      MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
-  # The lanes run with run-type NONE: no triage announcement, no spec durations, no Zephyr and no channel message.
-  # They get no AWS keys, so no S3 report: each reports to TSIO and posts its e2e-test-stack/<lane> status. They get
-  # no admin secrets either: each batch has its own admin, which the lane reads from the batch.
+  # The lanes run with run-type NONE and no tsio-config: no TSIO report, no triage announcement, no spec durations,
+  # no Zephyr and no channel message. Results posts e2e-test-stack/<lane> from each lane's result.
+  # statuses and issues are what the existing templates declare. Those templates run the commit under test with
+  # them, so setup refuses a fork pull request. The lanes get no AWS keys, so no S3 report. They get no admin
+  # secrets either: each batch has its own admin, which the lane reads from the batch.
   detox-ios:
     name: Detox iOS
     needs: [setup, build-ios]
@@ -182,8 +178,6 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: NONE
-      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-ios']) }}
-      tsio-shard-name: detox-ios
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       e2e_test_stack: true
@@ -210,8 +204,6 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: NONE
-      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-ipad']) }}
-      tsio-shard-name: detox-ipad
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       ios_device_name: "iPad Pro 13-inch (M5)"
@@ -243,8 +235,6 @@ jobs:
     with:
       run-android-tests: true
       run-type: NONE
-      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['detox-android']) }}
-      tsio-shard-name: detox-android
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       e2e_test_stack: true
@@ -271,8 +261,6 @@ jobs:
     with:
       platform: ios
       run-type: NONE
-      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['maestro-ios-e2e']) }}
-      tsio-shard-name: maestro-ios-e2e
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       e2e_test_stack: true
@@ -299,8 +287,6 @@ jobs:
     with:
       platform: android
       run-type: NONE
-      tsio-config: ${{ toJSON(fromJSON(needs.setup.outputs.job-configs)['maestro-android-e2e']) }}
-      tsio-shard-name: maestro-android-e2e
       MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
       artifact_run_id: ${{ github.run_id }}
       e2e_test_stack: true
@@ -334,9 +320,7 @@ jobs:
 
   # Each chosen lane's batch is destroyed when the lane passed. A failed or timed-out lane is kept until its TTL
   # for "Re-run failed jobs", which runs this job again with the re-run's results; a skipped lane created none.
-  # A cancelled run is destroyed by the cancel job, which is already running. A chosen lane's status still pending
-  # from this run (a lane skipped after a failed build, one whose servers failed, or one stopped before its report)
-  # is set to error.
+  # A cancelled run is destroyed by the cancel job, which is already running.
   results:
     name: Results
     needs: [setup, detox-ios, detox-ipad, detox-android, maestro-ios, maestro-android]
@@ -377,30 +361,47 @@ jobs:
           echo "destroy=${destroy}" >> "$GITHUB_OUTPUT"
 
       # A failure here never keeps a batch up: destroy reads only the pick step's output.
-      - name: e2e-tests/settle-statuses
+      - name: e2e-tests/statuses
         if: always()
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           LANES: ${{ needs.setup.outputs.lanes }}
+          RESULTS: >-
+            {"detox-ios": "${{ needs.detox-ios.result }}", "detox-ipad": "${{ needs.detox-ipad.result }}",
+            "detox-android": "${{ needs.detox-android.result }}", "maestro-ios": "${{ needs.maestro-ios.result }}",
+            "maestro-android": "${{ needs.maestro-android.result }}"}
           COMMIT_SHA: ${{ needs.setup.outputs.commit-sha }}
           REPO: ${{ github.repository }}
           TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          statuses=$(gh api --paginate "repos/${REPO}/commits/${COMMIT_SHA}/status?per_page=100" --jq '.statuses[]' | jq -s -c '.')
           for lane in $(jq -r '.[]' <<< "$LANES"); do
-            context="e2e-test-stack/${lane}"
-            state=$(jq -r --arg c "$context" --arg u "$TARGET_URL" \
-              '[.[] | select(.context == $c and .target_url == $u)][0].state // ""' <<< "$statuses")
-            if [ "$state" = pending ]; then
-              gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
-                -f state=error \
-                -f context="$context" \
-                -f description="Mobile E2E on e2e-test-stack: no report; a build, the servers or provisioning failed, or it stopped" \
-                -f target_url="$TARGET_URL" > /dev/null
-              echo "${context}: pending, set to error"
-            fi
+            result=$(jq -r --arg l "$lane" '.[$l]' <<< "$RESULTS")
+            case "$result" in
+              success)
+                state=success
+                description="Mobile E2E on e2e-test-stack (${lane}): passed"
+                ;;
+              failure)
+                state=failure
+                description="Mobile E2E on e2e-test-stack (${lane}): failed"
+                ;;
+              cancelled)
+                state=error
+                description="Mobile E2E on e2e-test-stack (${lane}): cancelled"
+                ;;
+              *)
+                state=error
+                description="Mobile E2E on e2e-test-stack (${lane}): did not run"
+                ;;
+            esac
+            gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+              -f state="$state" \
+              -f context="e2e-test-stack/${lane}" \
+              -f description="$description" \
+              -f target_url="$TARGET_URL" > /dev/null
+            echo "e2e-test-stack/${lane}: ${state}"
           done
 
   destroy:
