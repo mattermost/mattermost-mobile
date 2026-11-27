@@ -253,6 +253,9 @@ jobs:
                   core.setFailed(`fork pull request #${pr.number} head is ${pr.head?.sha}, not ${sha}`);
                   return;
                 }
+                // The lanes run the existing templates, which give the commit under test statuses: write.
+                core.setFailed(`fork pull request #${pr.number}: E2E Tests do not run a fork pull request`);
+                return;
               }
               core.setOutput('fork', fork ? 'true' : 'false');
               core.setOutput('branch', pr.head.ref);

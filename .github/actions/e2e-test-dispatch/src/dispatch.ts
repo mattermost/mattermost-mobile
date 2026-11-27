@@ -176,6 +176,15 @@ export async function decide(env: Env, gh: Gh, io: Io): Promise<void> {
         ref = base;
         changedFiles = pull.changed_files == null ? "" : String(pull.changed_files);
     }
+    if (fork)
+        return finish(
+            io,
+            event,
+            dryRun,
+            "refuse",
+            `pull request ${pr} is from a fork; E2E Tests do not run a fork pull request`,
+            hand,
+        );
 
     if (hand) {
         const body = (await gh.json(
@@ -191,9 +200,7 @@ export async function decide(env: Env, gh: Gh, io: Io): Promise<void> {
 
     let decision: "dispatch" | "skip" = "dispatch";
     let reason: string;
-    if (fork) {
-        reason = `pull request ${pr} is from a fork`;
-    } else if (pr) {
+    if (pr) {
         const filtered = await filterPullRequest(gh, repo, pr, envValue(env, "PATHS"), changedFiles);
         decision = filtered.decision;
         reason = filtered.reason;

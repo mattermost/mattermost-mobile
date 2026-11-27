@@ -81,7 +81,7 @@ test("a hand run with a bad sha is refused and fails the job", async () => {
     assert.deepEqual(out.notices, []);
 });
 
-test("a fork pull request is dispatched and skips the path filter", async () => {
+test("a fork pull request is refused without failing the run", async () => {
     const out = io();
     const pull = {
         number: 9,
@@ -93,25 +93,29 @@ test("a fork pull request is dispatched and skips the path filter", async () => 
     const gh = client({
         json: (path) => (path.includes("/commits/") ? [pull] : pull),
     });
-    await decide(
-        {
-            EVENT: "workflow_run",
-            DRY_RUN: "false",
-            ENABLED: "false",
-            REPO: "mattermost/mattermost-mobile",
-            RUN_SHA: SHA,
-            RUN_BRANCH: "fork-branch",
-            RUN_REPO: "someone/mattermost-mobile",
-            RUN_EVENT: "pull_request",
-            RUN_PRS: JSON.stringify([{ number: 9, head: { sha: SHA, ref: "fork-branch" } }]),
-        },
-        gh,
-        out,
+    await assert.rejects(
+        () =>
+            decide(
+                {
+                    EVENT: "workflow_run",
+                    DRY_RUN: "false",
+                    ENABLED: "false",
+                    REPO: "mattermost/mattermost-mobile",
+                    RUN_SHA: SHA,
+                    RUN_BRANCH: "fork-branch",
+                    RUN_REPO: "someone/mattermost-mobile",
+                    RUN_EVENT: "pull_request",
+                    RUN_PRS: JSON.stringify([{ number: 9, head: { sha: SHA, ref: "fork-branch" } }]),
+                },
+                gh,
+                out,
+            ),
+        (e: unknown) => e instanceof Halt && e.code === 0,
     );
-    assert.equal(out.outputs.decision, "dispatch");
-    assert.equal(out.outputs.pr, "9");
-    assert.equal(out.outputs.start, "true");
+    assert.equal(out.outputs.decision, "refuse");
+    assert.equal(out.outputs.start, undefined);
     assert.match(out.outputs.reason, /from a fork/);
+    assert.deepEqual(out.errors, []);
 });
 
 test("E2E/Override skips and asks for the required statuses only when the variable is on", async () => {

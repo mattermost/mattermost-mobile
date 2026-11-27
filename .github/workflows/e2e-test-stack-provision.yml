@@ -22,10 +22,6 @@ on:
         description: "The commit whose provisioning code runs, as a full SHA"
         type: string
         required: true
-      fork:
-        description: "Checkout this workflow's commit instead of commit_sha. The fork's scripts do not run here."
-        type: boolean
-        default: false
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY:
         description: "The repository's credentials key, which opens the batch's sealed server credentials"
@@ -60,7 +56,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.fork && github.sha || inputs.commit_sha }}
+          ref: ${{ inputs.commit_sha }}
           sparse-checkout: |
             detox
             .github/actions/provision-e2e-servers

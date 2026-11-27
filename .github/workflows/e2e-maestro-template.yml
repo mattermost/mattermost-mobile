@@ -60,10 +60,6 @@ on:
         description: "Run on a one-server e2e-test-stack batch instead of the MM_TEST_SERVER_URL server"
         type: boolean
         default: false
-      fork:
-        description: "The commit under test is from a fork. Provisioning uses this workflow's commit."
-        type: boolean
-        default: false
       e2e_test_stack_account:
         description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
         type: string
@@ -107,7 +103,7 @@ on:
         required: false
     outputs:
       STATUS:
-        value: ${{ jobs.e2e-maestro-status.outputs.TSIO_FAILED == 'true' && 'failure' || jobs.e2e-maestro-ios.outputs.STATUS || jobs.e2e-maestro-android.outputs.STATUS }}
+        value: ${{ jobs.e2e-maestro-ios.outputs.STATUS || jobs.e2e-maestro-android.outputs.STATUS }}
       TARGET_URL:
         value: ${{ jobs.e2e-maestro-ios.outputs.TARGET_URL || jobs.e2e-maestro-android.outputs.TARGET_URL }}
       FAILURES:
@@ -123,8 +119,8 @@ on:
       CANCELLED:
         value: ${{ jobs.e2e-maestro-ios.outputs.CANCELLED || jobs.e2e-maestro-android.outputs.CANCELLED }}
 
-# Least-privilege token. The test shards do not post statuses. e2e-maestro-status
-# does, from this workflow's commit, after the shard finishes.
+# Least-privilege token: maestro jobs only check out code and talk to the test
+# server / AWS via dedicated secrets — they never use GITHUB_TOKEN for writes.
 # actions: read is required to download build artifacts from the parent workflow run.
 permissions:
   contents: read
@@ -228,7 +224,6 @@ jobs:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: '["0"]'
       commit_sha: ${{ needs.e2e-test-stack-check.outputs.commit-sha }}
-      fork: ${{ inputs.fork }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -241,11 +236,6 @@ jobs:
       !cancelled() && (inputs.platform == 'ios' || inputs.platform == '') &&
       (!inputs.e2e_test_stack || needs.e2e-test-stack-provision.result == 'success')
     runs-on: macos-26
-    # The shard runs the commit under test. The status is posted by e2e-maestro-status.
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
     timeout-minutes: 90
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -840,6 +830,70 @@ jobs:
           json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts-tsio
 
+      # Resolved here rather than inside tsio-report-status.js so the GitHub API
+      # call stays in the Actions layer and the reporter acts on its inputs.
+      - name: Check E2E/Override on the PR
+        id: e2e-override
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        uses: ./.github/actions/e2e-override-label
+        with:
+          # A trial e2e-test-stack/<lane> status is never overridden: it gates nothing.
+          pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
+
+      - name: Post per-job TSIO commit status
+        id: tsio-status
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
+          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          JOB_STATUS: ${{ job.status }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
+          # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
+          # says triage is coming instead of looking final.
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce' && steps.e2e-override.outputs.triage_report_only == 'false' }}
+          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          set +e
+          UPSTREAM="true"
+          CANCELLED="false"
+          if [ "$JOB_STATUS" = "cancelled" ]; then
+            UPSTREAM="false"
+            CANCELLED="true"
+          elif [ "$JOB_STATUS" != "success" ] ||
+               [ "${NO_REPORT:-}" = "true" ] ||
+               [ "${FAILURES:-0}" = "-1" ] ||
+               [ "${FAILURES:-0}" -gt 0 ] ||
+               [ "${ERRORS:-0}" -gt 0 ] ||
+               [ "${TOTAL:-0}" -eq 0 ]; then
+            UPSTREAM="false"
+          fi
+          IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-ios"')
+          TOTAL_REPORTS=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
+          node detox/utils/tsio-report-status.js \
+            --composite-identity="$IDENTITY" \
+            --total-reports-expected="$TOTAL_REPORTS" \
+            --github-token="$GITHUB_TOKEN" \
+            --context="$CONTEXT" \
+            --upstream-succeeded="$UPSTREAM" \
+            --cancelled="$CANCELLED" \
+            --e2e-override="$E2E_OVERRIDE" \
+            --announce-triage="$ANNOUNCE_TRIAGE" \
+            --poll-attempts=24
+          RC=$?
+          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
+          if [ "$RC" -ne 0 ] && [ "$CANCELLED" != "true" ]; then
+            echo "::error::TSIO reported test failures or timed out for $CONTEXT"
+            exit 1
+          fi
+          exit 0
+
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
         run: npm run e2e:save-maestro-zephyr -- ../build/maestro-report.xml
@@ -906,10 +960,11 @@ jobs:
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
+          TSIO_STATUS_OUTCOME: ${{ steps.tsio-status.outcome }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" || "${TSIO_STATUS_OUTCOME:-}" == "failure" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
@@ -941,11 +996,6 @@ jobs:
       !cancelled() && inputs.platform == 'android' &&
       (!inputs.e2e_test_stack || needs.e2e-test-stack-provision.result == 'success')
     runs-on: ubuntu-latest-8-cores
-    # The shard runs the commit under test. The status is posted by e2e-maestro-status.
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
     timeout-minutes: 90
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -1613,6 +1663,70 @@ jobs:
           json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts-tsio
 
+      # Resolved here rather than inside tsio-report-status.js so the GitHub API
+      # call stays in the Actions layer and the reporter acts on its inputs.
+      - name: Check E2E/Override on the PR
+        id: e2e-override
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        uses: ./.github/actions/e2e-override-label
+        with:
+          # A trial e2e-test-stack/<lane> status is never overridden: it gates nothing.
+          pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
+
+      - name: Post per-job TSIO commit status
+        id: tsio-status
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
+          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          JOB_STATUS: ${{ job.status }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
+          # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
+          # says triage is coming instead of looking final.
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce' && steps.e2e-override.outputs.triage_report_only == 'false' }}
+          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          set +e
+          UPSTREAM="true"
+          CANCELLED="false"
+          if [ "$JOB_STATUS" = "cancelled" ]; then
+            UPSTREAM="false"
+            CANCELLED="true"
+          elif [ "$JOB_STATUS" != "success" ] ||
+               [ "${NO_REPORT:-}" = "true" ] ||
+               [ "${FAILURES:-0}" = "-1" ] ||
+               [ "${FAILURES:-0}" -gt 0 ] ||
+               [ "${ERRORS:-0}" -gt 0 ] ||
+               [ "${TOTAL:-0}" -eq 0 ]; then
+            UPSTREAM="false"
+          fi
+          IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-android"')
+          TOTAL_REPORTS=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
+          node detox/utils/tsio-report-status.js \
+            --composite-identity="$IDENTITY" \
+            --total-reports-expected="$TOTAL_REPORTS" \
+            --github-token="$GITHUB_TOKEN" \
+            --context="$CONTEXT" \
+            --upstream-succeeded="$UPSTREAM" \
+            --cancelled="$CANCELLED" \
+            --e2e-override="$E2E_OVERRIDE" \
+            --announce-triage="$ANNOUNCE_TRIAGE" \
+            --poll-attempts=24
+          RC=$?
+          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
+          if [ "$RC" -ne 0 ] && [ "$CANCELLED" != "true" ]; then
+            echo "::error::TSIO reported test failures or timed out for $CONTEXT"
+            exit 1
+          fi
+          exit 0
+
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
         run: npm run e2e:save-maestro-zephyr -- ../build/maestro-report.xml
@@ -1677,10 +1791,11 @@ jobs:
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
+          TSIO_STATUS_OUTCOME: ${{ steps.tsio-status.outcome }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" || "${TSIO_STATUS_OUTCOME:-}" == "failure" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
@@ -1702,92 +1817,3 @@ jobs:
         run: |
           echo "::error::Maestro reported test failures (STATUS=${STATUS}, FAILURES=${FAILURES})"
           exit 1
-
-  # Posts the lane status from this workflow's commit. The shard checks out the
-  # commit under test, so it does not hold statuses: write. id-token lets
-  # tsio-report-status.js read the report group. This job does not run fork code.
-  e2e-maestro-status:
-    name: Maestro status
-    needs: [e2e-maestro-ios, e2e-maestro-android]
-    if: always() && inputs.tsio-config != '' && (needs.e2e-maestro-ios.result != 'skipped' || needs.e2e-maestro-android.result != 'skipped')
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    outputs:
-      TSIO_FAILED: ${{ steps.tsio-status.outputs.failed }}
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-      issues: read
-      statuses: write
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
-          ref: ${{ github.sha }}
-
-      - name: Resolve per-job TSIO config
-        if: inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
-        id: tsio-cfg
-        env:
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
-        run: |
-          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
-          {
-            echo "config<<EOF"
-            echo "$CFG"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Check E2E/Override on the PR
-        id: e2e-override
-        if: inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
-        uses: ./.github/actions/e2e-override-label
-        with:
-          pr_number: ${{ !startsWith(fromJSON(steps.tsio-cfg.outputs.config).status_context, 'e2e-test-stack/') && fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number || '' }}
-
-      - name: Post per-job TSIO commit status
-        id: tsio-status
-        if: inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
-          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
-          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && (vars.E2E_TRIAGE_MODE || 'enforce') == 'enforce' && steps.e2e-override.outputs.triage_report_only == 'false' }}
-          CANCELLED: ${{ needs.e2e-maestro-ios.result == 'cancelled' || needs.e2e-maestro-android.result == 'cancelled' }}
-          SHARD_RESULT: ${{ needs.e2e-maestro-ios.result != 'skipped' && needs.e2e-maestro-ios.result || needs.e2e-maestro-android.result }}
-          SHARD_STATUS: ${{ needs.e2e-maestro-ios.outputs.STATUS || needs.e2e-maestro-android.outputs.STATUS }}
-          DEFAULT_CONTEXT: ${{ needs.e2e-maestro-android.result != 'skipped' && 'e2e-test/maestro-android' || 'e2e-test/maestro-ios' }}
-          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
-        run: |
-          set +e
-          if [ "$CANCELLED" = "true" ] || [ "$SHARD_RESULT" != "success" ] || [ "$SHARD_STATUS" != "success" ]; then
-            UPSTREAM="false"
-          else
-            UPSTREAM="true"
-          fi
-          IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r --arg fallback "$DEFAULT_CONTEXT" '.status_context // $fallback')
-          TOTAL_REPORTS=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
-          node detox/utils/tsio-report-status.js \
-            --composite-identity="$IDENTITY" \
-            --total-reports-expected="$TOTAL_REPORTS" \
-            --github-token="$GITHUB_TOKEN" \
-            --context="$CONTEXT" \
-            --upstream-succeeded="$UPSTREAM" \
-            --cancelled="$CANCELLED" \
-            --e2e-override="$E2E_OVERRIDE" \
-            --announce-triage="$ANNOUNCE_TRIAGE" \
-            --poll-attempts=24
-          RC=$?
-          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
-          if [ "$RC" -ne 0 ] && [ "$CANCELLED" != "true" ]; then
-            echo "failed=true" >> "$GITHUB_OUTPUT"
-            echo "::error::TSIO reported test failures or timed out for $CONTEXT"
-            exit 1
-          fi
-          exit 0

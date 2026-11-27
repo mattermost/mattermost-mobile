@@ -38,10 +38,6 @@ on:
         description: "Run on e2e-test-stack servers (one batch for this platform: a server per shard, then the shared SITE_2 and SITE_3) instead of the MM_TEST_SERVER_URL servers"
         type: boolean
         default: false
-      fork:
-        description: "The commit under test is from a fork. Provisioning uses this workflow's commit."
-        type: boolean
-        default: false
       e2e_test_stack_account:
         description: "e2e-test-stack only: the AWS account of the control plane, prod or dev"
         type: string
@@ -214,9 +210,6 @@ env:
 jobs:
   generate-specs:
     runs-on: ubuntu-24.04
-    # The spec split runs the commit under test. It does not post a status.
-    permissions:
-      contents: read
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       shard_count: ${{ steps.generate-specs.outputs.shard_count }}
@@ -373,7 +366,6 @@ jobs:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: ${{ needs.generate-specs.outputs.stack-slices }}
       commit_sha: ${{ needs.generate-specs.outputs.mobile_sha }}
-      fork: ${{ inputs.fork }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -384,10 +376,6 @@ jobs:
     # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
     # TODO: Investigate macos-26 Metro/Detox compatibility and re-enable if resolved.
     runs-on: macos-15
-    # The shard runs the commit under test. Statuses are posted by generate-report.
-    permissions:
-      contents: read
-      actions: read
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
@@ -1218,8 +1206,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          persist-credentials: false
-          ref: ${{ inputs.fork && github.sha || inputs.MOBILE_VERSION }}
+          ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps

@@ -310,6 +310,15 @@ async function decide(env, gh, io) {
     ref = base;
     changedFiles = pull.changed_files == null ? "" : String(pull.changed_files);
   }
+  if (fork)
+    return finish(
+      io,
+      event,
+      dryRun,
+      "refuse",
+      `pull request ${pr} is from a fork; E2E Tests do not run a fork pull request`,
+      hand
+    );
   if (hand) {
     const body = await gh.json(
       `/repos/${repoPath(repo)}/actions/workflows/ci.yml/runs?head_sha=${sha}&per_page=1`
@@ -323,9 +332,7 @@ async function decide(env, gh, io) {
   }
   let decision = "dispatch";
   let reason;
-  if (fork) {
-    reason = `pull request ${pr} is from a fork`;
-  } else if (pr) {
+  if (pr) {
     const filtered = await filterPullRequest(gh, repo, pr, envValue(env, "PATHS"), changedFiles);
     decision = filtered.decision;
     reason = filtered.reason;
