@@ -107,9 +107,20 @@ describe('ClientChannels', () => {
         const expectedUrl = `${client.getChannelRoute(channelId)}/privacy`;
         const expectedOptions = {method: 'put', body: {privacy: 'P'}};
 
-        await client.convertChannelToPrivate(channelId);
+        const channel = {id: channelId, type: 'P'} as Channel;
+        jest.mocked(client.doFetch).mockResolvedValueOnce(channel);
+
+        const result = await client.convertChannelToPrivate(channelId);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toBe(channel);
+    });
+
+    it('should reject convertChannelToPrivate when the request fails', async () => {
+        const error = new Error('refused');
+        jest.mocked(client.doFetch).mockRejectedValueOnce(error);
+
+        await expect(client.convertChannelToPrivate('channel1')).rejects.toBe(error);
     });
 
     test('updateChannelPrivacy', async () => {
