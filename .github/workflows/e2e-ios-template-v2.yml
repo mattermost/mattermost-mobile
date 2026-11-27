@@ -195,7 +195,8 @@ jobs:
       services: ${{ needs.prepare.outputs.webhook == 'true' && 'webhook' || '' }}
       license: enterprise-advanced
       shared_admin_password: true
-      ttl: 2h
+      # 4h from create: the runner queue, the job timeout, and a re-run have to finish inside it.
+      ttl: 4h
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
@@ -246,7 +247,7 @@ jobs:
 
       - name: ci/dispatch-begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@780b7b3f82c0a558bfb17967d2644ca06bea0db5 # detox-spec-list: detox-list-tests, detox-sort-last
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@26d8122160d03fcba2235c6e4b2989e7f2924274 # detox-spec-list: detox-list-tests, detox-sort-last
         with:
           framework: detox
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
@@ -389,7 +390,7 @@ jobs:
 
       - name: ci/dispatch-run
         timeout-minutes: 150
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@780b7b3f82c0a558bfb17967d2644ca06bea0db5 # detox-spec-list: detox-list-tests, detox-sort-last
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@26d8122160d03fcba2235c6e4b2989e7f2924274 # detox-spec-list: detox-list-tests, detox-sort-last
         with:
           framework: detox
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
@@ -423,7 +424,7 @@ jobs:
 
       - name: ci/run-summary
         id: summary
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@780b7b3f82c0a558bfb17967d2644ca06bea0db5 # detox-spec-list: detox-list-tests, detox-sort-last
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@26d8122160d03fcba2235c6e4b2989e7f2924274 # detox-spec-list: detox-list-tests, detox-sort-last
         with:
           framework: detox
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
