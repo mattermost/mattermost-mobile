@@ -380,6 +380,10 @@ jobs:
       - name: Boot iOS Simulator
         run: bash detox/scripts/boot_ios_simulator_ci.sh
 
+      # Pins Detox to the booted simulator (SIMULATOR_ID), which has the app installed.
+      - name: ci/detox-config
+        run: cd detox && npm run detox:config-gen
+
       - name: Start Metro
         run: bash detox/scripts/start_metro_detached.sh
 

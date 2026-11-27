@@ -254,7 +254,7 @@ install_app() {
     app_apk=$(resolve_app_apk)
     echo "Installing the app from $app_apk..."
     adb install -r "$app_apk"
-    if [[ "${MAESTRO_ANDROID:-}" != "true" && "${BOOTSTRAP_ONLY:-}" != "true" ]]; then
+    if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
         # Install the test/instrumentation APK — required by Detox (reinstallApp: false assumes
         # both the main APK and the test APK are already present on the device).
         adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
@@ -539,6 +539,10 @@ main() {
     fi
 
     if [[ "${BOOTSTRAP_ONLY:-}" == "true" ]]; then
+        # A later step runs Detox against this emulator.
+        if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
+            (cd "$SCRIPT_DIR" && AVD_NAME="$AVD_NAME" npm run detox:config-gen)
+        fi
         echo "Bootstrap complete (BOOTSTRAP_ONLY=true) — skipping Detox tests"
         exit 0
     fi
