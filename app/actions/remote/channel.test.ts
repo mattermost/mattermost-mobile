@@ -10,6 +10,7 @@ import {ActionType, DeepLink, Events, Navigation, Screens, ServerErrors} from '@
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getChannelById} from '@queries/servers/channel';
 import {getCurrentChannelId} from '@queries/servers/system';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
@@ -713,6 +714,26 @@ describe('app/actions/remote/channel', () => {
             const result = await convertChannelToPrivate(serverUrl, channelId);
             expect(result).toBeDefined();
             expect(result).not.toHaveProperty('error');
+            const channel = await getChannelById(operator.database, channelId);
+            expect(channel?.type).toBe('P');
+        });
+
+        it('should return the error and keep the channel public when the server refuses', async () => {
+            await operator.handleChannel({channels: [{
+                id: channelId,
+                team_id: teamId,
+                total_msg_count: 0,
+                type: 'O',
+            } as Channel],
+            prepareRecordsOnly: false});
+            const serverError = {message: 'refused', server_error_id: 'some.id', status_code: 400};
+            jest.mocked(mockClient.convertChannelToPrivate).mockRejectedValueOnce(serverError);
+
+            const result = await convertChannelToPrivate(serverUrl, channelId);
+
+            expect(result.error).toBe(serverError);
+            const channel = await getChannelById(operator.database, channelId);
+            expect(channel?.type).toBe('O');
         });
 
         it('handleKickFromChannel - handle not found database', async () => {

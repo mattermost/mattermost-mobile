@@ -155,7 +155,7 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
     };
 
     convertChannelToPrivate = async (channelId: string) => {
-        this.updateChannelPrivacy(channelId, 'P');
+        return this.updateChannelPrivacy(channelId, 'P');
     };
 
     updateChannelPrivacy = async (channelId: string, privacy: any) => {
