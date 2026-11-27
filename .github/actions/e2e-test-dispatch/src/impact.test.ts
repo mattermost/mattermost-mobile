@@ -23,8 +23,12 @@ test("unreadable paths.json is an error, not a miss", () => {
     assert.equal(impact("{", "app/index.ts"), "error");
 });
 
+test("a document with no paths is an error, not a miss", () => {
+    assert.equal(impact("{}", "app/index.ts"), "error");
+});
+
 test("a path is impacting only when the document lists it", () => {
-    assert.equal(impact("{}", ".github/actions/compute-e2e-build-fingerprint/paths.json"), "miss");
+    assert.equal(impact(JSON.stringify({ triggerExtra: ["detox/**"] }), "docs/readme.md"), "miss");
     assert.equal(
         impact(
             JSON.stringify({ triggerExtra: [".github/actions/compute-e2e-build-fingerprint/**"] }),

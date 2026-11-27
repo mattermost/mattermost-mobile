@@ -204,6 +204,13 @@ export async function decide(env: Env, gh: Gh, io: Io): Promise<void> {
         const filtered = await filterPullRequest(gh, repo, pr, envValue(env, "PATHS"), changedFiles);
         decision = filtered.decision;
         reason = filtered.reason;
+        if (decision === "skip") {
+            const blocker = await skipBlocker(gh, repo, pr, sha);
+            if (blocker) {
+                decision = "dispatch";
+                reason = blocker;
+            }
+        }
     } else {
         reason = `ci passed on ${ref}`;
     }
@@ -364,8 +371,7 @@ async function filterPullRequest(
             name?: string;
         }[];
         names = labels.map((label) => label.name ?? "");
-    } catch (e) {
-        if (!(e instanceof GitHubError)) throw e;
+    } catch {
         return { decision: "dispatch", reason: `labels of pull request ${pr} could not be read; running E2E` };
     }
     if (names.includes("E2E/Override"))
@@ -378,8 +384,7 @@ async function filterPullRequest(
             filename?: string;
             previous_filename?: string | null;
         }[];
-    } catch (e) {
-        if (!(e instanceof GitHubError)) throw e;
+    } catch {
         return { decision: "dispatch", reason: `the file list of pull request ${pr} could not be read; running E2E` };
     }
 
@@ -406,6 +411,26 @@ async function filterPullRequest(
     if (result === "miss") return { decision: "skip", reason: `pull request ${pr} has no app-impacting files` };
     if (result === "hit") return { decision: "dispatch", reason: `pull request ${pr} changes app-impacting files` };
     return { decision: "dispatch", reason: "the impact filter failed; running E2E" };
+}
+
+/**
+ * Why a skip cannot be posted on sha, read after the labels and files. Commit statuses belong to the SHA, so a skip
+ * must not show on another open pull request with the same head, or on a head the pull request has moved past.
+ */
+async function skipBlocker(gh: Gh, repo: string, pr: string, sha: string): Promise<string | undefined> {
+    let pulls: Pull[];
+    try {
+        pulls = (await gh.pages(`/repos/${repoPath(repo)}/commits/${sha}/pulls?per_page=100`)) as Pull[];
+    } catch {
+        return `the pull requests of ${sha} could not be read; running E2E`;
+    }
+    const heads = pulls
+        .filter((pull) => pull.state === "open" && pull.head?.sha === sha && pull.number != null)
+        .map((pull) => String(pull.number));
+    if (!heads.includes(pr)) return `pull request ${pr} moved off ${sha} while its files were read; running E2E`;
+    const others = heads.filter((number) => number !== pr);
+    if (others.length > 0) return `${sha} is also the head of pull request ${others.join(", ")}; running E2E`;
+    return undefined;
 }
 
 function cleanLanes(raw: string): { lanes: string; error?: string } {

@@ -47,10 +47,11 @@ export function compileGlob(pattern: string): RegExp {
     return new RegExp(`${source}$`);
 }
 
-/** Whether any changed path, or its previous path, matches the paths document. */
+/** Whether any changed path, or its previous path, matches the paths document. A document with no paths is an error. */
 export function impact(pathsJson: string, filesTsv: string): Impact {
     try {
         const matchers = globs(JSON.parse(pathsJson) as Parameters<typeof globs>[0]).map(compileGlob);
+        if (matchers.length === 0) return "error";
         for (const line of filesTsv.split("\n")) {
             for (const name of line.replace(/\n$/, "").split("\t")) {
                 if (name && matchers.some((matcher) => matcher.test(name))) return "hit";

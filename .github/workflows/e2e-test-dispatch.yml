@@ -12,8 +12,8 @@
 # list in this workflow, and which has no E2E/Override label. A push to those branches is always run.
 # A fork pull request is refused: the lanes run the existing templates, which are not fork-safe.
 #
-# The job checks nothing out and runs no pull-request code. The script is this repository's
-# action at the workflow's own commit. It does not assume the CI role.
+# The job checks out the workflow's own commit, sparse to .github/actions/e2e-test-dispatch, and runs
+# no pull-request code. It does not assume the CI role.
 name: E2E Tests Dispatch
 
 on:
@@ -97,6 +97,13 @@ jobs:
       server: ${{ steps.decide.outputs.server }}
       server-image: ${{ steps.decide.outputs.server-image }}
     steps:
+      - name: e2e-dispatch/checkout-action
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          sparse-checkout: .github/actions/e2e-test-dispatch
+
       - name: e2e-dispatch/setup-node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

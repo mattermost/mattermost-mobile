@@ -127,7 +127,7 @@ test("E2E/Override skips and asks for the required statuses only when the variab
     };
     const gh = client({
         json: () => pull,
-        pages: () => [{ name: "E2E/Override" }],
+        pages: (path) => (path.includes("/commits/") ? [{ ...pull, number: 12 }] : [{ name: "E2E/Override" }]),
     });
     const skipped = io();
     await decide(
@@ -169,18 +169,59 @@ test("a documentation-only pull request skips, and a short file list does not", 
         head: { sha: SHA, ref: "branch", repo: { full_name: "mattermost/mattermost-mobile" } },
         base: { ref: "main" },
     };
+    const docsOnly = (heads: unknown[] | Error) =>
+        client({
+            json: () => pull,
+            pages: (path) => {
+                if (path.includes("/labels")) return [];
+                if (path.includes("/commits/")) {
+                    if (heads instanceof Error) throw heads;
+                    return heads;
+                }
+                return [{ filename: "docs/readme.md", previous_filename: null }];
+            },
+        });
+
     const miss = io();
+    await decide(base, docsOnly([{ ...pull, number: 4 }]), miss);
+    assert.equal(miss.outputs.decision, "skip");
+    assert.match(miss.outputs.reason, /no app-impacting files/);
+
+    const shared = io();
+    await decide(
+        base,
+        docsOnly([
+            { ...pull, number: 4 },
+            { ...pull, number: 7, base: { ref: "release-2.47" } },
+        ]),
+        shared,
+    );
+    assert.equal(shared.outputs.decision, "dispatch");
+    assert.match(shared.outputs.reason, /also the head of pull request 7/);
+
+    const moved = io();
+    await decide(base, docsOnly([{ ...pull, number: 4, head: { ...pull.head, sha: "b".repeat(40) } }]), moved);
+    assert.equal(moved.outputs.decision, "dispatch");
+    assert.match(moved.outputs.reason, /moved off/);
+
+    const unread = io();
+    await decide(base, docsOnly(new TypeError("fetch failed")), unread);
+    assert.equal(unread.outputs.decision, "dispatch");
+    assert.match(unread.outputs.reason, /could not be read/);
+
+    const offline = io();
     await decide(
         base,
         client({
             json: () => pull,
-            pages: (path) =>
-                path.includes("/labels") ? [] : [{ filename: "docs/readme.md", previous_filename: null }],
+            pages: () => {
+                throw new TypeError("fetch failed");
+            },
         }),
-        miss,
+        offline,
     );
-    assert.equal(miss.outputs.decision, "skip");
-    assert.match(miss.outputs.reason, /no app-impacting files/);
+    assert.equal(offline.outputs.decision, "dispatch");
+    assert.match(offline.outputs.reason, /labels of pull request 4 could not be read/);
 
     const short = io();
     await decide(

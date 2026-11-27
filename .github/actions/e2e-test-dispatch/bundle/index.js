@@ -139,6 +139,7 @@ function compileGlob(pattern) {
 function impact(pathsJson, filesTsv) {
   try {
     const matchers = globs(JSON.parse(pathsJson)).map(compileGlob);
+    if (matchers.length === 0) return "error";
     for (const line of filesTsv.split("\n")) {
       for (const name of line.replace(/\n$/, "").split("	")) {
         if (name && matchers.some((matcher) => matcher.test(name))) return "hit";
@@ -336,6 +337,13 @@ async function decide(env, gh, io) {
     const filtered = await filterPullRequest(gh, repo, pr, envValue(env, "PATHS"), changedFiles);
     decision = filtered.decision;
     reason = filtered.reason;
+    if (decision === "skip") {
+      const blocker = await skipBlocker(gh, repo, pr, sha);
+      if (blocker) {
+        decision = "dispatch";
+        reason = blocker;
+      }
+    }
   } else {
     reason = `ci passed on ${ref}`;
   }
@@ -466,8 +474,7 @@ async function filterPullRequest(gh, repo, pr, pathsJson, changedFiles) {
   try {
     const labels = await gh.pages(`/repos/${repoPath(repo)}/issues/${pr}/labels?per_page=100`);
     names = labels.map((label) => label.name ?? "");
-  } catch (e) {
-    if (!(e instanceof GitHubError)) throw e;
+  } catch {
     return { decision: "dispatch", reason: `labels of pull request ${pr} could not be read; running E2E` };
   }
   if (names.includes("E2E/Override"))
@@ -476,8 +483,7 @@ async function filterPullRequest(gh, repo, pr, pathsJson, changedFiles) {
   let files;
   try {
     files = await gh.pages(`/repos/${repoPath(repo)}/pulls/${pr}/files?per_page=100`);
-  } catch (e) {
-    if (!(e instanceof GitHubError)) throw e;
+  } catch {
     return { decision: "dispatch", reason: `the file list of pull request ${pr} could not be read; running E2E` };
   }
   const listed = files.length;
@@ -502,6 +508,19 @@ async function filterPullRequest(gh, repo, pr, pathsJson, changedFiles) {
   if (result === "miss") return { decision: "skip", reason: `pull request ${pr} has no app-impacting files` };
   if (result === "hit") return { decision: "dispatch", reason: `pull request ${pr} changes app-impacting files` };
   return { decision: "dispatch", reason: "the impact filter failed; running E2E" };
+}
+async function skipBlocker(gh, repo, pr, sha) {
+  let pulls;
+  try {
+    pulls = await gh.pages(`/repos/${repoPath(repo)}/commits/${sha}/pulls?per_page=100`);
+  } catch {
+    return `the pull requests of ${sha} could not be read; running E2E`;
+  }
+  const heads = pulls.filter((pull) => pull.state === "open" && pull.head?.sha === sha && pull.number != null).map((pull) => String(pull.number));
+  if (!heads.includes(pr)) return `pull request ${pr} moved off ${sha} while its files were read; running E2E`;
+  const others = heads.filter((number) => number !== pr);
+  if (others.length > 0) return `${sha} is also the head of pull request ${others.join(", ")}; running E2E`;
+  return void 0;
 }
 function cleanLanes(raw) {
   const seen = /* @__PURE__ */ new Set();
@@ -555,11 +574,11 @@ async function run(name, env) {
 // src/index.ts
 function fail(e) {
   if (e instanceof Halt) {
-    process.exit(e.code);
+    process.exitCode = e.code;
     return;
   }
   const message = e instanceof ActionError || e instanceof Error ? e.message : String(e);
   console.error(`::error::${message.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A")}`);
-  process.exit(1);
+  process.exitCode = 1;
 }
-run(process.argv[2], process.env).then(() => process.exit(0), fail);
+run(process.argv[2], process.env).catch(fail);
