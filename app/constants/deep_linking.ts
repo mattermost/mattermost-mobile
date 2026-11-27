@@ -13,6 +13,7 @@ const DeepLinkType = {
     Redirect: '_redirect',
     Server: 'server',
     MagicLink: 'magic_link',
+    MobileQrLogin: 'mobile_qr_login',
 } as const;
 
 export default DeepLinkType;

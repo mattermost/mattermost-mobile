@@ -20,6 +20,7 @@ export interface ClientUsersMix {
     login: (loginId: string, password: string, token?: string, deviceId?: string, voipDeviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
     loginById: (id: string, password: string, token?: string, deviceId?: string, voipDeviceId?: string) => Promise<UserProfile>;
     loginByMagicLinkLogin: (token: string, deviceId?: string, voipDeviceId?: string) => Promise<UserProfile>;
+    loginByMobileQrToken: (token: string, deviceId?: string, voipDeviceId?: string) => Promise<{token: string; csrf: string}>;
     loginByIntune: (accessToken: string, deviceId?: string, voipDeviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
     getProfiles: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
@@ -206,6 +207,27 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
 
         return resp?.data;
+    };
+
+    loginByMobileQrToken = async (token: string, deviceId = '', voipDeviceId = '') => {
+        const body = {
+            token,
+            device_id: deviceId,
+            voip_device_id: voipDeviceId,
+        };
+
+        const resp = await this.doFetch(
+            `${this.getUsersRoute()}/login/mobile_qr`,
+            {
+                method: 'post',
+                body,
+                headers: {'Cache-Control': 'no-store'},
+            },
+            false,
+        );
+
+        // Expected shape: { token: string, csrf: string }
+        return resp?.data || resp;
     };
 
     logout = async () => {

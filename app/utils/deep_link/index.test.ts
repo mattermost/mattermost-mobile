@@ -6,6 +6,7 @@ import {Alert} from 'react-native';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
+import {mobileQrLogin} from '@actions/remote/session';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -24,10 +25,15 @@ import {addNewServer} from '@utils/server';
 
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '../draft';
 
-import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, parseAndHandleDeepLink} from './index';
+import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, parseAndHandleDeepLink, parseDeepLink} from './index';
 
 jest.mock('@actions/remote/user', () => ({
     fetchUsersByUsernames: jest.fn(),
+}));
+
+jest.mock('@actions/remote/session', () => ({
+    magicLinkLogin: jest.fn(),
+    mobileQrLogin: jest.fn(),
 }));
 
 jest.mock('@actions/remote/permalink', () => ({
@@ -294,6 +300,140 @@ describe('parseAndHandleDeepLink', () => {
             intl.formatMessage({id: 'playbooks.not_enabled_or_unsupported.description', defaultMessage: 'Playbooks are either not enabled on this server or the Playbooks version is not supported. Please contact your system administrator.'}),
             [{text: intl.formatMessage({id: 'playbooks.not_enabled_or_unsupported.OK', defaultMessage: 'OK'})}],
         );
+    });
+});
+
+describe('mobile QR login deep link', () => {
+    const token = 'abcdefghij0123456789abcdefghij0123456789abcdefghij0123456789abcd';
+    const intl = createIntl({locale: 'en', messages: {}});
+    let tokenCount = 0;
+
+    // The handler ignores repeated links with the same token for a short time, so each test uses its own
+    const nextToken = () => {
+        tokenCount++;
+        return `${String(tokenCount).padStart(2, '0')}${token.slice(2)}`;
+    };
+
+    describe('parseDeepLink', () => {
+        it('should parse a mattermost:// link', () => {
+            const url = `mattermost://qr.example.com/login/mobile_qr?t=${token}`;
+            expect(parseDeepLink(url)).toEqual({
+                type: DeepLink.MobileQrLogin,
+                url,
+                data: {serverUrl: 'qr.example.com', token},
+            });
+        });
+
+        it('should parse an https link', () => {
+            const url = `https://qr.example.com/login/mobile_qr?t=${token}`;
+            expect(parseDeepLink(url)).toEqual({
+                type: DeepLink.MobileQrLogin,
+                url,
+                data: {serverUrl: 'qr.example.com', token},
+            });
+        });
+
+        it('should parse a link with a subpath and a port', () => {
+            const url = `mattermost://qr.example.com:8065/sub/path/login/mobile_qr?t=${token}`;
+            expect(parseDeepLink(url)).toEqual({
+                type: DeepLink.MobileQrLogin,
+                url,
+                data: {serverUrl: 'qr.example.com:8065/sub/path', token},
+            });
+        });
+
+        it('should be invalid when the token is missing', () => {
+            const url = 'mattermost://qr.example.com/login/mobile_qr';
+            expect(parseDeepLink(url)).toEqual({type: DeepLink.Invalid, url});
+        });
+
+        it.each([
+            ['too short', 'abc123'],
+            ['too long', `${token}a`],
+            ['uppercase', token.toUpperCase()],
+            ['with invalid characters', `${token.slice(1)}-`],
+        ])('should be invalid when the token is %s', (_name, badToken) => {
+            const url = `mattermost://qr.example.com/login/mobile_qr?t=${badToken}`;
+            expect(parseDeepLink(url)).toEqual({type: DeepLink.Invalid, url});
+        });
+
+        it('should not be confused with the magic link', () => {
+            expect(parseDeepLink(`mattermost://qr.example.com/login/one_time_link?t=${token}`).type).toBe(DeepLink.MagicLink);
+        });
+    });
+
+    describe('handleDeepLink', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+            jest.mocked(getActiveServerUrl).mockResolvedValue('https://currentserver.com');
+            jest.mocked(DatabaseManager.searchUrl).mockReturnValue(undefined);
+            jest.mocked(mobileQrLogin).mockResolvedValue({failed: false});
+        });
+
+        it('should redeem the code when the server is not signed in', async () => {
+            const qrToken = nextToken();
+            const result = await parseAndHandleDeepLink(`mattermost://newserver.com/login/mobile_qr?t=${qrToken}`, intl);
+
+            expect(mobileQrLogin).toHaveBeenCalledWith('newserver.com', qrToken);
+            expect(addNewServer).not.toHaveBeenCalled();
+            expect(Alert.alert).not.toHaveBeenCalled();
+            expect(result).toEqual({error: false});
+        });
+
+        it('should only redeem the code once when the same link is handled twice', async () => {
+            const url = `mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`;
+            const results = await Promise.all([
+                parseAndHandleDeepLink(url, intl),
+                parseAndHandleDeepLink(url, intl),
+            ]);
+
+            expect(mobileQrLogin).toHaveBeenCalledTimes(1);
+            expect(results).toEqual([{error: false}, {error: false}]);
+        });
+
+        it('should alert and not redeem the code when already signed in to the server', async () => {
+            jest.mocked(DatabaseManager.searchUrl).mockReturnValue('https://existingserver.com');
+            const result = await parseAndHandleDeepLink(`https://existingserver.com/login/mobile_qr?t=${nextToken()}`, intl);
+
+            expect(mobileQrLogin).not.toHaveBeenCalled();
+            expect(navigateToRoot).not.toHaveBeenCalled();
+            expect(DatabaseManager.setActiveServerDatabase).not.toHaveBeenCalled();
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Already signed in',
+                'You\'re already signed in to this server. Sign out first, then scan the code again.',
+                [{text: 'OK'}],
+            );
+            expect(result).toEqual({error: false});
+        });
+
+        it.each([
+            ['401', 401, 'Sign-in code didn\'t work', 'This code has expired or was already used. Generate a new code on your computer and scan it again.'],
+            ['404', 404, 'QR sign-in unavailable', 'This server doesn\'t support signing in with a QR code.'],
+            ['501', 501, 'QR sign-in unavailable', 'This server doesn\'t support signing in with a QR code.'],
+            ['other', 500, 'Couldn\'t sign in', 'Couldn\'t sign in. Try again.'],
+        ])('should alert when the server responds with %s', async (_name, status_code, title, message) => {
+            jest.mocked(mobileQrLogin).mockResolvedValue({error: {status_code}, failed: true});
+            const result = await parseAndHandleDeepLink(`mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`, intl);
+
+            expect(Alert.alert).toHaveBeenCalledWith(title, message, [{text: 'OK'}]);
+            expect(result).toEqual({error: true, alertShown: true});
+        });
+
+        it('should show the generic alert when the error has no status code', async () => {
+            jest.mocked(mobileQrLogin).mockResolvedValue({error: 'unreachable', failed: true});
+            const result = await parseAndHandleDeepLink(`mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`, intl);
+
+            expect(Alert.alert).toHaveBeenCalledWith('Couldn\'t sign in', 'Couldn\'t sign in. Try again.', [{text: 'OK'}]);
+            expect(result).toEqual({error: true, alertShown: true});
+        });
+
+        it('should not alert when signed in but loading the server data failed', async () => {
+            jest.mocked(mobileQrLogin).mockResolvedValue({error: 'entry failed', failed: false});
+            const result = await parseAndHandleDeepLink(`mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`, intl);
+
+            expect(Alert.alert).not.toHaveBeenCalled();
+            expect(result).toEqual({error: false});
+        });
     });
 });
 

@@ -57,6 +57,15 @@ describe('native-intent', () => {
             expect(alertInvalidDeepLink).not.toHaveBeenCalled();
         });
 
+        it('should return null without the invalid link alert when the deep link handling already alerted', async () => {
+            (parseAndHandleDeepLink as jest.Mock).mockResolvedValue({error: true, alertShown: true});
+
+            const path = 'mattermost://community.mattermost.com/login/mobile_qr?t=token';
+
+            expect(await redirectSystemPath({path, initial: true})).toBeNull();
+            expect(alertInvalidDeepLink).not.toHaveBeenCalled();
+        });
+
         it('should return the path and alert when the deep link handling errors, regardless of initial', async () => {
             (parseAndHandleDeepLink as jest.Mock).mockResolvedValue({error: true});
 

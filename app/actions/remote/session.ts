@@ -427,19 +427,25 @@ export const getUserLoginType = async (serverUrl: string, loginId: string) => {
     }
 };
 
-export const magicLinkLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
+const resolveServerUrl = async (serverUrl: string): Promise<{url: string} | {error: unknown}> => {
     const httpsHeadRequest = await getServerUrlAfterRedirect(serverUrl);
-    let serverUrlToUse;
     if (httpsHeadRequest.error || !httpsHeadRequest.url) {
         // Retry with HTTP
         const httpHeadRequest = await getServerUrlAfterRedirect(serverUrl, true);
         if (httpHeadRequest.error || !httpHeadRequest.url) {
-            return {error: httpsHeadRequest.error || httpHeadRequest.error || 'empty server url', failed: true};
+            return {error: httpsHeadRequest.error || httpHeadRequest.error || 'empty server url'};
         }
-        serverUrlToUse = httpHeadRequest.url;
-    } else {
-        serverUrlToUse = httpsHeadRequest.url;
+        return {url: httpHeadRequest.url};
     }
+    return {url: httpsHeadRequest.url};
+};
+
+export const magicLinkLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
+    const resolved = await resolveServerUrl(serverUrl);
+    if ('error' in resolved) {
+        return {error: resolved.error, failed: true};
+    }
+    const serverUrlToUse = resolved.url;
 
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
@@ -499,4 +505,51 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
     } catch (error) {
         return {error, failed: false};
     }
+};
+
+export const mobileQrLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
+    const resolved = await resolveServerUrl(serverUrl);
+    if ('error' in resolved) {
+        return {error: resolved.error, failed: true};
+    }
+    const serverUrlToUse = resolved.url;
+
+    const database = DatabaseManager.appDatabase?.database;
+    if (!database) {
+        return {error: 'App database not found', failed: true};
+    }
+
+    let client: Client;
+    let config: ClientConfig;
+    let user: UserProfile;
+    try {
+        client = await NetworkManager.createClient(serverUrlToUse, undefined);
+        config = await client.getClientConfigOld();
+        const deviceId = await getDeviceToken();
+        const voipDeviceId = await getVoIPDeviceToken();
+
+        const {token: sessionToken, csrf} = await client.loginByMobileQrToken(token, deviceId, voipDeviceId);
+        client.setClientCredentials(sessionToken, undefined);
+        client.setCSRFToken(csrf);
+
+        user = await client.getMe();
+
+        // Check push notification capability (similar to normal login flow)
+        const pingResult = await doPing(
+            serverUrlToUse,
+            true, // verifyPushProxy
+            undefined, // timeoutInterval
+            undefined, // preauthSecret
+            client, // client
+        );
+        if (!pingResult.error && pingResult.canReceiveNotifications) {
+            const intl = getIntlShape(user.locale);
+            await canReceiveNotifications(serverUrlToUse, pingResult.canReceiveNotifications as string, intl);
+        }
+    } catch (error) {
+        logDebug('error on mobileQrLogin', getFullErrorMessage(error));
+        return {error, failed: true};
+    }
+
+    return completeSSOLogin(serverUrlToUse, config.SiteName, config.DiagnosticId, client, user);
 };
