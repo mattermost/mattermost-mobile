@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import './unit_test_env/spec_owned';
+
 import assert from 'node:assert/strict';
 import {afterEach, describe, it} from 'node:test';
 

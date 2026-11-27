@@ -6,7 +6,8 @@ description: >-
   or the shared SITE_3 for a site3 mutation shard; SITE_2 is the batch's shared second-to-last server; SITE_3, unless
   a mutation shard, the shared last one; ADMIN_* is the batch's one admin. Opens this run's batch with the toolkit's
   open action, which reads its create response from whichever attempt created it and accepts only this run's batch,
-  so the job needs actions: read. Writes the sites, the admin, E2E_SERVER_ROLE and E2E_POOL_GUARD to GITHUB_ENV.
+  so the job needs actions: read. Writes the sites, the admin, E2E_SERVER_ROLE and E2E_POOL_GUARD to GITHUB_ENV,
+  and with layout v2 E2E_PIPELINE=v2, so specs set up their own server state.
   With layout v2 every server is a worker's own: SITE_2 and SITE_3 are the first two of servers 0-2 that are not the
   worker's, where specs create their own users and teams with the batch's one admin. Leaves Node 26 set up.
 
@@ -189,6 +190,7 @@ runs:
           echo "ADMIN_EMAIL=$email"
           echo "E2E_SERVER_ROLE="
           echo "E2E_POOL_GUARD=shared"
+          echo "E2E_PIPELINE=v2"
         } >> "$GITHUB_ENV"
         labels=()
         for slot in 2 3; do

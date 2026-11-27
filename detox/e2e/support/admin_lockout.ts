@@ -5,6 +5,7 @@
 
 import client from './server_api/client';
 import User from './server_api/user';
+import {specOwnsServerSetup} from './server_role';
 import {adminEmail, adminPassword} from './test_config';
 
 type LockoutFix = {
@@ -72,7 +73,7 @@ export async function clearAdminLockout(baseUrl: string, error: unknown): Promis
  */
 export async function apiAdminLoginClearingLockout(baseUrl: string): Promise<any> {
     const result = await User.apiAdminLogin(baseUrl);
-    if (!result.error) {
+    if (!result.error || !specOwnsServerSetup) {
         return result;
     }
 

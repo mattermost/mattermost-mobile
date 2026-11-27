@@ -94,7 +94,14 @@ const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localh
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
-// Only prepackaged plugins stay enabled; a spec that needs another plugin enables it (Setup.ensureDemoPlugin).
+// Keep in sync with isSpecOwnedServerSetup in support/server_role.ts.
+const SPEC_OWNED_SERVER_SETUP = process.env.CI !== 'true' || process.env.E2E_PIPELINE === 'v2';
+
+// Where specs own server setup, only prepackaged plugins stay enabled and a spec that needs another enables it
+// (Setup.ensureDemoPlugin). On the legacy CI pipeline provisioning owns these too (provision/constants.ts).
+const PROVISIONED_PLUGINS = new Set(SPEC_OWNED_SERVER_SETUP ? [] : ['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
+
+// Prepackaged plugins to keep enabled (shared with provisioning).
 const PREPACKAGED_PLUGINS = new Set(require('../shared/prepackaged-plugins.json'));
 
 async function disableStrayPlugins(headers) {
@@ -102,7 +109,7 @@ async function disableStrayPlugins(headers) {
         const plugins = await axios.get(`${SITE_URL}/api/v4/plugins`, {headers});
         const active = plugins.data?.active || [];
         const toDisable = active.filter(
-            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id),
+            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && !PROVISIONED_PLUGINS.has(plugin.id),
         );
         await Promise.all(toDisable.map((plugin) => {
             process.stdout.write(`[globalSetup] Disabling plugin: ${plugin.id}\n`);

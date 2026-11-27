@@ -14,6 +14,7 @@ import {
 
 import {apiAdminLoginClearingLockout, clearAdminLockout} from './admin_lockout';
 import client from './server_api/client';
+import {specOwnsServerSetup} from './server_role';
 import {withTransportRetry} from './utils/transport_retry';
 
 /* eslint-disable no-console, no-process-env */
@@ -65,14 +66,14 @@ async function loginAsAdmin(baseUrl: string): Promise<void> {
 /** Drives the server to the baseline, including leftover E2E cleanup. Throws unless the baseline is fully met. */
 export async function applyServerBaseline(baseUrl: string): Promise<BaselineReport> {
     await loginAsAdmin(baseUrl);
-    const report = await applyBaseline(transportFor(baseUrl, {clearLockout: true}), {serverUrl: baseUrl});
+    const report = await applyBaseline(transportFor(baseUrl, {clearLockout: specOwnsServerSetup}), {serverUrl: baseUrl});
     if (!report.ok) {
         throw new Error(formatBaselineReport(report));
     }
     return report;
 }
 
-/** CI throws on drift (each spec file's setup applies the baseline first); locally drifted keys are applied without cleanup, and a failed apply throws. */
+/** CI throws on drift (spec setup or legacy provisioning applies the baseline first); locally drifted keys are applied without cleanup, and a failed apply throws. */
 export async function assertServerBaseline(baseUrl: string, keys: string[]): Promise<void> {
     const unknown = keys.filter((key) => !isBaselineKey(key));
     if (unknown.length > 0) {
@@ -91,7 +92,7 @@ export async function assertServerBaseline(baseUrl: string, keys: string[]): Pro
         const [first, ...rest] = drift;
         const more = rest.length > 0 ? ` (and ${rest.length} more: ${rest.map((item) => item.key).join(', ')})` : '';
         throw new Error(
-            `server not at baseline: ${first?.key} expected ${first?.expected} got ${first?.actual} — applyServerBaseline must run first${more}`,
+            `server not at baseline: ${first?.key} expected ${first?.expected} got ${first?.actual} — ${specOwnsServerSetup ? 'applyServerBaseline' : 'provisioning'} must run first${more}`,
         );
     }
 

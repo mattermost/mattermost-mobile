@@ -10,6 +10,7 @@ import FormData from 'form-data';
 import {PLUGIN_STATE_FAILED, PLUGIN_STATE_RUNNING} from '../../../provision/constants';
 import {demoPluginSettingsPatch} from '../../../provision/plugins';
 import {DEMO_PLUGIN_VERSION, ensureDemoPluginFixture} from '../../../shared/demo-plugin-fixture';
+import {specOwnsServerSetup} from '../server_role';
 
 import client from './client';
 import {getResponseFromError} from './common';
@@ -19,7 +20,8 @@ import {apiGetConfig, apiUpdateConfig} from './system';
 import User from './user';
 
 // Idempotent server setup a spec calls in its beforeAll for what it needs beyond the baseline. Each helper only reads
-// when the server is already right, so it is cheap to call from every spec that needs it.
+// when the server is already right, so it is cheap to call from every spec that needs it. Where specs do not own
+// server setup (specOwnsServerSetup), each helper only verifies what provisioning set up.
 
 const PLUGIN_POLL_MS = 1_000;
 const PLUGIN_RUNNING_TIMEOUT_MS = 60_000;
@@ -85,6 +87,9 @@ export const ensurePluginEnabled = async (baseUrl: string, pluginId: string): Pr
     if (status?.state === PLUGIN_STATE_RUNNING) {
         return;
     }
+    if (!specOwnsServerSetup) {
+        throw new Error(`Plugin ${pluginId} is not running on ${baseUrl}. Run Detox server provisioning before this suite.`);
+    }
     if (!status) {
         throw new Error(`Plugin ${pluginId} is not installed on ${baseUrl}`);
     }
@@ -102,6 +107,10 @@ export const ensureCallsPlugin = (baseUrl: string): Promise<void> => ensurePlugi
  * @return {boolean} whether the plugin is running
  */
 export const ensureAgentsPlugin = async (baseUrl: string): Promise<boolean> => {
+    if (!specOwnsServerSetup) {
+        const status = await apiGetPluginStatus(baseUrl, AgentsPlugin.id);
+        return Boolean(status.isActive);
+    }
     try {
         await adminLogin(baseUrl);
         const status = await getPluginStatus(baseUrl, AgentsPlugin.id);
@@ -163,6 +172,13 @@ const uploadDemoPlugin = async (baseUrl: string) => {
  */
 export const ensureDemoPlugin = async (baseUrl: string): Promise<void> => {
     await adminLogin(baseUrl);
+    if (!specOwnsServerSetup) {
+        const status = await apiGetPluginStatus(baseUrl, DemoPlugin.id);
+        if (!status.isActive) {
+            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
+        }
+        return;
+    }
 
     // Before install or enable: an older build without its settings entry resets other settings on config saves.
     await ensureDemoPluginSettings(baseUrl);
@@ -196,7 +212,11 @@ export const ensureCustomProfileAttributeFields = async (baseUrl: string, names:
         return `Could not list custom profile fields: ${error.message ?? JSON.stringify(error)}`;
     }
     const existing = new Set((fields as Array<{name?: string}> | undefined ?? []).map((field) => field.name));
-    for (const name of names.filter((fieldName) => !existing.has(fieldName))) {
+    const missing = names.filter((fieldName) => !existing.has(fieldName));
+    if (!specOwnsServerSetup && missing.length > 0) {
+        return `Missing provisioned fields: ${missing.join(', ')}`;
+    }
+    for (const name of missing) {
         const {error: createError} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(baseUrl, {name});
         if (createError) {
             return `Could not create custom profile field "${name}": ${createError.message ?? JSON.stringify(createError)}`;

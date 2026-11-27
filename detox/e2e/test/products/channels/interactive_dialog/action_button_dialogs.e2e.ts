@@ -39,9 +39,10 @@ import {
     Post,
     Setup,
     System,
+    User,
 } from '@support/server_api';
 import {DEMO_PLUGIN_SETUP_TIMEOUT} from '@support/server_api/server_setup';
-import {requireMutationServer} from '@support/server_role';
+import {requireMutationServer, specOwnsServerSetup} from '@support/server_role';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -97,11 +98,12 @@ const NOTE_TYPE_ROOT_CAUSE = 'Root Cause';
 
 // ===== Helper Functions =====
 
-// Always write BOTH keys — the server replaces the whole per-plugin map. No PluginStates: a patch replaces that map
-// and would disable every other plugin; Setup.ensureDemoPlugin enables this one.
+// Always write BOTH keys — the server replaces the whole per-plugin map. Where specs own server setup there is no
+// PluginStates: a patch replaces that map and would disable every other plugin; Setup.ensureDemoPlugin enables this one.
 async function setPluginConfig(overrides: {[key: string]: any} = {}) {
     const result = await System.apiUpdateConfig(siteOneUrl, {
         PluginSettings: {
+            ...(specOwnsServerSetup ? {} : {PluginStates: {[DemoPlugin.id]: {Enable: true}}}),
             Plugins: {
                 [DemoPlugin.id]: {
                     DialogOnlyMode: true,
@@ -391,8 +393,9 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         testChannel = channel;
         testUser = user;
 
-        await Setup.ensureDemoPlugin(siteOneUrl);
+        await User.apiAdminLogin(siteOneUrl);
         await setPluginConfig();
+        await Setup.ensureDemoPlugin(siteOneUrl);
         await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
         await resetDemoIncidents(testChannel.team_id);
