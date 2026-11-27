@@ -81,7 +81,7 @@ test("a hand run with a bad sha is refused and fails the job", async () => {
     assert.deepEqual(out.notices, []);
 });
 
-test("a fork pull request is refused without failing the run", async () => {
+test("a fork pull request dispatches only the Detox lanes and skips the path filter", async () => {
     const out = io();
     const pull = {
         number: 9,
@@ -93,29 +93,49 @@ test("a fork pull request is refused without failing the run", async () => {
     const gh = client({
         json: (path) => (path.includes("/commits/") ? [pull] : pull),
     });
+    await decide(
+        {
+            EVENT: "workflow_run",
+            DRY_RUN: "false",
+            ENABLED: "false",
+            REPO: "mattermost/mattermost-mobile",
+            RUN_SHA: SHA,
+            RUN_BRANCH: "fork-branch",
+            RUN_REPO: "someone/mattermost-mobile",
+            RUN_EVENT: "pull_request",
+            RUN_PRS: JSON.stringify([{ number: 9, head: { sha: SHA, ref: "fork-branch" } }]),
+        },
+        gh,
+        out,
+    );
+    assert.equal(out.outputs.decision, "dispatch");
+    assert.equal(out.outputs.pr, "9");
+    assert.equal(out.outputs.start, "true");
+    assert.equal(out.outputs.lanes, "detox-ios,detox-ipad,detox-android");
+    assert.match(out.outputs.reason, /from a fork/);
+});
+
+test("a hand run of only Maestro lanes for a fork pull request is refused", async () => {
+    const out = io();
+    const pull = {
+        number: 9,
+        state: "open",
+        changed_files: 1,
+        head: { sha: SHA, ref: "fork-branch", repo: { full_name: "someone/mattermost-mobile" } },
+        base: { ref: "main" },
+    };
     await assert.rejects(
         () =>
             decide(
-                {
-                    EVENT: "workflow_run",
-                    DRY_RUN: "false",
-                    ENABLED: "false",
-                    REPO: "mattermost/mattermost-mobile",
-                    RUN_SHA: SHA,
-                    RUN_BRANCH: "fork-branch",
-                    RUN_REPO: "someone/mattermost-mobile",
-                    RUN_EVENT: "pull_request",
-                    RUN_PRS: JSON.stringify([{ number: 9, head: { sha: SHA, ref: "fork-branch" } }]),
-                },
-                gh,
+                hand({ INPUT_PR: "9", INPUT_LANES: "maestro-ios,maestro-android" }),
+                client({ json: () => pull }),
                 out,
             ),
-        (e: unknown) => e instanceof Halt && e.code === 0,
+        (e: unknown) => e instanceof Halt && e.code === 1,
     );
     assert.equal(out.outputs.decision, "refuse");
     assert.equal(out.outputs.start, undefined);
-    assert.match(out.outputs.reason, /from a fork/);
-    assert.deepEqual(out.errors, []);
+    assert.match(out.outputs.reason, /only the Detox lanes/);
 });
 
 test("E2E/Override skips and asks for the required statuses only when the variable is on", async () => {

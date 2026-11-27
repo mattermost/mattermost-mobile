@@ -176,15 +176,22 @@ export async function decide(env: Env, gh: Gh, io: Io): Promise<void> {
         ref = base;
         changedFiles = pull.changed_files == null ? "" : String(pull.changed_files);
     }
-    if (fork)
-        return finish(
-            io,
-            event,
-            dryRun,
-            "refuse",
-            `pull request ${pr} is from a fork; E2E Tests do not run a fork pull request`,
-            hand,
-        );
+    if (fork) {
+        // The Maestro lanes run the existing template, which is not fork-safe.
+        lanes = lanes
+            .split(",")
+            .filter((lane) => !lane.startsWith("maestro-"))
+            .join(",");
+        if (!lanes)
+            return finish(
+                io,
+                event,
+                dryRun,
+                "refuse",
+                `pull request ${pr} is from a fork, which runs only the Detox lanes`,
+                hand,
+            );
+    }
 
     if (hand) {
         const body = (await gh.json(
@@ -200,7 +207,9 @@ export async function decide(env: Env, gh: Gh, io: Io): Promise<void> {
 
     let decision: "dispatch" | "skip" = "dispatch";
     let reason: string;
-    if (pr) {
+    if (fork) {
+        reason = `pull request ${pr} is from a fork; running ${lanes}`;
+    } else if (pr) {
         const filtered = await filterPullRequest(gh, repo, pr, envValue(env, "PATHS"), changedFiles);
         decision = filtered.decision;
         reason = filtered.reason;

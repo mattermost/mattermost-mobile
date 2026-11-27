@@ -211,8 +211,8 @@ jobs:
     with:
       batch: ${{ inputs.e2e_test_stack_batch }}
       slices: ${{ needs.prepare.outputs.slices }}
-      commit_sha: ${{ inputs.commit_sha }}
-      fork: ${{ inputs.fork }}
+      # A fork's provisioning code does not run with the credentials key.
+      commit_sha: ${{ inputs.fork && github.sha || inputs.commit_sha }}
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 

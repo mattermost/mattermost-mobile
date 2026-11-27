@@ -242,6 +242,8 @@ jobs:
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
+  # The Maestro lanes run the existing template with run-type NONE and no tsio-config. statuses and issues are what
+  # it declares, and it runs the commit under test with them, so setup refuses a Maestro lane for a fork pull request.
   maestro-ios:
     name: Maestro iOS
     needs: [setup, build-ios]

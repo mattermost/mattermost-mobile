@@ -2,7 +2,8 @@
 # Starts E2E Tests after ci, on e2e-test-stack, from main or a release-<major>.<minor> branch.
 #
 #   workflow_run   ci completed. A same-repo run starts only when vars.E2E_TEST_STACK_ENABLED is
-#                  true. Unset, Matterwick's pipeline is unchanged.
+#                  true. Unset, Matterwick's pipeline is unchanged. A fork pull request whose ci
+#                  succeeded starts the Detox lanes. The fork's own ci file is only the trigger.
 #   workflow_dispatch  the same gates, by hand, whether or not the variable is set. A hand run
 #                  dispatches E2E Tests, which posts e2e-test-stack/<lane>. It writes the required
 #                  e2e-test/* contexts only when the variable is true and the gates skip the run.
@@ -10,7 +11,8 @@
 # Gate 1: ci succeeded for this commit. A run whose pull request has since moved on is skipped.
 # Gate 2: a same-repo pull request into main or release-<major>.<minor> whose files match the path
 # list in this workflow, and which has no E2E/Override label. A push to those branches is always run.
-# A fork pull request is refused: the lanes run the existing templates, which are not fork-safe.
+# A fork pull request into those branches runs the Detox lanes after its ci succeeds. The Maestro
+# lanes run the existing template, which is not fork-safe, so a fork never gets them.
 #
 # The job checks out the workflow's own commit, sparse to .github/actions/e2e-test-dispatch, and runs
 # no pull-request code. It does not assume the CI role.
@@ -77,7 +79,9 @@ jobs:
     name: Gate
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && vars.E2E_TEST_STACK_ENABLED == 'true')
+      (github.event.workflow_run.conclusion == 'success' &&
+        (vars.E2E_TEST_STACK_ENABLED == 'true' ||
+          github.event.workflow_run.head_repository.full_name != github.repository))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
