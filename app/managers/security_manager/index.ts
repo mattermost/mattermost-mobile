@@ -477,7 +477,7 @@ class SecurityManagerSingleton {
                 },
                 async () => {
                     // User cancelled - logout from all affected servers
-                    await Promise.all(serverUrls.map((serverUrl) => logout(serverUrl, undefined, {skipServerLogout: false})));
+                    await Promise.all(serverUrls.map((serverUrl) => logout(serverUrl, undefined, {skipServerLogout: false, skipAlert: true})));
 
                     Emm.removeBlurEffect();
                 },
