@@ -4,8 +4,9 @@ name: Detox Android E2E Tests Template v2
 # worker matrix. Each worker owns its SITE_1; SITE_2 and SITE_3 are two of the
 # first three workers' servers, signed in to as their listing user and never
 # administered. The Detox configuration decides the specs (begin runs
-# `detox --listTests`); specs tagged @server_mutation dispatch last. Maestro and
-# the Matterwick template are unchanged.
+# `detox --listTests`). Specs tagged @multi_server dispatch first, so they sign in
+# to servers 0-2 before specs tagged @server_mutation, which dispatch last, change
+# them. Maestro and the Matterwick template are unchanged.
 #
 # create is the existing workflow and provision its v2. begin runs after provision,
 # because the orchestrator idles a run out while it waits for the first lease.
@@ -138,6 +139,11 @@ jobs:
             echo "::error::parallelism must be a positive integer, got '${PARALLELISM}'"
             exit 1
           fi
+          # The worker matrix is one job per worker, and a matrix has at most 256 jobs.
+          if [ "$PARALLELISM" -gt 256 ]; then
+            echo "::error::parallelism must be at most 256, got '${PARALLELISM}'"
+            exit 1
+          fi
           if [ -n "$PR_NUMBER" ] && ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
             echo "::error::pr_number must be a pull request number, or empty"
             exit 1
@@ -267,6 +273,7 @@ jobs:
           detox-dir: detox
           detox-list-tests: "true"
           detox-config: ${{ inputs.detox_config }}
+          detox-sort-first: "@multi_server"
           detox-sort-last: "@server_mutation"
 
   dispatch-run:
