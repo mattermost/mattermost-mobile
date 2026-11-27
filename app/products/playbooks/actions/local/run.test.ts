@@ -5,9 +5,11 @@ import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import TestHelper from '@test/test_helper';
 
-import {handlePlaybookRuns, setOwner, updatePlaybookRun} from './run';
+import {handlePlaybookRuns, removePlaybookTasksMissingFromRun, setOwner, updatePlaybookRun, type StoredPlaybookTaskIds} from './run';
 
 import type {Database} from '@nozbe/watermelondb';
+import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 const serverUrl = 'baseHandler.test.com';
@@ -47,6 +49,245 @@ describe('handlePlaybookRuns', () => {
         expect(data![1]._preparedState).toBe('create');
         expect(data![2].id).toBe(runs[0].checklists[0].items[0].id);
         expect(data![2]._preparedState).toBe('create');
+    });
+});
+
+describe('removePlaybookTasksMissingFromRun', () => {
+    let database: Database;
+
+    beforeEach(() => {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    async function idsIn(table: string) {
+        const records = await database.get(table).query().fetch();
+        return records.map((record) => record.id).sort();
+    }
+
+    function storedTaskIds(run: PlaybookRun): StoredPlaybookTaskIds {
+        return {
+            checklistIds: run.checklists.map((checklist) => checklist.id),
+            itemIds: run.checklists.flatMap((checklist) => checklist.items.map((item) => item.id)),
+        };
+    }
+
+    function withKnownTaskTimestamps(run: PlaybookRun, updateAt = 1) {
+        run.checklists.forEach((checklist) => {
+            checklist.update_at = updateAt;
+            checklist.items.forEach((item) => {
+                item.update_at = updateAt;
+            });
+        });
+        return run;
+    }
+
+    it('should handle not found database', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 1, 1, true)[0];
+        const {error} = await removePlaybookTasksMissingFromRun('foo', run, {checklistIds: [], itemIds: []});
+        expect(error).toBeDefined();
+        expect((error as Error).message).toContain('foo database not found');
+    });
+
+    it('should remove a task the refreshed run no longer contains', async () => {
+        const run = withKnownTaskTimestamps(TestHelper.createPlaybookRuns(1, 1, 2, true)[0]);
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const [kept, removed] = run.checklists[0].items;
+        const refreshed = {
+            ...run,
+            checklists: [{
+                ...run.checklists[0],
+                items: [kept],
+                items_order: [kept.id],
+            }],
+        };
+
+        const {data, error} = await removePlaybookTasksMissingFromRun(serverUrl, refreshed, storedTaskIds(run));
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([kept.id]);
+        await expect(database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(removed.id)).rejects.toThrow();
+    });
+
+    it('should remove a checklist the refreshed run no longer contains', async () => {
+        const run = withKnownTaskTimestamps(TestHelper.createPlaybookRuns(1, 2, 1, true)[0]);
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const kept = run.checklists[0];
+        const removed = run.checklists[1];
+        const refreshed = {
+            ...run,
+            checklists: [kept],
+            items_order: [kept.id],
+        };
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, refreshed, storedTaskIds(run));
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([kept.id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([kept.items[0].id]);
+        await expect(database.get<PlaybookChecklistModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).find(removed.id)).rejects.toThrow();
+    });
+
+    it('should remove every local task when the refreshed run has no checklists', async () => {
+        const run = withKnownTaskTimestamps(TestHelper.createPlaybookRuns(1, 2, 2, true)[0]);
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []}, storedTaskIds(run));
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([]);
+        const storedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(run.id);
+        expect(storedRun).toBeDefined();
+    });
+
+    it('should keep a task that still exists when its local checklist is absent from the snapshot', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 2, 1, true)[0];
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const [keptChecklist, previousChecklist] = run.checklists;
+        const moved = previousChecklist.items[0];
+        const refreshed = {
+            ...run,
+            checklists: [{
+                ...keptChecklist,
+                items: [...keptChecklist.items, moved],
+                items_order: [keptChecklist.items[0].id, moved.id],
+            }],
+            items_order: [keptChecklist.id],
+        };
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, refreshed, storedTaskIds(run));
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([keptChecklist.id, previousChecklist.id].sort());
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([keptChecklist.items[0].id, moved.id].sort());
+        const storedMoved = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(moved.id);
+        expect(storedMoved.checklistId).toBe(previousChecklist.id);
+    });
+
+    it('should not delete tasks when a newer run is already stored', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 1, 2, true)[0];
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const storedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(run.id);
+        await database.write(async () => {
+            await storedRun.update((record) => {
+                record.updateAt = run.update_at + 1;
+            });
+        });
+        const before = await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM);
+
+        const {data, error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []}, storedTaskIds(run));
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual(before);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([run.checklists[0].id]);
+    });
+
+    it('should delete only tasks that are older than the snapshot', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 2, 3, true)[0];
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const snapshotAt = run.update_at;
+        const [taskChecklist, newerChecklist] = run.checklists;
+        const [older, sameAge, newer] = taskChecklist.items;
+        const olderModel = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(older.id);
+        const sameAgeModel = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(sameAge.id);
+        const newerModel = await database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(newer.id);
+        const newerChecklistModel = await database.get<PlaybookChecklistModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).find(newerChecklist.id);
+        const staleItems = await Promise.all(newerChecklist.items.map((item) => {
+            return database.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).find(item.id);
+        }));
+
+        await database.write(async () => {
+            await olderModel.update((record) => {
+                record.updateAt = snapshotAt - 1;
+            });
+            await sameAgeModel.update((record) => {
+                record.updateAt = snapshotAt;
+            });
+            await newerModel.update((record) => {
+                record.updateAt = snapshotAt + 1;
+            });
+            await newerChecklistModel.update((record) => {
+                record.updateAt = snapshotAt + 1;
+            });
+            await database.batch(...staleItems.map((item) => item.prepareDestroyPermanently()));
+        });
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []}, storedTaskIds(run));
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([sameAge.id, newer.id].sort());
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([taskChecklist.id, newerChecklist.id].sort());
+    });
+
+    it('should remove a captured task whose timestamp was never set', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 2, 1, true)[0];
+        const [unsetChecklist, unsetTaskChecklist] = run.checklists;
+        unsetChecklist.update_at = 0;
+        unsetChecklist.items = [];
+        unsetChecklist.items_order = [];
+        unsetTaskChecklist.update_at = 0;
+        unsetTaskChecklist.items[0].update_at = 0;
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const known = storedTaskIds(run);
+        const arrived = TestHelper.createPlaybookChecklist(run.id, 0, 9);
+        arrived.update_at = 0;
+        await handlePlaybookRuns(serverUrl, [{
+            ...run,
+            checklists: [...run.checklists, arrived],
+            items_order: [...run.items_order, arrived.id],
+        }], false, true);
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []}, known);
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([arrived.id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([]);
+    });
+
+    it('should keep an empty checklist stored after the fetch started', async () => {
+        const run = withKnownTaskTimestamps(TestHelper.createPlaybookRuns(1, 1, 1, true)[0]);
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const known = storedTaskIds(run);
+        const duplicate = TestHelper.createPlaybookChecklist(run.id, 0, 9);
+        duplicate.update_at = 1;
+        await handlePlaybookRuns(serverUrl, [{
+            ...run,
+            checklists: [...run.checklists, duplicate],
+            items_order: [...run.items_order, duplicate.id],
+        }], false, true);
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...run, checklists: [], items_order: []}, known);
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([duplicate.id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([]);
+    });
+
+    it('should leave tasks from another run in place', async () => {
+        const runs = TestHelper.createPlaybookRuns(2, 1, 1, true);
+        withKnownTaskTimestamps(runs[0]);
+        await handlePlaybookRuns(serverUrl, runs, false, true);
+        const otherItemId = runs[1].checklists[0].items[0].id;
+
+        const {error} = await removePlaybookTasksMissingFromRun(serverUrl, {...runs[0], checklists: [], items_order: []}, storedTaskIds(runs[0]));
+
+        expect(error).toBeUndefined();
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST)).toEqual([runs[1].checklists[0].id]);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual([otherItemId]);
+    });
+
+    it('should leave the local tasks in place when the refreshed run still contains them', async () => {
+        const run = TestHelper.createPlaybookRuns(1, 1, 2, true)[0];
+        await handlePlaybookRuns(serverUrl, [run], false, true);
+        const before = await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM);
+
+        const {data, error} = await removePlaybookTasksMissingFromRun(serverUrl, run, storedTaskIds(run));
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+        expect(await idsIn(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM)).toEqual(before);
     });
 });
 
