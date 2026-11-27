@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {switchToChannelById} from '@actions/remote/channel';
+import {appEntry} from '@actions/remote/entry';
 import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
-import {getLastViewedTeamIdAndServer} from '@queries/app/global';
+import {getLastViewedChannelIdAndServer, getLastViewedTeamIdAndServer} from '@queries/app/global';
 import {getServer} from '@queries/app/servers';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {queryMyTeams} from '@queries/servers/team';
@@ -14,6 +16,8 @@ import {determineRouteFromLaunchProps} from './launch';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {LaunchProps} from '@typings/launch';
 
+jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/entry');
 jest.mock('@init/credentials');
 jest.mock('@queries/app/global');
 jest.mock('@queries/app/servers');
@@ -69,5 +73,27 @@ describe('determineRouteFromLaunchProps', () => {
         const result = await determineRouteFromLaunchProps(props);
 
         expect(result).toEqual({route: '/(authenticated)/(home)', params: props});
+    });
+
+    it('should pass the last viewed channel to appEntry on a zero persistence cold start', async () => {
+        jest.mocked(getServer).mockResolvedValue({persistenceFlag: 'zero-persistence'} as unknown as ServersModel);
+        jest.mocked(getLastViewedTeamIdAndServer).mockResolvedValue({server_url: serverUrl, team_id: 'team1'});
+        jest.mocked(getLastViewedChannelIdAndServer).mockResolvedValue({server_url: serverUrl, channel_id: 'channel1'});
+
+        await determineRouteFromLaunchProps({...props, coldStart: true});
+
+        expect(appEntry).toHaveBeenCalledWith(serverUrl, {teamId: 'team1', channelId: 'channel1'});
+    });
+
+    it('should switch to the last viewed channel immediately on a non-zero-persistence cold start', async () => {
+        jest.mocked(getServer).mockResolvedValue({persistenceFlag: 'default'} as unknown as ServersModel);
+        jest.mocked(getLastViewedChannelIdAndServer).mockResolvedValue({server_url: serverUrl, channel_id: 'channel1'});
+        DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({database: {}, operator: {}});
+        jest.mocked(queryMyTeams).mockReturnValue({fetch: jest.fn().mockResolvedValue([{id: 'team1'}])} as unknown as ReturnType<typeof queryMyTeams>);
+
+        await determineRouteFromLaunchProps({...props, coldStart: true});
+
+        expect(switchToChannelById).toHaveBeenCalledWith(serverUrl, 'channel1');
+        expect(appEntry).toHaveBeenCalledWith(serverUrl, undefined);
     });
 });
