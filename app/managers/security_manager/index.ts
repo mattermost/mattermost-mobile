@@ -40,6 +40,7 @@ import {
     showConditionalAccessAlert,
     showDeviceNotTrustedAlert,
     showIdentitySwitchRequiredAlert,
+    showMAMAccountMismatchAlert,
     showMAMComplianceFailedAlert,
     showMAMDeclinedAlert,
     showMAMEnrollmentFailedAlert,
@@ -48,7 +49,8 @@ import {
 } from '@utils/alerts';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMainActivity} from '@utils/helpers';
-import {isProtectionPolicyRequired} from '@utils/intune_errors';
+import {accountMatchesUser} from '@utils/intune_account';
+import {isAccountChanged, isProtectionPolicyRequired} from '@utils/intune_errors';
 import {logDebug, logError} from '@utils/log';
 import {handleAppStateResume} from '@utils/security/app_state';
 import {getAuthenticationOutcome, probeDeviceSecured} from '@utils/security/authentication';
@@ -187,6 +189,7 @@ class SecurityManagerSingleton {
         this.intuneBlockedSubscription?.remove();
         this.intuneIdentitySwitchSubscription?.remove();
         this.intuneComplianceFailedSubscription?.remove();
+        this.intuneCompanyPortalSubscription?.remove();
 
         this.initialized = false;
         this.serverConfig = {};
@@ -690,7 +693,7 @@ class SecurityManagerSingleton {
             };
 
             const endSession = () => {
-                logout(serverUrl, undefined, {removeServer: false});
+                logout(serverUrl, undefined, {removeServer: false, skipAlert: true});
                 beforeExit();
                 resolve(false);
             };
@@ -698,6 +701,15 @@ class SecurityManagerSingleton {
             const handleEnrollment = async () => {
                 try {
                     const tokens = await IntuneManager.login(serverUrl, [intuneScope]);
+                    const enrolledOid = IntuneManager.getOid(serverUrl);
+                    const isEnrolledAccount = !enrolledOid || enrolledOid.toLowerCase() === tokens.identity.oid.toLowerCase();
+                    const isSignedInUser = !currentUser?.email || accountMatchesUser(currentUser.email, tokens.identity, tokens.idToken);
+                    if (!isEnrolledAccount || !isSignedInUser) {
+                        logDebug('ensureMAMEnrollment: Selected account differs from the signed-in account');
+                        showMAMAccountMismatchAlert(locale, handleEnrollment, endSession);
+                        return;
+                    }
+
                     const outcome = await IntuneManager.enrollAndWait(serverUrl, tokens.identity);
 
                     if (outcome === 'not_protected' || outcome === 'not_licensed') {
@@ -717,6 +729,10 @@ class SecurityManagerSingleton {
                     resolve(true);
                 } catch (error) {
                     logError('ensureMAMEnrollment: Failed', error);
+                    if (isAccountChanged(error)) {
+                        showMAMAccountMismatchAlert(locale, handleEnrollment, endSession);
+                        return;
+                    }
                     if (isProtectionPolicyRequired(error)) {
                         await showMAMEnrollmentFailedAlert(locale, endSession, undefined, 'not_protected');
                         return;

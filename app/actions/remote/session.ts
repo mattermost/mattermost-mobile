@@ -366,7 +366,8 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
     try {
         // Step 1: Acquire MSAL tokens with IntuneScope
         const tokens = await IntuneManager.login(serverUrl, [intuneScope]);
-        const {accessToken, identity} = tokens;
+        const {accessToken} = tokens;
+        let {identity} = tokens;
 
         // Step 2: POST accessToken to /oauth/intune to exchange for session token
         // A blocked sign-in invalidates the client, so a retry has to recreate it
@@ -391,6 +392,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
                         // Token expired/invalid - try refreshing
                         logDebug('nativeEntraLogin: Token expired, retrying');
                         const refreshedTokens = await IntuneManager.login(serverUrl, [intuneScope]);
+                        identity = refreshedTokens.identity;
                         userData = await client.loginByIntune(refreshedTokens.accessToken, deviceToken, voipDeviceToken);
                         csrfToken = await getCSRFFromCookie(serverUrl);
                         break;

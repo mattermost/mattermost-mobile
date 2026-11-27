@@ -140,6 +140,14 @@ export const messages = defineMessages({
         id: 'security_manager.mam_enrollment_failed_message',
         defaultMessage: 'Failed to enroll in Microsoft Intune. Please try again.',
     },
+    mam_account_mismatch_title: {
+        id: 'security_manager.mam_account_mismatch_title',
+        defaultMessage: 'Wrong Account',
+    },
+    mam_account_mismatch_message: {
+        id: 'security_manager.mam_account_mismatch_message',
+        defaultMessage: 'Use the account you signed in with to continue.',
+    },
     mam_declined_title: {
         id: 'security_manager.mam_declined_title',
         defaultMessage: 'Enrollment Declined',
@@ -583,6 +591,32 @@ export const showMAMEnrollmentFailedAlert = async (
         getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_title.id, messages.mam_enrollment_failed_title.defaultMessage),
         getLocalizedMessage(resolvedLocale, message.id, message.defaultMessage),
         buttons,
+        {cancelable: false},
+    );
+};
+
+export const showMAMAccountMismatchAlert = (
+    locale: string | undefined,
+    retryCallback: () => void,
+    logoutCallback: () => void,
+) => {
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+
+    Alert.alert(
+        getLocalizedMessage(resolvedLocale, messages.mam_account_mismatch_title.id, messages.mam_account_mismatch_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, messages.mam_account_mismatch_message.id, messages.mam_account_mismatch_message.defaultMessage),
+        [
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.retry.id, messages.retry.defaultMessage),
+                style: 'default',
+                onPress: retryCallback,
+            },
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.logout.id, messages.logout.defaultMessage),
+                style: 'destructive',
+                onPress: logoutCallback,
+            },
+        ],
         {cancelable: false},
     );
 };

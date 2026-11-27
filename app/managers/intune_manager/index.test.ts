@@ -211,6 +211,18 @@ describe('IntuneManager', () => {
             await expect(promise).resolves.toBe('not_protected');
         });
 
+        it('resolves failed when the policy cannot be read after enrollment', async () => {
+            jest.mocked(Intune.getPolicy).mockImplementation(() => {
+                throw new Error('policy read failed');
+            });
+
+            const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
+            emit({enrolled: true, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'success'});
+
+            await expect(promise).resolves.toBe('failed');
+            expect(remove).toHaveBeenCalled();
+        });
+
         it('resolves not_licensed when the account is not licensed', async () => {
             const promise = IntuneManager.enrollAndWait(serverUrl, mockIdentity);
             emit({enrolled: false, oid: mockIdentity.oid, serverUrls: [serverUrl], reason: 'not_licensed'});
@@ -329,6 +341,21 @@ describe('IntuneManager', () => {
 
             const result = IntuneManager.isManagedServer(serverUrl);
             expect(result).toBe(false);
+        });
+    });
+
+    describe('getOid', () => {
+        it('should return the enrolled oid for the server', () => {
+            jest.mocked(Intune.getOid).mockReturnValue('object-id');
+
+            expect(IntuneManager.getOid(serverUrl)).toBe('object-id');
+            expect(jest.mocked(Intune.getOid)).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should return null when the server has no enrollment', () => {
+            jest.mocked(Intune.getOid).mockReturnValue(null);
+
+            expect(IntuneManager.getOid(serverUrl)).toBeNull();
         });
     });
 

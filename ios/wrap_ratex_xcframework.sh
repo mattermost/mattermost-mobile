@@ -5,8 +5,22 @@ MIN_IOS_VERSION="${1:-18.0}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 XCFW_PATH="$SCRIPT_DIR/../node_modules/ratex-react-native/ios/RaTeX.xcframework"
 
+ORIG_PATH="$XCFW_PATH.orig"
+WRAPPED_PLIST="$XCFW_PATH/ios-arm64/RaTeX.framework/Info.plist"
+
 if [ -f "$XCFW_PATH/ios-arm64/RaTeX.framework/RaTeX" ] && [ ! -f "$XCFW_PATH/ios-arm64/libratex_ffi.a" ]; then
-  exit 0
+  WRAPPED_MIN_VERSION="$(plutil -extract MinimumOSVersion raw -o - "$WRAPPED_PLIST" 2>/dev/null || true)"
+  if [ "$WRAPPED_MIN_VERSION" = "$MIN_IOS_VERSION" ]; then
+    exit 0
+  fi
+
+  if [ ! -d "$ORIG_PATH" ]; then
+    echo "RaTeX.xcframework is wrapped for iOS ${WRAPPED_MIN_VERSION:-unknown} but $ORIG_PATH is missing; reinstall node_modules to rebuild it for $MIN_IOS_VERSION" >&2
+    exit 1
+  fi
+
+  rm -rf "$XCFW_PATH"
+  cp -R "$ORIG_PATH" "$XCFW_PATH"
 fi
 
 for slice in ios-arm64 ios-arm64_x86_64-simulator; do
@@ -15,6 +29,12 @@ for slice in ios-arm64 ios-arm64_x86_64-simulator; do
     exit 1
   fi
 done
+
+if [ ! -d "$ORIG_PATH" ]; then
+  rm -rf "$ORIG_PATH.partial"
+  cp -R "$XCFW_PATH" "$ORIG_PATH.partial"
+  mv "$ORIG_PATH.partial" "$ORIG_PATH"
+fi
 
 PKG_JSON="$SCRIPT_DIR/../node_modules/ratex-react-native/package.json"
 SHORT_VERSION="0.1.4"
@@ -105,5 +125,5 @@ xcodebuild -create-xcframework \
   -framework "$TMP_DIR/ios-arm64_x86_64-simulator/RaTeX.framework" \
   -output "$TMP_DIR/RaTeX.xcframework"
 
-mv "$XCFW_PATH" "$TMP_DIR/RaTeX.xcframework.orig"
+rm -rf "$XCFW_PATH"
 mv "$TMP_DIR/RaTeX.xcframework" "$XCFW_PATH"

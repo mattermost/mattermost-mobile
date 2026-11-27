@@ -171,6 +171,8 @@ export type IntuneSpec = {
     // SYNC: Get pending wipes (UserDefaults sync read)
     getPendingWipes(): PendingWipe[];
 
+    getOid(serverUrl: string): string | null;
+
     // SYNC: Policy query (reads from SDK's cached policy data)
     getPolicy(serverUrl: string): IntunePolicy | null;
 

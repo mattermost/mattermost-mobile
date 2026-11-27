@@ -581,6 +581,23 @@ describe('Session Actions', () => {
             );
         });
 
+        it('should enroll with the identity of the refreshed tokens after a 401 retry', async () => {
+            const refreshedTokens = {
+                ...mockTokens,
+                accessToken: 'refreshed-access-token',
+                identity: {upn: 'other@example.com', tid: 'tenant-id', oid: 'other-object-id'},
+            };
+
+            mockClient.loginByIntune.mockRejectedValueOnce({status_code: 401} as never).mockResolvedValueOnce(user1);
+            IntuneManager.login.mockResolvedValueOnce(mockTokens).mockResolvedValueOnce(refreshedTokens);
+
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+            expect(result.failed).toBe(false);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledTimes(1);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledWith(serverUrl, refreshedTokens.identity);
+        });
+
         it('should handle 412 MAM enrollment required', async () => {
             const error = {status_code: 412};
             mockClient.loginByIntune.mockRejectedValueOnce(error);

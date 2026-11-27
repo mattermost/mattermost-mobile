@@ -129,22 +129,21 @@ export class IntuneManagerSingleton {
                 resolve(outcome);
             };
 
-            const hasPolicy = () => {
-                try {
-                    return Boolean(intune.getPolicy(serverUrl));
-                } catch (error) {
-                    logError('IntuneManager: Failed to read policy after enrollment', error);
-                    return true;
-                }
-            };
-
             const subscription = intune.onIntuneEnrollmentChanged((event) => {
                 if (event.oid !== identity.oid && !event.serverUrls?.includes(serverUrl)) {
                     return;
                 }
 
                 if (event.enrolled) {
-                    finish(hasPolicy() ? 'enrolled' : 'not_protected');
+                    let policy;
+                    try {
+                        policy = intune.getPolicy(serverUrl);
+                    } catch (error) {
+                        logError('IntuneManager: Failed to read policy after enrollment', error);
+                        finish('failed');
+                        return;
+                    }
+                    finish(policy ? 'enrolled' : 'not_protected');
                 } else if (event.reason === 'not_licensed') {
                     finish('not_licensed');
                 } else if (event.reason === 'not_targeted' || event.reason === 'licensed_not_targeted') {
@@ -207,6 +206,14 @@ export class IntuneManagerSingleton {
         }
 
         return Intune.isManagedServer(serverUrl);
+    }
+
+    getOid(serverUrl: string): string | null {
+        if (!Intune) {
+            return null;
+        }
+
+        return Intune.getOid(serverUrl);
     }
 
     /**

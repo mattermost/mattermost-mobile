@@ -942,6 +942,14 @@ platform :android do
             new_string: "import #{package_id}.*"
         )
       end
+
+      Dir.glob('../android/app/src/intune/java/com/mattermost/helpers/*.kt') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.BuildConfig',
+            new_string: "import #{package_id}.BuildConfig"
+        )
+      end
     end
   end
 

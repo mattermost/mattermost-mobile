@@ -297,10 +297,11 @@ describe('SecurityManager - Intune MAM Integration', () => {
             SecurityManager.intuneBlockedSubscription = mockSubscription;
             SecurityManager.intuneIdentitySwitchSubscription = mockSubscription;
             SecurityManager.intuneComplianceFailedSubscription = mockSubscription;
+            SecurityManager.intuneCompanyPortalSubscription = mockSubscription;
 
             SecurityManager.cleanup();
 
-            expect(mockSubscription.remove).toHaveBeenCalledTimes(7);
+            expect(mockSubscription.remove).toHaveBeenCalledTimes(8);
         });
 
         test('should handle missing subscriptions gracefully', () => {
@@ -391,6 +392,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
             jest.mocked(getConfig).mockResolvedValue(mockConfig as ClientConfig);
             jest.mocked(getConfigValue).mockResolvedValue(Sso.OFFICE365);
             jest.mocked(getCurrentUserLocale).mockResolvedValue('en');
+            jest.mocked(IntuneManager.getOid).mockReturnValue(null);
         });
 
         test('should skip enrollment if already enrolling (race condition prevention)', async () => {
@@ -492,6 +494,139 @@ describe('SecurityManager - Intune MAM Integration', () => {
             showAlertSpy.mockRestore();
         });
 
+        test('should enroll when the selected account matches the enrolled account ignoring case', async () => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
+            jest.mocked(IntuneManager.getOid).mockReturnValue('OBJECT-ID');
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue('enrolled');
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            const mismatchAlertSpy = jest.spyOn(alerts, 'showMAMAccountMismatchAlert').mockImplementation(() => undefined);
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(true);
+            expect(IntuneManager.getOid).toHaveBeenCalledWith(serverUrl);
+            expect(mismatchAlertSpy).not.toHaveBeenCalled();
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+
+            enrollmentAlertSpy.mockRestore();
+            mismatchAlertSpy.mockRestore();
+        });
+
+        test('should not enroll and offer retry or logout when the selected account differs from the enrolled account', async () => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
+            jest.mocked(IntuneManager.getOid).mockReturnValue('another-object-id');
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue('enrolled');
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            let mismatches = 0;
+            const mismatchAlertSpy = jest.spyOn(alerts, 'showMAMAccountMismatchAlert').mockImplementation((_locale, onRetry, onLogout) => {
+                mismatches++;
+                if (mismatches === 1) {
+                    jest.mocked(IntuneManager.getOid).mockReturnValue(mockTokens.identity.oid);
+                    onRetry();
+                } else {
+                    onLogout();
+                }
+            });
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(true);
+            expect(mismatchAlertSpy).toHaveBeenCalledTimes(1);
+            expect(IntuneManager.login).toHaveBeenCalledTimes(2);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledTimes(1);
+            expect(logout).not.toHaveBeenCalled();
+
+            enrollmentAlertSpy.mockRestore();
+            mismatchAlertSpy.mockRestore();
+        });
+
+        test('should not enroll and offer retry when the selected account is not the signed-in user', async () => {
+            jest.mocked(getCurrentUser).mockResolvedValue({...mockUser, email: 'user@test.com'} as unknown as UserModel);
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.getOid).mockReturnValue(null);
+            jest.mocked(IntuneManager.enrollAndWait).mockResolvedValue('enrolled');
+            const otherTokens = {...mockTokens, identity: {...mockTokens.identity, upn: 'other@test.com'}};
+            jest.mocked(IntuneManager.login).mockResolvedValueOnce(otherTokens).mockResolvedValueOnce(mockTokens);
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            const mismatchAlertSpy = jest.spyOn(alerts, 'showMAMAccountMismatchAlert').mockImplementation((_locale, onRetry) => {
+                onRetry();
+            });
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(true);
+            expect(mismatchAlertSpy).toHaveBeenCalledTimes(1);
+            expect(IntuneManager.login).toHaveBeenCalledTimes(2);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledTimes(1);
+            expect(IntuneManager.enrollAndWait).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+
+            enrollmentAlertSpy.mockRestore();
+            mismatchAlertSpy.mockRestore();
+        });
+
+        test('should end the session when the user logs out from the account mismatch alert', async () => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
+            jest.mocked(IntuneManager.getOid).mockReturnValue('another-object-id');
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            const mismatchAlertSpy = jest.spyOn(alerts, 'showMAMAccountMismatchAlert').mockImplementation((_locale, _onRetry, onLogout) => {
+                onLogout();
+            });
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(false);
+            expect(IntuneManager.enrollAndWait).not.toHaveBeenCalled();
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false, skipAlert: true});
+            expect(SecurityManager.isEnrolling).toBe(false);
+
+            enrollmentAlertSpy.mockRestore();
+            mismatchAlertSpy.mockRestore();
+        });
+
+        test('should show the account mismatch alert when login rejects with account changed', async () => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
+            jest.mocked(IntuneManager.login).mockRejectedValue({userInfo: {domain: 'Intune', code: 1005, reason: 'account_changed'}});
+
+            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
+                onAccept();
+            });
+            const failedAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentFailedAlert').mockImplementation(async () => undefined);
+            const mismatchAlertSpy = jest.spyOn(alerts, 'showMAMAccountMismatchAlert').mockImplementation((_locale, _onRetry, onLogout) => {
+                onLogout();
+            });
+
+            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            expect(result).toBe(false);
+            expect(mismatchAlertSpy).toHaveBeenCalledTimes(1);
+            expect(failedAlertSpy).not.toHaveBeenCalled();
+            expect(IntuneManager.enrollAndWait).not.toHaveBeenCalled();
+
+            enrollmentAlertSpy.mockRestore();
+            failedAlertSpy.mockRestore();
+            mismatchAlertSpy.mockRestore();
+        });
+
         test('should clear isEnrolling flag after successful enrollment', async () => {
             jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
             jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
@@ -527,7 +662,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(false);
             expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), expect.any(Function));
-            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false, skipAlert: true});
             expect(logError).toHaveBeenCalled();
 
             enrollmentAlertSpy.mockRestore();
@@ -551,7 +686,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(false);
             expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), undefined, outcome);
-            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false, skipAlert: true});
             expect(SecurityManager.isEnrolling).toBe(false);
 
             enrollmentAlertSpy.mockRestore();
@@ -574,7 +709,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(result).toBe(false);
             expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function), undefined, 'not_protected');
-            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false});
+            expect(logout).toHaveBeenCalledWith(serverUrl, undefined, {removeServer: false, skipAlert: true});
 
             enrollmentAlertSpy.mockRestore();
             failedAlertSpy.mockRestore();

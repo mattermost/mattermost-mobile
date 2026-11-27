@@ -23,6 +23,7 @@ import {
     showIdentitySwitchRequiredAlert,
     showMAMEnrollmentRequiredAlert,
     showMAMEnrollmentFailedAlert,
+    showMAMAccountMismatchAlert,
     showMAMDeclinedAlert,
     showCompanyPortalRequiredAlert,
 } from './index';
@@ -737,6 +738,23 @@ describe('Intune alerts', () => {
             const onDismiss = jest.fn();
             await showMAMEnrollmentFailedAlert('en', onDismiss, jest.fn(), reason);
             expect(Alert.alert).toHaveBeenCalledWith('Enrollment Failed', expect.stringContaining(text), [{text: 'Okay', onPress: onDismiss}], {cancelable: false});
+        });
+    });
+
+    describe('showMAMAccountMismatchAlert', () => {
+        it('should offer retry and logout without naming any account', () => {
+            const onRetry = jest.fn();
+            const onLogout = jest.fn();
+            showMAMAccountMismatchAlert('en', onRetry, onLogout);
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Wrong Account',
+                'Use the account you signed in with to continue.',
+                [
+                    {text: 'Retry', style: 'default', onPress: onRetry},
+                    {text: 'Logout', style: 'destructive', onPress: onLogout},
+                ],
+                {cancelable: false},
+            );
         });
     });
 

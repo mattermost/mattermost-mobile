@@ -5,7 +5,7 @@ import {createIntl} from 'react-intl';
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
-import {getIntuneErrorMessage, IntuneAccessDeniedError, isMSALUserCancellation, isProtectionPolicyRequired} from './intune_errors';
+import {getIntuneErrorMessage, IntuneAccessDeniedError, isAccountChanged, isMSALUserCancellation, isProtectionPolicyRequired} from './intune_errors';
 
 const intl = createIntl({locale: DEFAULT_LOCALE, defaultLocale: DEFAULT_LOCALE, messages: getTranslations(DEFAULT_LOCALE)});
 
@@ -74,7 +74,29 @@ describe('isProtectionPolicyRequired', () => {
     });
 });
 
+describe('isAccountChanged', () => {
+    it('should be true for an Intune 1005 error (Android userInfo shape)', () => {
+        expect(isAccountChanged({userInfo: {domain: 'Intune', code: 1005, reason: 'account_changed'}})).toBe(true);
+    });
+
+    it('should be true for an Intune 1005 error encoded in the message (iOS shape)', () => {
+        expect(isAccountChanged({domain: 'Intune', code: 'intune_login_failed', message: 'Error in Intune (code: 1005)'})).toBe(true);
+    });
+
+    it('should be false for other errors', () => {
+        expect(isAccountChanged({domain: 'Intune', code: 1004})).toBe(false);
+        expect(isAccountChanged({domain: 'MSALErrorDomain', code: 1005})).toBe(false);
+        expect(isAccountChanged(new Error('x'))).toBe(false);
+        expect(isAccountChanged(undefined)).toBe(false);
+    });
+});
+
 describe('getIntuneErrorMessage', () => {
+    it('should return the account changed message for an Intune 1005 error', () => {
+        const error = {domain: 'Intune', code: 'intune_login_failed', message: 'Error in Intune (code: 1005)'};
+        expect(getIntuneErrorMessage(error, intl)).toBe('Use the same account for every step of the sign-in. Please try again.');
+    });
+
     describe('MSAL user cancellation (code -50005)', () => {
         it('should return login canceled message for NSError with numeric code -50005', () => {
             const error = {domain: 'MSALErrorDomain', code: -50005};

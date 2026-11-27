@@ -12,6 +12,7 @@ const MSAL_ERROR_CODE_USER_CANCELED = -50005;
 // Intune Error Domain and Codes
 const INTUNE_ERROR_DOMAIN = 'Intune';
 const INTUNE_ERROR_CODE_PROTECTION_POLICY_REQUIRED = 1004;
+const INTUNE_ERROR_CODE_ACCOUNT_CHANGED = 1005;
 
 // i18n message definitions
 export const intuneErrorMessages = {
@@ -46,6 +47,10 @@ export const intuneErrorMessages = {
     accessDeniedNotLicensed: defineMessage({
         id: 'mobile.intune.access_denied.not_licensed',
         defaultMessage: 'Your account is not licensed for Microsoft Intune. Please contact your IT help desk for more information.',
+    }),
+    accountChanged: defineMessage({
+        id: 'mobile.intune.account_changed',
+        defaultMessage: 'Use the same account for every step of the sign-in. Please try again.',
     }),
 };
 
@@ -111,6 +116,12 @@ export function isProtectionPolicyRequired(error: unknown): boolean {
         nsError.userInfo?.reason === 'not_compliant';
 }
 
+export function isAccountChanged(error: unknown): boolean {
+    const nsError = asNSError(error);
+    return nsError?.domain === INTUNE_ERROR_DOMAIN &&
+        extractNativeCode(nsError) === INTUNE_ERROR_CODE_ACCOUNT_CHANGED;
+}
+
 /**
  * Check if error is MSAL user cancellation
  */
@@ -136,6 +147,10 @@ export function isMSALUserCancellation(error: unknown): boolean {
 export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
     if (error instanceof IntuneAccessDeniedError) {
         return intl.formatMessage(error.reason === 'not_licensed' ? intuneErrorMessages.accessDeniedNotLicensed : intuneErrorMessages.accessDeniedNotProtected);
+    }
+
+    if (isAccountChanged(error)) {
+        return intl.formatMessage(intuneErrorMessages.accountChanged);
     }
 
     // Handle MSAL user cancellation (domain: MSALErrorDomain, code: -50005)
