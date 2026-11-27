@@ -262,7 +262,7 @@ jobs:
           retest-on-fail: "true"
           post-pending-commit-status: "false"
           duration-base-branch: ""
-          idle-timeout-ms: "2700000"
+          idle-timeout-ms: "5400000"
           lease-timeout-ms: "1800000"
           detox-dir: detox
           detox-list-tests: "true"

@@ -183,6 +183,14 @@ function isIpadSpec(file) {
   return file.endsWith(IPAD_SPEC_SUFFIX);
 }
 
+const OTHER_PLATFORM_SPEC_SUFFIX = {android: '.ios.e2e.ts', ios: '.android.e2e.ts'};
+
+// The other platform's Detox config ignores these, so a shard given one would run nothing.
+function isOtherPlatformSpec(file, platform) {
+  const suffix = OTHER_PLATFORM_SPEC_SUFFIX[platform];
+  return Boolean(suffix) && file.endsWith(suffix);
+}
+
 class Specs {
   constructor(searchPath, parallelism, deviceInfo, durations = {}, mutation = {}) {
     const parsed = parseSearchPath(searchPath);
@@ -208,7 +216,8 @@ class Specs {
     const root = path.resolve(this.searchPath);
     this.rawFiles = [...new Set(files)].filter((file) => {
       const full = path.resolve(file);
-      return /\.e2e\.ts$/.test(full) && isIpadSpec(full) === this.onlyIpad && full.startsWith(root + path.sep) && fs.existsSync(full);
+      return /\.e2e\.ts$/.test(full) && isIpadSpec(full) === this.onlyIpad && !isOtherPlatformSpec(full, this.mutation.platform) &&
+        full.startsWith(root + path.sep) && fs.existsSync(full);
     }).map(toRepoRelative);
   }
 
@@ -226,7 +235,7 @@ class Specs {
 
         if (stats.isDirectory()) {
           walkSync(filePath);
-        } else if (fileRegex.test(filePath) && isIpadSpec(file) === this.onlyIpad) {
+        } else if (fileRegex.test(filePath) && isIpadSpec(file) === this.onlyIpad && !isOtherPlatformSpec(file, this.mutation.platform)) {
           const relativeFilePath = filePath.replace(dirPath + '/', '');
           const fullPath = path.join(this.searchPath, relativeFilePath);
           this.rawFiles.push(toRepoRelative(fullPath));

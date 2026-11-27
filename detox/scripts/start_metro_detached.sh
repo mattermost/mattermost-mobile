@@ -15,16 +15,18 @@ log="${RUNNER_TEMP:-/tmp}/metro.log"
 RUNNING_E2E=true python3 -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' npm run start >>"$log" 2>&1 &
 echo "Metro pid $! log $log"
 
+fail() {
+  echo "::error::$1"
+  tail -50 "$log" || true
+  exit 1
+}
+
 timeout=120
 elapsed=0
 echo "Waiting for Metro bundler to be ready..."
-while [ "$elapsed" -lt "$timeout" ]; do
-  if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
-    echo "✅ Metro bundler is ready after ${elapsed}s (verified via health check)"
-    break
-  elif grep -q "Fast - Scalable - Integrated" "$log" 2>/dev/null; then
-    echo "✅ Metro bundler is ready after ${elapsed}s (verified via logs)"
-    break
+until curl -s --max-time 5 http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; do
+  if [ "$elapsed" -ge "$timeout" ]; then
+    fail "Metro did not report packager-status:running within ${timeout}s"
   fi
   if [ $((elapsed % 10)) -eq 0 ] && [ "$elapsed" -gt 0 ]; then
     echo "Still waiting for Metro... (${elapsed}s elapsed)"
@@ -32,17 +34,11 @@ while [ "$elapsed" -lt "$timeout" ]; do
   sleep 2
   elapsed=$((elapsed + 2))
 done
+echo "Metro is running after ${elapsed}s"
 
-if [ "$elapsed" -ge "$timeout" ]; then
-  echo "⚠️ Warning: Metro bundler may not be fully ready after ${timeout}s, proceeding anyway"
-  tail -30 "$log" || true
-else
-  echo "Metro is serving on http://localhost:8081"
-  echo "Allowing Metro to fully stabilize (20s on macos-15)..."
-  sleep 20
-  if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
-    echo "✅ Metro is serving bundles successfully"
-  else
-    echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"
-  fi
+# One bounded request: the first bundle builds the whole graph, so it can take minutes.
+echo "Requesting the iOS bundle..."
+if ! curl -sf --max-time 300 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false' 2>/dev/null | grep -q "__d("; then
+  fail "Metro did not serve an iOS bundle within 300s"
 fi
+echo "Metro is serving bundles on http://localhost:8081"

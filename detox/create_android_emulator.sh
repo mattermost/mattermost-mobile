@@ -18,6 +18,10 @@ setup_avd_home() {
     if [[ "${CI:-}" == "true" ]]; then
         export ANDROID_AVD_HOME=$(pwd)/.android/avd
         mkdir -p "$ANDROID_AVD_HOME"
+        # Later steps (Detox, adb) look the AVD up there too.
+        if [[ -n "${GITHUB_ENV:-}" ]]; then
+            echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
+        fi
     fi
 }
 

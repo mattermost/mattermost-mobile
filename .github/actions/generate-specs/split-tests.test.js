@@ -271,6 +271,28 @@ describe('mergeDurations', () => {
     });
 });
 
+describe('platform-specific specs', () => {
+    it("should drop the other platform's specs when walking and when given spec files", () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'split-tests-'));
+        try {
+            for (const name of ['a.e2e.ts', 'b.ios.e2e.ts', 'c.android.e2e.ts']) {
+                fs.writeFileSync(path.join(dir, name), '');
+            }
+            const specsFor = (platform) => new Specs(dir, 1, new DeviceInfo('iPhone', 'iOS 26.2'), {}, {platform});
+
+            const android = specsFor('android');
+            android.findFiles();
+            expect(android.rawFiles.map((f) => path.basename(f)).sort()).toEqual(['a.e2e.ts', 'c.android.e2e.ts']);
+
+            const ios = specsFor('ios');
+            ios.useFiles(['a.e2e.ts', 'b.ios.e2e.ts', 'c.android.e2e.ts'].map((name) => path.join(dir, name)));
+            expect(ios.rawFiles.map((f) => path.basename(f)).sort()).toEqual(['a.e2e.ts', 'b.ios.e2e.ts']);
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+});
+
 describe('server mutation isolation', () => {
     const pool = [
         'detox/e2e/test/a.e2e.ts',

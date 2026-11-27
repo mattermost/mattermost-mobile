@@ -29,6 +29,12 @@ if (simulatorId) {
     }
 }
 
+// .detoxrc.json names a fixed AVD; CI boots the one create_android_emulator.sh made.
+if (process.env.AVD_NAME) {
+    detoxConfig.devices['android.emulator'].device = {avdName: process.env.AVD_NAME};
+    console.log(`Pinned android.emulator to AVD ${process.env.AVD_NAME}`);
+}
+
 fs.writeFileSync('../.detoxrc.json', JSON.stringify(detoxConfig, null, 2));
 
 console.log('Detox configuration generated successfully');
