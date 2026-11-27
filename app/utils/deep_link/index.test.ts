@@ -427,6 +427,37 @@ describe('mobile QR login deep link', () => {
             expect(result).toEqual({error: true, alertShown: true});
         });
 
+        it('should sign in with one code at a time for the same server', async () => {
+            let finishFirst: () => void = () => undefined;
+            jest.mocked(mobileQrLogin).mockImplementationOnce(() => new Promise((resolve) => {
+                finishFirst = () => {
+                    jest.mocked(DatabaseManager.searchUrl).mockReturnValue('https://newserver.com');
+                    resolve({failed: false});
+                };
+            }));
+
+            const first = parseAndHandleDeepLink(`mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`, intl);
+            const second = parseAndHandleDeepLink(`mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`, intl);
+            await new Promise(process.nextTick);
+            expect(mobileQrLogin).toHaveBeenCalledTimes(1);
+
+            finishFirst();
+            await Promise.all([first, second]);
+
+            expect(mobileQrLogin).toHaveBeenCalledTimes(1);
+            expect(Alert.alert).toHaveBeenCalledWith('Already signed in', expect.any(String), [{text: 'OK'}]);
+        });
+
+        it('should redeem a code that was refused while signed in once the user signs out', async () => {
+            const url = `mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`;
+            jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://newserver.com');
+            await parseAndHandleDeepLink(url, intl);
+            expect(mobileQrLogin).not.toHaveBeenCalled();
+
+            await parseAndHandleDeepLink(url, intl);
+            expect(mobileQrLogin).toHaveBeenCalledTimes(1);
+        });
+
         it('should not alert when signed in but loading the server data failed', async () => {
             jest.mocked(mobileQrLogin).mockResolvedValue({error: 'entry failed', failed: false});
             const result = await parseAndHandleDeepLink(`mattermost://newserver.com/login/mobile_qr?t=${nextToken()}`, intl);

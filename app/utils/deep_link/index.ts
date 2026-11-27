@@ -110,7 +110,12 @@ type DeepLinkResult = {
     alertShown?: boolean;
 };
 
-const handleMobileQrLogin = async (serverUrl: string, token: string, intlShape?: IntlShape): Promise<DeepLinkResult> => {
+type MobileQrLoginOutcome = {
+    result: DeepLinkResult;
+    redeemAttempted: boolean;
+};
+
+const handleMobileQrLogin = async (serverUrl: string, token: string, intlShape?: IntlShape): Promise<MobileQrLoginOutcome> => {
     // Servers the user signed out of are not loaded, so a match here means there is an active session.
     const existingServerUrl = DatabaseManager.searchUrl(serverUrl);
     if (existingServerUrl) {
@@ -122,24 +127,40 @@ const handleMobileQrLogin = async (serverUrl: string, token: string, intlShape?:
             intl.formatMessage(mobileQrMessages.alreadySignedInDescription),
             [{text: intl.formatMessage(mobileQrMessages.ok)}],
         );
-        return {error: false};
+        return {result: {error: false}, redeemAttempted: false};
     }
 
     const result = await mobileQrLogin(serverUrl, token);
     if (result.failed) {
         logError('Failed to do mobile QR login', getFullErrorMessage(result.error));
         alertMobileQrLoginError(intlShape || getIntlShape(DEFAULT_LOCALE), result.error);
-        return {error: true, alertShown: true};
+        return {result: {error: true, alertShown: true}, redeemAttempted: true};
     }
     if (result.error) {
         logError('Mobile QR login succeeded but loading the server data failed', getFullErrorMessage(result.error));
     }
-    return {error: false};
+    return {result: {error: false}, redeemAttempted: true};
 };
 
 // A cold start from the link is handled by both the router and the launch code, and the code can only be redeemed once.
 const MOBILE_QR_DEDUPE_MS = 15000;
 const mobileQrHandling = new Map<string, {result: Promise<DeepLinkResult>; settledAt?: number}>();
+
+// Sign-ins to the same server run one at a time so that one account owns the server's client, credentials and database.
+const mobileQrServerQueue = new Map<string, Promise<unknown>>();
+
+const runSerializedForServer = <T>(serverKey: string, task: () => Promise<T>): Promise<T> => {
+    const previous = mobileQrServerQueue.get(serverKey) || Promise.resolve();
+    const run = previous.catch(() => undefined).then(task);
+    const tail = run.catch(() => undefined);
+    mobileQrServerQueue.set(serverKey, tail);
+    tail.then(() => {
+        if (mobileQrServerQueue.get(serverKey) === tail) {
+            mobileQrServerQueue.delete(serverKey);
+        }
+    });
+    return run;
+};
 
 const handleMobileQrLoginOnce = (serverUrl: string, token: string, intlShape?: IntlShape) => {
     const now = Date.now();
@@ -149,16 +170,29 @@ const handleMobileQrLoginOnce = (serverUrl: string, token: string, intlShape?: I
         }
     }
 
-    const key = `${removeProtocol(serverUrl)}|${token}`;
+    const serverKey = removeProtocol(serverUrl).replace(/\/+$/, '');
+    const key = `${serverKey}|${token}`;
     const existing = mobileQrHandling.get(key);
     if (existing) {
         return existing.result;
     }
 
     const entry: {result: Promise<DeepLinkResult>; settledAt?: number} = {
-        result: handleMobileQrLogin(serverUrl, token, intlShape).finally(() => {
-            entry.settledAt = Date.now();
-        }),
+        result: runSerializedForServer(serverKey, () => handleMobileQrLogin(serverUrl, token, intlShape)).then(
+            ({result, redeemAttempted}) => {
+                if (redeemAttempted) {
+                    entry.settledAt = Date.now();
+                } else {
+                    // The code was not used, so a later scan (e.g. after signing out) must try again.
+                    mobileQrHandling.delete(key);
+                }
+                return result;
+            },
+            (error) => {
+                mobileQrHandling.delete(key);
+                throw error;
+            },
+        ),
     };
     mobileQrHandling.set(key, entry);
     return entry.result;
