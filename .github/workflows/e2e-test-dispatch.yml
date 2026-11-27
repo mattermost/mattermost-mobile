@@ -189,6 +189,7 @@ jobs:
                 ".github/actions/generate-specs/**",
                 ".github/actions/provision-e2e-servers/**",
                 ".github/actions/e2e-test-stack-sites/**",
+                ".github/actions/e2e-test-dispatch/**",
                 ".github/actions/prepare-low-bandwidth/**",
                 ".github/actions/bandwidth-throttling/**",
                 ".github/actions/start-proxy/**"
