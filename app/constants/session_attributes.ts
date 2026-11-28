@@ -6,3 +6,6 @@ export const SESSION_ATTRIBUTES_PLATFORM_MOBILE = 'mobile';
 
 // Collecting this attribute natively requires runtime location authorization.
 export const SESSION_ATTRIBUTES_SSID_FIELD = 'ssid';
+
+// Reported per server from SecurityManager's biometric state.
+export const SESSION_ATTRIBUTES_BIOMETRIC_AUTHENTICATED_FIELD = 'biometric_authenticated';
