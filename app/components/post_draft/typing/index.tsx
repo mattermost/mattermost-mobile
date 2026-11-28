@@ -70,7 +70,7 @@ function Typing({
             return;
         }
 
-        typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now);
+        typing.current = typing.current.filter(({id, now}) => id !== msg.userId || now > msg.now);
 
         if (timeoutToDisappear.current) {
             clearTimeout(timeoutToDisappear.current);
