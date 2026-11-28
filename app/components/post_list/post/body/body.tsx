@@ -61,6 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignContent: 'flex-start',
+            rowGap: 6,
         },
         messageBody: {
             paddingVertical: 2,
