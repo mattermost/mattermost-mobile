@@ -36,14 +36,22 @@ until curl -s --max-time 5 http://localhost:8081/status 2>/dev/null | grep -q "p
 done
 echo "Metro is running after ${elapsed}s"
 
-# One bounded request: the first bundle builds the whole graph, so it can take minutes.
-echo "Requesting the iOS bundle..."
+# One bounded request: the first bundle builds the whole graph from a cold cache.
+# On macOS runners with a freshly booted simulator that can take 15+ minutes.
+# The query matches what RCTBundleURLProvider requests, so the app reuses this graph.
+bundle_timeout="${METRO_BUNDLE_TIMEOUT:-1200}"
+echo "Requesting the iOS bundle (up to ${bundle_timeout}s)..."
 bundle="$(mktemp)"
 trap 'rm -f "$bundle"' EXIT
-if ! curl -sf --max-time 300 -o "$bundle" 'http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false' 2>/dev/null; then
-  fail "Metro did not serve a complete iOS bundle within 300s"
+SECONDS=0
+curl_status=0
+curl -sf --max-time "$bundle_timeout" -o "$bundle" 'http://localhost:8081/index.bundle?platform=ios&dev=true&lazy=true&minify=false' 2>/dev/null || curl_status=$?
+if [ "$curl_status" -eq 28 ]; then
+  fail "Metro did not serve a complete iOS bundle within ${bundle_timeout}s"
+elif [ "$curl_status" -ne 0 ]; then
+  fail "Metro failed to serve the iOS bundle after ${SECONDS}s (curl exit ${curl_status})"
 fi
 if ! grep -q "__d(" "$bundle"; then
   fail "Metro served an iOS bundle without module definitions"
 fi
-echo "Metro is serving bundles on http://localhost:8081"
+echo "Metro served the iOS bundle after ${SECONDS}s and is listening on http://localhost:8081"
