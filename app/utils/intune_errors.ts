@@ -12,9 +12,10 @@ const MSAL_ERROR_CODE_USER_CANCELED = -50005;
 // Intune Error Domain and Codes
 const INTUNE_ERROR_DOMAIN = 'Intune';
 const INTUNE_ERROR_CODE_PROTECTION_POLICY_REQUIRED = 1004;
+const INTUNE_ERROR_CODE_ACCOUNT_CHANGED = 1005;
 
 // i18n message definitions
-const intuneErrorMessages = {
+export const intuneErrorMessages = {
     loginCanceled: defineMessage({
         id: 'mobile.intune.login.canceled',
         defaultMessage: 'Login was canceled. Please try again',
@@ -39,21 +40,59 @@ const intuneErrorMessages = {
         id: 'mobile.intune.compliance.user_cancelled',
         defaultMessage: 'Login was canceled. Please try again.',
     }),
+    accessDeniedNotProtected: defineMessage({
+        id: 'mobile.intune.access_denied.not_protected',
+        defaultMessage: 'This app must be protected with an Intune policy before you can access company data. Please contact your IT help desk for more information.',
+    }),
+    accessDeniedNotLicensed: defineMessage({
+        id: 'mobile.intune.access_denied.not_licensed',
+        defaultMessage: 'Your account is not licensed for Microsoft Intune. Please contact your IT help desk for more information.',
+    }),
+    accountChanged: defineMessage({
+        id: 'mobile.intune.account_changed',
+        defaultMessage: 'Use the same account for every step of the sign-in. Please try again.',
+    }),
 };
+
+export type IntuneAccessDeniedReason = 'not_protected' | 'not_licensed';
+
+export class IntuneAccessDeniedError extends Error {
+    reason: IntuneAccessDeniedReason;
+
+    constructor(reason: IntuneAccessDeniedReason) {
+        super(`Intune access denied: ${reason}`);
+        this.name = 'IntuneAccessDeniedError';
+        this.reason = reason;
+    }
+}
 
 // RN serializes NSError.domain onto the JS error object, but NSError.code may be
 // replaced by the string reject-code passed to reject(). We accept both for robustness
 // and also extract the numeric code from the message string when needed.
 type NSError = {domain: string; code: number | string; message?: string; userInfo?: Record<string, string>};
 
-function isNSError(error: unknown): error is NSError {
-    return (
-        typeof error === 'object' &&
-        error !== null &&
-        'domain' in error &&
-        'code' in error &&
-        typeof (error as {domain: unknown}).domain === 'string'
-    );
+// Android cannot set domain on the JS error, so it sends domain and code in userInfo instead
+function asNSError(error: unknown): NSError | null {
+    if (typeof error !== 'object' || error === null) {
+        return null;
+    }
+
+    const candidate = error as Partial<NSError> & {userInfo?: Record<string, string | number>};
+    if (typeof candidate.domain === 'string' && candidate.code !== undefined) {
+        return candidate as NSError;
+    }
+
+    const domain = candidate.userInfo?.domain;
+    if (typeof domain === 'string') {
+        return {
+            domain,
+            code: candidate.userInfo?.code ?? '',
+            message: candidate.message,
+            userInfo: candidate.userInfo as Record<string, string>,
+        };
+    }
+
+    return null;
 }
 
 // Extracts the numeric NSError code from the sanitized message: "Error in <domain> (code: <number>)"
@@ -70,14 +109,28 @@ function extractNativeCode(error: NSError): number | null {
     return match ? parseInt(match[1], 10) : null;
 }
 
+export function isProtectionPolicyRequired(error: unknown): boolean {
+    const nsError = asNSError(error);
+    return nsError?.domain === INTUNE_ERROR_DOMAIN &&
+        extractNativeCode(nsError) === INTUNE_ERROR_CODE_PROTECTION_POLICY_REQUIRED &&
+        nsError.userInfo?.reason === 'not_compliant';
+}
+
+export function isAccountChanged(error: unknown): boolean {
+    const nsError = asNSError(error);
+    return nsError?.domain === INTUNE_ERROR_DOMAIN &&
+        extractNativeCode(nsError) === INTUNE_ERROR_CODE_ACCOUNT_CHANGED;
+}
+
 /**
  * Check if error is MSAL user cancellation
  */
 export function isMSALUserCancellation(error: unknown): boolean {
-    if (!isNSError(error) || error.domain !== MSAL_ERROR_DOMAIN) {
+    const nsError = asNSError(error);
+    if (!nsError || nsError.domain !== MSAL_ERROR_DOMAIN) {
         return false;
     }
-    return extractNativeCode(error) === MSAL_ERROR_CODE_USER_CANCELED;
+    return extractNativeCode(nsError) === MSAL_ERROR_CODE_USER_CANCELED;
 }
 
 /**
@@ -92,6 +145,14 @@ export function isMSALUserCancellation(error: unknown): boolean {
  * @returns User-friendly error message
  */
 export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
+    if (error instanceof IntuneAccessDeniedError) {
+        return intl.formatMessage(error.reason === 'not_licensed' ? intuneErrorMessages.accessDeniedNotLicensed : intuneErrorMessages.accessDeniedNotProtected);
+    }
+
+    if (isAccountChanged(error)) {
+        return intl.formatMessage(intuneErrorMessages.accountChanged);
+    }
+
     // Handle MSAL user cancellation (domain: MSALErrorDomain, code: -50005)
     if (isMSALUserCancellation(error)) {
         return intl.formatMessage(intuneErrorMessages.loginCanceled);
@@ -99,13 +160,14 @@ export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
 
     // Handle compliance failure (domain: Intune, code: 1004)
     // SDK provides localized errorMessage in userInfo — use it directly when available
-    if (isNSError(error) && error.domain === INTUNE_ERROR_DOMAIN &&
-        extractNativeCode(error) === INTUNE_ERROR_CODE_PROTECTION_POLICY_REQUIRED) {
-        const sdkMessage = error.userInfo?.errorMessage;
+    const nsError = asNSError(error);
+    if (nsError && nsError.domain === INTUNE_ERROR_DOMAIN &&
+        extractNativeCode(nsError) === INTUNE_ERROR_CODE_PROTECTION_POLICY_REQUIRED) {
+        const sdkMessage = nsError.userInfo?.errorMessage;
         if (sdkMessage) {
             return sdkMessage;
         }
-        switch (error.userInfo?.reason) {
+        switch (nsError.userInfo?.reason) {
             case 'not_compliant':
                 return intl.formatMessage(intuneErrorMessages.complianceNotCompliant);
             case 'network_failure':
@@ -118,7 +180,7 @@ export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
     }
 
     // Handle generic MSAL errors (other MSALErrorDomain codes)
-    if (isNSError(error) && error.domain === MSAL_ERROR_DOMAIN) {
+    if (nsError && nsError.domain === MSAL_ERROR_DOMAIN) {
         return intl.formatMessage(intuneErrorMessages.authFailed);
     }
 

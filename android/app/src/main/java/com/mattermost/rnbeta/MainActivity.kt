@@ -10,13 +10,14 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.mattermost.hardware.keyboard.MattermostHardwareKeyboardImpl
+import com.mattermost.helpers.IntuneReactActivity
 import com.mattermost.rnutils.helpers.FoldableObserver
 import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory;
 import expo.modules.ReactActivityDelegateWrapper
 
-class MainActivity : ReactActivity() {
+class MainActivity : IntuneReactActivity() {
     private var HWKeyboardConnected = false
-    private val foldableObserver = FoldableObserver.getInstance(this)
+    private lateinit var foldableObserver: FoldableObserver
     private var lastOrientation: Int = Configuration.ORIENTATION_UNDEFINED
 
     /**
@@ -40,7 +41,12 @@ class MainActivity : ReactActivity() {
 
         setHWKeyboardConnected()
         lastOrientation = this.resources.configuration.orientation
+
+        // Initialize foldableObserver after super.onCreate() to ensure Activity is fully initialized
+        // This is required when Intune MAM SDK transforms the Activity to extend MAMActivity
+        foldableObserver = FoldableObserver.getInstance(this)
         foldableObserver.onCreate()
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 

@@ -1,3 +1,25 @@
+// Intune MAM plugin buildscript
+buildscript {
+    if (intuneEnabled) {
+        // Download SDK files if needed
+        apply from: "${rootProject.projectDir}/../libraries/@mattermost/intune/android/download-sdk.gradle"
+
+        repositories {
+            mavenCentral()
+        }
+
+        dependencies {
+            classpath files("${rootProject.projectDir}/../libraries/@mattermost/intune/android/libs/com.microsoft.intune.mam.build.jar")
+            classpath "org.javassist:javassist:3.29.2-GA"
+        }
+    }
+}
+
+// Apply Intune helper functions (after buildscript)
+if (intuneEnabled) {
+    apply from: "${rootProject.projectDir}/../libraries/@mattermost/intune/android/setup-app.gradle"
+}
+
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
@@ -104,6 +126,12 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     namespace "com.mattermost.rnbeta"
 
+    sourceSets {
+        main {
+            java.srcDirs += intuneEnabled ? ["src/intune/java"] : ["src/nointune/java"]
+        }
+    }
+
     lintOptions {
         checkReleaseBuilds false
         abortOnError false
@@ -153,21 +181,34 @@ android {
     }
     buildTypes {
         def useReleaseKey = project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')
+
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
             if (useReleaseKey) {
                 signingConfig signingConfigs.release
+                if (intuneEnabled) {
+                    manifestPlaceholders = [SIGNATURE_HASH: getSignatureHash(signingConfigs.release)]
+                }
             } else {
                 signingConfig signingConfigs.debug
+                if (intuneEnabled) {
+                    manifestPlaceholders = [SIGNATURE_HASH: getSignatureHash(signingConfigs.debug)]
+                }
             }
         }
         debug {
             if (useReleaseKey) {
                 signingConfig signingConfigs.release
+                if (intuneEnabled) {
+                    manifestPlaceholders = [SIGNATURE_HASH: getSignatureHash(signingConfigs.release)]
+                }
             } else {
                 signingConfig signingConfigs.debug
+                if (intuneEnabled) {
+                    manifestPlaceholders = [SIGNATURE_HASH: getSignatureHash(signingConfigs.debug)]
+                }
             }
         }
         unsigned.initWith(buildTypes.release)
@@ -243,6 +284,11 @@ dependencies {
     implementation project(':react-native-notifications')
     implementation project(':watermelondb-jsi')
 
+    // Intune MAM SDK (required at runtime for MAM Application base class)
+    if (intuneEnabled) {
+        implementation files("${rootProject.projectDir}/../libraries/@mattermost/intune/android/libs/Microsoft.Intune.MAM.SDK.aar")
+    }
+
     api('io.jsonwebtoken:jjwt-api:0.12.5')
     runtimeOnly('io.jsonwebtoken:jjwt-impl:0.12.5')
     runtimeOnly('io.jsonwebtoken:jjwt-orgjson:0.12.5') {
@@ -280,3 +326,9 @@ tasks.register('copyDownloadableDepsToLibs', Copy) {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+// Intune MAM plugin - applied here AFTER dependencies are resolved
+// Uses helper function from setup-app.gradle
+if (intuneEnabled) {
+    applyIntunePlugin()
+}

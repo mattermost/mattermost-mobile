@@ -8,7 +8,7 @@ import {attachAuditEventErrorReason} from '@actions/local/ephemeral_mode/audit_q
 import {cancelAllSessionNotifications} from '@actions/local/session';
 import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {logout, scheduleSessionNotification} from '@actions/remote/session';
-import {Events} from '@constants';
+import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
@@ -21,6 +21,7 @@ import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
@@ -73,6 +74,7 @@ jest.mock('@managers/intune_manager', () => ({
         subscribeToConditionalLaunchBlocked: jest.fn().mockReturnValue({remove: jest.fn()}),
         subscribeToIdentitySwitchRequired: jest.fn().mockReturnValue({remove: jest.fn()}),
         subscribeToComplianceFailed: jest.fn().mockReturnValue({remove: jest.fn()}),
+        subscribeToCompanyPortalRequired: jest.fn().mockReturnValue({remove: jest.fn()}),
     },
 }));
 jest.mock('@managers/network_manager');
@@ -214,6 +216,35 @@ describe('SessionManager', () => {
             // flushes opportunistically, but has nothing to attach a reason to.
             expect(flushAuditQueue).toHaveBeenCalledWith(mockServerUrl);
             expect(attachAuditEventErrorReason).not.toHaveBeenCalled();
+        });
+
+        it('should clean up without leaving the current screen when navigation is skipped', async () => {
+            jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue(mockServerUrl);
+            jest.mocked(determineRouteFromLaunchProps).mockClear();
+            jest.mocked(EphemeralStore.isSilentLogout).mockReturnValue(true);
+
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl: mockServerUrl, removeServer: true});
+
+            await TestHelper.wait(50);
+
+            expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, false);
+            expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
+            expect(removeServerCredentials).toHaveBeenCalledWith(mockServerUrl);
+            expect(determineRouteFromLaunchProps).not.toHaveBeenCalled();
+            expect(EphemeralStore.clearSilentLogout).toHaveBeenCalledWith(mockServerUrl);
+            jest.mocked(EphemeralStore.isSilentLogout).mockReturnValue(false);
+        });
+
+        it('should keep the server url and display name on the server screen when other servers remain', async () => {
+            jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue(mockServerUrl);
+            (DatabaseManager as any).serverDatabases = {'https://other.server.com': {}};
+
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl: mockServerUrl, removeServer: true});
+
+            await TestHelper.wait(50);
+
+            expect(determineRouteFromLaunchProps).toHaveBeenCalledWith({launchType: Launch.AddServer, serverUrl: mockServerUrl, displayName: mockServerDisplayName});
+            (DatabaseManager as any).serverDatabases = {};
         });
 
         it('should handle session expiration', async () => {

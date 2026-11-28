@@ -14,7 +14,10 @@ import {IntuneAuthRequiredReasons} from '@managers/intune_manager/types';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getConfigValue} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {intuneErrorMessages, type IntuneAccessDeniedReason} from '@utils/intune_errors';
+import {logDebug, logError} from '@utils/log';
+
+const MAM_ALERT_DELAY_MS = 500;
 
 export const messages = defineMessages({
     not_secured_vendor_ios: {
@@ -135,7 +138,15 @@ export const messages = defineMessages({
     },
     mam_enrollment_failed_message: {
         id: 'security_manager.mam_enrollment_failed_message',
-        defaultMessage: 'Failed to enroll in Microsoft Intune. You will be logged out.',
+        defaultMessage: 'Failed to enroll in Microsoft Intune. Please try again.',
+    },
+    mam_account_mismatch_title: {
+        id: 'security_manager.mam_account_mismatch_title',
+        defaultMessage: 'Wrong Account',
+    },
+    mam_account_mismatch_message: {
+        id: 'security_manager.mam_account_mismatch_message',
+        defaultMessage: 'Use the account you signed in with to continue.',
     },
     mam_declined_title: {
         id: 'security_manager.mam_declined_title',
@@ -144,6 +155,18 @@ export const messages = defineMessages({
     mam_declined_message: {
         id: 'security_manager.mam_declined_message',
         defaultMessage: '{organization} requires enrollment in Microsoft Intune. You can retry enrollment or logout.',
+    },
+    company_portal_required_title: {
+        id: 'security_manager.company_portal_required_title',
+        defaultMessage: 'Company Portal Required',
+    },
+    company_portal_required_message: {
+        id: 'security_manager.company_portal_required_message',
+        defaultMessage: 'To use your work or school account with this app, you must install the Microsoft Intune Company Portal app.',
+    },
+    go_to_store: {
+        id: 'security_manager.go_to_store',
+        defaultMessage: 'Go to Store',
     },
     enroll_now: {
         id: 'security_manager.enroll_now',
@@ -482,12 +505,12 @@ export const showConditionalAccessAlert = async (locale?: string, callback?: () 
 /**
  * Shows an alert when Intune requires an identity switch.
  */
-export const showIdentitySwitchRequiredAlert = async (locale?: string) => {
+export const showIdentitySwitchRequiredAlert = async (locale?: string, callback?: () => void) => {
     const resolvedLocale = locale || DEFAULT_LOCALE;
     Alert.alert(
         getLocalizedMessage(resolvedLocale, messages.identity_switch_required_title.id, messages.identity_switch_required_title.defaultMessage),
         getLocalizedMessage(resolvedLocale, messages.identity_switch_required_message.id, messages.identity_switch_required_message.defaultMessage),
-        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage)}],
+        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
         {cancelable: false},
     );
 };
@@ -527,18 +550,73 @@ export const showMAMEnrollmentRequiredAlert = async (
 
 /**
  * Shows an alert when MAM enrollment fails.
- * User will be logged out after dismissing the alert.
+ * A denial (not protected / not licensed) can only be dismissed, which ends the session.
+ * Any other failure offers a retry, and signing out is left to the user.
  */
 export const showMAMEnrollmentFailedAlert = async (
-    locale?: string,
-    callback?: () => void,
+    locale: string | undefined,
+    callback: (() => void) | undefined,
+    retryCallback?: () => void,
+    deniedReason?: IntuneAccessDeniedReason,
+) => {
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+
+    // An alert raised while the Intune block screen is opening is not shown on Android
+    await new Promise((resolve) => setTimeout(resolve, MAM_ALERT_DELAY_MS));
+
+    let message = messages.mam_enrollment_failed_message;
+    if (deniedReason) {
+        message = deniedReason === 'not_licensed' ? intuneErrorMessages.accessDeniedNotLicensed : intuneErrorMessages.accessDeniedNotProtected;
+    }
+
+    const buttons: AlertButton[] = [];
+    if (retryCallback && !deniedReason) {
+        buttons.push({
+            text: getLocalizedMessage(resolvedLocale, messages.retry.id, messages.retry.defaultMessage),
+            style: 'default',
+            onPress: retryCallback,
+        });
+        buttons.push({
+            text: getLocalizedMessage(resolvedLocale, messages.logout.id, messages.logout.defaultMessage),
+            style: 'destructive',
+            onPress: callback,
+        });
+    } else {
+        buttons.push({text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback});
+    }
+
+    logDebug('showMAMEnrollmentFailedAlert: showing', {deniedReason, retry: Boolean(retryCallback)});
+
+    Alert.alert(
+        getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_title.id, messages.mam_enrollment_failed_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, message.id, message.defaultMessage),
+        buttons,
+        {cancelable: false},
+    );
+};
+
+export const showMAMAccountMismatchAlert = (
+    locale: string | undefined,
+    retryCallback: () => void,
+    logoutCallback: () => void,
 ) => {
     const resolvedLocale = locale || DEFAULT_LOCALE;
 
     Alert.alert(
-        getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_title.id, messages.mam_enrollment_failed_title.defaultMessage),
-        getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_message.id, messages.mam_enrollment_failed_message.defaultMessage),
-        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
+        getLocalizedMessage(resolvedLocale, messages.mam_account_mismatch_title.id, messages.mam_account_mismatch_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, messages.mam_account_mismatch_message.id, messages.mam_account_mismatch_message.defaultMessage),
+        [
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.retry.id, messages.retry.defaultMessage),
+                style: 'default',
+                onPress: retryCallback,
+            },
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.logout.id, messages.logout.defaultMessage),
+                style: 'destructive',
+                onPress: logoutCallback,
+            },
+        ],
         {cancelable: false},
     );
 };
@@ -608,6 +686,36 @@ export const showMAMComplianceFailedAlert = (
         title,
         message,
         [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
+        {cancelable: false},
+    );
+};
+
+/**
+ * Shows an alert when Company Portal app is required for Intune enrollment.
+ * Provides option to go to Play Store/App Store or cancel (logs out user).
+ */
+export const showCompanyPortalRequiredAlert = async (
+    locale: string | undefined,
+    goToStoreCallback: () => void,
+    cancelCallback: () => void,
+) => {
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+
+    Alert.alert(
+        getLocalizedMessage(resolvedLocale, messages.company_portal_required_title.id, messages.company_portal_required_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, messages.company_portal_required_message.id, messages.company_portal_required_message.defaultMessage),
+        [
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.logout.id, messages.logout.defaultMessage),
+                style: 'cancel',
+                onPress: cancelCallback,
+            },
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.go_to_store.id, messages.go_to_store.defaultMessage),
+                style: 'default',
+                onPress: goToStoreCallback,
+            },
+        ],
         {cancelable: false},
     );
 };

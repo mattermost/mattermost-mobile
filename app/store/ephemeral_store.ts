@@ -97,6 +97,7 @@ class EphemeralStoreSingleton {
 
     // Add-server candidate secret before a session exists (not safe in Expo Router params).
     private pendingPreauthSecrets: {[serverUrl: string]: string | undefined} = {};
+    private silentLogouts = new Set<string>();
 
     addRunningTranslation = (postId: string) => {
         this.runningTranslations.add(postId);
@@ -663,6 +664,18 @@ class EphemeralStoreSingleton {
 
     clearPendingPreauthSecret = (serverUrl: string) => {
         delete this.pendingPreauthSecrets[serverUrl];
+    };
+
+    setSilentLogout = (serverUrl: string) => {
+        this.silentLogouts.add(serverUrl);
+    };
+
+    isSilentLogout = (serverUrl: string) => {
+        return this.silentLogouts.has(serverUrl);
+    };
+
+    clearSilentLogout = (serverUrl: string) => {
+        this.silentLogouts.delete(serverUrl);
     };
 
     // Ephemeral control for the items currently in a post list viewport

@@ -14,6 +14,7 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.modules.network.OkHttpClientProvider
+import com.mattermost.helpers.IntuneHelper
 import com.mattermost.networkclient.RCTOkHttpClientFactory
 import com.mattermost.networkclient.sessionattributes.SessionAttributes
 import com.mattermost.rnshare.ShareWorker
@@ -61,6 +62,8 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         TurboLog.configure(options = ConfigureOptions(maximumNumberOfFiles = 5, logsDirectory = applicationContext.cacheDir.absolutePath + "/logs", logPrefix = applicationContext.packageName))
 
         TurboLog.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
+
+        IntuneHelper.initialize(this) { reactHost }
 
         // Tells React Native to use our RCTOkHttpClientFactory which builds an OKHttpClient
         // with a cookie jar defined in APIClientModule and an interceptor to intercept all

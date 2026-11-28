@@ -3,7 +3,7 @@ description: Action to prepare environment for ios build
 
 inputs:
   intune-enabled:
-    description: 'Enable Intune MAM features (requires Xcode 26.1+)'
+    description: 'Enable Intune MAM features (requires Xcode 27+)'
     required: false
     default: 'false'
   intune-ssh-private-key:
@@ -13,11 +13,11 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: ci/select-xcode-26
+    - name: ci/select-xcode
       shell: bash
       run: |
-        # Intune (and this action's Xcode switch) require Xcode 26.1+.
-        MIN_VERSION=26.1
+        # The app builds with Xcode 27+ (also required by IntuneMAMSwift 22.x).
+        MIN_VERSION=27
         version_ge() {
           # True when $1 >= $2 (version-sort).
           [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -1)" = "$2" ]
@@ -31,21 +31,21 @@ runs:
           exit 0
         fi
 
-        # Find the highest pre-installed Xcode with version >= 26.1.
+        # Find the highest pre-installed Xcode with version >= MIN_VERSION.
         # Scan all Xcode_*.app directories, extract the version from the name,
-        # filter >= 26.1, and select the highest. Future-proofs for Xcode 30+.
-        XCODE_26=$(for app in /Applications/Xcode_*.app; do
+        # filter >= MIN_VERSION, and select the highest. Future-proofs for Xcode 30+.
+        XCODE_APP=$(for app in /Applications/Xcode_*.app; do
           [ -d "$app" ] || continue
           ver=$(basename "$app" .app | sed 's/^Xcode_//')
           version_ge "$ver" "$MIN_VERSION" && echo "$app"
         done | sort -V | tail -1 || echo "")
-        if [ -z "$XCODE_26" ]; then
+        if [ -z "$XCODE_APP" ]; then
           echo "::error::No Xcode ${MIN_VERSION}+ found pre-installed on this runner and default is $CURRENT_SDK."
           exit 1
         fi
 
-        echo "Switching Xcode from default ($CURRENT_SDK) to ${XCODE_26##*/}"
-        sudo xcode-select -s "$XCODE_26"
+        echo "Switching Xcode from default ($CURRENT_SDK) to ${XCODE_APP##*/}"
+        sudo xcode-select -s "$XCODE_APP"
         NEW_SDK=$(xcrun --sdk iphonesimulator --show-sdk-version)
         echo "Now using Xcode SDK version: ${NEW_SDK}"
 
@@ -119,13 +119,13 @@ runs:
       uses: ./.github/actions/prepare-mobile-build
 
     - name: ci/setup-intune
-      if: inputs.intune-enabled == 'true'
+      if: inputs.intune-enabled == '1' || inputs.intune-enabled == 'true'
       uses: ./.github/actions/setup-intune
       with:
         ssh-private-key: ${{ inputs.intune-ssh-private-key }}
 
     - name: Get Intune submodule commit hash
-      if: inputs.intune-enabled == 'true'
+      if: inputs.intune-enabled == '1' || inputs.intune-enabled == 'true'
       id: intune-hash
       shell: bash
       run: |

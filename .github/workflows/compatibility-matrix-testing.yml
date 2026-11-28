@@ -268,10 +268,8 @@ jobs:
   #   ]
   # }
   build-ios-simulator:
-    # macos-14 predates Xcode 26 and has none pre-installed, so prepare-ios-build's
-    # Xcode 26 requirement always fails here. e2e-detox-pr.yml and
-    # e2e-maestro-template.yml already build on macos-26 successfully — match that.
-    runs-on: macos-26
+    # prepare-ios-build requires Xcode 27+, which only the xcode-27 image ships.
+    runs-on: xcode-27
     needs:
       - update-initial-status
     permissions:

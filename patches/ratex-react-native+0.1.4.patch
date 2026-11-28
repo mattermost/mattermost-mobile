@@ -1,8 +1,21 @@
+diff --git a/node_modules/ratex-react-native/ios/RaTeXEngine.swift b/node_modules/ratex-react-native/ios/RaTeXEngine.swift
+index 8ae1091..5bba7f3 100644
+--- a/node_modules/ratex-react-native/ios/RaTeXEngine.swift
++++ b/node_modules/ratex-react-native/ios/RaTeXEngine.swift
+@@ -1,7 +1,7 @@
+ // RaTeXEngine.swift — Swift wrapper around the ratex_parse_and_layout C ABI.
+ 
+ import Foundation
+-import RaTeXFFI
++import RaTeX
+ import UIKit
+ 
+ private func ffiColor(from color: UIColor, traitCollection: UITraitCollection? = nil) -> RatexColor {
 diff --git a/node_modules/ratex-react-native/ios/RaTeXViewManager.mm b/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
-index 10323ea..99d35a5 100644
+index 00fbe5c..d22a4cc 100644
 --- a/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
 +++ b/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
-@@ -14,7 +14,11 @@
+@@ -17,7 +17,11 @@
  #endif
  
  // Swift-generated header (module name derived from podspec/target name)

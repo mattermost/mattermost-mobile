@@ -9,20 +9,18 @@
  * When updating Intune library types, update these types to match.
  */
 
-import {Platform, type EventSubscription} from 'react-native';
+import {type EventSubscription} from 'react-native';
 
 // Try to import enums from Intune library at runtime
 let IntuneAuthRequiredReasonsExport: Record<string, string> | null = null;
 let IntuneConditionalLaunchBlockedReasonsExport: Record<string, string> | null = null;
 
-if (Platform.OS === 'ios') {
-    try {
-        const errors = require('@mattermost/intune/src/errors');
-        IntuneAuthRequiredReasonsExport = errors.IntuneAuthRequiredReasons;
-        IntuneConditionalLaunchBlockedReasonsExport = errors.IntuneConditionalLaunchBlockedReasons;
-    } catch {
-        // Intune library not available - use stub enums below
-    }
+try {
+    const errors = require('@mattermost/intune/src/errors');
+    IntuneAuthRequiredReasonsExport = errors.IntuneAuthRequiredReasons;
+    IntuneConditionalLaunchBlockedReasonsExport = errors.IntuneConditionalLaunchBlockedReasons;
+} catch {
+    // Intune library not available - use stub enums below
 }
 
 // Export enum objects - can be used both as type and runtime value
@@ -94,6 +92,8 @@ export type IntuneConditionalLaunchBlockedEvent = Readonly<{
     reason: string;
 }>;
 
+export type IntuneEnrollmentOutcome = 'enrolled' | 'not_protected' | 'not_licensed' | 'failed' | 'timeout';
+
 export type IntuneEnrollmentChangedEvent = Readonly<{
     enrolled: boolean;
     oid: string;
@@ -132,6 +132,11 @@ export type IntuneComplianceFailedEvent = Readonly<{
     errorMessage: string;
 }>;
 
+export type IntuneCompanyPortalRequiredEvent = Readonly<{
+    oid: string;
+    serverUrls: string[];
+}>;
+
 export type PendingWipe = Readonly<{
     oid: string;
     serverUrls: string[];
@@ -166,6 +171,8 @@ export type IntuneSpec = {
     // SYNC: Get pending wipes (UserDefaults sync read)
     getPendingWipes(): PendingWipe[];
 
+    getOid(serverUrl: string): string | null;
+
     // SYNC: Policy query (reads from SDK's cached policy data)
     getPolicy(serverUrl: string): IntunePolicy | null;
 
@@ -177,4 +184,5 @@ export type IntuneSpec = {
     onIntuneIdentitySwitchRequired: (listener: (event: IntuneIdentitySwitchRequiredEvent) => void) => EventSubscription;
     onIntuneComplianceCompleted: (listener: (event: IntuneComplianceCompletedEvent) => void) => EventSubscription;
     onIntuneComplianceFailed: (listener: (event: IntuneComplianceFailedEvent) => void) => EventSubscription;
+    onIntuneCompanyPortalRequired: (listener: (event: IntuneCompanyPortalRequiredEvent) => void) => EventSubscription;
 }

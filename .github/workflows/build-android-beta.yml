@@ -10,6 +10,7 @@ on:
 env:
   NODE_VERSION: 24.15.0
   TERM: xterm
+  INTUNE_ENABLED: 'true'
 
 jobs:
   test:
@@ -33,6 +34,9 @@ jobs:
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
         env:
           STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
           STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"

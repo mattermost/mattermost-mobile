@@ -608,7 +608,7 @@ platform :ios do
     ########################
 
     # Configure Intune
-    intune_enabled = ENV['INTUNE_ENABLED'] == 'true' || ENV['INTUNE_ENABLED'] == '1'
+    intune_enabled = ENV['INTUNE_ENABLED'] == '1' || ENV['INTUNE_ENABLED'] == 'true'
     if intune_enabled
       intune_client_id = ENV['INTUNE_CLIENT_ID']
       intune_redirect_uri = "msauth.#{app_bundle_id}://auth"
@@ -822,6 +822,7 @@ platform :android do
       configure
     end
     update_identifiers
+    configure_intune_msal
     replace_assets
     pinned_certificates
     link_sentry({:os_type => "android"})
@@ -839,6 +840,7 @@ platform :android do
     ENV['APP_SCHEME'] = 'mattermost'
 
     update_identifiers
+    configure_intune_msal
     replace_assets
 
     gradle(
@@ -940,6 +942,14 @@ platform :android do
             new_string: "import #{package_id}.*"
         )
       end
+
+      Dir.glob('../android/app/src/intune/java/com/mattermost/helpers/*.kt') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.BuildConfig',
+            new_string: "import #{package_id}.BuildConfig"
+        )
+      end
     end
   end
 
@@ -950,6 +960,102 @@ platform :android do
     end
     sh 'mkdir -p ../android/app/src/main/res/raw/'
     sh 'cp -R ../assets/sounds/* ../android/app/src/main/res/raw/'
+  end
+
+  lane :configure_intune_msal do
+    intune_enabled = ENV['INTUNE_ENABLED'] == '1' || ENV['INTUNE_ENABLED'] == 'true'
+
+    if intune_enabled
+      UI.message('Configuring Android Intune MSAL settings')
+
+      client_id = ENV['INTUNE_CLIENT_ID']
+      package_name = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+
+      # Calculate signature hash from keystore (matches Gradle logic)
+      require 'uri'
+      require 'base64'
+      require 'open3'
+
+      # Read keystore configuration like Gradle does: project gradle.properties, overridden per key by the Gradle user home's
+      gradle_props = {}
+      gradle_user_home = ENV['GRADLE_USER_HOME'].to_s.empty? ? File.expand_path('~/.gradle') : File.expand_path(ENV['GRADLE_USER_HOME'])
+      ['../android/gradle.properties', File.join(gradle_user_home, 'gradle.properties')].each do |props_file|
+        next unless File.exist?(props_file)
+        File.read(props_file).each_line do |line|
+          next if line.strip.empty? || line.strip.start_with?('#')
+          key, value = line.split('=', 2)
+          gradle_props[key.strip] = value.strip if key && value
+        end
+        UI.message("Reading gradle.properties from: #{props_file}")
+      end
+
+      # Determine which keystore to use (same logic as Gradle, where storeFile is relative to android/app)
+      if gradle_props['MATTERMOST_RELEASE_STORE_FILE'] && !gradle_props['MATTERMOST_RELEASE_STORE_FILE'].empty?
+        keystore_path = File.expand_path(gradle_props['MATTERMOST_RELEASE_STORE_FILE'], File.expand_path('../android/app'))
+        keystore_password = gradle_props['MATTERMOST_RELEASE_PASSWORD']
+        key_alias = gradle_props['MATTERMOST_RELEASE_KEY_ALIAS']
+        UI.message("Using release keystore: #{keystore_path}")
+      else
+        keystore_path = File.expand_path('../android/app/debug.keystore')
+        keystore_password = 'android'
+        key_alias = 'androiddebugkey'
+        UI.message("Using debug keystore")
+      end
+
+      # Extract SHA1 fingerprint from keystore
+      begin
+        # Not through `sh`: it logs the command line, which carries the keystore password
+        keytool_output, keytool_status = Open3.capture2e(
+          'keytool', '-list', '-v', '-keystore', keystore_path, '-alias', key_alias.to_s,
+          '-storepass', keystore_password.to_s, '-keypass', keystore_password.to_s
+        )
+        sha1_match = keytool_output.match(/SHA1:\s*((?:\h{2}:){19}\h{2})/)
+        raise 'keytool did not return a SHA1 fingerprint' unless keytool_status.success? && sha1_match
+
+        sha1_fingerprint = sha1_match[1].delete(':')
+
+        # Convert hex to binary then base64 (matches Gradle logic)
+        signature_hash = Base64.strict_encode64([sha1_fingerprint].pack('H*'))
+
+        # URI-encode the signature hash (MSAL requires this)
+        encoded_hash = URI.encode_www_form_component(signature_hash)
+
+        UI.success("Calculated signature hash: #{signature_hash}")
+      rescue => e
+        UI.error("Failed to calculate signature hash: #{e.message}")
+        UI.user_error!("Could not read keystore. Please verify keystore path and credentials.")
+      end
+
+      # Ensure raw directory exists
+      sh 'mkdir -p ../android/app/src/main/res/raw/'
+
+      # Generate msal_config.json matching MSAL's expected format
+      msal_config = {
+        'client_id' => client_id,
+        'authorization_user_agent' => 'DEFAULT',
+        'redirect_uri' => "msauth://#{package_name}/#{encoded_hash}",
+        'broker_redirect_uri_registered' => true,
+        'account_mode' => 'MULTIPLE',
+        'client_capabilities' => 'protapp',
+        'authorities' => [
+          {
+            'type' => 'AAD',
+            'audience' => {
+              'type' => 'AzureADMultipleOrgs',
+              'tenant_id' => 'organizations'
+            }
+          }
+        ]
+      }
+
+      File.write(
+        '../android/app/src/main/res/raw/msal_config.json',
+        JSON.pretty_generate(msal_config)
+      )
+
+      UI.success("Created msal_config.json for package: #{package_name}")
+      UI.message("Redirect URI: msauth://#{package_name}/#{encoded_hash}")
+    end
   end
 
   lane :pinned_certificates do

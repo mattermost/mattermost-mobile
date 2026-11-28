@@ -30,6 +30,9 @@ ENV['RCT_HERMES_V1_ENABLED'] ||= '1' if podfile_properties['useHermesV1'] == 'tr
 
 app_deployment_target = podfile_properties['deploymentTarget'] || '18.0'
 platform :ios, app_deployment_target
+# Isolate Rust's _rust_eh_personality into a dynamic framework so Mattermost
+# stays within Apple compact unwind's 3-personality-routine limit on Xcode 27.
+system(File.join(__dir__, 'wrap_ratex_xcframework.sh'), app_deployment_target) || raise('Failed to wrap RaTeX.xcframework as a dynamic framework')
 prepare_react_native_project!
 
 Pod::UI.puts "Configuring Pod with statically linked Frameworks".green
@@ -117,6 +120,7 @@ post_install do |installer|
 
   installer.pods_project.targets.each do |t|
     t.build_configurations.each do |bc|
+      bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = app_deployment_target
       bc.build_settings['SWIFT_VERSION']        = '5.9'
       bc.build_settings['OTHER_LDFLAGS']        = ['$(inherited)', '-ObjC']
       bc.build_settings['STRIP_SWIFT_SYMBOLS']  = 'NO'
