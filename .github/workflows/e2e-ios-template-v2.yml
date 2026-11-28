@@ -270,7 +270,9 @@ jobs:
       needs.e2e-test-stack-create.result == 'success' &&
       needs.begin.result == 'success'
     runs-on: macos-15
-    timeout-minutes: 180
+    # Setup and simulator boot (up to ~16 min), Start Metro (25), dispatch-run (150), and margin; the 4h batch TTL
+    # still leaves time for the macOS runner queue.
+    timeout-minutes: 210
     permissions:
       contents: read
       actions: read
@@ -426,9 +428,32 @@ jobs:
       - name: ci/detox-config
         run: cd detox && npm run detox:config-gen
 
+      # Metro keeps its transform cache in os.tmpdir()/metro-cache. On macOS os.tmpdir() is a per-user $TMPDIR under
+      # /var/folders, so Start Metro sets TMPDIR to the path restore and save share. Entries are keyed by file content,
+      # so a cache from older app sources still serves every unchanged file.
+      - name: Restore Metro cache
+        id: metro-cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/metro-tmp/metro-cache
+          key: ${{ runner.os }}-${{ runner.arch }}-metro-${{ hashFiles('package-lock.json', 'babel.config.js', 'metro.config.js', 'patches/**') }}-${{ hashFiles('index.tsx', 'app/**', 'share_extension/**', 'types/**') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-metro-${{ hashFiles('package-lock.json', 'babel.config.js', 'metro.config.js', 'patches/**') }}-
+
       - name: Start Metro
         timeout-minutes: 25
+        env:
+          TMPDIR: ${{ runner.temp }}/metro-tmp
         run: bash detox/scripts/start_metro_detached.sh
+
+      # One worker saves: every worker transforms the same files, and actions/cache archives the cache before it
+      # finds the key taken, so the others would only spend time. A fork run never saves.
+      - name: Save Metro cache
+        if: inputs.fork != true && matrix.worker == 1 && steps.metro-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.temp }}/metro-tmp/metro-cache
+          key: ${{ steps.metro-cache.outputs.cache-primary-key }}
 
       - name: ci/dispatch-run
         timeout-minutes: 150
