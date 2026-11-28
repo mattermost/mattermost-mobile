@@ -7,6 +7,7 @@ import {describe, it} from 'node:test';
 import {
     applyBaseline,
     type BaselineTransport,
+    CONFIG_BASELINE,
     inspectBaselineKeys,
     isBaselineKey,
     parseConfigPath,
@@ -277,6 +278,19 @@ describe('applyBaseline', () => {
         assert.equal(flagWrites.length, 1);
         assert.deepEqual(Object.keys(flagWrites[0]?.body?.FeatureFlags ?? {}).sort(), initialFlagKeys);
         assert.equal(patchCalls(server.calls)[0]?.body?.FeatureFlags, undefined, 'the config patch carries no flags');
+    });
+
+    it('never writes PluginStates, so plugins a spec enabled stay enabled', async () => {
+        const config = freshConfig();
+        config.PluginSettings.PluginStates = {'com.mattermost.demo-plugin': {Enable: true}};
+        const server = createFakeServer({config});
+        await applyBaseline(server.transport, {serverUrl: SERVER_URL});
+
+        assert.ok(writesOf(server.calls).length > 0);
+        for (const call of writesOf(server.calls)) {
+            assert.equal(call.body?.PluginSettings?.PluginStates, undefined, `${call.method} ${call.path} carries PluginStates`);
+        }
+        assert.deepEqual(server.config.PluginSettings.PluginStates, {'com.mattermost.demo-plugin': {Enable: true}});
     });
 
     it('never patches pinned keys, reports them pinnedOk or pinnedMismatch, and keeps pinned flags at their current value', async () => {
@@ -575,6 +589,10 @@ describe('baseline declarations', () => {
             {name: 'com.mattermost.calls', mapKey: true},
             {name: 'DefaultEnabled', mapKey: false},
         ]);
+    });
+
+    it('declares no PluginStates key', () => {
+        assert.equal(Object.keys(CONFIG_BASELINE).some((key) => key.startsWith('PluginSettings.PluginStates')), false);
     });
 
     it('recognises baseline keys and rejects unknown ones', () => {

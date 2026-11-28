@@ -12,7 +12,7 @@ import {
     convergeDepartment,
     createAbacChannel,
     createChannelMember,
-    getProvisionedDepartmentField,
+    ensureDepartmentField,
     setDepartment,
 } from '@support/abac_test_helper';
 import {
@@ -62,9 +62,9 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             throw new Error(`Upload permission tests need an Enterprise Advanced license, got ${license?.SkuShortName}`);
         }
 
-        // # ABAC, user-managed attributes and the Department attribute come from provisioning
+        // # ABAC, user-managed attributes come from the server baseline; the Department attribute is created when missing
         await assertAbacBaseline(siteOneUrl);
-        const department = await getProvisionedDepartmentField(siteOneUrl);
+        const department = await ensureDepartmentField(siteOneUrl);
         departmentFieldId = department.id;
 
         const {team} = await Setup.apiInit(siteOneUrl);

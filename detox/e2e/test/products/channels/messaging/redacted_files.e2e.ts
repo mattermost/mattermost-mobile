@@ -9,7 +9,7 @@
 
 import path from 'path';
 
-import {assertAbacBaseline, createAbacChannel, createChannelMember, getProvisionedDepartmentField, setDepartment} from '@support/abac_test_helper';
+import {assertAbacBaseline, createAbacChannel, createChannelMember, ensureDepartmentField, setDepartment} from '@support/abac_test_helper';
 import {
     AccessControl,
     Channel,
@@ -55,9 +55,9 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         // # Require Enterprise license
         await System.apiRequireLicense(siteOneUrl);
 
-        // # ABAC, user-managed attributes and the Department attribute come from provisioning
+        // # ABAC, user-managed attributes come from the server baseline; the Department attribute is created when missing
         await assertAbacBaseline(siteOneUrl);
-        const department = await getProvisionedDepartmentField(siteOneUrl);
+        const department = await ensureDepartmentField(siteOneUrl);
 
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;

@@ -4,7 +4,7 @@
 import {CustomProfileAttributes, System, User} from '@support/server_api';
 import {disableSynchronization, enableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 
-// Keep in sync with detox/provision/custom-profile-attributes.ts
+// Keep in sync with detox/provision/custom-profile-attributes.ts, which creates them on the legacy layout's servers.
 export const USER_ATTRIBUTE_FIELD_NAMES = ['Bio', 'Department', 'Team'] as const;
 
 export type UserAttributesFieldIds = [string, string, string];
@@ -78,35 +78,6 @@ const buildFieldIdByName = (fields: CustomProfileField[] | undefined): Map<strin
     return byName;
 };
 
-const ensureUserAttributeFields = async (siteOneUrl: string): Promise<string | undefined> => {
-    const {fields, error: listError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
-    if (listError) {
-        return `Could not list custom profile fields: ${JSON.stringify(listError)}`;
-    }
-
-    const byName = buildFieldIdByName(fields as CustomProfileField[]);
-    const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
-    if (missing.length === 0) {
-        return undefined;
-    }
-
-    // CI fields are provisioned by the server baseline; specs never create them.
-    if (process.env.CI === 'true') {
-        return `Missing custom profile fields: ${missing.join(', ')}. The server baseline must provision them.`;
-    }
-
-    /* eslint-disable no-await-in-loop -- create missing fields sequentially */
-    for (const name of missing) {
-        const {error: createError} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(siteOneUrl, {name});
-        if (createError) {
-            return `Failed to create custom profile field "${name}": ${JSON.stringify(createError)}`;
-        }
-    }
-    /* eslint-enable no-await-in-loop */
-
-    return undefined;
-};
-
 const resolveUserAttributeFieldIds = (fields: CustomProfileField[]): UserAttributesFieldIds | undefined => {
     const byName = buildFieldIdByName(fields);
     const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
@@ -139,11 +110,6 @@ export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<
         return {ready: false, reason: flagError};
     }
 
-    const fieldsError = await ensureUserAttributeFields(siteOneUrl);
-    if (fieldsError) {
-        return {ready: false, reason: fieldsError};
-    }
-
     const {fields, error: finalListError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
     if (finalListError) {
         return {ready: false, reason: `Could not list custom profile fields: ${JSON.stringify(finalListError)}`};
@@ -153,7 +119,7 @@ export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<
     if (!fieldIds) {
         const byName = buildFieldIdByName(fields as CustomProfileField[]);
         const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
-        return {ready: false, reason: `Missing provisioned fields: ${missing.join(', ')}`};
+        return {ready: false, reason: `Missing custom profile fields: ${missing.join(', ')}; the spec must call Setup.ensureCustomProfileAttributeFields first`};
     }
 
     return {ready: true, fieldIds};

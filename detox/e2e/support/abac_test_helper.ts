@@ -11,7 +11,7 @@ import axios from 'axios';
 
 import {logInfo} from '../../provision/log';
 
-// Server state the ABAC suites rely on; provisioning sets it, the suites only check it.
+// Server state the ABAC suites rely on; the server baseline sets it, the suites only check it.
 const ABAC_BASELINE_KEYS = [
     'FeatureFlags.PermissionPolicies',
     'FeatureFlags.ChannelPermissionPolicies',
@@ -23,17 +23,22 @@ const ABAC_BASELINE_KEYS = [
 export const assertAbacBaseline = (baseUrl: string) => assertServerBaseline(baseUrl, ABAC_BASELINE_KEYS);
 
 /**
- * The provisioned "Department" profile attribute. Shared by every ABAC suite, so suites must never
- * create or delete it themselves.
+ * The "Department" profile attribute, created when missing. Shared by every ABAC suite, so suites must never
+ * delete it.
  */
-export const getProvisionedDepartmentField = async (baseUrl: string): Promise<{id: string; name: string}> => {
+export const ensureDepartmentField = async (baseUrl: string): Promise<{id: string; name: string}> => {
+    const ensureError = await Setup.ensureCustomProfileAttributeFields(baseUrl, ['Department']);
+    if (ensureError) {
+        throw new Error(ensureError);
+    }
+
     const {fields, error} = await AccessControl.apiGetCustomProfileAttributeFields(baseUrl);
     if (error) {
         throw new Error(`Failed to list profile attribute fields: ${JSON.stringify(error)}`);
     }
     const field = (fields as Array<{id: string; name: string; delete_at?: number}>).find((f) => f.name === 'Department' && !f.delete_at);
     if (!field) {
-        throw new Error('The "Department" profile attribute is missing; provisioning must run first');
+        throw new Error('The "Department" profile attribute is missing after ensureCustomProfileAttributeFields');
     }
     return field;
 };

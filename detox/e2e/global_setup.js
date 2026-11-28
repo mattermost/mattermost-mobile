@@ -94,9 +94,12 @@ const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localh
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
-// Plugins in this set are never disabled by this setup; provisioning owns them (provision/constants.ts).
-// The demo plugin is installed on every full-suite server (pool A and mutation B), in DialogOnlyMode.
-const PROVISIONED_PLUGINS = new Set(['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
+// Keep in sync with isSpecOwnedServerSetup in support/server_role.ts.
+const SPEC_OWNED_SERVER_SETUP = process.env.CI !== 'true' || process.env.E2E_PIPELINE === 'v2';
+
+// Where specs own server setup, only prepackaged plugins stay enabled and a spec that needs another enables it
+// (Setup.ensureDemoPlugin). On the legacy CI pipeline provisioning owns these too (provision/constants.ts).
+const PROVISIONED_PLUGINS = new Set(SPEC_OWNED_SERVER_SETUP ? [] : ['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
 
 // Prepackaged plugins to keep enabled (shared with provisioning).
 const PREPACKAGED_PLUGINS = new Set(require('../shared/prepackaged-plugins.json'));
@@ -299,7 +302,7 @@ async function serverSetup() {
         process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
     }
 
-    // Server config comes from provisioning (detox/shared/server-baseline.ts); shards only probe it.
+    // Server config is the spec's: test/setup.ts applies the baseline per spec file; this only probes it.
 
     // Shared Channels needs the license feature and a running remote-cluster service; probing here
     // lets the suite report as skipped rather than passed on a server that cannot run it.

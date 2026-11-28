@@ -20,6 +20,7 @@ import {
     setUpDialogSuite,
 } from '@support/interactive_dialog_plugin_helper';
 import {System, User} from '@support/server_api';
+import {DEMO_PLUGIN_SETUP_TIMEOUT} from '@support/server_api/server_setup';
 import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
 import {InteractiveDialogScreen} from '@support/ui/screen';
@@ -40,7 +41,7 @@ describe('Interactive Dialog - File Upload Disabled (Plugin)', () => {
             setupFailed = true;
             throw error;
         }
-    });
+    }, DEMO_PLUGIN_SETUP_TIMEOUT);
 
     afterAll(async () => {
         if (!canMutateServer) {

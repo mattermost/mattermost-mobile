@@ -7,6 +7,16 @@
  */
 export const serverRole = process.env.E2E_SERVER_ROLE || 'local';
 
+/**
+ * Whether specs set up the server state they need (plugins, profile fields, lockout recovery). Locally and on the
+ * v2 pipeline they do; on the legacy CI pipeline detox/provision owns that state and specs only verify it.
+ * global_setup.js repeats this check.
+ */
+export const isSpecOwnedServerSetup = (env: Record<string, string | undefined> = process.env) =>
+    env.CI !== 'true' || env.E2E_PIPELINE === 'v2';
+
+export const specOwnsServerSetup = isSpecOwnedServerSetup();
+
 /** False on a Matterwick pool shard. Mutation specs' afterAll checks it: Jest runs afterAll even when beforeAll threw. */
 export const canMutateServer = serverRole !== 'pool';
 

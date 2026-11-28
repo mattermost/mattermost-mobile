@@ -4,10 +4,9 @@
 /**
  * Provisions a Mattermost test server for E2E tests.
  *
- * Usage: npx tsx provision/index.ts <server_url> [--demo-plugin | --no-demo-plugin] [--listing-user]
+ * Usage: npx tsx provision/index.ts <server_url> [--demo-plugin | --no-demo-plugin]
  *
  * The demo plugin is installed by default; CI passes --no-demo-plugin for the shared SITE_3 and smoke-only servers.
- * --listing-user creates the regular user other workers sign in as when this server is their SITE_2 or SITE_3.
  *
  * Environment variables:
  *   ADMIN_USERNAME / ADMIN_PASSWORD - admin credentials (required)
@@ -21,15 +20,13 @@ import {logError} from './log';
 import {provisionServer} from './provision';
 import {validateServerUrl} from './validate-url';
 
-const USAGE = 'Usage: npx tsx provision/index.ts <server_url> [--demo-plugin | --no-demo-plugin] [--listing-user]';
+const USAGE = 'Usage: npx tsx provision/index.ts <server_url> [--demo-plugin | --no-demo-plugin]';
 const DEMO_PLUGIN_FLAGS = ['--demo-plugin', '--no-demo-plugin'];
-const LISTING_USER_FLAG = '--listing-user';
-const KNOWN_FLAGS = [...DEMO_PLUGIN_FLAGS, LISTING_USER_FLAG];
 
 const args = process.argv.slice(2);
 const serverUrl = args.find((arg) => !arg.startsWith('--'));
 const demoFlags = args.filter((arg) => DEMO_PLUGIN_FLAGS.includes(arg));
-const unknownFlags = args.filter((arg) => arg.startsWith('--') && !KNOWN_FLAGS.includes(arg));
+const unknownFlags = args.filter((arg) => arg.startsWith('--') && !DEMO_PLUGIN_FLAGS.includes(arg));
 if (!serverUrl || unknownFlags.length > 0 || demoFlags.length > 1) {
     logError(USAGE);
     process.exit(1);
@@ -41,9 +38,8 @@ const credentials = readCredentialsFromEnv();
 
 // Without a flag the demo plugin is installed, as local runs always did.
 const demoPlugin = demoFlags.length === 0 || demoFlags[0] === '--demo-plugin';
-const listingUser = args.includes(LISTING_USER_FLAG);
 
-provisionServer(serverUrl, credentials, {demoPlugin, listingUser}).catch((err: Error) => {
+provisionServer(serverUrl, credentials, {demoPlugin}).catch((err: Error) => {
     logError(`Fatal error: ${err.message}`);
     process.exit(1);
 });

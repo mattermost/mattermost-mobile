@@ -25,12 +25,10 @@
 
 import {
     Command,
-    DemoPlugin,
-    Plugin,
     Post,
     Setup,
-    User,
 } from '@support/server_api';
+import {DEMO_PLUGIN_SETUP_TIMEOUT} from '@support/server_api/server_setup';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -300,12 +298,7 @@ describe('Interactive Dialog - Checkbox Group & Matrix (Plugin)', () => {
         testChannel = channel;
         testUser = user;
 
-        // DialogOnlyMode comes from server provisioning (detox/provision/plugins.ts).
-        await User.apiAdminLogin(siteOneUrl);
-        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-        if (!statusCheck.isActive) {
-            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
-        }
+        await Setup.ensureDemoPlugin(siteOneUrl);
         await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -320,7 +313,7 @@ describe('Interactive Dialog - Checkbox Group & Matrix (Plugin)', () => {
         // freshly created channel, so the keyboard never comes down and every send
         // fails the 75% visibility threshold. Command.waitForSlashCommandTrigger above
         // already covers command registration, and postSlashCommand retries on its own.
-    });
+    }, DEMO_PLUGIN_SETUP_TIMEOUT);
 
     afterAll(async () => {
         try {

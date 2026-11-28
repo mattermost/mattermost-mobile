@@ -41,10 +41,7 @@ You can instead create a `detox/.env` file:
 `SITE_2_URL` and `SITE_3_URL` are only needed for tests that add distinct
 Mattermost servers, such as `server_login/server_list.e2e.ts`. If they are
 unset, their URL helpers alias site 1 and tests that require distinct servers
-are skipped. Those tests create their user on SITE_2 and SITE_3 with the admin,
-unless `SITE_2_USER` and `SITE_2_PASSWORD` (and the `SITE_3_` ones) name an
-existing user to sign in as; the v2 CI layout sets them to each server's
-listing user. The five-server `ANDROID_SITE_*` and `IOS_SITE_*` topology is
+are skipped. The five-server `ANDROID_SITE_*` and `IOS_SITE_*` topology is
 assigned by CI and is not required for ordinary local runs.
 
 ## Android

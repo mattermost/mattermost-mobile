@@ -41,7 +41,8 @@ import {
     System,
     User,
 } from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {DEMO_PLUGIN_SETUP_TIMEOUT} from '@support/server_api/server_setup';
+import {requireMutationServer, specOwnsServerSetup} from '@support/server_role';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -97,13 +98,12 @@ const NOTE_TYPE_ROOT_CAUSE = 'Root Cause';
 
 // ===== Helper Functions =====
 
-// Always write BOTH keys — the server replaces the whole per-plugin map.
+// Always write BOTH keys — the server replaces the whole per-plugin map. Where specs own server setup there is no
+// PluginStates: a patch replaces that map and would disable every other plugin; Setup.ensureDemoPlugin enables this one.
 async function setPluginConfig(overrides: {[key: string]: any} = {}) {
     const result = await System.apiUpdateConfig(siteOneUrl, {
         PluginSettings: {
-            PluginStates: {
-                [DemoPlugin.id]: {Enable: true},
-            },
+            ...(specOwnsServerSetup ? {} : {PluginStates: {[DemoPlugin.id]: {Enable: true}}}),
             Plugins: {
                 [DemoPlugin.id]: {
                     DialogOnlyMode: true,
@@ -395,11 +395,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
 
         await User.apiAdminLogin(siteOneUrl);
         await setPluginConfig();
-
-        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-        if (!statusCheck.isActive) {
-            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
-        }
+        await Setup.ensureDemoPlugin(siteOneUrl);
         await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
         await resetDemoIncidents(testChannel.team_id);
@@ -416,7 +412,7 @@ describe('Interactive Dialog - Concurrent action_button Dialogs (Plugin)', () =>
         // created channel, so the keyboard never comes down and every send fails the
         // 75% visibility threshold. Command.waitForSlashCommandTrigger above already
         // covers command registration, and postSlashCommand retries on its own.
-    });
+    }, DEMO_PLUGIN_SETUP_TIMEOUT);
 
     afterAll(async () => {
         try {

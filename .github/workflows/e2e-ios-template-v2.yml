@@ -2,14 +2,16 @@ name: Detox iOS E2E Tests Template v2
 
 # Detox on e2e-test-stack, dispatched by Test System IO: one run per lane and one
 # worker matrix. Each worker owns its SITE_1; SITE_2 and SITE_3 are two of the
-# first three workers' servers, signed in to as their listing user and never
-# administered. The Detox configuration decides the specs (begin runs
-# `detox --listTests`). Specs tagged @multi_server dispatch first, so they sign in
-# to servers 0-2 before specs tagged @server_mutation, which dispatch last, change
-# them. Maestro and the Matterwick template are unchanged.
+# first three workers' servers, where specs only create their own users and teams.
+# The Detox configuration decides the specs (begin runs `detox --listTests`).
+# Specs tagged @multi_server dispatch first, so they sign in to servers 0-2 before
+# specs tagged @server_mutation, which dispatch last, change them. Maestro and the
+# Matterwick template are unchanged.
 #
-# create is the existing workflow and provision its v2. begin runs after provision,
-# because the orchestrator idles a run out while it waits for the first lease.
+# create is the existing workflow. There is no provisioning step: each spec sets up
+# what it needs on its worker's server (detox/e2e/test/setup.ts and the Setup
+# helpers). begin runs after create, because the orchestrator idles a run out while
+# it waits for the first lease.
 # Each worker boots one simulator, then dispatch-run leases specs onto it.
 
 on:
@@ -32,7 +34,7 @@ on:
         type: string
         default: ""
       fork:
-        description: "The commit under test is from a fork. Provisioning uses this workflow's commit."
+        description: "The commit under test is from a fork. Its workers load local actions from this workflow's commit and save no caches."
         type: boolean
         default: false
       e2e_test_stack_account:
@@ -103,7 +105,6 @@ jobs:
       identity: ${{ steps.plan.outputs.identity }}
       workers: ${{ steps.plan.outputs.workers }}
       stack-count: ${{ steps.plan.outputs.stack-count }}
-      slices: ${{ steps.plan.outputs.slices }}
       webhook: ${{ steps.plan.outputs.webhook }}
     steps:
       - name: Checkout Repository
@@ -114,7 +115,7 @@ jobs:
           fetch-depth: 1
 
       # A server per worker, and at least 3 so every worker has a SITE_2 and SITE_3 among servers 0-2; iPad has
-      # exactly one per worker, since no iPad spec signs in to either. Provisioning runs in up to 8 jobs.
+      # exactly one per worker, since no iPad spec signs in to either.
       - name: ci/plan
         id: plan
         env:
@@ -147,8 +148,8 @@ jobs:
             echo "::error::pr_number must be a pull request number, or empty"
             exit 1
           fi
-          if ! grep -rqE '^export async function ensureListingUser\(' detox/provision; then
-            echo "::error::the code under test predates the v2 server layout; merge main into it"
+          if ! grep -qE '^export const ensureDemoPlugin = ' detox/e2e/support/server_api/server_setup.ts 2>/dev/null; then
+            echo "::error::the code under test predates spec-owned server setup; merge main into it"
             exit 1
           fi
 
@@ -186,7 +187,6 @@ jobs:
             echo "identity=${identity}"
             echo "workers=$(jq -nc --argjson n "$PARALLELISM" '[range(1; $n + 1)]')"
             echo "stack-count=${count}"
-            echo "slices=$(jq -nc --argjson n "$count" '[range(0; $n)] | group_by(. % 8) | map(map(tostring) | join(","))')"
             echo "webhook=${webhook}"
           } >> "$GITHUB_OUTPUT"
           echo "${PARALLELISM} workers, ${count} servers, webhook=${webhook}"
@@ -213,27 +213,10 @@ jobs:
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-  e2e-test-stack-provision:
-    name: e2e-test-stack-provision
-    needs: [prepare, e2e-test-stack-create]
-    if: needs.e2e-test-stack-create.result == 'success'
-    permissions:
-      actions: read
-      contents: read
-    uses: ./.github/workflows/e2e-test-stack-provision-v2.yml
-    with:
-      batch: ${{ inputs.e2e_test_stack_batch }}
-      slices: ${{ needs.prepare.outputs.slices }}
-      workers: ${{ inputs.parallelism }}
-      # A fork's provisioning code does not run with the credentials key.
-      commit_sha: ${{ inputs.fork && github.sha || inputs.commit_sha }}
-    secrets:
-      E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
-
   begin:
     name: dispatch-begin
-    needs: [prepare, e2e-test-stack-provision]
-    if: needs.e2e-test-stack-provision.result == 'success'
+    needs: [prepare, e2e-test-stack-create]
+    if: needs.e2e-test-stack-create.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -281,10 +264,10 @@ jobs:
 
   dispatch-run:
     name: dispatch-run-${{ inputs.lane }}-${{ matrix.worker }}
-    needs: [prepare, e2e-test-stack-provision, begin]
+    needs: [prepare, e2e-test-stack-create, begin]
     if: >-
       !cancelled() &&
-      needs.e2e-test-stack-provision.result == 'success' &&
+      needs.e2e-test-stack-create.result == 'success' &&
       needs.begin.result == 'success'
     runs-on: macos-15
     # Setup and simulator boot (up to ~16 min), Start Metro (25), dispatch-run (150), and margin; the 4h batch TTL
