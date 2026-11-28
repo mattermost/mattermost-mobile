@@ -322,4 +322,73 @@ describe('Markdown', () => {
             expect(screen.getByText('Call 555-123-4567')).toBeVisible();
         });
     });
+
+    describe('link scheme allowlist', () => {
+        it('should render unknown-scheme links as their label, not clickable', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='[digest](sha256:abc123) and [image](nginx:latest)'
+                />,
+            );
+
+            expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
+            expect(screen.getByText('digest')).toBeVisible();
+            expect(screen.getByText('image')).toBeVisible();
+        });
+
+        it('should keep relative links clickable', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='[channel](/team/channels/town-square)'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links).toHaveLength(1);
+            expect(links[0].props.href).toBe('/team/channels/town-square');
+        });
+
+        it('should not mistake a colon in a relative link query for a scheme', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='[bugs](/team/channels/town-square?filter=kind:bug)'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links).toHaveLength(1);
+            expect(links[0].props.href).toBe('/team/channels/town-square?filter=kind:bug');
+        });
+
+        it('should keep allowed schemes as links', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='[site](https://example.com) and [mail](mailto:a@example.com)'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links.map((l) => l.props.href)).toEqual(['https://example.com', 'mailto:a@example.com']);
+        });
+
+        it('should allow custom URL schemes when passed as prop', () => {
+            // This tests the unenhanced Markdown component with customUrlSchemes passed directly.
+            // The enhanced component (in index.ts) wires these from server config via observeConfigValue.
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    customUrlSchemes={['custom']}
+                    value='[link](custom:action)'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links).toHaveLength(1);
+            expect(links[0].props.href).toBe('custom:action');
+        });
+    });
 });

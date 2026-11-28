@@ -19,7 +19,7 @@ import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getScheme} from '@utils/url';
+import {getScheme, hasUrlScheme, isValidAutoLink} from '@utils/url';
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
@@ -53,6 +53,7 @@ export type MarkdownProps = {
     baseParagraphStyle?: StyleProp<TextStyle>;
     channelId?: string;
     channelMentions?: ChannelMentions;
+    customUrlSchemes?: string[];
     disableAtChannelMentionHighlight?: boolean;
     disableAtMentions?: boolean;
     disableBlockQuote?: boolean;
@@ -165,6 +166,7 @@ const Markdown = ({
     baseTextStyle,
     channelId,
     channelMentions,
+    customUrlSchemes,
     disableAtChannelMentionHighlight,
     disableAtMentions,
     disableBlockQuote,
@@ -524,6 +526,10 @@ const Markdown = ({
             return <Text>{children}</Text>;
         }
 
+        if (hasUrlScheme(href) && !isValidAutoLink(href, customUrlSchemes)) {
+            return children;
+        }
+
         return (
             <MarkdownLink
                 href={href}
@@ -532,7 +538,7 @@ const Markdown = ({
                 {children}
             </MarkdownLink>
         );
-    }, [allowInlineActions, baseTextStyle, disableLinks, integrationFormat, isUnsafeLinksPost, mmBlocksActionCookie, onLinkLongPress, postId, renderText]);
+    }, [allowInlineActions, baseTextStyle, customUrlSchemes, disableLinks, integrationFormat, isUnsafeLinksPost, mmBlocksActionCookie, onLinkLongPress, postId, renderText]);
 
     const renderList = useCallback(({children, start, tight, type}: any) => {
         return (
