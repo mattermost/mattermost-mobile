@@ -133,7 +133,7 @@ public class PushNotification: NSObject {
         }
     }
     
-    private func parseIdLoadedNotification(_ data: Data?) -> [AnyHashable:Any]? {
+    func parseIdLoadedNotification(_ data: Data?) -> [AnyHashable:Any]? {
         guard let data = data else { return nil }
 
         do {
@@ -150,6 +150,9 @@ public class PushNotification: NSObject {
               }
             }
             
+            if let isMention = OutOfOffice.mentionFlag(json["is_mention"]) {
+                userInfo["is_mention"] = isMention
+            }
             return userInfo
         } catch {
             GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to parse notification JSON - %{public}@", String(describing: error))

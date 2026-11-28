@@ -65,6 +65,10 @@ const messages = defineMessages({
         defaultMessage: 'Email',
         id: 'notification_settings.email',
     },
+    out_of_office: {
+        defaultMessage: 'Out of Office',
+        id: 'notification_settings.out_of_office',
+    },
     automatic_replies: {
         defaultMessage: 'Automatic replies',
         id: 'notification_settings.ooo_auto_responder',
@@ -151,6 +155,12 @@ export const NotificationsOptionConfig: Record<string, SettingConfigDetails> = {
         id: messages.email.id,
         icon: 'email-outline',
         testID: messages.email.id,
+    },
+    out_of_office: {
+        defaultMessage: messages.out_of_office.defaultMessage,
+        id: messages.out_of_office.id,
+        icon: 'calendar-outline',
+        testID: messages.out_of_office.id,
     },
     automatic_dm_replies: {
         defaultMessage: messages.automatic_replies.defaultMessage,

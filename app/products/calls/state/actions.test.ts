@@ -6,12 +6,14 @@
 import assert from 'assert';
 
 import CallsNative from '@mattermost/calls-native';
+import RNUtils from '@mattermost/rnutils/src';
 import {act, renderHook} from '@testing-library/react-native';
 import {AppState, Platform} from 'react-native';
 
 import {needsRecordingAlert} from '@calls/alerts';
 import {
     newCurrentCall,
+    getIncomingCalls,
     processIncomingCalls,
     processMeanOpinionScore,
     receivedCaption,
@@ -84,6 +86,7 @@ import {getChannelById} from '@queries/servers/channel';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {saveOutOfOfficeSettings, type WeeklyOutOfOfficeSettings} from '@utils/out_of_office';
 
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
@@ -1612,6 +1615,55 @@ describe('useCallsState', () => {
 
         expect(CallsNative.startRingtone).not.toHaveBeenCalled();
         assert.deepEqual(result.current, initialIncomingCalls);
+    });
+
+    it('should restore Android incoming calls and ringing after saving out of office disabled', async () => {
+        enableFakeTimers();
+        const originalOS = Platform.OS;
+        const storage = new Map<string, string>();
+        const read = jest.spyOn(RNUtils, 'getOutOfOfficeSettings').mockImplementation(async (url) => storage.get(url) ?? null);
+        const write = jest.spyOn(RNUtils, 'setOutOfOfficeSettings').mockImplementation(async (url, value) => {
+            storage.set(url, value);
+        });
+        const schedule: WeeklyOutOfOfficeSettings = {
+            schedule: 'weekly',
+            enabled: true,
+            quietHoursEnabled: false,
+            startMinute: 0,
+            endMinute: 0,
+            daysOff: [0, 1, 2, 3, 4, 5, 6],
+            allowCalls: false,
+            allowMentions: false,
+        };
+        const incoming = {...DefaultCall, id: 'restored-call', channelId: 'channel-dm', ownerId: 'caller', dismissed: {}};
+        try {
+            Platform.OS = 'android';
+            AppState.currentState = 'active';
+            await DatabaseManager.init(['server1']);
+            act(() => {
+                setIncomingCalls(DefaultIncomingCalls);
+                setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: true});
+                setCallsState('server1', {...DefaultCallsState, myUserId: 'myId'});
+            });
+            jest.mocked(getCurrentUser).mockResolvedValue({notifyProps: {calls_mobile_sound: 'true', calls_mobile_notification_sound: 'Calm'}} as never);
+            jest.mocked(CallsNative.startRingtone).mockClear();
+
+            await saveOutOfOfficeSettings('server1', schedule);
+            await act(async () => processIncomingCalls('server1', [incoming]));
+            expect(getIncomingCalls().incomingCalls).toHaveLength(0);
+
+            await saveOutOfOfficeSettings('server1', {...schedule, enabled: false});
+            await act(async () => processIncomingCalls('server1', [incoming]));
+            expect(getIncomingCalls().incomingCalls).toHaveLength(1);
+            expect(getIncomingCalls().incomingCalls[0].callID).toBe(incoming.id);
+            await act(async () => playIncomingCallsRinging('server1', incoming.id, 'online'));
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('calls_calm', Calls.RING_LENGTH / 1000, false);
+        } finally {
+            Platform.OS = originalOS;
+            act(() => setIncomingCalls(DefaultIncomingCalls));
+            read.mockRestore();
+            write.mockRestore();
+        }
     });
 
     it('should ring on Android with correct guards and expire after RING_LENGTH', async () => {

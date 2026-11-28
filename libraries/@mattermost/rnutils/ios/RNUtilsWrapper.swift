@@ -1,4 +1,5 @@
 import Foundation
+import Gekidou
 import React
 
 @objc public class RNUtilsWrapper: NSObject {
@@ -14,6 +15,14 @@ import React
         }
     }
     
+    @objc public func getOutOfOfficeSettings(_ serverUrl: String) -> String? {
+        return Gekidou.Preferences.default.object(forKey: "outOfOfficeSettings." + serverUrl) as? String
+    }
+
+    @objc public func setOutOfOfficeSettings(_ serverUrl: String, settings: String) {
+        Gekidou.Preferences.default.set(settings, forKey: "outOfOfficeSettings." + serverUrl)
+    }
+
     func getSharedDirectory() -> URL? {
         let fileManager = FileManager.default
         return fileManager.containerURL(forSecurityApplicationGroupIdentifier: getAppGroupId())

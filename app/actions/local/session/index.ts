@@ -25,6 +25,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logWarning} from '@utils/log';
+import {saveOutOfOfficeSettings} from '@utils/out_of_office';
 import {clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from '@utils/security';
 
 const resetLocale = async () => {
@@ -147,6 +148,11 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     await safeExecute('auditQueue', async () => {
         await pruneAuditQueueOnSessionEnd(serverUrl, removeServer);
     }, false);
+
+    // A later login on this server must not inherit another user's quiet period.
+    await safeExecute('clearOutOfOfficeSettings', () => saveOutOfOfficeSettings(serverUrl, {
+        schedule: 'weekly', enabled: false, quietHoursEnabled: true, startMinute: 1080, endMinute: 540, daysOff: [], allowCalls: false, allowMentions: false,
+    }), false);
 
     // Remove push notifications (synchronous, no error handling needed)
     PushNotifications.removeServerNotifications(serverUrl);

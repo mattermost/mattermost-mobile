@@ -19,6 +19,7 @@ interface NotificationUserInfo {
 }
 
 interface NotificationData {
+    is_mention?: boolean | string;
     ack_id?: string;
     body?: string;
     channel_id: string;

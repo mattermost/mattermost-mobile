@@ -54,6 +54,22 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
     override fun onHostPause() {}
     override fun onHostDestroy() {}
 
+    fun getOutOfOfficeSettings(serverUrl: String, promise: Promise?) {
+        promise?.resolve(reactContext.getSharedPreferences("OutOfOffice", android.content.Context.MODE_PRIVATE)
+            .getString("outOfOfficeSettings.$serverUrl", null))
+    }
+
+    fun setOutOfOfficeSettings(serverUrl: String, settings: String, promise: Promise?) {
+        // commit before resolving so background pushes see the saved schedule immediately.
+        val saved = reactContext.getSharedPreferences("OutOfOffice", android.content.Context.MODE_PRIVATE)
+            .edit().putString("outOfOfficeSettings.$serverUrl", settings).commit()
+        if (saved) {
+            promise?.resolve(null)
+        } else {
+            promise?.reject("OUT_OF_OFFICE_SAVE_FAILED", "Could not save out of office settings")
+        }
+    }
+
     fun getTypedExportedConstants(): MutableMap<String, Any> {
         val map = mutableMapOf<String, Any>()
         val group = mutableMapOf<String, Any>()
