@@ -9,6 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 cd "$REPO_ROOT"
 
+# CI points TMPDIR at a restored Metro cache, which is absent on a cache miss.
+mkdir -p "${TMPDIR:-/tmp}"
+
 log="${RUNNER_TEMP:-/tmp}/metro.log"
 : > "$log"
 
