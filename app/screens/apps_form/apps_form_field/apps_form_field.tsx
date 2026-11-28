@@ -38,6 +38,14 @@ const DATE_DISPLAY_FORMAT: FormattedDateFormat = {dateStyle: 'medium'};
 export type Props = {
     field: AppField;
     name: string;
+
+    // Names the control for assistive tech when the field's own label is
+    // stripped (a grid cell: the column header carries the name instead).
+    accessibilityLabel?: string;
+
+    // Renders controls compactly for tight spaces (a grid cell): an
+    // action_button becomes a small text-link rather than a full filled button.
+    compact?: boolean;
     errorText?: string;
     value: AppFormValue;
     onChange: (name: string, value: AppFormValue) => void;
@@ -104,6 +112,8 @@ function selectDataSource(fieldType: string): string {
 const AppsFormFieldComponent = React.memo(({
     field,
     name,
+    accessibilityLabel,
+    compact,
     errorText,
     value,
     onChange,
@@ -237,6 +247,7 @@ const AppsFormFieldComponent = React.memo(({
             return (
                 <TextSetting
                     label={displayName}
+                    accessibilityLabel={accessibilityLabel}
                     maxLength={field.max_length || (field.subtype === 'textarea' ? TEXTAREA_DEFAULT_MAX_LENGTH : TEXT_DEFAULT_MAX_LENGTH)}
                     value={value as string}
                     placeholder={placeholder}
@@ -266,6 +277,7 @@ const AppsFormFieldComponent = React.memo(({
             return (
                 <AutocompleteSelector
                     label={displayName}
+                    accessibilityLabel={accessibilityLabel}
                     dataSource={selectDataSource(field.type)}
                     options={options}
                     optional={!field.is_required}
@@ -287,6 +299,7 @@ const AppsFormFieldComponent = React.memo(({
             return (
                 <BoolSetting
                     label={displayName}
+                    accessibilityLabel={accessibilityLabel}
                     value={value as boolean}
                     placeholder={placeholder}
                     helpText={field.description}
@@ -304,6 +317,7 @@ const AppsFormFieldComponent = React.memo(({
             return (
                 <RadioSetting
                     label={displayName}
+                    accessibilityLabel={accessibilityLabel}
                     helpText={field.description}
                     errorText={errorText}
                     options={field.options?.map(appSelectOptionToDialogOption)}
@@ -378,6 +392,7 @@ const AppsFormFieldComponent = React.memo(({
                 <AppsFormActionButton
                     field={field}
                     testID={testID}
+                    compact={compact}
                 />
             );
         }

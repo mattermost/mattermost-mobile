@@ -29,8 +29,11 @@ import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import AppsFormField from './apps_form_field';
+import AppsFormGrid from './apps_form_grid';
+import AppsFormRowDetail from './apps_form_row_detail';
 import CollapsibleSection from './collapsible_section';
 import DialogIntroductionText from './dialog_introduction_text';
+import useGridRow from './use_grid_row';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -265,6 +268,10 @@ function AppsFormComponent({
     const [error, setError] = useState('');
     const [errors, setErrors] = useState(emptyErrorsState);
     const [values, dispatchValues] = useReducer(valuesReducer, form.fields, initValues);
+
+    // Owns which grid row (if any) is open on its own screen, and whether the
+    // viewport is wide enough to edit a grid's cells in place instead.
+    const {openRow, setOpenRowName, closeRow, rowTitle} = useGridRow(form.fields, form.submit_buttons, values);
 
     // Tracks per-section expand triggers. Incrementing a key forces the named
     // CollapsibleSection to open even if the user previously collapsed it.
@@ -566,6 +573,23 @@ function AppsFormComponent({
     const hasSubmitButtonsField = Boolean(submitButtons?.options?.length);
     const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
     useEffect(() => {
+        // Inside a grid row, the header leaves that row rather than submitting the
+        // dialog. Submitting from a row would send the whole form while the user
+        // is looking at one record of it, with the other rows not even on screen.
+        if (openRow) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <View testID='interactive_dialog.row_done.button'>
+                        <NavigationButton
+                            onPress={closeRow}
+                            disabled={false}
+                            text={intl.formatMessage({id: 'interactive_dialog.grid.done', defaultMessage: 'Done'})}
+                        />
+                    </View>
+                ),
+            });
+            return;
+        }
         if (hasSubmitButtonsField) {
             navigation.setOptions({headerRight: undefined});
             return;
@@ -586,7 +610,7 @@ function AppsFormComponent({
                 </View>
             ),
         });
-    }, [navigation, hasSubmitButtonsField, submitting, uploadingFields, submitLabel, handleSubmit, style]);
+    }, [navigation, hasSubmitButtonsField, submitting, uploadingFields, submitLabel, handleSubmit, style, openRow, closeRow, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = flattenAppFields(form.fields || []).find((f) => f.name === name);
@@ -651,10 +675,72 @@ function AppsFormComponent({
         };
     }, []);
 
+    // A grid cell is an input stripped of its label, help text and error: the
+    // column header carries the name and the grid draws the error itself. See
+    // AppsFormGrid's renderCell.
+    const renderGridCell = useCallback((field: AppField): React.ReactNode => {
+        if (!field.name) {
+            return null;
+        }
+
+        // An action_button's label IS its button text, so keep the field intact
+        // — stripping it would leave a blank, untappable-looking cell. A markdown
+        // field's description IS its displayed content, so keep that too;
+        // clearing it would render an empty cell. Every other field type takes
+        // its label from the column header, so label/help text are stripped.
+        const cellField: AppField = (() => {
+            if (field.type === AppFieldTypes.ACTION_BUTTON) {
+                return field;
+            }
+            const keepDescription = field.type === AppFieldTypes.MARKDOWN;
+            return {...field, label: '', modal_label: '', description: keepDescription ? field.description : ''};
+        })();
+        const value = secureGetFromRecord(values, field.name);
+
+        // The visible label is stripped (the column header carries it), so name
+        // the input itself for screen readers.
+        const cellAccessibilityLabel = field.modal_label || field.label || field.name;
+        return (
+            <AppsFormField
+                field={cellField}
+                key={field.name}
+                name={field.name}
+                accessibilityLabel={cellAccessibilityLabel}
+                compact={true}
+                errorText={undefined}
+                value={value || ''}
+                performLookup={performLookup}
+                onChange={onChange}
+                setFieldUploading={setFieldUploading}
+                channelId={channelId}
+                serverUrl={serverUrl}
+            />
+        );
+    }, [values, performLookup, onChange, setFieldUploading, channelId, serverUrl]);
+
     // `path` indexes the unfiltered field tree (same as computeExpandBumps) so
     // force-expand keys line up; filtered-out children just render as null.
     const renderField = useCallback((field: AppField, path: string, depth = 0): React.ReactNode => {
         if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            // A grid container lays its child sections out as an editable table:
+            // cells edit in place, and a row can be opened into its own single-
+            // row view. See AppsFormGrid and useGridRow.
+            if (field.collapsible_config?.layout === 'grid') {
+                return (
+                    <AppsFormGrid
+                        key={sectionKeyFor(field, path)}
+                        field={field}
+                        gridPath={path}
+                        values={values}
+                        errors={errors}
+                        excludeName={form.submit_buttons}
+                        renderCell={renderGridCell}
+                        renderField={(f) => renderField(f, f.name || '')}
+                        onOpenRow={setOpenRowName}
+                    />
+                );
+            }
+
             const rawChildren = field.collapsible_config?.fields || [];
             const renderedChildren = rawChildren.map((child, i) => renderField(child, childPath(path, i), depth + 1));
 
@@ -697,7 +783,16 @@ function AppsFormComponent({
                 serverUrl={serverUrl}
             />
         );
-    }, [values, errors, expandVersions, performLookup, onChange, setFieldUploading, channelId, serverUrl, form.submit_buttons]);
+    }, [values, errors, expandVersions, performLookup, onChange, setFieldUploading, channelId, serverUrl, form.submit_buttons, renderGridCell, setOpenRowName]);
+
+    // A grid row's cells are leaf fields, so they render through the normal
+    // field path with full label, help text and error. They are never
+    // collapsibles, so the tree path renderField uses for expand keys is inert
+    // here; keying on the field name is enough.
+    const renderRowDetailField = useCallback(
+        (field: AppField): React.ReactNode => renderField(field, field.name || ''),
+        [renderField],
+    );
 
     return (
         <SafeAreaView
@@ -723,13 +818,21 @@ function AppsFormComponent({
                         />
                     </View>
                 )}
-                {form.header &&
+                {!openRow && form.header &&
                     <DialogIntroductionText
                         value={form.header}
                     />
                 }
-                {(form.fields || []).map((field, index) => renderField(field, childPath('', index)))}
-                {hasSubmitButtonsField && (
+                {openRow ? (
+                    <AppsFormRowDetail
+                        row={openRow}
+                        title={rowTitle(openRow)}
+                        excludeName={form.submit_buttons}
+                        renderField={renderRowDetailField}
+                        onBack={closeRow}
+                    />
+                ) : (form.fields || []).map((field, index) => renderField(field, childPath('', index)))}
+                {!openRow && hasSubmitButtonsField && (
                     <View
                         style={style.buttonsWrapper}
                     >

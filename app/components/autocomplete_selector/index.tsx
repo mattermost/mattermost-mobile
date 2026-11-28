@@ -39,6 +39,10 @@ type AutoCompleteSelectorProps = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     helpText?: string;
     label?: string;
+
+    // Names the selector for assistive tech when the visible label is
+    // suppressed (e.g. a grid cell, where the column header carries the name).
+    accessibilityLabel?: string;
     onSelected?: (value: SelectedDialogOption) => void;
     optional?: boolean;
     options?: DialogOption[];
@@ -170,6 +174,7 @@ function AutoCompleteSelector({
     getDynamicOptions,
     helpText,
     label,
+    accessibilityLabel,
     onSelected,
     optional = false,
     options,
@@ -247,6 +252,11 @@ function AutoCompleteSelector({
                 />
             )}
             <TouchableWithFeedback
+                accessibilityLabel={accessibilityLabel}
+
+                // With an explicit label the child text no longer names the
+                // control, so announce the current selection as the value.
+                accessibilityValue={accessibilityLabel ? {text: itemText || title} : undefined}
                 disabled={disabled}
                 onPress={goToSelectorScreen}
                 style={disabled ? style.disabled : null}

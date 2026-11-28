@@ -1,11 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent} from '@testing-library/react-native';
+import {DatabaseProvider} from '@nozbe/watermelondb/react';
+import {act, fireEvent, within} from '@testing-library/react-native';
 import React from 'react';
+import {StyleSheet, View} from 'react-native';
 
+import Preferences from '@constants/preferences';
+import {ThemeContext} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithEverything, renderWithIntl} from '@test/intl-test-helper';
+import {changeOpacity} from '@utils/theme';
 
 import AppsFormComponent, {initValues} from './apps_form_component';
 
@@ -82,7 +87,7 @@ jest.mock('@actions/remote/command', () => ({
     handleGotoLocation: jest.fn(),
 }));
 
-type MockFieldProps = {name: string; value: AppFormValue; onChange: (name: string, value: AppFormValue) => void};
+type MockFieldProps = {name: string; value: AppFormValue; onChange: (name: string, value: AppFormValue) => void; field: AppField; accessibilityLabel?: string; compact?: boolean};
 
 // Latest props each field rendered with, keyed by field name.
 const mockFieldProps: Record<string, MockFieldProps> = {};
@@ -301,6 +306,350 @@ describe('AppsFormComponent collapsible field data flow', () => {
             resolveSubmit({data: {type: 'ok'}});
             await new Promise((r) => setImmediate(r));
         });
+    });
+});
+
+describe('AppsFormComponent grid layout', () => {
+    let database: Database;
+
+    // A grid container whose two child collapsibles are rows, each with an
+    // order and a weight cell.
+    const gridForm: Partial<AppForm> = {
+        fields: [{
+            name: 'orders',
+            type: 'collapsible',
+            label: 'Orders',
+            collapsible_config: {
+                layout: 'grid',
+                expanded: true,
+                bordered: true,
+                fields: [
+                    {name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_weight', type: 'text', label: 'Weight'},
+                        ]}} as AppField,
+                    {name: 'row2',
+                        type: 'collapsible',
+                        label: 'Row 2',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order2', type: 'text', label: 'Order'},
+                            {name: 'cell_weight2', type: 'text', label: 'Weight'},
+                        ]}} as AppField,
+                ],
+            },
+        } as AppField],
+    };
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        mockSetOptions.mockClear();
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        jest.restoreAllMocks();
+    });
+
+    it('renders a grid-layout collapsible as a table with column headers, not a stacked section', () => {
+        const {getByTestId, queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
+
+        expect(getByTestId('apps_form_grid.orders')).toBeTruthy();
+        expect(getByTestId('apps_form_grid.header.cell_order')).toBeTruthy();
+        expect(getByTestId('apps_form_grid.header.cell_weight')).toBeTruthy();
+
+        // A grid is not drawn as a normal stacked collapsible.
+        expect(queryByTestId('AppFormSection.orders')).toBeNull();
+    });
+
+    it('shows a tall field (radio) as a read-only summary in the cell, editable in the row view', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        // A radio's stacked options do not fit a single-line cell, so the cell
+        // shows its selected value and the field is edited on the row's screen.
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [{
+                        name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_status',
+                                type: 'radio',
+                                label: 'Status',
+                                value: 'shipped',
+                                options: [
+                                    {label: 'New', value: 'new'},
+                                    {label: 'Shipped', value: 'shipped'},
+                                ]},
+                        ]},
+                    } as AppField],
+                },
+            } as AppField],
+        };
+
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // The text cell edits inline (renders an AppsFormField); the radio cell
+        // does not — it shows the selected option's label as a summary.
+        expect(mockFieldProps.cell_order).toBeTruthy();
+        expect(mockFieldProps.cell_status).toBeUndefined();
+        expect(within(getByTestId('apps_form_grid.cell.cell_status')).queryByText('Shipped')).toBeTruthy();
+
+        // Opening the row edits the radio in full (now an AppsFormField).
+        act(() => {
+            fireEvent.press(getByTestId('apps_form_grid.row.row1.open'));
+        });
+        expect(mockFieldProps.cell_status).toBeTruthy();
+    });
+
+    it('edits cells inline and exposes an expand control to open the row', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(gridForm)}/>, {database, serverUrl});
+
+        // Cells are live inputs, so each leaf field renders an AppsFormField.
+        expect(mockFieldProps.cell_order).toBeTruthy();
+        expect(mockFieldProps.cell_weight).toBeTruthy();
+
+        // The text box is inset by its margins. A 100% width on top of those
+        // margins would stick out of the cell and get clipped.
+        const orderCell = getByTestId('apps_form_grid.cell.cell_order');
+        const boxed = orderCell.findAllByType(View).
+            map((node) => StyleSheet.flatten(node.props.style)).
+            find((style) => style?.borderWidth === 1);
+        expect(boxed?.marginHorizontal).toBe(6);
+        expect(boxed?.width).toBeUndefined();
+
+        // Each row also has its own expand control to open the single-row view.
+        expect(getByTestId('apps_form_grid.row.row1.open')).toBeTruthy();
+    });
+
+    it('strips a cell field label but names the input, and keeps an action_button label', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [{
+                        name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_action', type: 'action_button', label: 'Details', action_button_url: '/x'},
+                        ]},
+                    } as AppField],
+                },
+            } as AppField],
+        };
+
+        renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // A normal cell's visible label is stripped (the column header carries
+        // it), but the input is still named for screen readers and rendered
+        // compactly.
+        expect(mockFieldProps.cell_order.field.label).toBe('');
+        expect(mockFieldProps.cell_order.accessibilityLabel).toBe('Order');
+        expect(mockFieldProps.cell_order.compact).toBe(true);
+
+        // An action_button's label IS its button text, so it is kept.
+        expect(mockFieldProps.cell_action.field.label).toBe('Details');
+    });
+
+    it('blanks an action_button column header but keeps normal column headers', () => {
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [{
+                        name: 'row1',
+                        type: 'collapsible',
+                        label: 'Row 1',
+                        collapsible_config: {fields: [
+                            {name: 'cell_order', type: 'text', label: 'Order'},
+                            {name: 'cell_action', type: 'action_button', label: 'Details', action_button_url: '/x'},
+                        ]},
+                    } as AppField],
+                },
+            } as AppField],
+        };
+
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // A normal column keeps its header label; the action_button column's
+        // header is blank (the button carries the word itself).
+        expect(within(getByTestId('apps_form_grid.header.cell_order')).queryByText('Order')).toBeTruthy();
+        expect(within(getByTestId('apps_form_grid.header.cell_action')).queryByText('Details')).toBeNull();
+    });
+
+    it('falls back to rendering fields when a grid has no row cells to lay out', () => {
+        Object.keys(mockFieldProps).forEach((k) => delete mockFieldProps[k]);
+
+        // A grid container whose only child is a leaf (no row collapsibles) has
+        // no columns; it must render that field rather than crash on the header.
+        const form: Partial<AppForm> = {
+            fields: [{
+                name: 'orders',
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    fields: [
+                        {name: 'stray', type: 'text', label: 'Stray'} as AppField,
+                    ],
+                },
+            } as AppField],
+        };
+
+        const {queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+
+        // No table is drawn, but the stray field still renders.
+        expect(queryByTestId('apps_form_grid.orders')).toBeNull();
+        expect(mockFieldProps.stray).toBeTruthy();
+    });
+
+    it('opens a row from the expand control, and Done returns to the table without submitting', () => {
+        const submitMock = jest.fn().mockResolvedValue({data: {type: 'ok'}});
+        const props = {...getProps(gridForm), submit: submitMock};
+        const {getByTestId, queryByTestId} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+        expect(queryByTestId('apps_form_row_detail.row1')).toBeNull();
+
+        act(() => {
+            fireEvent.press(getByTestId('apps_form_grid.row.row1.open'));
+        });
+
+        // The row opens on its own screen and the header becomes Done.
+        expect(getByTestId('apps_form_row_detail.row1')).toBeTruthy();
+        const doneButton = getHeaderSubmit();
+        const {getByTestId: getHeaderTestId} = renderWithEverything(<>{doneButton!()}</>, {database, serverUrl});
+        const done = getHeaderTestId('interactive_dialog.row_done.button');
+
+        // Done closes the row and returns to the table; it does not submit the
+        // whole dialog while the user is looking at a single record.
+        act(() => {
+            pressSubmit(done);
+        });
+
+        expect(queryByTestId('apps_form_row_detail.row1')).toBeNull();
+        expect(getByTestId('apps_form_grid.orders')).toBeTruthy();
+        expect(submitMock).not.toHaveBeenCalled();
+    });
+
+    it('keeps a nameless row in a nameless grid reachable by its tree path', () => {
+        // Both the grid and its single row collapsible have no name. The row must
+        // still render and open so its cells are not silently dropped.
+        const namelessForm: Partial<AppForm> = {
+            fields: [{
+                type: 'collapsible',
+                label: 'Orders',
+                collapsible_config: {
+                    layout: 'grid',
+                    expanded: true,
+                    bordered: true,
+                    fields: [
+                        {
+                            type: 'collapsible',
+                            label: 'Row',
+                            collapsible_config: {fields: [
+                                {name: 'cell_order', type: 'text', label: 'Order'},
+                            ]},
+                        } as AppField,
+                    ],
+                },
+            } as AppField],
+        };
+
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(namelessForm)}/>, {database, serverUrl});
+
+        // Grid at form path '0', row at index 0 -> namespaced path '::pos::0/0'.
+        act(() => {
+            fireEvent.press(getByTestId('apps_form_grid.row.::pos::0/0.open'));
+        });
+
+        // The row opened on its own screen (title/back header is name-independent).
+        expect(getByTestId('apps_form_row_detail.title')).toBeTruthy();
+    });
+
+    // The five core themes the PR checklist requires us to verify against.
+    const CORE_THEME_KEYS = Object.keys(Preferences.THEMES) as Array<keyof typeof Preferences.THEMES>;
+
+    const themeForm: Partial<AppForm> = {
+        fields: [{
+            name: 'orders',
+            type: 'collapsible',
+            label: 'Orders',
+            collapsible_config: {
+                layout: 'grid',
+                fields: [{
+                    name: 'row1',
+                    type: 'collapsible',
+                    label: 'Row 1',
+                    collapsible_config: {fields: [
+                        {name: 'cell_order', type: 'text', label: 'Order'},
+                        {name: 'cell_status',
+                            type: 'radio',
+                            label: 'Status',
+                            value: 'shipped',
+                            options: [{label: 'Shipped', value: 'shipped'}]},
+                    ]},
+                } as AppField],
+            },
+        } as AppField],
+    };
+
+    // renderWithEverything pins the default theme, so drive each theme through context.
+    const renderGridInTheme = (theme: Theme) => renderWithIntl(
+        <DatabaseProvider database={database}>
+            <ThemeContext.Provider value={theme}>
+                <AppsFormComponent {...getProps(themeForm)}/>
+            </ThemeContext.Provider>
+        </DatabaseProvider>,
+    );
+
+    it('exercises the five core themes', () => {
+        expect(CORE_THEME_KEYS).toEqual(['denim', 'sapphire', 'quartz', 'indigo', 'onyx']);
+    });
+
+    it.each(CORE_THEME_KEYS)('paints the grid from the %s theme', (key) => {
+        const theme = Preferences.THEMES[key];
+        const {getByText, getByTestId} = renderGridInTheme(theme);
+
+        expect(StyleSheet.flatten(getByText('Order').props.style).color).toBe(changeOpacity(theme.centerChannelColor, 0.75));
+
+        const orderCell = getByTestId('apps_form_grid.cell.cell_order');
+        expect(StyleSheet.flatten(orderCell.props.style).backgroundColor).toBe(theme.centerChannelBg);
+
+        const textBox = orderCell.findAllByType(View).
+            map((node) => StyleSheet.flatten(node.props.style)).
+            find((style) => style?.borderWidth === 1);
+        expect(textBox?.borderColor).toBe(changeOpacity(theme.centerChannelColor, 0.16));
+        expect(textBox?.backgroundColor).toBe(changeOpacity(theme.centerChannelColor, 0.03));
+
+        expect(StyleSheet.flatten(getByText('Shipped').props.style).color).toBe(theme.centerChannelColor);
+
+        const expandIcon = getByTestId('apps_form_grid.row.row1.open').findAll(
+            (node) => StyleSheet.flatten(node.props.style)?.color === theme.buttonBg,
+        );
+        expect(expandIcon.length).toBeGreaterThan(0);
     });
 });
 
