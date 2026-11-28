@@ -101,7 +101,8 @@ spawn_detached() {
     local log="$1"
     shift
     python3 -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' "$@" >>"$log" 2>&1 &
-    echo "detached pid $! -> $log"
+    DETACHED_PID=$!
+    echo "detached pid ${DETACHED_PID} -> $log"
 }
 
 detach_log() {
@@ -121,17 +122,30 @@ start_emulator() {
         dns_servers=$(emulator_dns_servers)
         echo "Emulator DNS servers: ${dns_servers}"
         if [[ "${DETACH_SERVICES:-}" == "true" ]]; then
-            spawn_detached "$(detach_log emulator.log)" emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB"
+            EMULATOR_LOG=$(detach_log emulator.log)
+            spawn_detached "$EMULATOR_LOG" emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB"
+            EMULATOR_PID=$DETACHED_PID
         else
             emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
+            EMULATOR_PID=$!
         fi
     else
         emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
     fi
 }
 
+# The launched PID stays the emulator's through python3 and emulator exec'ing in place; until the
+# forked child execs, its command line is still this script's, which neither pattern matches.
 emulator_process_running() {
-    pgrep -f "emulator.*${AVD_NAME}" >/dev/null 2>&1 || pgrep -f 'qemu-system-x86_64' >/dev/null 2>&1
+    { [[ -n "${EMULATOR_PID:-}" ]] && kill -0 "$EMULATOR_PID" 2>/dev/null; } \
+        || pgrep -f "emulator.*${AVD_NAME}" >/dev/null 2>&1 || pgrep -f 'qemu-system-x86_64' >/dev/null 2>&1
+}
+
+print_emulator_log() {
+    if [[ -n "${EMULATOR_LOG:-}" && -f "$EMULATOR_LOG" ]]; then
+        echo "Last lines of ${EMULATOR_LOG}:"
+        tail -n 50 "$EMULATOR_LOG" || true
+    fi
 }
 
 wait_for_emulator() {
@@ -148,6 +162,7 @@ wait_for_emulator() {
         fi
         if ! emulator_process_running; then
             echo "Emulator process exited before device appeared (check snapshot/cache state)"
+            print_emulator_log
             exit 1
         fi
         sleep 5
@@ -163,6 +178,7 @@ wait_for_emulator() {
         fi
         if ! emulator_process_running; then
             echo "Emulator process exited during boot"
+            print_emulator_log
             exit 1
         fi
         echo "Waiting for emulator to fully boot..."
