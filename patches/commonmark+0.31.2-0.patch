@@ -1,0 +1,71 @@
+diff --git a/node_modules/commonmark/lib/blocks.js b/node_modules/commonmark/lib/blocks.js
+index c25b1c4..af3509d 100644
+--- a/node_modules/commonmark/lib/blocks.js
++++ b/node_modules/commonmark/lib/blocks.js
+@@ -701,7 +701,7 @@ var blockStarts = [
+                 .match(reSetextHeadingLine))
+         ) {
+             parser.closeUnmatchedBlocks();
+-            // resolve reference link definitiosn
++            // resolve reference link definitions
+             var pos;
+             while (
+                 peek(container._string_content, 0) === C_OPEN_BRACKET &&
+@@ -710,15 +710,52 @@ var blockStarts = [
+                     parser.refmap
+                 ))
+             ) {
+-                container._string_content = container._string_content.slice(
+-                    pos
+-                );
++                container._string_content = container._string_content.slice(pos);
+             }
+             if (container._string_content.length > 0) {
++                // Split accumulated paragraph text into lines. addLine() always
++                // appends a trailing "\n", so drop the empty string that
++                // produces after split.
++                var lines = container._string_content.split("\n");
++                if (lines[lines.length - 1] === "") {
++                    lines.pop();
++                }
++
++                // Only the LAST line becomes the setext heading.
++                var headingLine = lines.pop();
++                var remainingLines = lines; // everything before the last line
++
+                 var heading = new Node("heading", container.sourcepos);
+                 heading.level = match[0][0] === "=" ? 1 : 2;
+-                heading._string_content = container._string_content;
+-                container.insertAfter(heading);
++                heading._string_content = headingLine;
++
++                if (remainingLines.length > 0) {
++                    // Keep preceding lines as their own paragraph, placed
++                    // right before the heading.
++                    var remainingContent = remainingLines.join("\n") + "\n";
++                    var paragraphEndLine =
++                        container.sourcepos[0][0] + remainingLines.length - 1;
++                    var paragraphEndCol =
++                        remainingLines[remainingLines.length - 1].length;
++
++                    var remainingParagraph = new Node("paragraph", [
++                        container.sourcepos[0],
++                        [paragraphEndLine, paragraphEndCol]
++                    ]);
++                    remainingParagraph._string_content = remainingContent;
++
++                    heading._sourcepos = [
++                        [paragraphEndLine + 1, container.sourcepos[0][1]],
++                        container.sourcepos[1]
++                    ];
++
++                    container.insertAfter(remainingParagraph);
++                    remainingParagraph.insertAfter(heading);
++                } else {
++                    // Only one line in the paragraph — behaves as before.
++                    container.insertAfter(heading);
++                }
++
+                 container.unlink();
+                 parser.tip = heading;
+                 parser.advanceOffset(
