@@ -62,6 +62,7 @@ on:
         type: string
         # One setting per line, sorted by name. Not the ConnectedWorkspacesSettings: the stack boots every server with them
         # on from its config file, and here they could not be switched through the config API, as the specs do.
+        # No MM_FEATUREFLAGS_*: the specs set the feature flags they need through the config API, which can't change a pinned one.
         # The SplitKey is a dummy: the server accepts feature-flag writes only when one is set, and its failed sync only logs.
         # It is a number because the stack refuses any other value in a setting whose name contains KEY.
         default: |-
@@ -71,10 +72,6 @@ on:
             "MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS": "true",
             "MM_EXPERIMENTALSETTINGS_ENABLEWATERMARK": "false",
             "MM_EXPERIMENTALSETTINGS_RESTRICTSYSTEMADMIN": "false",
-            "MM_FEATUREFLAGS_CHANNELBOOKMARKS": "true",
-            "MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES": "true",
-            "MM_FEATUREFLAGS_INTERACTIVEDIALOGAPPSFORM": "true",
-            "MM_FEATUREFLAGS_MMBLOCKSENABLED": "true",
             "MM_FILESETTINGS_ENABLEPUBLICLINK": "true",
             "MM_PASSWORDSETTINGS_MINIMUMLENGTH": "8",
             "MM_PLUGINSETTINGS_ENABLEMARKETPLACE": "true",

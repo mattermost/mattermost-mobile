@@ -31,27 +31,18 @@
       "type": "ios.simulator",
       "device": {
         "type": "iPhone 17 Pro"
-      },
-      "environment": {
-        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
       }
     },
     "ios.ipad": {
       "type": "ios.simulator",
       "device": {
         "type": "iPad Pro 13-inch (M5)"
-      },
-      "environment": {
-        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
       }
     },
     "android.emulator": {
       "type": "android.emulator",
       "device": {
         "avdName": "detox_pixel_8_api_35"
-      },
-      "environment": {
-        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
       }
     }
   },
