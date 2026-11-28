@@ -93,6 +93,11 @@ export const CONFIG_BASELINE: Readonly<Record<string, BaselineEntry>> = {
     'ServiceSettings.AllowCorsFrom': {value: '*'},
     'ServiceSettings.AllowedUntrustedInternalConnections': {value: '', listContainsServerHost: true},
     'ServiceSettings.EnableMultifactorAuthentication': {value: false},
+
+    // A fresh install defaults EnableLatex and EnableEmailInvitations to false.
+    'ServiceSettings.EnableLatex': {value: true},
+    'ServiceSettings.EnableInlineLatex': {value: true},
+    'ServiceSettings.EnableEmailInvitations': {value: true},
     'EmailSettings.EnableSignInWithEmail': {value: true},
     'EmailSettings.EnableSignInWithUsername': {value: true},
     'AccessControlSettings.EnableAttributeBasedAccessControl': {value: true},
