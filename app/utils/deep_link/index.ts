@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {match} from 'path-to-regexp';
-import {defineMessage, type IntlShape} from 'react-intl';
+import {defineMessage, defineMessages, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 import urlParse from 'url-parse';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
-import {magicLinkLogin} from '@actions/remote/session';
+import {magicLinkLogin, mobileQrLogin} from '@actions/remote/session';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
 import DeepLinkType from '@constants/deep_linking';
@@ -26,6 +26,7 @@ import {navigateToRoot, updateParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
@@ -43,10 +44,168 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
 
-export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: IntlShape, location?: string) {
+const mobileQrMessages = defineMessages({
+    alreadySignedInTitle: {
+        id: 'mobile_qr_login.already_logged_in_error.title',
+        defaultMessage: 'Already signed in',
+    },
+    alreadySignedInDescription: {
+        id: 'mobile_qr_login.already_logged_in_error.description',
+        defaultMessage: 'You\'re already signed in to this server. Sign out first, then scan the code again.',
+    },
+    invalidCodeTitle: {
+        id: 'mobile_qr_login.invalid_code.title',
+        defaultMessage: 'Sign-in code didn\'t work',
+    },
+    invalidCodeDescription: {
+        id: 'mobile_qr_login.invalid_code.description',
+        defaultMessage: 'This code has expired or was already used. Generate a new code on your computer and scan it again.',
+    },
+    unsupportedTitle: {
+        id: 'mobile_qr_login.unsupported.title',
+        defaultMessage: 'QR sign-in unavailable',
+    },
+    unsupportedDescription: {
+        id: 'mobile_qr_login.unsupported.description',
+        defaultMessage: 'This server doesn\'t support signing in with a QR code.',
+    },
+    genericTitle: {
+        id: 'mobile_qr_login.generic_error.title',
+        defaultMessage: 'Couldn\'t sign in',
+    },
+    genericDescription: {
+        id: 'mobile_qr_login.generic_error.description',
+        defaultMessage: 'Couldn\'t sign in. Try again.',
+    },
+    ok: {
+        id: 'mobile_qr_login.ok',
+        defaultMessage: 'OK',
+    },
+});
+
+const alertMobileQrLoginError = (intl: IntlShape, error: unknown) => {
+    const status = isErrorWithStatusCode(error) ? error.status_code : undefined;
+
+    let title = mobileQrMessages.genericTitle;
+    let description = mobileQrMessages.genericDescription;
+    if (status === 401) {
+        title = mobileQrMessages.invalidCodeTitle;
+        description = mobileQrMessages.invalidCodeDescription;
+    } else if (status === 404 || status === 501) {
+        title = mobileQrMessages.unsupportedTitle;
+        description = mobileQrMessages.unsupportedDescription;
+    }
+
+    Alert.alert(
+        intl.formatMessage(title),
+        intl.formatMessage(description),
+        [{text: intl.formatMessage(mobileQrMessages.ok)}],
+    );
+};
+
+type DeepLinkResult = {
+    error: boolean;
+
+    // The user was already told what went wrong, so callers must not show the generic invalid link alert
+    alertShown?: boolean;
+};
+
+type MobileQrLoginOutcome = {
+    result: DeepLinkResult;
+    redeemAttempted: boolean;
+};
+
+const handleMobileQrLogin = async (serverUrl: string, token: string, intlShape?: IntlShape): Promise<MobileQrLoginOutcome> => {
+    // Servers the user signed out of are not loaded, so a match here means there is an active session.
+    const existingServerUrl = DatabaseManager.searchUrl(serverUrl);
+    if (existingServerUrl) {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(existingServerUrl);
+        const user = await getCurrentUser(database);
+        const intl = intlShape || getIntlShape(user?.locale || DEFAULT_LOCALE);
+        Alert.alert(
+            intl.formatMessage(mobileQrMessages.alreadySignedInTitle),
+            intl.formatMessage(mobileQrMessages.alreadySignedInDescription),
+            [{text: intl.formatMessage(mobileQrMessages.ok)}],
+        );
+        return {result: {error: false}, redeemAttempted: false};
+    }
+
+    const result = await mobileQrLogin(serverUrl, token);
+    if (result.failed) {
+        logError('Failed to do mobile QR login', getFullErrorMessage(result.error));
+        alertMobileQrLoginError(intlShape || getIntlShape(DEFAULT_LOCALE), result.error);
+        return {result: {error: true, alertShown: true}, redeemAttempted: true};
+    }
+    if (result.error) {
+        logError('Mobile QR login succeeded but loading the server data failed', getFullErrorMessage(result.error));
+    }
+    return {result: {error: false}, redeemAttempted: true};
+};
+
+// A cold start from the link is handled by both the router and the launch code, and the code can only be redeemed once.
+const MOBILE_QR_DEDUPE_MS = 15000;
+const mobileQrHandling = new Map<string, {result: Promise<DeepLinkResult>; settledAt?: number}>();
+
+// Sign-ins to the same server run one at a time so that one account owns the server's client, credentials and database.
+const mobileQrServerQueue = new Map<string, Promise<unknown>>();
+
+const runSerializedForServer = <T>(serverKey: string, task: () => Promise<T>): Promise<T> => {
+    const previous = mobileQrServerQueue.get(serverKey) || Promise.resolve();
+    const run = previous.catch(() => undefined).then(task);
+    const tail = run.catch(() => undefined);
+    mobileQrServerQueue.set(serverKey, tail);
+    tail.then(() => {
+        if (mobileQrServerQueue.get(serverKey) === tail) {
+            mobileQrServerQueue.delete(serverKey);
+        }
+    });
+    return run;
+};
+
+const handleMobileQrLoginOnce = (serverUrl: string, token: string, intlShape?: IntlShape) => {
+    const now = Date.now();
+    for (const [key, entry] of mobileQrHandling) {
+        if (entry.settledAt && now - entry.settledAt > MOBILE_QR_DEDUPE_MS) {
+            mobileQrHandling.delete(key);
+        }
+    }
+
+    const serverKey = removeProtocol(serverUrl).replace(/\/+$/, '');
+    const key = `${serverKey}|${token}`;
+    const existing = mobileQrHandling.get(key);
+    if (existing) {
+        return existing.result;
+    }
+
+    const entry: {result: Promise<DeepLinkResult>; settledAt?: number} = {
+        result: runSerializedForServer(serverKey, () => handleMobileQrLogin(serverUrl, token, intlShape)).then(
+            ({result, redeemAttempted}) => {
+                if (redeemAttempted) {
+                    entry.settledAt = Date.now();
+                } else {
+                    // The code was not used, so a later scan (e.g. after signing out) must try again.
+                    mobileQrHandling.delete(key);
+                }
+                return result;
+            },
+            (error) => {
+                mobileQrHandling.delete(key);
+                throw error;
+            },
+        ),
+    };
+    mobileQrHandling.set(key, entry);
+    return entry.result;
+};
+
+export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: IntlShape, location?: string): Promise<DeepLinkResult> {
     try {
         if (deepLink.type === DeepLink.Invalid || !deepLink.data || !deepLink.data.serverUrl) {
             return {error: true};
+        }
+
+        if (deepLink.type === DeepLink.MobileQrLogin && 'token' in deepLink.data) {
+            return await handleMobileQrLoginOnce(deepLink.data.serverUrl, deepLink.data.token, intlShape);
         }
 
         const currentServerUrl = await getActiveServerUrl();
@@ -236,6 +395,9 @@ type MagicLinkPathParams = {
 const MAGIC_LINK_PATH = '*serverUrl/login/one_time_link';
 export const matchMagicLinkDeeplink = match<MagicLinkPathParams>(MAGIC_LINK_PATH);
 
+const MOBILE_QR_LOGIN_PATH = '*serverUrl/login/mobile_qr';
+export const matchMobileQrLoginDeeplink = match<MagicLinkPathParams>(MOBILE_QR_LOGIN_PATH);
+
 type PermalinkPathParams = {
     serverUrl: string[];
     teamName: string;
@@ -379,6 +541,16 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
                 return {type: DeepLink.Invalid, url: deepLinkUrl};
             }
             return {type: DeepLink.MagicLink, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), token}};
+        }
+
+        const mobileQrLoginMatch = matchMobileQrLoginDeeplink(url);
+        if (mobileQrLoginMatch) {
+            const token = parsedUrl.query.t;
+            const {params: {serverUrl}} = mobileQrLoginMatch;
+            if (!isValidToken(token)) {
+                return {type: DeepLink.Invalid, url: deepLinkUrl};
+            }
+            return {type: DeepLink.MobileQrLogin, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), token}};
         }
 
         if (asServer) {

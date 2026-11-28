@@ -140,6 +140,18 @@ const determineRoute = async (props: LaunchProps): Promise<ExpoRouterLaunchResul
                         serverUrl = await getActiveServerUrl();
                         return determineAuthenticatedRoute({...props, serverUrl});
                     }
+                } else if (extra.type === DeepLink.MobileQrLogin) {
+                    // handleDeepLink alerts on failure and when already signed in, so drop the deep link to avoid handling it twice
+                    const result = await handleDeepLink(extra);
+                    props.extra = undefined;
+                    props.launchType = Launch.Normal;
+                    props.launchError = false;
+                    if (!existingServer && !result.error) {
+                        props.coldStart = false;
+                        serverUrl = await getActiveServerUrl();
+                        return determineAuthenticatedRoute({...props, serverUrl});
+                    }
+                    serverUrl = await getActiveServerUrl();
                 } else if (!serverUrl && extra.type !== DeepLink.Server) {
                     props.launchError = true;
                 } else if (extra.type === DeepLink.Server) {

@@ -30,14 +30,14 @@ const handleUrl = async (event: {url: string}) => {
     }
 
     if (event.url) {
-        const {error} = await parseAndHandleDeepLink(
+        const {error, alertShown} = await parseAndHandleDeepLink(
             event.url,
             undefined,
             undefined,
             true,
         );
 
-        if (error) {
+        if (error && !alertShown) {
             alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
             return false;
         }

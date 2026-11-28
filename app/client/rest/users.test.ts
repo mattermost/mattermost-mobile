@@ -215,6 +215,28 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, defaultExpectedOptions, false);
     });
 
+    test('loginByMobileQrToken', async () => {
+        const token = 'a'.repeat(64);
+        const expectedUrl = `${client.getUsersRoute()}/login/mobile_qr`;
+        jest.mocked(client.doFetch).mockResolvedValueOnce({data: {token: 'session-token', csrf: 'csrf-token'}});
+
+        const result = await client.loginByMobileQrToken(token, 'deviceId', 'voipDeviceId');
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {
+            method: 'post',
+            body: {token, device_id: 'deviceId', voip_device_id: 'voipDeviceId'},
+            headers: {'Cache-Control': 'no-store'},
+        }, false);
+        expect(result).toEqual({token: 'session-token', csrf: 'csrf-token'});
+
+        await client.loginByMobileQrToken(token);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {
+            method: 'post',
+            body: {token, device_id: '', voip_device_id: ''},
+            headers: {'Cache-Control': 'no-store'},
+        }, false);
+    });
+
     test('logout', async () => {
         const expectedUrl = `${client.getUsersRoute()}/logout`;
         const expectedOptions = {method: 'post'};

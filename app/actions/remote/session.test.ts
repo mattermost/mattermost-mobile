@@ -5,6 +5,7 @@ import {createIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, Platform} from 'react-native';
 
 import {cancelSessionNotification, findSession} from '@actions/local/session';
+import {doPing} from '@actions/remote/general';
 import {Events} from '@constants';
 import {GLOBAL_IDENTIFIERS, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -12,6 +13,7 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import TestHelper from '@test/test_helper';
 import {logWarning} from '@utils/log';
+import {getServerUrlAfterRedirect} from '@utils/url';
 
 import {
     addPushProxyVerificationStateFromLogin,
@@ -19,6 +21,7 @@ import {
     fetchSessions,
     login,
     logout,
+    mobileQrLogin,
     nativeEntraLogin,
     scheduleSessionNotification,
     sendPasswordResetEmail,
@@ -27,6 +30,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {LoginArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
 
 const intl = createIntl({
     locale: 'en',
@@ -47,6 +51,7 @@ const throwFunc = () => {
 const mockClient = {
     login: jest.fn(() => user1),
     loginByIntune: jest.fn().mockResolvedValue(user1),
+    loginByMobileQrToken: jest.fn(),
     setCSRFToken: jest.fn(),
     setClientCredentials: jest.fn(),
     getClientConfigOld: jest.fn(() => ({})),
@@ -113,6 +118,15 @@ jest.mock('@utils/security', () => {
         getCSRFFromCookie: mockGetCSRFFromCookie,
     };
 });
+
+jest.mock('@actions/remote/general', () => ({
+    doPing: jest.fn(),
+}));
+
+jest.mock('@utils/url', () => ({
+    ...jest.requireActual('@utils/url'),
+    getServerUrlAfterRedirect: jest.fn(),
+}));
 
 jest.mock('@utils/log', () => {
     const original = jest.requireActual('@utils/log');
@@ -503,6 +517,77 @@ describe('Session Actions', () => {
             expect(mockAlert).not.toHaveBeenCalled();
         }
     });
+    });
+
+    describe('mobileQrLogin', () => {
+        const qrServerUrl = 'qr.example.com';
+        const resolvedServerUrl = 'https://qr.example.com';
+        const qrToken = 'a'.repeat(64);
+
+        beforeEach(async () => {
+            jest.clearAllMocks();
+            jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({url: resolvedServerUrl});
+            jest.mocked(doPing).mockResolvedValue({});
+            jest.spyOn(NetworkManager, 'createClient').mockResolvedValue(mockClient as never);
+            mockClient.getClientConfigOld.mockReturnValue({SiteName: 'QR Server', DiagnosticId: 'qr-diagnostic-id'});
+            mockClient.loginByMobileQrToken.mockReset().mockResolvedValue({token: 'session-token', csrf: 'csrf-token'});
+            mockClient.getMe.mockReturnValue(user1);
+        });
+
+        afterEach(async () => {
+            await DatabaseManager.destroyServerDatabase(resolvedServerUrl);
+        });
+
+        it('should redeem the code, set the credentials and complete the login', async () => {
+            const result = await mobileQrLogin(qrServerUrl, qrToken);
+
+            expect(result.failed).toBe(false);
+            expect(result.error).toBeUndefined();
+            expect(NetworkManager.createClient).toHaveBeenCalledWith(resolvedServerUrl, undefined);
+            expect(mockClient.loginByMobileQrToken).toHaveBeenCalledWith(qrToken, 'apple_rn-v2:standard-token', 'apple_rn-v2:voip-token');
+            expect(mockClient.setClientCredentials).toHaveBeenCalledWith('session-token', undefined);
+            expect(mockClient.setCSRFToken).toHaveBeenCalledWith('csrf-token');
+
+            const serverDatabase = DatabaseManager.serverDatabases[resolvedServerUrl];
+            expect(serverDatabase).toBeDefined();
+            const currentUserId = await serverDatabase!.database.get<SystemModel>('System').find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID);
+            expect(currentUserId.value).toBe(user1.id);
+        });
+
+        it('should retry with http when https cannot be resolved', async () => {
+            jest.mocked(getServerUrlAfterRedirect).
+                mockResolvedValueOnce({error: new Error('no https')}).
+                mockResolvedValueOnce({url: 'http://qr.example.com'});
+
+            const result = await mobileQrLogin(qrServerUrl, qrToken);
+
+            expect(getServerUrlAfterRedirect).toHaveBeenNthCalledWith(2, qrServerUrl, true);
+            expect(NetworkManager.createClient).toHaveBeenCalledWith('http://qr.example.com', undefined);
+            expect(result.failed).toBe(false);
+            await DatabaseManager.destroyServerDatabase('http://qr.example.com');
+        });
+
+        it('should return the error when the server cannot be reached', async () => {
+            const error = new Error('unreachable');
+            jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({error});
+
+            const result = await mobileQrLogin(qrServerUrl, qrToken);
+
+            expect(result).toEqual({error, failed: true});
+            expect(mockClient.loginByMobileQrToken).not.toHaveBeenCalled();
+        });
+
+        it('should return the client error so the status code can be inspected', async () => {
+            const error = {status_code: 401, server_error_id: 'api.user.mobile_qr_login.invalid_token.app_error'};
+            mockClient.loginByMobileQrToken.mockRejectedValueOnce(error);
+
+            const result = await mobileQrLogin(qrServerUrl, qrToken);
+
+            expect(result).toEqual({error, failed: true});
+            expect(mockClient.setClientCredentials).not.toHaveBeenCalled();
+            expect(mockClient.setCSRFToken).not.toHaveBeenCalled();
+            expect(DatabaseManager.serverDatabases[resolvedServerUrl]).toBeUndefined();
+        });
     });
 
     describe('nativeEntraLogin', () => {

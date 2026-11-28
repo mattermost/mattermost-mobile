@@ -46,12 +46,17 @@ export interface DeepLinkMagicLink extends DeepLink {
     token: string;
 }
 
+export interface DeepLinkMobileQrLogin extends DeepLink {
+    serverUrl: string;
+    token: string;
+}
+
 export type DeepLinkType = typeof DeepLinkConstant[keyof typeof DeepLinkConstant];
 
 export interface DeepLinkWithData {
     type: DeepLinkType;
     url: string;
-    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin | DeepLinkServer | DeepLinkPlaybooks | DeepLinkPlaybookRuns | DeepLinkMagicLink;
+    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin | DeepLinkServer | DeepLinkPlaybooks | DeepLinkPlaybookRuns | DeepLinkMagicLink | DeepLinkMobileQrLogin;
 }
 
 export type LaunchType = typeof Launch[keyof typeof Launch];
