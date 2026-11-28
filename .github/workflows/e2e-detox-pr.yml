@@ -650,7 +650,12 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/**/*"
+          # The leading ** keeps outputs/apk/... in the artifact, the layout
+          # e2e-android-template.yml downloads into android/app/build.
+          path: |
+            android/app/build/**/outputs/apk/debug/app-debug.apk
+            android/app/build/**/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          if-no-files-found: error
 
       - name: Save Android Detox build to S3
         if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
