@@ -204,6 +204,7 @@ jobs:
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           COMMIT_SHA: ${{ steps.inputs.outputs.commit-sha }}
+          LANES: ${{ steps.inputs.outputs.lanes }}
           REF_NAME: ${{ github.ref_name }}
         with:
           script: |
@@ -253,9 +254,12 @@ jobs:
                   core.setFailed(`fork pull request #${pr.number} head is ${pr.head?.sha}, not ${sha}`);
                   return;
                 }
-                // The lanes run the existing templates, which give the commit under test statuses: write.
-                core.setFailed(`fork pull request #${pr.number}: E2E Tests do not run a fork pull request`);
-                return;
+                // The Maestro lanes run the existing template, which gives the commit under test statuses: write.
+                const maestro = JSON.parse(process.env.LANES).filter((l) => l.startsWith('maestro-'));
+                if (maestro.length > 0) {
+                  core.setFailed(`fork pull request #${pr.number}: ${maestro.join(', ')} do not run a fork pull request`);
+                  return;
+                }
               }
               core.setOutput('fork', fork ? 'true' : 'false');
               core.setOutput('branch', pr.head.ref);

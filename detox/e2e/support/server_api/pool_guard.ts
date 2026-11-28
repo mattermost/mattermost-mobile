@@ -1,18 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Blocks server-wide writes from shards on the shared pool servers. Specs that must change
-// server-wide state run on the mutation shard instead (detox/e2e/server_mutation_specs.json).
+// Blocks server-wide writes to shared servers. 'enforce' guards every site of a Matterwick pool shard,
+// whose specs that change server-wide state run on the mutation shard instead
+// (detox/e2e/server_mutation_specs.json). 'shared' guards SITE_2 and SITE_3 of an e2e-test-stack
+// worker, which owns its SITE_1.
 
-export type PoolGuardMode = 'off' | 'enforce';
+export type PoolGuardMode = 'off' | 'enforce' | 'shared';
 
 type Env = Record<string, string | undefined>;
 
 export const poolGuardMode = (env: Env = process.env): PoolGuardMode => {
-    if (env.CI !== 'true' || env.E2E_SERVER_ROLE !== 'pool') {
+    if (env.CI !== 'true') {
         return 'off';
     }
-    return env.E2E_POOL_GUARD === 'enforce' ? 'enforce' : 'off';
+    if (env.E2E_SERVER_ROLE === 'pool') {
+        return env.E2E_POOL_GUARD === 'enforce' ? 'enforce' : 'off';
+    }
+    return !env.E2E_SERVER_ROLE && env.E2E_POOL_GUARD === 'shared' ? 'shared' : 'off';
 };
 
 const originOf = (url?: string) => {
@@ -27,7 +32,7 @@ const originOf = (url?: string) => {
 };
 
 const protectedOrigins = (env: Env = process.env) => new Set(
-    [env.SITE_1_URL, env.SITE_2_URL, env.SITE_3_URL].map(originOf).filter(Boolean),
+    [poolGuardMode(env) === 'shared' ? undefined : env.SITE_1_URL, env.SITE_2_URL, env.SITE_3_URL].map(originOf).filter(Boolean),
 );
 
 const parseBody = (body: unknown): any => {
@@ -129,6 +134,6 @@ export const poolGuardInterceptor = <T extends {method?: string; url?: string; b
     }
     violations.push(violation);
     // eslint-disable-next-line no-console
-    console.error(`[pool_guard] server-wide write on a pool server: ${violation}`);
+    console.error(`[pool_guard] server-wide write on a shared server: ${violation}`);
     throw Object.assign(new Error(`E2E_POOL_GUARD blocked ${violation}`), {code: 'E2E_POOL_GUARD'});
 };

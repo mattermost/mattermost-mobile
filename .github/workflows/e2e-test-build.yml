@@ -72,6 +72,26 @@ jobs:
           ref: ${{ inputs.commit_sha }}
           persist-credentials: false
 
+      # A fork run loads every local action, nested ones too, from this run's commit, not the commit under test.
+      - name: Check out trusted actions
+        if: inputs.fork == true
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          path: .trusted-actions
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Use trusted actions
+        if: inputs.fork == true
+        run: |
+          set -euo pipefail
+          if [ -L .github ]; then rm .github; fi
+          rm -rf .github/actions
+          mkdir -p .github
+          cp -R .trusted-actions/.github/actions .github/actions
+          rm -rf .trusted-actions
+
       # Cache trust scope, as e2e-detox-pr.yml resolves it for a run that is not a main push.
       - name: Resolve cache trust scope
         id: scope
@@ -117,6 +137,26 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.commit_sha }}
 
+      # A fork run loads every local action, nested ones too, from this run's commit, not the commit under test.
+      - name: Check out trusted actions
+        if: inputs.fork == true
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          path: .trusted-actions
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Use trusted actions
+        if: inputs.fork == true
+        run: |
+          set -euo pipefail
+          if [ -L .github ]; then rm .github; fi
+          rm -rf .github/actions
+          mkdir -p .github
+          cp -R .trusted-actions/.github/actions .github/actions
+          rm -rf .trusted-actions
+
       - name: Check for cached iOS build
         id: cache-check
         if: inputs.fork != true
@@ -142,6 +182,7 @@ jobs:
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
+          save-cache: ${{ inputs.fork != true }}
 
       - name: Set .env with RUNNING_E2E=true
         if: env.SKIP_BUILD != 'true'
@@ -199,6 +240,26 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.commit_sha }}
 
+      # A fork run loads every local action, nested ones too, from this run's commit, not the commit under test.
+      - name: Check out trusted actions
+        if: inputs.fork == true
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          path: .trusted-actions
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Use trusted actions
+        if: inputs.fork == true
+        run: |
+          set -euo pipefail
+          if [ -L .github ]; then rm .github; fi
+          rm -rf .github/actions
+          mkdir -p .github
+          cp -R .trusted-actions/.github/actions .github/actions
+          rm -rf .trusted-actions
+
       - name: Check for cached Android Detox build
         id: cache-check
         if: inputs.fork != true
@@ -224,11 +285,21 @@ jobs:
         uses: ./.github/actions/prepare-android-build
         with:
           sign: 'false'
+          save-cache: ${{ inputs.fork != true }}
 
-      # Same key as e2e-detox-pr.yml's build-android-apk, so the workflows share the cache.
+      # Same key as e2e-detox-pr.yml's build-android-apk, so the workflows share the cache. A fork build restores it
+      # and never saves it: a save would put the fork's files in the branch's shared cache.
       - name: Cache Gradle dependencies
-        if: env.SKIP_BUILD != 'true'
+        if: env.SKIP_BUILD != 'true' && inputs.fork != true
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Restore Gradle dependencies
+        if: env.SKIP_BUILD != 'true' && inputs.fork == true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: /home/runner/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
@@ -286,6 +357,26 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.commit_sha }}
 
+      # A fork run loads every local action, nested ones too, from this run's commit, not the commit under test.
+      - name: Check out trusted actions
+        if: inputs.fork == true
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.sha }}
+          path: .trusted-actions
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Use trusted actions
+        if: inputs.fork == true
+        run: |
+          set -euo pipefail
+          if [ -L .github ]; then rm .github; fi
+          rm -rf .github/actions
+          mkdir -p .github
+          cp -R .trusted-actions/.github/actions .github/actions
+          rm -rf .trusted-actions
+
       - name: Check for cached Android Maestro build
         id: cache-check
         if: inputs.fork != true
@@ -311,6 +402,7 @@ jobs:
         uses: ./.github/actions/prepare-android-build
         with:
           sign: 'false'
+          save-cache: ${{ inputs.fork != true }}
 
       - name: Build Maestro Android APK
         if: env.SKIP_BUILD != 'true'

@@ -1,21 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @multi_server
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    Setup,
-    User,
-} from '@support/server_api';
+import {Setup} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
     serverTwoUrl,
     siteTwoUrl,
+    siteTwoListingUser,
     hasSecondServer,
 } from '@support/test_config';
 import {Alert} from '@support/ui/component';
@@ -69,11 +69,7 @@ describe('Smoke Test - Server Login', () => {
         await ServerListScreen.toBeVisible();
 
         // # Add a second server and log in to the second server
-        const {error: adminLoginError} = await User.apiAdminLogin(siteTwoUrl);
-        if (adminLoginError) {
-            throw new Error('MM-T4675_2: Site 2 admin login failed');
-        }
-        const {user} = await Setup.apiInit(siteTwoUrl);
+        const user = await Setup.apiSignInUser(siteTwoUrl, siteTwoListingUser);
 
         // tapAddServerButton, not a bare tap: the multi-server tutorial's full-screen
         // backdrop SVG can intercept the hit-test at the button

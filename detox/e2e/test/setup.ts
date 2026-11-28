@@ -10,7 +10,7 @@ import path from 'path';
 import {System, User} from '@support/server_api';
 import {drainPoolGuardViolations} from '@support/server_api/pool_guard';
 import {applyServerBaseline} from '@support/server_baseline';
-import {serverRole} from '@support/server_role';
+import {canMutateServer} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
 import {disableSynchronization, enableSynchronization} from '@support/utils';
 
@@ -413,8 +413,9 @@ beforeAll(async () => {
 
     await loginAdmin();
 
-    // The mutation shard runs specs that change server-wide state; start each one from the baseline.
-    if (serverRole === 'mutation') {
+    // In CI a SITE_1 that may run server-wide changes starts each spec from the baseline, so a revert a
+    // previous spec missed does not leak into the next one.
+    if (process.env.CI === 'true' && canMutateServer) {
         await applyServerBaseline(siteOneUrl);
     }
 }, 360_000);
@@ -423,6 +424,6 @@ beforeAll(async () => {
 afterAll(() => {
     const violations = drainPoolGuardViolations();
     if (violations.length) {
-        throw new Error(`Server-wide writes from a pool shard (move the spec to detox/e2e/server_mutation_specs.json):\n${violations.join('\n')}`);
+        throw new Error(`Server-wide writes to a shared server (on a Matterwick pool shard, move the spec to detox/e2e/server_mutation_specs.json):\n${violations.join('\n')}`);
     }
 });

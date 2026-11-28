@@ -5,9 +5,9 @@
 #   setup    validates the inputs, names each lane's batch and posts pending e2e-test-stack/<lane> statuses
 #   build-*  the app builds the chosen lanes need, from the S3 build cache or built
 #   lanes    each creates and provisions its own batch and runs:
-#              detox-ios        e2e-ios-template.yml      dt-ios-<type>
-#              detox-ipad       e2e-ios-template.yml      dt-ipad-<type>
-#              detox-android    e2e-android-template.yml  dt-andr-<type>
+#              detox-ios        e2e-ios-template-v2.yml      dt-ios-<type>
+#              detox-ipad       e2e-ios-template-v2.yml      dt-ipad-<type>
+#              detox-android    e2e-android-template-v2.yml  dt-andr-<type>
 #              maestro-ios      e2e-maestro-template.yml  ms-ios-<type>
 #              maestro-android  e2e-maestro-template.yml  ms-andr-<type>
 #            <type> is pr with pr_number, else main on main and rel on a release branch.
@@ -20,11 +20,13 @@
 # cancels the one in progress. It does not wait for it.
 #
 # A passed lane's batch is destroyed. So is every lane's batch when the run is cancelled. A failed or timed-out lane
-# of a run that was not cancelled is kept, so "Re-run failed jobs" uses the same servers. The batch's TTL (4h from
-# create) bounds that, including time queued for a macOS runner, and is the backstop when destroy does not run.
-# After it, only "Re-run all jobs" creates a new batch. Each chosen lane's result is posted as e2e-test-stack/<lane>,
-# which is not a required e2e-test/* context. The run does not report to TSIO, post a triage verdict or send a
-# channel message.
+# of a run that was not cancelled is kept, so "Re-run failed jobs" uses the same servers when a job failed (setup,
+# runner, timeout). Failed specs need "Re-run all jobs": re-running only the failed summary job reads the same Test
+# System IO result and runs no test. The batch's TTL (4h from create) bounds the kept batch, including time queued
+# for a macOS runner, and is the backstop when destroy does not run. After it, only "Re-run all jobs" creates a new
+# batch. Each chosen lane's result is posted as e2e-test-stack/<lane>,
+# which is not a required e2e-test/* context. Detox reports to Test System IO. Maestro does not. The run posts no
+# triage verdict and sends no channel message.
 name: E2E Tests
 
 on:
@@ -158,11 +160,9 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ needs.setup.outputs.fork == 'true' && 'none' || secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
-  # The lanes run with run-type NONE and no tsio-config: no TSIO report, no triage announcement, no spec durations,
-  # no Zephyr and no channel message. Results posts e2e-test-stack/<lane> from each lane's result.
-  # statuses and issues are what the existing templates declare. Those templates run the commit under test with
-  # them, so setup refuses a fork pull request. The lanes get no AWS keys, so no S3 report. They get no admin
-  # secrets either: each batch has its own admin, which the lane reads from the batch.
+  # Detox lanes report to Test System IO and do not post a commit status. Results posts
+  # e2e-test-stack/<lane> and links the report. The workers get no AWS keys and no admin
+  # secrets: each batch has its own admin, which the lane reads from the batch.
   detox-ios:
     name: Detox iOS
     needs: [setup, build-ios]
@@ -173,14 +173,14 @@ jobs:
       contents: read
       actions: read
       id-token: write
-      statuses: write
-      issues: read
-    uses: ./.github/workflows/e2e-ios-template.yml
+      pull-requests: read
+    uses: ./.github/workflows/e2e-ios-template-v2.yml
     with:
-      run-type: NONE
-      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      lane: detox-ios
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
+      pr_number: ${{ inputs.pr_number }}
       artifact_run_id: ${{ github.run_id }}
-      e2e_test_stack: true
+      fork: ${{ needs.setup.outputs.fork == 'true' }}
       e2e_test_stack_account: ${{ needs.setup.outputs.account }}
       e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
@@ -188,7 +188,8 @@ jobs:
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
-  # The iPad device, specs and Detox configuration of e2e-detox.yml's run-ios-ipad-tests.
+  # The iPad device and Detox configuration of e2e-detox.yml's run-ios-ipad-tests.
+  # Its specs are the *.ipad.e2e.ts files under products/channels.
   detox-ipad:
     name: Detox iPad
     needs: [setup, build-ios]
@@ -199,19 +200,18 @@ jobs:
       contents: read
       actions: read
       id-token: write
-      statuses: write
-      issues: read
-    uses: ./.github/workflows/e2e-ios-template.yml
+      pull-requests: read
+    uses: ./.github/workflows/e2e-ios-template-v2.yml
     with:
-      run-type: NONE
-      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      lane: detox-ipad
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
+      pr_number: ${{ inputs.pr_number }}
       artifact_run_id: ${{ github.run_id }}
       ios_device_name: "iPad Pro 13-inch (M5)"
       ios_device_os_name: "iOS 26.2"
-      search_path: "detox/e2e/test/products/channels/ipad"
-      parallelism: "1"
+      parallelism: "4"
       detox_config: "ios.ipad.debug"
-      e2e_test_stack: true
+      fork: ${{ needs.setup.outputs.fork == 'true' }}
       e2e_test_stack_account: ${{ needs.setup.outputs.account }}
       e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
@@ -229,15 +229,14 @@ jobs:
       contents: read
       actions: read
       id-token: write
-      statuses: write
-      issues: read
-    uses: ./.github/workflows/e2e-android-template.yml
+      pull-requests: read
+    uses: ./.github/workflows/e2e-android-template-v2.yml
     with:
-      run-android-tests: true
-      run-type: NONE
-      MOBILE_VERSION: ${{ needs.setup.outputs.commit-sha }}
+      lane: detox-android
+      commit_sha: ${{ needs.setup.outputs.commit-sha }}
+      pr_number: ${{ inputs.pr_number }}
       artifact_run_id: ${{ github.run_id }}
-      e2e_test_stack: true
+      fork: ${{ needs.setup.outputs.fork == 'true' }}
       e2e_test_stack_account: ${{ needs.setup.outputs.account }}
       e2e_test_stack_channel: ${{ needs.setup.outputs.channel }}
       e2e_test_stack_server_image: ${{ needs.setup.outputs.server-image }}
@@ -245,6 +244,8 @@ jobs:
     secrets:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
+  # The Maestro lanes run the existing template with run-type NONE and no tsio-config. statuses and issues are what
+  # it declares, and it runs the commit under test with them, so setup refuses a Maestro lane for a fork pull request.
   maestro-ios:
     name: Maestro iOS
     needs: [setup, build-ios]
@@ -319,7 +320,8 @@ jobs:
       E2E_TEST_STACK_CREDENTIALS_KEY: ${{ secrets.E2E_TEST_STACK_CREDENTIALS_KEY }}
 
   # Each chosen lane's batch is destroyed when the lane passed. A failed or timed-out lane is kept until its TTL
-  # for "Re-run failed jobs", which runs this job again with the re-run's results; a skipped lane created none.
+  # for "Re-run failed jobs" after a job failure, which runs this job again with the re-run's results; failed specs
+  # need "Re-run all jobs". A skipped lane created none.
   # A cancelled run is destroyed by the cancel job, which is already running.
   results:
     name: Results
@@ -350,7 +352,7 @@ jobs:
             case "$result" in
               skipped) action="none: no batch" ;;
               success) action=destroy ;;
-              *) action="kept, if it was created, for a re-run until its TTL" ;;
+              *) action="kept, if it was created, until its TTL for \"Re-run failed jobs\" after a job failure; failed specs need \"Re-run all jobs\"" ;;
             esac
             if [ "$action" = destroy ]; then
               destroy=$(jq -c --arg b "$batch" '. + [$b]' <<< "$destroy")
@@ -374,10 +376,15 @@ jobs:
           COMMIT_SHA: ${{ needs.setup.outputs.commit-sha }}
           REPO: ${{ github.repository }}
           TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPORTS: >-
+            {"detox-ios": "${{ needs.detox-ios.outputs.report-url }}",
+            "detox-ipad": "${{ needs.detox-ipad.outputs.report-url }}",
+            "detox-android": "${{ needs.detox-android.outputs.report-url }}"}
         run: |
           set -euo pipefail
           for lane in $(jq -r '.[]' <<< "$LANES"); do
             result=$(jq -r --arg l "$lane" '.[$l]' <<< "$RESULTS")
+            report=$(jq -r --arg l "$lane" '.[$l] // ""' <<< "$REPORTS")
             case "$result" in
               success)
                 state=success
@@ -396,11 +403,15 @@ jobs:
                 description="Mobile E2E on e2e-test-stack (${lane}): did not run"
                 ;;
             esac
+            target="$TARGET_URL"
+            if [ -n "$report" ] && [ "$report" != "null" ]; then
+              target="$report"
+            fi
             gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
               -f state="$state" \
               -f context="e2e-test-stack/${lane}" \
               -f description="$description" \
-              -f target_url="$TARGET_URL" > /dev/null
+              -f target_url="$target" > /dev/null
             echo "e2e-test-stack/${lane}: ${state}"
           done
 

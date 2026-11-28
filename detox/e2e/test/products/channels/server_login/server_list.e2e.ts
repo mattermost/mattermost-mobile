@@ -1,17 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @multi_server
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    User,
-    Setup,
-    TermsOfService,
-} from '@support/server_api';
+import {Setup} from '@support/server_api';
 import {
     serverOneUrl,
     serverTwoUrl,
@@ -19,6 +17,8 @@ import {
     siteOneUrl,
     siteTwoUrl,
     siteThreeUrl,
+    siteTwoListingUser,
+    siteThreeListingUser,
     hasThreeDistinctServers,
 } from '@support/test_config';
 import {
@@ -92,8 +92,7 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
 
         // # Add a second server and log in to the second server
-        await User.apiAdminLogin(siteTwoUrl);
-        ({user: serverTwoUser} = await Setup.apiInit(siteTwoUrl));
+        serverTwoUser = await Setup.apiSignInUser(siteTwoUrl, siteTwoListingUser);
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.tapAddServerButton();
         await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
@@ -113,10 +112,7 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
 
         // # Add a third server and log in to the third server
-        // Read-only: provisioning keeps ToS off and only the mutation shard ever enables it.
-        await User.apiAdminLogin(siteThreeUrl);
-        await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteThreeUrl);
-        ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
+        serverThreeUser = await Setup.apiSignInUser(siteThreeUrl, siteThreeListingUser);
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.tapAddServerButton();
         await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);

@@ -5,12 +5,18 @@ inputs:
   sign:
     description: Flag to enable android package signing
     default: "true"
+  save-cache:
+    description: "'false' restores caches without saving them, for a run of untrusted code"
+    required: false
+    default: "true"
 
 runs:
   using: composite
   steps:
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
+      with:
+        save-cache: ${{ inputs.save-cache }}
 
     - name: ci/setup-java
       uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0

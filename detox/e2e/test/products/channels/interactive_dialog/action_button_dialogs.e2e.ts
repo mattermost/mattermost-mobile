@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @server_mutation
+
 /* eslint-disable no-await-in-loop, no-empty */
 
 // *******************************************************************

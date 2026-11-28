@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @server_mutation
+
 // *******************************************************************
 // Share with connected workspaces — needs Shared Channels license, EnableSharedChannels, MANAGE_SHARED_CHANNELS.
 // *******************************************************************

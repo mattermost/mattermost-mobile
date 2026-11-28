@@ -18,6 +18,10 @@ setup_avd_home() {
     if [[ "${CI:-}" == "true" ]]; then
         export ANDROID_AVD_HOME=$(pwd)/.android/avd
         mkdir -p "$ANDROID_AVD_HOME"
+        # Later steps (Detox, adb) look the AVD up there too.
+        if [[ -n "${GITHUB_ENV:-}" ]]; then
+            echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
+        fi
     fi
 }
 
@@ -91,6 +95,24 @@ emulator_dns_servers() {
     } | awk 'NF && !seen[$0]++' | head -4 | paste -sd, -
 }
 
+# A new session survives the GitHub Actions step. dispatch-run is a later step,
+# and the runner kills the step's process group when the step ends.
+spawn_detached() {
+    local log="$1"
+    shift
+    python3 -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' "$@" >>"$log" 2>&1 &
+    DETACHED_PID=$!
+    echo "detached pid ${DETACHED_PID} -> $log"
+}
+
+detach_log() {
+    if [[ -n "${RUNNER_TEMP:-}" ]]; then
+        echo "$RUNNER_TEMP/$1"
+    else
+        echo "$SCRIPT_DIR/$1"
+    fi
+}
+
 start_emulator() {
     echo "Starting the emulator..."
     local emulator_opts="-avd $AVD_NAME -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
@@ -99,14 +121,31 @@ start_emulator() {
         local dns_servers
         dns_servers=$(emulator_dns_servers)
         echo "Emulator DNS servers: ${dns_servers}"
-        emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
+        if [[ "${DETACH_SERVICES:-}" == "true" ]]; then
+            EMULATOR_LOG=$(detach_log emulator.log)
+            spawn_detached "$EMULATOR_LOG" emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB"
+            EMULATOR_PID=$DETACHED_PID
+        else
+            emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
+            EMULATOR_PID=$!
+        fi
     else
         emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
     fi
 }
 
+# The launched PID stays the emulator's through python3 and emulator exec'ing in place; until the
+# forked child execs, its command line is still this script's, which neither pattern matches.
 emulator_process_running() {
-    pgrep -f "emulator.*${AVD_NAME}" >/dev/null 2>&1 || pgrep -f 'qemu-system-x86_64' >/dev/null 2>&1
+    { [[ -n "${EMULATOR_PID:-}" ]] && kill -0 "$EMULATOR_PID" 2>/dev/null; } \
+        || pgrep -f "emulator.*${AVD_NAME}" >/dev/null 2>&1 || pgrep -f 'qemu-system-x86_64' >/dev/null 2>&1
+}
+
+print_emulator_log() {
+    if [[ -n "${EMULATOR_LOG:-}" && -f "$EMULATOR_LOG" ]]; then
+        echo "Last lines of ${EMULATOR_LOG}:"
+        tail -n 50 "$EMULATOR_LOG" || true
+    fi
 }
 
 wait_for_emulator() {
@@ -123,6 +162,7 @@ wait_for_emulator() {
         fi
         if ! emulator_process_running; then
             echo "Emulator process exited before device appeared (check snapshot/cache state)"
+            print_emulator_log
             exit 1
         fi
         sleep 5
@@ -138,6 +178,7 @@ wait_for_emulator() {
         fi
         if ! emulator_process_running; then
             echo "Emulator process exited during boot"
+            print_emulator_log
             exit 1
         fi
         echo "Waiting for emulator to fully boot..."
@@ -233,7 +274,7 @@ install_app() {
     app_apk=$(resolve_app_apk)
     echo "Installing the app from $app_apk..."
     adb install -r "$app_apk"
-    if [[ "${MAESTRO_ANDROID:-}" != "true" && "${BOOTSTRAP_ONLY:-}" != "true" ]]; then
+    if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
         # Install the test/instrumentation APK — required by Detox (reinstallApp: false assumes
         # both the main APK and the test APK are already present on the device).
         adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
@@ -329,7 +370,11 @@ push_e2e_fixtures() {
 start_server() {
     echo "Starting the server..."
     cd "$REPO_ROOT"
-    RUNNING_E2E=true npm run start &
+    if [[ "${DETACH_SERVICES:-}" == "true" ]]; then
+        RUNNING_E2E=true spawn_detached "$(detach_log metro.log)" npm run start
+    else
+        RUNNING_E2E=true npm run start &
+    fi
     local timeout=120 interval=5 elapsed=0
 
     until nc -z localhost 8081; do
@@ -514,6 +559,10 @@ main() {
     fi
 
     if [[ "${BOOTSTRAP_ONLY:-}" == "true" ]]; then
+        # A later step runs Detox against this emulator.
+        if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
+            (cd "$SCRIPT_DIR" && AVD_NAME="$AVD_NAME" npm run detox:config-gen)
+        fi
         echo "Bootstrap complete (BOOTSTRAP_ONLY=true) — skipping Detox tests"
         exit 0
     fi

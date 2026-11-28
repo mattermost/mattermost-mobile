@@ -167,9 +167,35 @@ function resolveMutationTarget(wanted, available) {
 }
 
 
+const IPAD_SPEC_SUFFIX = '.ipad.e2e.ts';
+const IPAD_SEARCH_GLOB = '/*.ipad.e2e.ts';
+
+// A search path ending in /*.ipad.e2e.ts is the iPad lane: walk the directory
+// and keep only those files. Every other walk skips them.
+function parseSearchPath(searchPath) {
+  if (searchPath.endsWith(IPAD_SEARCH_GLOB)) {
+    return {dir: searchPath.slice(0, -IPAD_SEARCH_GLOB.length), onlyIpad: true};
+  }
+  return {dir: searchPath, onlyIpad: false};
+}
+
+function isIpadSpec(file) {
+  return file.endsWith(IPAD_SPEC_SUFFIX);
+}
+
+const OTHER_PLATFORM_SPEC_SUFFIX = {android: '.ios.e2e.ts', ios: '.android.e2e.ts'};
+
+// The other platform's Detox config ignores these, so a shard given one would run nothing.
+function isOtherPlatformSpec(file, platform) {
+  const suffix = OTHER_PLATFORM_SPEC_SUFFIX[platform];
+  return Boolean(suffix) && file.endsWith(suffix);
+}
+
 class Specs {
   constructor(searchPath, parallelism, deviceInfo, durations = {}, mutation = {}) {
-    this.searchPath = searchPath;
+    const parsed = parseSearchPath(searchPath);
+    this.searchPath = parsed.dir;
+    this.onlyIpad = parsed.onlyIpad;
     this.parallelism = parallelism;
     this.rawFiles = [];
     this.groupedFiles = [];
@@ -190,7 +216,8 @@ class Specs {
     const root = path.resolve(this.searchPath);
     this.rawFiles = [...new Set(files)].filter((file) => {
       const full = path.resolve(file);
-      return /\.e2e\.ts$/.test(full) && full.startsWith(root + path.sep) && fs.existsSync(full);
+      return /\.e2e\.ts$/.test(full) && isIpadSpec(full) === this.onlyIpad && !isOtherPlatformSpec(full, this.mutation.platform) &&
+        full.startsWith(root + path.sep) && fs.existsSync(full);
     }).map(toRepoRelative);
   }
 
@@ -207,13 +234,8 @@ class Specs {
         const stats = fs.statSync(filePath);
 
         if (stats.isDirectory()) {
-          // iPad tests are iOS-only; exclude from Android and other non-iPad runs.
-          // They run in their own isolated job with search_path pointing directly at ipad/.
-          if (file === 'ipad') {
-            return;
-          }
           walkSync(filePath);
-        } else if (fileRegex.test(filePath)) {
+        } else if (fileRegex.test(filePath) && isIpadSpec(file) === this.onlyIpad && !isOtherPlatformSpec(file, this.mutation.platform)) {
           const relativeFilePath = filePath.replace(dirPath + '/', '');
           const fullPath = path.join(this.searchPath, relativeFilePath);
           this.rawFiles.push(toRepoRelative(fullPath));

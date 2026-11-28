@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/** Role of SITE_1 for this shard in CI: 'pool' (shared, read-only) or 'mutation' (one serial shard). */
+/**
+ * Role of SITE_1 on the Matterwick shards: 'pool' (shared, read-only) or 'mutation' (one serial shard).
+ * Unset ('local') locally and on e2e-test-stack, where every worker owns its SITE_1.
+ */
 export const serverRole = process.env.E2E_SERVER_ROLE || 'local';
 
-/** False on a CI pool shard. Mutation specs' afterAll checks it: Jest runs afterAll even when beforeAll threw. */
-export const canMutateServer = process.env.CI !== 'true' || serverRole === 'mutation';
+/** False on a Matterwick pool shard. Mutation specs' afterAll checks it: Jest runs afterAll even when beforeAll threw. */
+export const canMutateServer = serverRole !== 'pool';
 
 /**
  * Fails a spec that must not run on a pool shard. Routing comes from detox/e2e/server_mutation_specs.json;
