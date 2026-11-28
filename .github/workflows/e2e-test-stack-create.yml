@@ -62,6 +62,8 @@ on:
         type: string
         # One setting per line, sorted by name. Not the ConnectedWorkspacesSettings: the stack boots every server with them
         # on from its config file, and here they could not be switched through the config API, as the specs do.
+        # The SplitKey is a dummy: the server accepts feature-flag writes only when one is set, and its failed sync only logs.
+        # It is a number because the stack refuses any other value in a setting whose name contains KEY.
         default: |-
           {
             "MM_EMAILSETTINGS_FEEDBACKEMAIL": "test@example.com",
@@ -95,6 +97,7 @@ on:
             "MM_SERVICESETTINGS_SESSIONCACHEINMINUTES": "180",
             "MM_SERVICESETTINGS_SESSIONLENGTHMOBILEINHOURS": "5000",
             "MM_SERVICESETTINGS_SESSIONLENGTHWEBINHOURS": "4320",
+            "MM_SERVICESETTINGS_SPLITKEY": "1234567890",
             "MM_SUPPORTSETTINGS_HELPLINK": "https://docs.mattermost.com/",
             "MM_SUPPORTSETTINGS_REPORTAPROBLEMTYPE": "default",
             "MM_TEAMSETTINGS_EXPERIMENTALENABLEAUTOMATICREPLIES": "true",
