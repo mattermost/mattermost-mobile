@@ -427,6 +427,7 @@ jobs:
         run: cd detox && npm run detox:config-gen
 
       - name: Start Metro
+        timeout-minutes: 25
         run: bash detox/scripts/start_metro_detached.sh
 
       - name: ci/dispatch-run
