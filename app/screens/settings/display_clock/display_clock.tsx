@@ -13,6 +13,7 @@ import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
 
 const CLOCK_TYPE = {
     NORMAL: 'NORMAL',
@@ -47,7 +48,7 @@ const DisplayClock = ({currentUserId, hasMilitaryTimeFormat}: DisplayClockProps)
 
     useBackNavigation(saveClockDisplayPreference);
 
-    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_CLOCK, saveClockDisplayPreference);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_CLOCK, navigateBack);
 
     return (
         <SettingContainer testID='clock_display_settings'>

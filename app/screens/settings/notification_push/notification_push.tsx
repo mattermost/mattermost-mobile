@@ -12,6 +12,7 @@ import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import useNotificationProps from '@hooks/notification_props';
+import {navigateBack} from '@screens/navigation';
 
 import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
@@ -58,7 +59,7 @@ const NotificationPush = ({currentUser, isCRTEnabled, sendPushNotifications}: No
 
     useBackNavigation(saveNotificationSettings);
 
-    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_PUSH, saveNotificationSettings);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_PUSH, navigateBack);
 
     return (
         <SettingContainer testID='push_notification_settings'>

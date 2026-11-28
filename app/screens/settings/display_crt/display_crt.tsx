@@ -13,6 +13,7 @@ import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
 const crtDescription = defineMessage({
@@ -48,7 +49,7 @@ const DisplayCRT = ({currentUserId, isCRTEnabled}: Props) => {
     }, [isCRTEnabled, isEnabled, currentUserId, serverUrl]);
 
     useBackNavigation(saveCRTPreference);
-    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_CRT, saveCRTPreference);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_CRT, navigateBack);
 
     return (
         <SettingContainer testID='crt_display_settings'>
